@@ -1,6 +1,7 @@
 #ifndef MDPLIB_STATE_H
 #define MDPLIB_STATE_H
 
+#include <iostream>
 #include <string>
 #include <unordered_set>
 
@@ -21,11 +22,9 @@ public:
 
     virtual ~State();
 
-    virtual State *operator=(const State *other) =0;
+    virtual State & operator=(const State& rhs) =0;
 
-    virtual bool operator==(const State *other) const =0;
-
-    virtual std::string to_string() const =0;
+    virtual bool operator==(const State& rhs) const =0;
 
     virtual int hash_value() const =0;
 
