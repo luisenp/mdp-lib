@@ -29,7 +29,7 @@ class GridWorldState : public State
         return *this;
     }
 
-    virtual bool operator==(const State & rhs)
+    virtual bool operator==(const State & rhs) const
     {
         GridWorldState *gws = (GridWorldState *)  & rhs;
         return x_ == gws->x_ && y_ == gws->y_;
@@ -37,9 +37,19 @@ class GridWorldState : public State
 
     friend std::ostream& operator<<(std::ostream& os, GridWorldState& gws);
 
-    virtual int hash_value()
+    virtual int hash_value() const
     {
         return x_ + 31*y_;
+    }
+
+    int x() const
+    {
+        return x_;
+    }
+
+    int y() const
+    {
+        return y_;
     }
 };
 

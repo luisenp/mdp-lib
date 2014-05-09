@@ -59,7 +59,7 @@ public:
 /**
  * A successor is just a <state, Rational> pair.
  */
- typedef std::pair<State *, Rational> Successor;
+ typedef std::pair<const State *, Rational> Successor;
 
 
 /**

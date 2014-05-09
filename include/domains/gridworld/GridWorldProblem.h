@@ -8,6 +8,14 @@
 #include "../../util/general.h"
 #include "../../util/rational.h"
 
+namespace gridworld
+{
+    const unsigned char UP = 0;
+    const unsigned char DOWN = 1;
+    const unsigned char LEFT= 2;
+    const unsigned char RIGHT = 3;
+}
+
 class GridWorldProblem : public Problem
 {
 private:
