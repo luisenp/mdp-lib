@@ -12,7 +12,7 @@ public:
 
     GridWorldAction(const unsigned char dir) : dir_(dir) {}
 
-    virtual int hash_value()
+    virtual int hash_value() const
     {
         return (int) dir_;
     }

@@ -1,6 +1,7 @@
 #ifndef MDPLIB_RATIONAL_H
 #define MDPLIB_RATIONAL_H
 
+#include <iostream>
 
 class Rational
 {
@@ -25,6 +26,8 @@ public:
     {
         return num_*other.den_ < other.num_*den_;
     }
+
+    friend std::ostream& operator<<(std::ostream& os, const Rational &r);
 
 private:
     const int num_;

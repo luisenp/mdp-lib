@@ -5,9 +5,6 @@
 class Action
 {
 public:
-    Action();
-    virtual ~Action();
-
     /**
     * Returns a hash value for the action.
     */

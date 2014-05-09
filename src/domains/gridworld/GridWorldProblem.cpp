@@ -30,22 +30,22 @@ std::list<Successor> GridWorldProblem::transition(State *s, Action *a)
     std::list<Successor> successors;
     if (action->dir() == gridworld::UP) {
         if (state->y() == height_ - 1) {
-            successors.push_front(Successor(state, Rational(0.8)));
+            successors.push_front(Successor(state, Rational(8, 10)));
         } else {
             const GridWorldState *next = new GridWorldState(state->x(), state->y() + 1);
-            successors.push_front(Successor(this->getState(next), Rational(0.1)));
+            successors.push_front(Successor(this->getState(next), Rational(8, 10)));
         }
         if  (state->x() == 0) {
-            successors.push_front(Successor(state, Rational(0.1)));
+            successors.push_front(Successor(state, Rational(1, 10)));
         } else {
             const GridWorldState *next = new GridWorldState(state->x() - 1, state->y());
-            successors.push_front(Successor(this->getState(next), Rational(0.1)));
+            successors.push_front(Successor(this->getState(next), Rational(1, 10)));
         }
         if  (state->x() == width_ - 1) {
-            successors.push_front(Successor(state, Rational(0.1)));
+            successors.push_front(Successor(state, Rational(1, 10)));
         } else {
             const GridWorldState *next = new GridWorldState(state->x() + 1, state->y());
-            successors.push_front(Successor(this->getState(next), Rational(0.1)));
+            successors.push_front(Successor(this->getState(next), Rational(1, 10)));
         }
     }
 
