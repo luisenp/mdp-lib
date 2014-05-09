@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<ActiveTarget name="Debug" />
+	<File name="Makefile" open="0" top="0" tabpos="0">
+		<Cursor position="17" topLine="0" />
+	</File>
+	<File name="include/problem.h" open="1" top="0" tabpos="3">
+		<Cursor position="955" topLine="32" />
+	</File>
+	<File name="include/state.h" open="1" top="0" tabpos="1">
+		<Cursor position="120" topLine="0" />
+	</File>
+	<File name="include/util.h" open="1" top="0" tabpos="4">
+		<Cursor position="0" topLine="15" />
+	</File>
+	<File name="lib/G-pack-2.0/utils.h" open="0" top="0" tabpos="0">
+		<Cursor position="475" topLine="33" />
+	</File>
+	<File name="src/problem.cpp" open="1" top="0" tabpos="5">
+		<Cursor position="22" topLine="0" />
+	</File>
+	<File name="src/state.cpp" open="1" top="1" tabpos="2">
+		<Cursor position="30" topLine="0" />
+	</File>
+</CodeBlocks_layout_file>

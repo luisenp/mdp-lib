@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="mdp-lib" />
+		<Option makefile_is_custom="1" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/mdp-lib" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/mdp-lib" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-fexceptions" />
+		</Compiler>
+		<Unit filename="Makefile" />
+		<Unit filename="include/action.h" />
+		<Unit filename="include/problem.h" />
+		<Unit filename="include/state.h" />
+		<Unit filename="include/util.h" />
+		<Unit filename="lib/G-pack-2.0/actions.cc" />
+		<Unit filename="lib/G-pack-2.0/actions.h" />
+		<Unit filename="lib/G-pack-2.0/algorithms.cc" />
+		<Unit filename="lib/G-pack-2.0/algorithms.h" />
+		<Unit filename="lib/G-pack-2.0/atom_states.cc" />
+		<Unit filename="lib/G-pack-2.0/atom_states.h" />
+		<Unit filename="lib/G-pack-2.0/client.cc" />
+		<Unit filename="lib/G-pack-2.0/client.h" />
+		<Unit filename="lib/G-pack-2.0/domains.cc" />
+		<Unit filename="lib/G-pack-2.0/domains.h" />
+		<Unit filename="lib/G-pack-2.0/effects.cc" />
+		<Unit filename="lib/G-pack-2.0/effects.h" />
+		<Unit filename="lib/G-pack-2.0/exceptions.cc" />
+		<Unit filename="lib/G-pack-2.0/exceptions.h" />
+		<Unit filename="lib/G-pack-2.0/expressions.cc" />
+		<Unit filename="lib/G-pack-2.0/expressions.h" />
+		<Unit filename="lib/G-pack-2.0/formulas.cc" />
+		<Unit filename="lib/G-pack-2.0/formulas.h" />
+		<Unit filename="lib/G-pack-2.0/functions.cc" />
+		<Unit filename="lib/G-pack-2.0/functions.h" />
+		<Unit filename="lib/G-pack-2.0/global.cc" />
+		<Unit filename="lib/G-pack-2.0/global.h" />
+		<Unit filename="lib/G-pack-2.0/graph.cc" />
+		<Unit filename="lib/G-pack-2.0/graph.h" />
+		<Unit filename="lib/G-pack-2.0/hash.cc" />
+		<Unit filename="lib/G-pack-2.0/hash.h" />
+		<Unit filename="lib/G-pack-2.0/hashing.h" />
+		<Unit filename="lib/G-pack-2.0/heuristics.cc" />
+		<Unit filename="lib/G-pack-2.0/heuristics.h" />
+		<Unit filename="lib/G-pack-2.0/lexer.cc" />
+		<Unit filename="lib/G-pack-2.0/main.cc" />
+		<Unit filename="lib/G-pack-2.0/md4.h" />
+		<Unit filename="lib/G-pack-2.0/md4c.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="lib/G-pack-2.0/parser.cc" />
+		<Unit filename="lib/G-pack-2.0/parser.h" />
+		<Unit filename="lib/G-pack-2.0/planners.cc" />
+		<Unit filename="lib/G-pack-2.0/planners.h" />
+		<Unit filename="lib/G-pack-2.0/predicates.cc" />
+		<Unit filename="lib/G-pack-2.0/predicates.h" />
+		<Unit filename="lib/G-pack-2.0/problems.cc" />
+		<Unit filename="lib/G-pack-2.0/problems.h" />
+		<Unit filename="lib/G-pack-2.0/queue.h" />
+		<Unit filename="lib/G-pack-2.0/requirements.cc" />
+		<Unit filename="lib/G-pack-2.0/requirements.h" />
+		<Unit filename="lib/G-pack-2.0/states.h" />
+		<Unit filename="lib/G-pack-2.0/strxml.cc" />
+		<Unit filename="lib/G-pack-2.0/strxml.h" />
+		<Unit filename="lib/G-pack-2.0/terms.cc" />
+		<Unit filename="lib/G-pack-2.0/terms.h" />
+		<Unit filename="lib/G-pack-2.0/types.cc" />
+		<Unit filename="lib/G-pack-2.0/types.h" />
+		<Unit filename="lib/G-pack-2.0/utils.cc" />
+		<Unit filename="lib/G-pack-2.0/utils.h" />
+		<Unit filename="lib/prost/src/caching_component.cc" />
+		<Unit filename="lib/prost/src/caching_component.h" />
+		<Unit filename="lib/prost/src/depth_first_search.cc" />
+		<Unit filename="lib/prost/src/depth_first_search.h" />
+		<Unit filename="lib/prost/src/dp_uct_search.cc" />
+		<Unit filename="lib/prost/src/dp_uct_search.h" />
+		<Unit filename="lib/prost/src/functions.cc" />
+		<Unit filename="lib/prost/src/functions.h" />
+		<Unit filename="lib/prost/src/instantiator.cc" />
+		<Unit filename="lib/prost/src/instantiator.h" />
+		<Unit filename="lib/prost/src/ippc_client.cc" />
+		<Unit filename="lib/prost/src/ippc_client.h" />
+		<Unit filename="lib/prost/src/iterative_deepening_search.cc" />
+		<Unit filename="lib/prost/src/iterative_deepening_search.h" />
+		<Unit filename="lib/prost/src/learning_component.cc" />
+		<Unit filename="lib/prost/src/learning_component.h" />
+		<Unit filename="lib/prost/src/logical_expressions.cc" />
+		<Unit filename="lib/prost/src/logical_expressions.h" />
+		<Unit filename="lib/prost/src/logical_expressions_includes/calculate_domain.cc" />
+		<Unit filename="lib/prost/src/logical_expressions_includes/calculate_pd_domain.cc" />
+		<Unit filename="lib/prost/src/logical_expressions_includes/collect_initial_info.cc" />
+		<Unit filename="lib/prost/src/logical_expressions_includes/determinization.cc" />
+		<Unit filename="lib/prost/src/logical_expressions_includes/evaluate.cc" />
+		<Unit filename="lib/prost/src/logical_expressions_includes/evaluate_to_kleene.cc" />
+		<Unit filename="lib/prost/src/logical_expressions_includes/evaluate_to_pd.cc" />
+		<Unit filename="lib/prost/src/logical_expressions_includes/instantiate.cc" />
+		<Unit filename="lib/prost/src/logical_expressions_includes/print.cc" />
+		<Unit filename="lib/prost/src/logical_expressions_includes/replace_quantifier.cc" />
+		<Unit filename="lib/prost/src/logical_expressions_includes/simplify.cc" />
+		<Unit filename="lib/prost/src/main.cc" />
+		<Unit filename="lib/prost/src/max_mc_uct_search.cc" />
+		<Unit filename="lib/prost/src/max_mc_uct_search.h" />
+		<Unit filename="lib/prost/src/mc_uct_search.cc" />
+		<Unit filename="lib/prost/src/mc_uct_search.h" />
+		<Unit filename="lib/prost/src/planning_task.cc" />
+		<Unit filename="lib/prost/src/planning_task.h" />
+		<Unit filename="lib/prost/src/preprocessor.cc" />
+		<Unit filename="lib/prost/src/preprocessor.h" />
+		<Unit filename="lib/prost/src/probability_distribution.cc" />
+		<Unit filename="lib/prost/src/probability_distribution.h" />
+		<Unit filename="lib/prost/src/prost_planner.cc" />
+		<Unit filename="lib/prost/src/prost_planner.h" />
+		<Unit filename="lib/prost/src/rddl_parser.cc" />
+		<Unit filename="lib/prost/src/rddl_parser.h" />
+		<Unit filename="lib/prost/src/search_engine.cc" />
+		<Unit filename="lib/prost/src/search_engine.h" />
+		<Unit filename="lib/prost/src/state_set_generator.cc" />
+		<Unit filename="lib/prost/src/state_set_generator.h" />
+		<Unit filename="lib/prost/src/states.cc" />
+		<Unit filename="lib/prost/src/states.h" />
+		<Unit filename="lib/prost/src/thts.cc" />
+		<Unit filename="lib/prost/src/thts.h" />
+		<Unit filename="lib/prost/src/uct_base.cc" />
+		<Unit filename="lib/prost/src/uct_base.h" />
+		<Unit filename="lib/prost/src/uniform_evaluation_search.cc" />
+		<Unit filename="lib/prost/src/uniform_evaluation_search.h" />
+		<Unit filename="lib/prost/src/unprocessed_planning_task.cc" />
+		<Unit filename="lib/prost/src/unprocessed_planning_task.h" />
+		<Unit filename="lib/prost/src/utils/math_utils.cc" />
+		<Unit filename="lib/prost/src/utils/math_utils.h" />
+		<Unit filename="lib/prost/src/utils/string_utils.cc" />
+		<Unit filename="lib/prost/src/utils/string_utils.h" />
+		<Unit filename="lib/prost/src/utils/strxml.cc" />
+		<Unit filename="lib/prost/src/utils/strxml.h" />
+		<Unit filename="lib/prost/src/utils/system_utils.cc" />
+		<Unit filename="lib/prost/src/utils/system_utils.h" />
+		<Unit filename="lib/prost/src/utils/timer.cc" />
+		<Unit filename="lib/prost/src/utils/timer.h" />
+		<Unit filename="src/action.cpp" />
+		<Unit filename="src/problem.cpp" />
+		<Unit filename="src/state.cpp" />
+		<Extensions>
+			<code_completion />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
