@@ -18,8 +18,6 @@ class GridWorldState : public State
 
         GridWorldState(const GridWorldState & gws) : x_(gws.x_), y_(gws.y_) {}
 
-        ~GridWorldState();
-
     virtual State &operator=(const State & rhs)
     {
         if (this == &rhs)

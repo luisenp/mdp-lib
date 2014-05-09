@@ -26,18 +26,30 @@ public:
 
     virtual bool operator==(const State& rhs) const =0;
 
+    /**
+     * Returns a hash value for the state.
+     */
     virtual int hash_value() const =0;
 
+    /**
+     * Returns true if the state has been visited by some search-based algorithm.
+     */
     bool visited() const
     {
         return visited_;
     }
 
+    /**
+     * Marks the state as visited by some search-based algorithm.
+     */
     void visit()
     {
         visited_ = true;
     }
 
+    /**
+     * Marks the state as not-visited by some search-based algorithm.
+     */
     void unvisit()
     {
         visited_ = false;

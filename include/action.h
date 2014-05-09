@@ -4,13 +4,14 @@
 
 class Action
 {
-    public:
-        Action();
-        virtual ~Action();
+public:
+    Action();
+    virtual ~Action();
 
-        virtual int hash_value() const=0;
-    protected:
-    private:
+    /**
+    * Returns a hash value for the action.
+    */
+    virtual int hash_value() const=0;
 };
 
 #endif // MDPLIB_ACTION_H
