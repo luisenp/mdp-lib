@@ -1,5 +1,5 @@
-#ifndef GRIDWORLDACTION_H
-#define GRIDWORLDACTION_H
+#ifndef MPDLIB_GRIDWORLDACTION_H
+#define MPDLIB_GRIDWORLDACTION_H
 
 #include "../../action.h"
 
@@ -23,4 +23,4 @@ public:
     }
 };
 
-#endif // GRIDWORLDACTION_H
+#endif // MPDLIB_GRIDWORLDACTION_H

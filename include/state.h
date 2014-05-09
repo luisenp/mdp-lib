@@ -5,7 +5,7 @@
 #include <string>
 #include <unordered_set>
 
-#include "../include/util/rational.h"
+#include "util/rational.h"
 
 /**
  * Abstract class for states.
@@ -15,16 +15,15 @@ class State
 private:
     bool visited_;
 
+protected:
+    virtual std::ostream& print(std::ostream& stream) const =0;
+
 public:
-    State();
-
-    State(const State *other);
-
-    virtual ~State();
-
     virtual State & operator=(const State& rhs) =0;
 
     virtual bool operator==(const State& rhs) const =0;
+
+    friend std::ostream& operator<<(std::ostream& os, const State* s);
 
     /**
      * Returns a hash value for the state.
@@ -53,6 +52,30 @@ public:
     void unvisit()
     {
         visited_ = false;
+    }
+};
+
+/**
+ * A state with no particular information inside.
+ */
+class DummyState : public State
+{
+public:
+    DummyState() {}
+
+    virtual State & operator=(const State& rhs)
+    {
+        return *this;
+    }
+
+    virtual bool operator==(const State& rhs) const
+    {
+        return this == &rhs;
+    }
+
+    virtual int hash_value() const
+    {
+        return 0;
     }
 };
 

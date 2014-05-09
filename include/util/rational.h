@@ -26,31 +26,18 @@ public:
         return num_*other.den_ < other.num_*den_;
     }
 
-protected:
 private:
     const int num_;
     const int den_;
 
 };
 
-Rational operator+(const Rational &r1, Rational &r2)
-{
-    return Rational(r1.num()*r2.den() + r1.den()*r2.num(), r1.den()*r2.den());
-}
+Rational operator+(const Rational &r1, Rational &r2);
 
-Rational operator-(const Rational &r1, Rational &r2)
-{
-    return Rational(r1.num()*r2.den() - r1.den()*r2.num(), r1.den()*r2.den());
-}
+Rational operator-(const Rational &r1, Rational &r2);
 
-Rational operator*(const Rational &r1, Rational &r2)
-{
-    return Rational(r1.num()*r2.num(), r1.den()*r2.den());
-}
+Rational operator*(const Rational &r1, Rational &r2);
 
-Rational operator/(const Rational &r1, Rational &r2)
-{
-    return Rational(r1.num()*r2.den(), r1.den()*r2.num());
-}
+Rational operator/(const Rational &r1, Rational &r2);
 
 #endif // MDPLIB_RATIONAL_H

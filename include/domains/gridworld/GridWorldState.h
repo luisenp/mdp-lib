@@ -1,5 +1,5 @@
-#ifndef GRIDWORLDSTATE_H
-#define GRIDWORLDSTATE_H
+#ifndef MPDLIB_GRIDWORLDSTATE_H
+#define MPDLIB_GRIDWORLDSTATE_H
 
 #include <iostream>
 
@@ -7,18 +7,20 @@
 
 class GridWorldState : public State
 {
-    private:
-        int x_;
-        int y_;
+private:
+    int x_;
+    int y_;
 
-    public:
-        GridWorldState() : x_(-1), y_(-1) {}
+    virtual std::ostream& print(std::ostream& os) const;
 
-        GridWorldState(int x, int y) : x_(x), y_(y) {}
+public:
+    GridWorldState() : x_(-1), y_(-1) {}
 
-        GridWorldState(const GridWorldState & gws) : x_(gws.x_), y_(gws.y_) {}
+    GridWorldState(int x, int y) : x_(x), y_(y) {}
 
-    virtual State &operator=(const State & rhs)
+    GridWorldState(const GridWorldState& gws) : x_(gws.x_), y_(gws.y_) {}
+
+    virtual State &operator=(const State& rhs)
     {
         if (this == &rhs)
             return *this;
@@ -29,33 +31,17 @@ class GridWorldState : public State
         return *this;
     }
 
-    virtual bool operator==(const State & rhs) const
+    virtual bool operator==(const State& rhs) const
     {
         GridWorldState *gws = (GridWorldState *)  & rhs;
         return x_ == gws->x_ && y_ == gws->y_;
     }
 
-    friend std::ostream& operator<<(std::ostream& os, GridWorldState& gws);
+    virtual int hash_value() const;
 
-    virtual int hash_value() const
-    {
-        return x_ + 31*y_;
-    }
+    int x() const;
 
-    int x() const
-    {
-        return x_;
-    }
-
-    int y() const
-    {
-        return y_;
-    }
+    int y() const;
 };
 
-std::ostream& operator<<(std::ostream& os, GridWorldState& gws)
-{
-    os << "(" << gws.x_ << "," << gws.y_ << ")";
-    return os;
-}
-#endif // GRIDWORLDSTATE_H
+#endif // MDPLIB_GRIDWORLDSTATE_H
