@@ -34,8 +34,11 @@ protected:
      */
     State *getState(State *s)
     {
-        states.insert(s);
-        return *states.find(s);
+        bool check = states.insert(s).second;
+        State *ret = *states.find(s);
+        if (!check)
+            delete s;   // state was already in the set, get rid of the state used to find it
+        return ret;
     }
 
 public:
