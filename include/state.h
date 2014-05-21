@@ -13,7 +13,7 @@
 class State
 {
 private:
-    bool visited_;
+    bool visited_ = false;
 
 protected:
     virtual std::ostream& print(std::ostream& stream) const =0;
@@ -24,6 +24,11 @@ public:
     virtual bool operator==(const State& rhs) const =0;
 
     friend std::ostream& operator<<(std::ostream& os, const State* s);
+
+    /**
+     * Returns true if this state equals the given state.
+     */
+    virtual bool equals(State *other) const =0;
 
     /**
      * Returns a hash value for the state.
@@ -82,14 +87,14 @@ public:
 /**
  * A successor is just a <state, Rational> pair.
  */
- typedef std::pair<const State *, Rational> Successor;
+ typedef std::pair<State*, Rational> Successor;
 
 
 /**
  * Wrapper of the hash function for state objects (used to define StateSet below).
  */
 struct StateHash {
-  size_t operator()(const State *s) const {
+  size_t operator()(State* s) const {
     return s->hash_value();
   }
 };
@@ -98,15 +103,15 @@ struct StateHash {
  * Wrapper of the equality operator for state objects (used to define StateSet below).
  */
 struct StateEqual {
-  bool operator() (const State *s1, const State *s2) const {
-    return s1 == s2;
+  bool operator() (State* s1, State* s2) const {
+    return s1->equals(s2);
   }
 };
 
 /**
  * A set of states.
  */
-typedef std::unordered_set<const State *, StateHash, StateEqual> StateSet;
+typedef std::unordered_set<State*, StateHash, StateEqual> StateSet;
 
 
 #endif // MDPLIB_STATE_H

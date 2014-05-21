@@ -33,10 +33,11 @@ public:
 
     virtual bool operator==(const State& rhs) const
     {
-        GridWorldState *gws = (GridWorldState *)  & rhs;
+        GridWorldState *gws = (GridWorldState *)  &rhs;
         return x_ == gws->x_ && y_ == gws->y_;
     }
 
+    virtual bool equals(State* other) const;
     virtual int hash_value() const;
 
     int x() const;

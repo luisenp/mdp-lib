@@ -35,6 +35,7 @@
 		</Compiler>
 		<Unit filename="Makefile" />
 		<Unit filename="include/action.h" />
+		<Unit filename="include/domains/gridworld/GridWorldAction.h" />
 		<Unit filename="include/domains/gridworld/GridWorldProblem.h" />
 		<Unit filename="include/domains/gridworld/GridWorldState.h" />
 		<Unit filename="include/problem.h" />
@@ -166,6 +167,9 @@
 		<Unit filename="lib/prost/src/utils/timer.h" />
 		<Unit filename="src/domains/gridworld/GridWorldProblem.cpp" />
 		<Unit filename="src/domains/gridworld/GridWorldState.cpp" />
+		<Unit filename="src/state.cpp" />
+		<Unit filename="src/util/rational.cpp" />
+		<Unit filename="test/testGridWorld.cpp" />
 		<Extensions>
 			<code_completion />
 			<debugger />

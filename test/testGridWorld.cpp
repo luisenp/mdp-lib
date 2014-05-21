@@ -15,11 +15,7 @@ int main()
     GridWorldProblem problem(10, 10, 0, 0, &goals);
     GridWorldState* gws = (GridWorldState *) problem.getInitialState();
 
-    GridWorldAction *action = new GridWorldAction(gridworld::UP);
-    list<Successor> sccrs = problem.transition(gws, action);
-
-    for (list<Successor>::iterator it = sccrs.begin(); it != sccrs.end(); it++) {
-        cout << it->first << " " << it->second << endl;
-    }
-    cout << gws << endl;
+    problem.generateAll();
+    StateSet states = problem.getStates();
+    std::cout << states.size() << std::endl;
 }

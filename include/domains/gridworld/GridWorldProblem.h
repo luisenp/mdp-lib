@@ -3,6 +3,7 @@
 
 #include <unordered_set>
 
+#include "GridWorldState.h"
 #include "../../problem.h"
 #include "../../state.h"
 #include "../../action.h"
@@ -26,6 +27,9 @@ private:
     int y0_;
     IntPairSet* goals_;
 
+    void addSuccessor(GridWorldState* state, std::list<Successor>& successors, int val,
+                      int limit, int newx, int newy, Rational prob);
+
 public:
     GridWorldProblem();
 
@@ -40,7 +44,7 @@ public:
     /**
      * Returns true if state s is a goal.
      */
-    virtual bool goal(const State* s) const;
+    virtual bool goal(State* s) const;
 
     /**
      * Returns a list of all succcessors when action a is applied in state s.
@@ -58,6 +62,8 @@ public:
     virtual bool applicable(State* s, Action* a) const;
 
     const State* getInitialState() const;
+
+    virtual void generateAll();
 };
 
 #endif // MPDLIB_GRIDWORLDPROBLEM_H

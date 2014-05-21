@@ -6,6 +6,12 @@ std::ostream& GridWorldState::print(std::ostream& os) const
     return os;
 }
 
+bool GridWorldState::equals(State* other) const
+{
+    GridWorldState* gws = (GridWorldState*) other;
+    return *this ==  *gws;
+}
+
 int GridWorldState::hash_value() const
 {
     return x_ + 31*y_;
