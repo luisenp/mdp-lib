@@ -10,9 +10,10 @@ using namespace std;
 
 int main()
 {
-    IntPairMap goals;
-    goals[pair<int,int> (9,9)] = 1;
-    GridWorldProblem problem(10, 10, 0, 0, &goals);
+    PairRationalMap goals;
+    goals.insert(make_pair(pair<int,int> (2,2), Rational(1)));
+
+    GridWorldProblem problem(3, 3, 0, 0, &goals);
     GridWorldState* gws = (GridWorldState *) problem.getInitialState();
 
     problem.generateAll();

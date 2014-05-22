@@ -20,7 +20,7 @@ GridWorldProblem::GridWorldProblem() : width_(0), height_(0), x0_(0), y0_(0), go
     addAllActions();
 }
 
-GridWorldProblem::GridWorldProblem(int width, int height, int x0, int y0, IntPairMap* goals)
+GridWorldProblem::GridWorldProblem(int width, int height, int x0, int y0, PairRationalMap* goals)
                                    : width_(width), height_(height),
                                       x0_(x0), y0_(y0), goals_(goals)
 {
@@ -51,8 +51,13 @@ std::list<Successor> GridWorldProblem::transition(State *s, Action *a)
 
     std::list<Successor> successors;
 
+    if (s == &absorbing) {
+        successors.push_front(Successor(s, Rational(1)));
+        return successors;
+    }
+
     if (goal(s)) {
-        successors.push_front(Successor(state, Rational(1)));
+        successors.push_front(Successor(&absorbing, Rational(1)));
         return successors;
     }
 
@@ -99,7 +104,14 @@ std::list<Successor> GridWorldProblem::transition(State *s, Action *a)
 
 Rational GridWorldProblem::cost(State* s, Action* a) const
 {
-    return Rational(1);
+    if (s == &absorbing)
+        return Rational(0);
+    if (goal(s)) {
+        GridWorldState* gws = (GridWorldState *) s;
+        std::pair<int,int> pos(gws->x(),gws->y());
+        return (*goals_)[pos];
+    }
+    return Rational(3, 100);
 }
 
 bool GridWorldProblem::applicable(State* s, Action* a) const

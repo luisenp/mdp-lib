@@ -16,7 +16,7 @@ private:
     bool visited_ = false;
 
 protected:
-    virtual std::ostream& print(std::ostream& stream) const =0;
+    virtual std::ostream& print(std::ostream& os) const =0;
 
 public:
     virtual State & operator=(const State& rhs) =0;
@@ -68,6 +68,12 @@ class DummyState : public State
 public:
     DummyState() {}
 
+    virtual std::ostream& print(std::ostream& os) const
+    {
+        os << "Dummy State";
+        return os;
+    }
+
     virtual State & operator=(const State& rhs)
     {
         return *this;
@@ -76,6 +82,11 @@ public:
     virtual bool operator==(const State& rhs) const
     {
         return this == &rhs;
+    }
+
+    virtual bool equals(State *other) const
+    {
+        return this == other;
     }
 
     virtual int hash_value() const

@@ -5,6 +5,10 @@
 
 class Rational
 {
+private:
+    const int num_;
+    const int den_;
+
 public:
     Rational() : num_(0), den_(1) { }
 
@@ -22,17 +26,17 @@ public:
         return den_;
     }
 
-    bool operator<(const Rational &other)
+    bool operator==(const Rational& rhs) const
+    {
+        return num_ == rhs.num_ && den_ == rhs.den_;
+    }
+
+    bool operator<(const Rational& other)
     {
         return num_*other.den_ < other.num_*den_;
     }
 
-    friend std::ostream& operator<<(std::ostream& os, const Rational &r);
-
-private:
-    const int num_;
-    const int den_;
-
+    friend std::ostream& operator<<(std::ostream& os, const Rational& r);
 };
 
 Rational operator+(const Rational &r1, Rational &r2);

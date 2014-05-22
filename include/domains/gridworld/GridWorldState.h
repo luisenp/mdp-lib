@@ -20,7 +20,7 @@ public:
 
     GridWorldState(const GridWorldState& gws) : x_(gws.x_), y_(gws.y_) {}
 
-    virtual State &operator=(const State& rhs)
+    virtual State& operator=(const State& rhs)
     {
         if (this == &rhs)
             return *this;

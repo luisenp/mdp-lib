@@ -25,7 +25,8 @@ private:
     int height_;
     int x0_;
     int y0_;
-    IntPairMap* goals_;
+    PairRationalMap* goals_;
+    DummyState absorbing;
 
     void addSuccessor(GridWorldState* state, std::list<Successor>& successors, int val,
                       int limit, int newx, int newy, Rational prob);
@@ -38,7 +39,7 @@ public:
      * Constructs a grid world with the specified width, height, goal states
      * and initial state (x0,y0).
      */
-    GridWorldProblem(int width, int height, int x0, int y0, IntPairMap* goals);
+    GridWorldProblem(int width, int height, int x0, int y0, PairRationalMap* goals);
 
     ~GridWorldProblem();
 
