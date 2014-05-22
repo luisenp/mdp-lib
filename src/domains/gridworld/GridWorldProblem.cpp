@@ -3,7 +3,7 @@
 #include "../../../include/domains/gridworld/GridWorldAction.h"
 #include "../../../include/util/rational.h"
 
-GridWorldProblem::GridWorldProblem() : width_(0), height_(0), x0_(0), y0_(0), goals_(0)
+void GridWorldProblem::addAllActions()
 {
     Action* up = new GridWorldAction(gridworld::UP);
     Action* down = new GridWorldAction(gridworld::DOWN);
@@ -15,20 +15,18 @@ GridWorldProblem::GridWorldProblem() : width_(0), height_(0), x0_(0), y0_(0), go
     actions.push_front(right);
 }
 
-GridWorldProblem::GridWorldProblem(int width, int height, int x0, int y0, IntPairSet * goals)
+GridWorldProblem::GridWorldProblem() : width_(0), height_(0), x0_(0), y0_(0), goals_(0)
+{
+    addAllActions();
+}
+
+GridWorldProblem::GridWorldProblem(int width, int height, int x0, int y0, IntPairMap* goals)
                                    : width_(width), height_(height),
                                       x0_(x0), y0_(y0), goals_(goals)
 {
     State* init = new GridWorldState(x0_, y0_);
     s0 = this->getState(init);
-    Action* up = new GridWorldAction(gridworld::UP);
-    Action* down = new GridWorldAction(gridworld::DOWN);
-    Action* left = new GridWorldAction(gridworld::LEFT);
-    Action* right = new GridWorldAction(gridworld::RIGHT);
-    actions.push_front(up);
-    actions.push_front(down);
-    actions.push_front(left);
-    actions.push_front(right);
+    addAllActions();
 }
 
 GridWorldProblem::~GridWorldProblem()

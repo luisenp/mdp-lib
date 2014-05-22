@@ -37,7 +37,7 @@ protected:
         bool check = states.insert(s).second;
         State *ret = *states.find(s);
         if (!check)
-            delete s;   // state was already in the set, get rid of the state used to find it
+            delete s;   // state was already in the set, so get rid of the state used to find it
         return ret;
     }
 

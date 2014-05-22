@@ -10,8 +10,8 @@ using namespace std;
 
 int main()
 {
-    IntPairSet goals;
-    goals.insert(pair<int,int> (9,9));
+    IntPairMap goals;
+    goals[pair<int,int> (9,9)] = 1;
     GridWorldProblem problem(10, 10, 0, 0, &goals);
     GridWorldState* gws = (GridWorldState *) problem.getInitialState();
 

@@ -4,46 +4,46 @@
 	<File name="Makefile" open="0" top="0" tabpos="0">
 		<Cursor position="17" topLine="0" />
 	</File>
-	<File name="include/action.h" open="1" top="0" tabpos="3">
+	<File name="include/action.h" open="0" top="0" tabpos="3">
 		<Cursor position="72" topLine="0" />
 	</File>
-	<File name="include/domains/gridworld/GridWorldAction.h" open="1" top="0" tabpos="2">
+	<File name="include/domains/gridworld/GridWorldAction.h" open="0" top="0" tabpos="2">
 		<Cursor position="307" topLine="0" />
 	</File>
 	<File name="include/domains/gridworld/GridWorldProblem.h" open="0" top="0" tabpos="4">
-		<Cursor position="1336" topLine="31" />
+		<Cursor position="1506" topLine="37" />
 	</File>
-	<File name="include/domains/gridworld/GridWorldState.h" open="0" top="0" tabpos="0">
-		<Cursor position="232" topLine="0" />
+	<File name="include/domains/gridworld/GridWorldState.h" open="1" top="0" tabpos="2">
+		<Cursor position="713" topLine="15" />
 	</File>
-	<File name="include/problem.h" open="0" top="0" tabpos="2">
-		<Cursor position="312" topLine="2" />
+	<File name="include/problem.h" open="1" top="1" tabpos="3">
+		<Cursor position="936" topLine="12" />
 	</File>
 	<File name="include/state.h" open="0" top="0" tabpos="1">
-		<Cursor position="468" topLine="15" />
+		<Cursor position="2009" topLine="85" />
 	</File>
 	<File name="include/util/general.h" open="0" top="0" tabpos="0">
-		<Cursor position="36" topLine="0" />
+		<Cursor position="314" topLine="0" />
 	</File>
-	<File name="include/util/rational.h" open="1" top="0" tabpos="5">
-		<Cursor position="499" topLine="18" />
+	<File name="include/util/rational.h" open="0" top="0" tabpos="5">
+		<Cursor position="499" topLine="14" />
 	</File>
 	<File name="lib/G-pack-2.0/utils.h" open="0" top="0" tabpos="0">
 		<Cursor position="475" topLine="33" />
 	</File>
-	<File name="src/domains/gridworld/GridWorldProblem.cpp" open="1" top="1" tabpos="4">
-		<Cursor position="1869" topLine="21" />
+	<File name="src/domains/gridworld/GridWorldProblem.cpp" open="1" top="0" tabpos="1">
+		<Cursor position="4252" topLine="99" />
 	</File>
 	<File name="src/domains/gridworld/GridWorldState.cpp" open="0" top="0" tabpos="0">
-		<Cursor position="94" topLine="0" />
+		<Cursor position="308" topLine="0" />
 	</File>
 	<File name="src/state.cpp" open="0" top="0" tabpos="0">
 		<Cursor position="100" topLine="0" />
 	</File>
-	<File name="src/util/rational.cpp" open="1" top="0" tabpos="6">
+	<File name="src/util/rational.cpp" open="0" top="0" tabpos="6">
 		<Cursor position="580" topLine="0" />
 	</File>
-	<File name="test/testGridWorld.cpp" open="1" top="0" tabpos="1">
-		<Cursor position="752" topLine="0" />
+	<File name="test/testGridWorld.cpp" open="0" top="0" tabpos="1">
+		<Cursor position="606" topLine="0" />
 	</File>
 </CodeBlocks_layout_file>
