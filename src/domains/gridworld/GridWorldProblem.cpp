@@ -9,10 +9,10 @@ void GridWorldProblem::addAllActions()
     Action* down = new GridWorldAction(gridworld::DOWN);
     Action* left = new GridWorldAction(gridworld::LEFT);
     Action* right = new GridWorldAction(gridworld::RIGHT);
-    actions.push_front(up);
-    actions.push_front(down);
-    actions.push_front(left);
-    actions.push_front(right);
+    actions_.push_front(up);
+    actions_.push_front(down);
+    actions_.push_front(left);
+    actions_.push_front(right);
 }
 
 GridWorldProblem::GridWorldProblem() : width_(0), height_(0), x0_(0), y0_(0), goals_(0)
@@ -31,9 +31,9 @@ GridWorldProblem::GridWorldProblem(int width, int height, int x0, int y0, PairRa
 
 GridWorldProblem::~GridWorldProblem()
 {
-    for (State* state : states)
+    for (State* state : states_)
         delete (state);
-    for (Action* action : actions)
+    for (Action* action : actions_)
         delete (action);
 }
 
@@ -119,11 +119,6 @@ bool GridWorldProblem::applicable(State* s, Action* a) const
     return true;
 }
 
-const State* GridWorldProblem::getInitialState() const
-{
-    return s0;
-}
-
 void GridWorldProblem::addSuccessor(GridWorldState* state, std::list<Successor>& successors,
                                     int val, int limit, int newx, int newy, Rational prob)
 {
@@ -141,7 +136,7 @@ void GridWorldProblem::addSuccessor(GridWorldState* state, std::list<Successor>&
  */
 void GridWorldProblem::generateAll()
 {
-    for (State* state: states)
+    for (State* state: states_)
         state->unvisit();
     std::list<State *> queue;
     queue.push_front(s0);
@@ -151,7 +146,7 @@ void GridWorldProblem::generateAll()
         if (cur->visited())
             continue;
         cur->visit();
-        for (Action* a : actions) {
+        for (Action* a : actions_) {
             std::list<Successor> successors = transition(cur, a);
             for (Successor sccr : successors) {
                 queue.push_front(sccr.first);

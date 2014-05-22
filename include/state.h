@@ -14,6 +14,7 @@ class State
 {
 private:
     bool visited_ = false;
+    Rational cost_ = Rational(0);
 
 protected:
     virtual std::ostream& print(std::ostream& os) const =0;
@@ -57,6 +58,22 @@ public:
     void unvisit()
     {
         visited_ = false;
+    }
+
+    /**
+     * Returns an estimate of the expected cost to reach a goal from this state;
+     */
+    Rational cost() const
+    {
+        return cost_;
+    }
+
+    /**
+     * Updates the estimate of the expected cost to reach a goal from this state;
+     */
+    void setCost(Rational c)
+    {
+        cost_ = c;
     }
 };
 

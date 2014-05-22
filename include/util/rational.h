@@ -6,8 +6,8 @@
 class Rational
 {
 private:
-    const int num_;
-    const int den_;
+    int num_;
+    int den_;
 
 public:
     Rational() : num_(0), den_(1) { }
@@ -24,6 +24,16 @@ public:
     int den() const
     {
         return den_;
+    }
+
+    virtual Rational& operator=(const Rational& rhs)
+    {
+        if (this == &rhs)
+            return *this;
+
+        num_ =  rhs.num_;
+        den_ =  rhs.den_;
+        return *this;
     }
 
     bool operator==(const Rational& rhs) const

@@ -14,9 +14,9 @@ int main()
     goals.insert(make_pair(pair<int,int> (2,2), Rational(1)));
 
     GridWorldProblem problem(3, 3, 0, 0, &goals);
-    GridWorldState* gws = (GridWorldState *) problem.getInitialState();
+    GridWorldState* gws = (GridWorldState *) problem.initialState();
 
     problem.generateAll();
-    StateSet states = problem.getStates();
+    StateSet states = problem.states();
     std::cout << states.size() << std::endl;
 }

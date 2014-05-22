@@ -63,8 +63,6 @@ public:
      */
     virtual bool applicable(State* s, Action* a) const;
 
-    const State* getInitialState() const;
-
     virtual void generateAll();
 };
 
