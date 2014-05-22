@@ -7,6 +7,8 @@ class GridWorldAction : public Action
 {
 private:
     unsigned char dir_;
+    virtual std::ostream& print(std::ostream& os) const;
+
 public:
     GridWorldAction() : dir_(-1) {}
 

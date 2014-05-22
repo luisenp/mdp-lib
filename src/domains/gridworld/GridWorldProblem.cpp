@@ -17,6 +17,8 @@ void GridWorldProblem::addAllActions()
 
 GridWorldProblem::GridWorldProblem() : width_(0), height_(0), x0_(0), y0_(0), goals_(0)
 {
+    absorbing = new GridWorldState(-1, -1);
+    gamma_ = Rational(1);
     addAllActions();
 }
 
@@ -25,7 +27,9 @@ GridWorldProblem::GridWorldProblem(int width, int height, int x0, int y0, PairRa
                                       x0_(x0), y0_(y0), goals_(goals)
 {
     State* init = new GridWorldState(x0_, y0_);
+    absorbing = new GridWorldState(-1, -1);
     s0 = this->getState(init);
+    gamma_ = Rational(1);
     addAllActions();
 }
 
@@ -51,13 +55,13 @@ std::list<Successor> GridWorldProblem::transition(State *s, Action *a)
 
     std::list<Successor> successors;
 
-    if (s == &absorbing) {
+    if (s == absorbing) {
         successors.push_front(Successor(s, Rational(1)));
         return successors;
     }
 
     if (goal(s)) {
-        successors.push_front(Successor(&absorbing, Rational(1)));
+        successors.push_front(Successor(absorbing, Rational(1)));
         return successors;
     }
 
@@ -98,13 +102,12 @@ std::list<Successor> GridWorldProblem::transition(State *s, Action *a)
         addSuccessor(state, successors, height_ - 1, state->y(),
                      state->x(), state->y() + 1, Rational(1, 10));
     }
-
     return successors;
 }
 
 Rational GridWorldProblem::cost(State* s, Action* a) const
 {
-    if (s == &absorbing)
+    if (s == absorbing)
         return Rational(0);
     if (goal(s)) {
         GridWorldState* gws = (GridWorldState *) s;

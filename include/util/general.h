@@ -7,6 +7,12 @@
 
 #include "rational.h"
 
+namespace mdplib
+{
+    const int dead_end_cost = 10000;
+}
+
+
 struct pair_int_equal {
   bool operator() (std::pair<int,int> p1, std::pair<int,int> p2) const {
     return p1.first == p2.first && p1.second == p2.second;

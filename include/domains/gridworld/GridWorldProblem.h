@@ -26,7 +26,7 @@ private:
     int x0_;
     int y0_;
     PairRationalMap* goals_;
-    DummyState absorbing;
+    State* absorbing;
 
     void addSuccessor(GridWorldState* state, std::list<Successor>& successors, int val,
                       int limit, int newx, int newy, Rational prob);

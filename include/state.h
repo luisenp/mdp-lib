@@ -24,7 +24,7 @@ public:
 
     virtual bool operator==(const State& rhs) const =0;
 
-    friend std::ostream& operator<<(std::ostream& os, const State* s);
+    friend std::ostream& operator<<(std::ostream& os, State* s);
 
     /**
      * Returns true if this state equals the given state.
@@ -77,40 +77,40 @@ public:
     }
 };
 
-/**
- * A state with no particular information inside.
- */
-class DummyState : public State
-{
-public:
-    DummyState() {}
-
-    virtual std::ostream& print(std::ostream& os) const
-    {
-        os << "Dummy State";
-        return os;
-    }
-
-    virtual State & operator=(const State& rhs)
-    {
-        return *this;
-    }
-
-    virtual bool operator==(const State& rhs) const
-    {
-        return this == &rhs;
-    }
-
-    virtual bool equals(State *other) const
-    {
-        return this == other;
-    }
-
-    virtual int hash_value() const
-    {
-        return 0;
-    }
-};
+///**
+// * A state with no particular information inside.
+// */
+//class DummyState : public State
+//{
+//public:
+//    DummyState() {}
+//
+//    virtual std::ostream& print(std::ostream& os) const
+//    {
+//        os << "Dummy State";
+//        return os;
+//    }
+//
+//    virtual State & operator=(const State& rhs)
+//    {
+//        return *this;
+//    }
+//
+//    virtual bool operator==(const State& rhs) const
+//    {
+//        return this == &rhs;
+//    }
+//
+//    virtual bool equals(State *other) const
+//    {
+//        return this == other;
+//    }
+//
+//    virtual int hash_value() const
+//    {
+//        return 0;
+//    }
+//};
 
 /**
  * A successor is just a <state, Rational> pair.

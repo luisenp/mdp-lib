@@ -18,6 +18,11 @@ protected:
     State* s0;
 
     /**
+     * Discount factor.
+     */
+    Rational gamma_;
+
+    /**
      * A list of all the possible actions in this problem.
      */
     std::list<Action *> actions_;
@@ -27,19 +32,6 @@ protected:
      * transition function.
      */
     StateSet states_;
-
-    /**
-     * Returns the copy of the given state if it exists, or adds it to the state set
-     * and returns it otherwise.
-     */
-    State *getState(State *s)
-    {
-        bool check = states_.insert(s).second;
-        State *ret = *states_.find(s);
-        if (!check)
-            delete s;   // state was already in the set, so get rid of the state used to find it
-        return ret;
-    }
 
 public:
     /**
@@ -76,6 +68,20 @@ public:
     virtual void generateAll() { }
 
     /**
+     * If a state equal to the given state has already been stored, it returns
+     * the expanded state. Otherwise, it stores the state first and the returns it.
+     */
+    State *getState(State *s)
+    {
+        bool check = states_.insert(s).second;
+        State *ret = *states_.find(s);
+        // the void cast is used to check if the pointers point to the same object
+        if ((void *) ret != (void *) s && !check)
+            delete s;    // another state was already stored, get rid of the state used to find it
+        return ret;
+    }
+
+    /**
      * Returns the set containing all states generated so far.
      */
     StateSet& states()
@@ -89,6 +95,14 @@ public:
     std::list<Action*>& actions()
     {
         return actions_;
+    }
+
+    /**
+     * Returns the discount factor.
+     */
+    Rational gamma()
+    {
+        return gamma_;
     }
 };
 
