@@ -17,7 +17,7 @@ void VISolver::solve(int maxIter)
     for (int i = 0; i < maxIter; i++) {
         for (State* s : problem_->states()) {
             Rational bestQ(mdplib::dead_end_cost);
-            std::cout << s << std::endl;
+            //std::cout << s << std::endl;
             for (Action* a : problem_->actions()) {
                 if (!problem_->applicable(s, a))
                     continue;
@@ -30,13 +30,9 @@ void VISolver::solve(int maxIter)
                 if (qAction < bestQ) {
                     bestQ = qAction;
                 }
-                std::cout << qAction << " " << bestQ << std::endl;
+                //std::cout << qAction << " " << bestQ << std::endl;
             }
             s->setCost(bestQ);
         }
-
-        for (State* s : problem_->states())
-            std::cout << s << " " << s->cost() << std::endl;
-        std::cout << "**************************" << std::endl;
     }
 }

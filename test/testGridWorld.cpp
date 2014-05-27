@@ -22,6 +22,11 @@ int main()
     StateSet states = problem->states();
 
     VISolver solver(problem);
-    solver.solve(10);
+    solver.solve(10000);
+
+    for (State* s : problem->states())
+    std::cout << s << " " << s->cost() << std::endl;
+
+
     delete ((GridWorldProblem *) problem);
 }

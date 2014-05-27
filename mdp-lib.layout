@@ -2,48 +2,57 @@
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Debug" />
 	<File name="Makefile" open="0" top="0" tabpos="0">
-		<Cursor position="17" topLine="0" />
+		<Cursor position="397" topLine="0" />
 	</File>
 	<File name="include/action.h" open="0" top="0" tabpos="3">
-		<Cursor position="72" topLine="0" />
+		<Cursor position="68" topLine="0" />
 	</File>
 	<File name="include/domains/gridworld/GridWorldAction.h" open="0" top="0" tabpos="2">
-		<Cursor position="307" topLine="0" />
+		<Cursor position="215" topLine="0" />
 	</File>
 	<File name="include/domains/gridworld/GridWorldProblem.h" open="0" top="0" tabpos="4">
-		<Cursor position="1506" topLine="37" />
+		<Cursor position="0" topLine="6" />
 	</File>
-	<File name="include/domains/gridworld/GridWorldState.h" open="1" top="0" tabpos="2">
-		<Cursor position="713" topLine="15" />
+	<File name="include/domains/gridworld/GridWorldState.h" open="0" top="0" tabpos="2">
+		<Cursor position="182" topLine="0" />
 	</File>
-	<File name="include/problem.h" open="1" top="1" tabpos="3">
-		<Cursor position="936" topLine="12" />
+	<File name="include/problem.h" open="0" top="0" tabpos="3">
+		<Cursor position="1868" topLine="56" />
+	</File>
+	<File name="include/solvers/VISolver.h" open="0" top="0" tabpos="0">
+		<Cursor position="214" topLine="0" />
 	</File>
 	<File name="include/state.h" open="0" top="0" tabpos="1">
-		<Cursor position="2009" topLine="85" />
+		<Cursor position="2140" topLine="95" />
 	</File>
 	<File name="include/util/general.h" open="0" top="0" tabpos="0">
-		<Cursor position="314" topLine="0" />
+		<Cursor position="198" topLine="0" />
 	</File>
 	<File name="include/util/rational.h" open="0" top="0" tabpos="5">
-		<Cursor position="499" topLine="14" />
+		<Cursor position="255" topLine="0" />
+	</File>
+	<File name="lib/G-pack-2.0/types.cc" open="0" top="0" tabpos="0">
+		<Cursor position="0" topLine="111" />
 	</File>
 	<File name="lib/G-pack-2.0/utils.h" open="0" top="0" tabpos="0">
 		<Cursor position="475" topLine="33" />
 	</File>
-	<File name="src/domains/gridworld/GridWorldProblem.cpp" open="1" top="0" tabpos="1">
-		<Cursor position="4252" topLine="99" />
+	<File name="src/action.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="27" topLine="0" />
 	</File>
-	<File name="src/domains/gridworld/GridWorldState.cpp" open="0" top="0" tabpos="0">
-		<Cursor position="308" topLine="0" />
+	<File name="src/domains/gridworld/GridWorldAction.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="387" topLine="0" />
 	</File>
-	<File name="src/state.cpp" open="0" top="0" tabpos="0">
-		<Cursor position="100" topLine="0" />
+	<File name="src/domains/gridworld/GridWorldProblem.cpp" open="1" top="0" tabpos="2">
+		<Cursor position="4091" topLine="105" />
+	</File>
+	<File name="src/solvers/VISolver.cpp" open="1" top="1" tabpos="3">
+		<Cursor position="481" topLine="14" />
 	</File>
 	<File name="src/util/rational.cpp" open="0" top="0" tabpos="6">
-		<Cursor position="580" topLine="0" />
+		<Cursor position="109" topLine="0" />
 	</File>
-	<File name="test/testGridWorld.cpp" open="0" top="0" tabpos="1">
-		<Cursor position="606" topLine="0" />
+	<File name="test/testGridWorld.cpp" open="1" top="0" tabpos="1">
+		<Cursor position="724" topLine="0" />
 	</File>
 </CodeBlocks_layout_file>

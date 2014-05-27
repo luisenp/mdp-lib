@@ -2,6 +2,11 @@
 #define MDPLIB_RATIONAL_H
 
 #include <iostream>
+#include <cmath>
+
+#include "../mdplib.h"
+
+#ifdef EXACT_COMP // Definition for exact rational computation.
 
 class Rational
 {
@@ -56,5 +61,78 @@ Rational operator-(Rational r1, Rational r2);
 Rational operator*(Rational r1, Rational r2);
 
 Rational operator/(Rational r1, Rational r2);
+
+#else // Definition using floating point arithmetic
+
+class Rational
+{
+private:
+    double value_;
+
+public:
+    Rational() : value_(0) { }
+
+    Rational(double value) : value_(value) { }
+
+    Rational(long num, long den)
+    {
+        value_ = (double) num / den;
+    }
+
+    double value() const
+    {
+        return value_;
+    }
+
+    virtual Rational& operator=(const Rational& rhs)
+    {
+        if (this == &rhs)
+            return *this;
+        value_ =  rhs.value_;
+        return *this;
+    }
+
+    // Comparison implementations taken from http://stackoverflow.com/a/253874
+    bool operator==(Rational rhs) const
+    {
+        if (value_ == rhs.value_)
+            return true;
+
+        double a = abs(value_);
+        double b = abs(rhs.value_);
+        double m = a < b ? a : b;
+        return abs(value_ - rhs.value_) <= (m * mdplib::epsilon);
+    }
+
+    bool operator>(Rational rhs)
+    {
+        double a = abs(value_);
+        double b = abs(rhs.value_);
+        double m = a < b ? b : a;
+
+        return (value_ - rhs.value_) > (m * mdplib::epsilon);
+    }
+
+    bool operator<(Rational rhs)
+    {
+        double a = abs(value_);
+        double b = abs(rhs.value_);
+        double m = a < b ? b : a;
+
+        return (rhs.value_ - value_) > (m * mdplib::epsilon);
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, Rational r);
+};
+
+Rational operator+(Rational r1, Rational r2);
+
+Rational operator-(Rational r1, Rational r2);
+
+Rational operator*(Rational r1, Rational r2);
+
+Rational operator/(Rational r1, Rational r2);
+
+#endif // EXACT_COMP
 
 #endif // MDPLIB_RATIONAL_H
