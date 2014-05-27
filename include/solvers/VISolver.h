@@ -10,7 +10,7 @@ class VISolver
 
     public:
         VISolver(Problem* problem);
-        void solve(int maxIter);
+        void solve(int maxIter, Rational tol);
 };
 
 #endif // MDPLIB_VISOLVER_H

@@ -1,5 +1,6 @@
 #include <list>
 #include <climits>
+#include <cmath>
 
 #include "../../include/solvers/VISolver.h"
 #include "../../include/state.h"
@@ -12,12 +13,12 @@ VISolver::VISolver(Problem* problem)
     problem_ = problem;
 }
 
-void VISolver::solve(int maxIter)
+void VISolver::solve(int maxIter, Rational tol)
 {
     for (int i = 0; i < maxIter; i++) {
+        Rational residual(0);
         for (State* s : problem_->states()) {
             Rational bestQ(mdplib::dead_end_cost);
-            //std::cout << s << std::endl;
             for (Action* a : problem_->actions()) {
                 if (!problem_->applicable(s, a))
                     continue;
@@ -30,9 +31,14 @@ void VISolver::solve(int maxIter)
                 if (qAction < bestQ) {
                     bestQ = qAction;
                 }
-                //std::cout << qAction << " " << bestQ << std::endl;
+            }
+            Rational diff(fabs(s->cost().value() - bestQ.value()));
+            if (diff > residual) {
+                residual = diff;
             }
             s->setCost(bestQ);
         }
+        if (residual < tol)
+            return;
     }
 }

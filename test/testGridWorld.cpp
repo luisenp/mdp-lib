@@ -22,7 +22,7 @@ int main()
     StateSet states = problem->states();
 
     VISolver solver(problem);
-    solver.solve(10000);
+    solver.solve(100, Rational(1, 1000));
 
     for (State* s : problem->states())
     std::cout << s << " " << s->cost() << std::endl;

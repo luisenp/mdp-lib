@@ -98,16 +98,16 @@ public:
         if (value_ == rhs.value_)
             return true;
 
-        double a = abs(value_);
-        double b = abs(rhs.value_);
+        double a = fabs(value_);
+        double b = fabs(rhs.value_);
         double m = a < b ? a : b;
-        return abs(value_ - rhs.value_) <= (m * mdplib::epsilon);
+        return fabs(value_ - rhs.value_) <= (m * mdplib::epsilon);
     }
 
     bool operator>(Rational rhs)
     {
-        double a = abs(value_);
-        double b = abs(rhs.value_);
+        double a = fabs(value_);
+        double b = fabs(rhs.value_);
         double m = a < b ? b : a;
 
         return (value_ - rhs.value_) > (m * mdplib::epsilon);
@@ -115,8 +115,8 @@ public:
 
     bool operator<(Rational rhs)
     {
-        double a = abs(value_);
-        double b = abs(rhs.value_);
+        double a = fabs(value_);
+        double b = fabs(rhs.value_);
         double m = a < b ? b : a;
 
         return (rhs.value_ - value_) > (m * mdplib::epsilon);
