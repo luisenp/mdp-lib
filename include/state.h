@@ -7,6 +7,9 @@
 
 #include "util/rational.h"
 
+#define su_state first
+#define su_prob second
+
 /**
  * Abstract class for states.
  */

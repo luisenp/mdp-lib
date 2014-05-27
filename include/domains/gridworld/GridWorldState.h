@@ -5,6 +5,9 @@
 
 #include "../../state.h"
 
+/**
+ * A class representing a grid world state as described in AIAMA 3rd Edition.
+ */
 class GridWorldState : public State
 {
 private:
@@ -14,10 +17,22 @@ private:
     virtual std::ostream& print(std::ostream& os) const;
 
 public:
+    /**
+     * Default constructor.
+     * It initializes the grid position of the resulting state to a
+     * dummy value of (-1,-1).
+     */
     GridWorldState() : x_(-1), y_(-1) {}
 
+    /**
+     * Constructs a GridWorldState representing grid position (x,y).
+     */
     GridWorldState(int x, int y) : x_(x), y_(y) {}
 
+    /**
+     * Copy constructor. The resulting state represents the same position as the
+     * state passed as parameter.
+     */
     GridWorldState(const GridWorldState& gws) : x_(gws.x_), y_(gws.y_) {}
 
     virtual State& operator=(const State& rhs)

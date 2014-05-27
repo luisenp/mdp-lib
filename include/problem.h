@@ -78,7 +78,7 @@ public:
      *
      * @return The initial state of this problem.
      */
-    virtual const State* initialState() const
+    virtual State* initialState() const
     {
         return s0;
     }

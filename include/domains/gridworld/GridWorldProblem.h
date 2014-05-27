@@ -4,11 +4,14 @@
 #include <unordered_set>
 
 #include "GridWorldState.h"
+
 #include "../../problem.h"
 #include "../../state.h"
 #include "../../action.h"
 #include "../../util/general.h"
 #include "../../util/rational.h"
+
+class GWManhattanHeuristic;
 
 namespace gridworld
 {
@@ -18,8 +21,13 @@ namespace gridworld
     const unsigned char RIGHT = 3;
 }
 
+/**
+ * A class representing a grid world problem as described in AIAMA 3rd Edition.
+ */
 class GridWorldProblem : public Problem
 {
+    friend class GWManhattanHeuristic;
+
 private:
     int width_;
     int height_;
@@ -33,6 +41,11 @@ private:
 
     void addAllActions();
 public:
+    /**
+     * Default constructor.
+     *
+     * Creates a grid world with a single goal state (0,0).
+     */
     GridWorldProblem();
 
     /**
@@ -43,26 +56,10 @@ public:
 
     ~GridWorldProblem();
 
-    /**
-     * Returns true if state s is a goal.
-     */
     virtual bool goal(State* s) const;
-
-    /**
-     * Returns a list of all succcessors when action a is applied in state s.
-     */
     virtual std::list<Successor> transition(State* s, Action* a);
-
-    /**
-     * Returns the cost of applying action a in state s.
-     */
     virtual Rational cost(State* s, Action* a) const;
-
-    /**
-     * Returns true if action a can be applied in state s.
-     */
     virtual bool applicable(State* s, Action* a) const;
-
     virtual void generateAll();
 };
 

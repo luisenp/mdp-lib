@@ -2,6 +2,7 @@
 #define MDPLIB_LRTDPSOLVER_H
 
 #include "../problem.h"
+#include "../heuristic.h"
 
 /**
  * A SSPP solver using the Labeled RTDP algorithm.
@@ -12,13 +13,19 @@ class LRTDPSolver
 {
 private:
     Problem* problem_;
+    Heuristic* heuristic_;
+
+    StateSet expanded;  /* States that have been expanded so far */
+
+    void trial();   /* Performs a single LRTDP trial */
+
 public:
     /**
      * Creates a LRTDP solver for the specified problem.
      *
      * @param problem The problem to be solved.
      */
-    LRTDPSolver(Problem* problem);
+    LRTDPSolver(Problem* problem, Heuristic* heuristic);
 
     /**
      * Solves the associated problem using the Labeled RTDP algorithm.

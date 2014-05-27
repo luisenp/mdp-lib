@@ -2,7 +2,6 @@
 #define MDPLIB_RATIONAL_H
 
 #include <iostream>
-#include <cmath>
 
 #include "../mdplib.h"
 
@@ -29,6 +28,11 @@ public:
     long den() const
     {
         return den_;
+    }
+
+    double value() const
+    {
+        return (double) num_ / den_;
     }
 
     virtual Rational& operator=(const Rational& rhs)
@@ -63,6 +67,8 @@ Rational operator*(Rational r1, Rational r2);
 Rational operator/(Rational r1, Rational r2);
 
 #else // Definition using floating point arithmetic
+
+#include <cmath>
 
 class Rational
 {
