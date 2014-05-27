@@ -35,27 +35,48 @@ protected:
 
 public:
     /**
-     * Returns true if state s is a goal.
+     * Goal check.
+     *
+     * Checks if the state given as parameter is a goal or not.
+     *
+     * @return true if the given state is a goal.
      */
     virtual bool goal(State *s) const =0;
 
     /**
-     * Returns a list of all succcessors when action a is applied in state s.
+     * Transition function for the problem.
+     *
+     * Returns a list with all successors of the state given as the first parameter
+     * when the action given as the second parameter is applied.
+     *
+     * @return A list of succcessors of the given state after applying the given action.
      */
     virtual std::list<Successor> transition(State *s, Action *a) =0;
 
     /**
-     * Returns the cost of applying action a in state s.
+     * Cost function for the problem.
+     *
+     * Returns the cost of applying the action given as the second parameter to the
+     * state given as the first parameter.
+     *
+     * @return The cost of applying action the given action to the given state.
      */
     virtual Rational cost(State *s, Action *a) const =0;
 
     /**
-     * Returns true if action a can be applied in state s.
+     * Applicability check.
+     *
+     * Checks if the action given as the second parameter is applicable to the
+     * state given as the first parameter.
+     *
+     * @return true if the given action can be applied to the given state.
      */
     virtual bool applicable(State *s, Action *a) const =0;
 
     /**
-     * Returns the initial state for this problem.
+     * Initial state for this problem.
+     *
+     * @return The initial state of this problem.
      */
     virtual const State* initialState() const
     {
@@ -63,13 +84,18 @@ public:
     }
 
     /**
-    * Generates all states that can be reached from s0 and stores internally.
+    * Generates all states that can be reached from s0 and stores them.
     */
     virtual void generateAll() { }
 
     /**
      * If a state equal to the given state has already been stored, it returns
      * the expanded state. Otherwise, it stores the state first and the returns it.
+     *
+     * This method relies on the equals() and hashValue() methods of the State class.
+     *
+     * @param A state used as a model of an internal state to be returned.
+     * @return The state stored internally that equals the given state.
      */
     State *getState(State *s)
     {
@@ -82,7 +108,9 @@ public:
     }
 
     /**
-     * Returns the set containing all states generated so far.
+     * Returns the set containing all states generated so far by calls to getState.
+     *
+     * @return The states generated so far.
      */
     StateSet& states()
     {

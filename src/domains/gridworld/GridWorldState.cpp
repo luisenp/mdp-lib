@@ -12,7 +12,7 @@ bool GridWorldState::equals(State* other) const
     return *this ==  *gws;
 }
 
-int GridWorldState::hash_value() const
+int GridWorldState::hashValue() const
 {
     return x_ + 31*y_;
 }

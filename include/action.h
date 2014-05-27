@@ -10,8 +10,10 @@ protected:
 
 public:
     /**
-    * Returns a hash value for the action.
-    */
+     * Returns a hash value for the action.
+     *
+     * @return The hash value of the action.
+     */
     virtual int hash_value() const=0;
 
     friend std::ostream& operator<<(std::ostream& os, Action* a);

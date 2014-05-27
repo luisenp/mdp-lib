@@ -7,8 +7,6 @@
 #include "../../include/state.h"
 #include "../../include/util/general.h"
 
-#include "../../include/domains/gridworld/GridWorldAction.h"
-
 VISolver::VISolver(Problem* problem)
 {
     problem_ = problem;

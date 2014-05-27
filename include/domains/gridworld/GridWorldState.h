@@ -38,7 +38,7 @@ public:
     }
 
     virtual bool equals(State* other) const;
-    virtual int hash_value() const;
+    virtual int hashValue() const;
 
     int x() const;
 

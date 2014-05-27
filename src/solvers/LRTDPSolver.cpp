@@ -1,6 +1,11 @@
 #include "../../include/solvers/LRTDPSolver.h"
 
-LRTDPSolver::LRTDPSolver()
+LRTDPSolver::LRTDPSolver(Problem* problem)
 {
-    //ctor
+    problem_ = problem;
+}
+
+void LRTDPSolver::solve(int maxTrials)
+{
+
 }

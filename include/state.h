@@ -34,7 +34,7 @@ public:
     /**
      * Returns a hash value for the state.
      */
-    virtual int hash_value() const =0;
+    virtual int hashValue() const =0;
 
     /**
      * Returns true if the state has been visited by some search-based algorithm.
@@ -77,41 +77,6 @@ public:
     }
 };
 
-///**
-// * A state with no particular information inside.
-// */
-//class DummyState : public State
-//{
-//public:
-//    DummyState() {}
-//
-//    virtual std::ostream& print(std::ostream& os) const
-//    {
-//        os << "Dummy State";
-//        return os;
-//    }
-//
-//    virtual State & operator=(const State& rhs)
-//    {
-//        return *this;
-//    }
-//
-//    virtual bool operator==(const State& rhs) const
-//    {
-//        return this == &rhs;
-//    }
-//
-//    virtual bool equals(State *other) const
-//    {
-//        return this == other;
-//    }
-//
-//    virtual int hash_value() const
-//    {
-//        return 0;
-//    }
-//};
-
 /**
  * A successor is just a <state, Rational> pair.
  */
@@ -123,7 +88,7 @@ public:
  */
 struct StateHash {
   size_t operator()(State* s) const {
-    return s->hash_value();
+    return s->hashValue();
   }
 };
 
