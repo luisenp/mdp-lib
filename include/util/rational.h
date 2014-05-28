@@ -35,7 +35,7 @@ public:
         return (double) num_ / den_;
     }
 
-    virtual Rational& operator=(const Rational& rhs)
+    virtual Rational& operator=(const const Rational& rhs)
     {
         if (this == &rhs)
             return *this;
@@ -45,12 +45,12 @@ public:
         return *this;
     }
 
-    bool operator==(Rational rhs) const
+    bool operator==(const Rational rhs) const
     {
         return num_ == rhs.num_ && den_ == rhs.den_;
     }
 
-    bool operator<(Rational other)
+    bool operator<(const Rational other)
     {
         return num_*other.den_ < other.num_*den_;
     }
@@ -99,7 +99,7 @@ public:
     }
 
     // Comparison implementations taken from http://stackoverflow.com/a/253874
-    bool operator==(Rational rhs) const
+    bool operator==(const Rational& rhs) const
     {
         if (value_ == rhs.value_)
             return true;
@@ -110,7 +110,7 @@ public:
         return fabs(value_ - rhs.value_) <= (m * mdplib::epsilon);
     }
 
-    bool operator>(Rational rhs)
+    bool operator>(const Rational& rhs) const
     {
         double a = fabs(value_);
         double b = fabs(rhs.value_);
@@ -119,7 +119,7 @@ public:
         return (value_ - rhs.value_) > (m * mdplib::epsilon);
     }
 
-    bool operator<(Rational rhs)
+    bool operator<(const Rational& rhs) const
     {
         double a = fabs(value_);
         double b = fabs(rhs.value_);

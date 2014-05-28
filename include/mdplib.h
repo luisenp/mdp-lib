@@ -1,4 +1,5 @@
 #ifndef MDPLIB_MDPLIB_H
+#define MDPLIB_MDPLIB_H
 
 namespace mdplib
 {

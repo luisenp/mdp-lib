@@ -17,11 +17,12 @@ void VISolver::solve(int maxIter, Rational tol)
     for (int i = 0; i < maxIter; i++) {
         Rational residual(0);
         for (State* s : problem_->states()) {
-            Rational bestQ = bellmanBackup(problem_, s);
-            Rational diff(fabs(s->cost().value() - bestQ.value()));
+            std::pair<Rational, Action*> best = bellmanBackup(problem_, s);
+            Rational diff(fabs(s->cost().value() - best.first.value()));
             if (diff > residual)
                 residual = diff;
-            s->setCost(bestQ);
+            s->setCost(best.first);
+            s->setBestAction(best.second);
         }
         if (residual < tol)
             return;

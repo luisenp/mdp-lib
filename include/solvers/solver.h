@@ -7,28 +7,19 @@
 #include "../../include/state.h"
 #include "../../include/util/rational.h"
 
-inline Rational bellmanBackupHeuristic(Problem* problem, Heuristic* h, State* s)
+/**
+ * Performs a Bellman backup of the state given as the second paramenter on the
+ * problem given as first parameter.
+ *
+ * @param problem The problem that contains the given state.
+ * @param s The state on which the Bellman backup will be performed.
+ * @return A pair containing the estimated cost and estimated best action according
+ *        to this Bellman backup.
+ */
+inline std::pair<Rational, Action*> bellmanBackup(Problem* problem, State* s)
 {
     Rational bestQ(mdplib::dead_end_cost);
-    for (Action* a : problem->actions()) {
-        if (!problem->applicable(s, a))
-            continue;
-        std::list<Successor> successors = problem->transition(s, a);
-        Rational qAction = problem->cost(s, a);
-        for (Successor su : successors) {
-            State* s = problem->getState(su.su_state);
-            qAction = qAction + su.su_prob * h->cost(problem, s);
-        }
-        if (qAction < bestQ) {
-            bestQ = qAction;
-        }
-    }
-    return bestQ;
-}
-
-inline Rational bellmanBackup(Problem* problem, State* s)
-{
-    Rational bestQ(mdplib::dead_end_cost);
+    Action *bestAction = 0;
     for (Action* a : problem->actions()) {
         if (!problem->applicable(s, a))
             continue;
@@ -40,9 +31,10 @@ inline Rational bellmanBackup(Problem* problem, State* s)
         }
         if (qAction < bestQ) {
             bestQ = qAction;
+            bestAction = a;
         }
     }
-    return bestQ;
+    return std::make_pair(bestQ, bestAction);
 }
 
 inline State* randomSuccessor(Problem* problem, State* s, Action* a)

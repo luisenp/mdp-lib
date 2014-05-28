@@ -29,9 +29,10 @@ int main()
     for (State* s : problem->states())
     std::cout << s << " " << s->cost() << std::endl;
 
-    Heuristic* heuristic = new GWManhattanHeuristic();
+    Heuristic* heuristic = new GWManhattanHeuristic((GridWorldProblem*) problem);
     LRTDPSolver lrtdp(problem, heuristic);
     lrtdp.solve(100);
 
+    delete heuristic;
     delete ((GridWorldProblem *) problem);
 }

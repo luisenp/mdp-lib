@@ -12,11 +12,10 @@ void LRTDPSolver::trial()
     State* cur = problem_->initialState();
     while (!problem_->goal(cur)) {
         if (cur->bestAction() == 0) { // hasn't been expanded so far
-            bellmanBackupHeuristic(problem_, heuristic_, cur);
+            bellmanBackup(problem_, cur);
         }
+        break;
     }
-    for (int i = 0; i < 20; i++)
-        std::cout << "Succ " << randomSuccessor(problem_, problem_->initialState(), problem_->actions().front()) << std::endl;
 }
 
 void LRTDPSolver::solve(int maxTrials)

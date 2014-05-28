@@ -6,10 +6,13 @@
 #include <unordered_set>
 
 #include "action.h"
+#include "mdplib.h"
 #include "util/rational.h"
 
 #define su_state first
 #define su_prob second
+
+class Heuristic;
 
 /**
  * Abstract class for states.
@@ -18,8 +21,9 @@ class State
 {
 private:
     bool visited_ = false;
-    Rational cost_ = Rational(0);
-    Action *bestAction_ = 0;
+    Rational cost_ = Rational(mdplib::dead_end_cost + 1);
+    Action* bestAction_ = 0;
+    Heuristic* heuristic_ = 0;
 
 protected:
     virtual std::ostream& print(std::ostream& os) const =0;
@@ -77,10 +81,7 @@ public:
      *
      * @return An estimate of the optimal expected cost to reach a goal from this state.
      */
-    Rational cost() const
-    {
-        return cost_;
-    }
+    Rational cost() const;
 
     /**
      * Updates the estimate of the expected cost to reach a goal from this state.
