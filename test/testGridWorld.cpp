@@ -29,10 +29,15 @@ int main()
     VISolver solver(problem);
     solver.solve(100, Rational(1, 1000));
 
+    std::cout << "Value Iteration Estimates" << std::endl;
     for (State* s : problem->states())
         std::cout << s << " " << s->cost() << " " << heuristic->cost(s) << std::endl;
     LRTDPSolver lrtdp(problem);
-    lrtdp.solve(100);
+    lrtdp.solve(1000);
+
+    std::cout << "LRTDP Estimates" << std::endl;
+    for (State* s : problem->states())
+        std::cout << s << " " << s->cost() << std::endl;
 
     delete heuristic;
     delete ((GridWorldProblem *) problem);

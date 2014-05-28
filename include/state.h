@@ -111,6 +111,17 @@ public:
     {
         bestAction_ = a;
     }
+
+    /**
+     * Resets all member values used by solvers to their default values.
+     * The following variables are reset: visited, bestAction and cost.
+     */
+    void reset()
+    {
+        visited_ = false;
+        cost_ = Rational(mdplib::dead_end_cost + 1);
+        bestAction_ = nullptr;
+    }
 };
 
 /**
