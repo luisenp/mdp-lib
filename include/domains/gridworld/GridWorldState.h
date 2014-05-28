@@ -17,17 +17,12 @@ private:
     virtual std::ostream& print(std::ostream& os) const;
 
 public:
-    /**
-     * Default constructor.
-     * It initializes the grid position of the resulting state to a
-     * dummy value of (-1,-1).
-     */
-    GridWorldState() : x_(-1), y_(-1) {}
 
     /**
-     * Constructs a GridWorldState representing grid position (x,y).
+     * Constructs a GridWorldState representing grid position (x,y) on the problem
+     * given as a first parameter.
      */
-    GridWorldState(int x, int y) : x_(x), y_(y) {}
+    GridWorldState(Problem* problem, int x, int y);
 
     /**
      * Copy constructor. The resulting state represents the same position as the

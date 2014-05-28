@@ -1,20 +1,17 @@
 #include "../../include/solvers/solver.h"
 #include "../../include/solvers/LRTDPSolver.h"
 
-LRTDPSolver::LRTDPSolver(Problem* problem, Heuristic* heuristic)
+LRTDPSolver::LRTDPSolver(Problem* problem)
 {
     problem_ = problem;
-    heuristic_ = heuristic;
 }
 
 void LRTDPSolver::trial()
 {
     State* cur = problem_->initialState();
     while (!problem_->goal(cur)) {
-        if (cur->bestAction() == 0) { // hasn't been expanded so far
-            bellmanBackup(problem_, cur);
-        }
-        break;
+        std::pair<Rational, Action*> best = bellmanBackup(problem_, cur);
+        cur = randomSuccessor(problem_, cur, best.bb_action);
     }
 }
 

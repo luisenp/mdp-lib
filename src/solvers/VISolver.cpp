@@ -21,8 +21,8 @@ void VISolver::solve(int maxIter, Rational tol)
             Rational diff(fabs(s->cost().value() - best.first.value()));
             if (diff > residual)
                 residual = diff;
-            s->setCost(best.first);
-            s->setBestAction(best.second);
+            s->setCost(best.bb_cost);
+            s->setBestAction(best.bb_action);
         }
         if (residual < tol)
             return;

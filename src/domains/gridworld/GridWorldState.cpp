@@ -1,5 +1,10 @@
 #include "../../../include/domains/gridworld/GridWorldState.h"
 
+GridWorldState::GridWorldState(Problem* problem, int x, int y) : x_(x), y_(y)
+{
+    problem_ = problem;
+}
+
 std::ostream& GridWorldState::print(std::ostream& os) const
 {
     os << "(" << x_ << "," << y_ << ")";

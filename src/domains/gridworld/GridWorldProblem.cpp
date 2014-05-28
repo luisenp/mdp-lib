@@ -1,3 +1,4 @@
+#include "../../../include/problem.h"
 #include "../../../include/domains/gridworld/GridWorldProblem.h"
 #include "../../../include/domains/gridworld/GridWorldState.h"
 #include "../../../include/domains/gridworld/GridWorldAction.h"
@@ -15,20 +16,34 @@ void GridWorldProblem::addAllActions()
     actions_.push_front(right);
 }
 
-GridWorldProblem::GridWorldProblem() : width_(0), height_(0), x0_(0), y0_(0), goals_(0)
+GridWorldProblem::GridWorldProblem() :
+                    width_(0), height_(0), x0_(0), y0_(0), goals_(0)
 {
-    absorbing = new GridWorldState(-1, -1);
+    absorbing = new GridWorldState(this, -1, -1);
     gamma_ = Rational(1);
     addAllActions();
 }
 
 GridWorldProblem::GridWorldProblem(int width, int height, int x0, int y0, PairRationalMap* goals)
+                                   : width_(width), height_(height), x0_(x0), y0_(y0), goals_(goals)
+{
+    State* init = new GridWorldState(this, x0_, y0_);
+    absorbing = new GridWorldState(this, -1, -1);
+    s0 = this->getState(init);
+    gamma_ = Rational(1);
+    addAllActions();
+}
+
+GridWorldProblem::GridWorldProblem(int width, int height,
+                                   int x0, int y0,
+                                   PairRationalMap* goals, Heuristic* h)
                                    : width_(width), height_(height),
                                       x0_(x0), y0_(y0), goals_(goals)
 {
-    State* init = new GridWorldState(x0_, y0_);
-    absorbing = new GridWorldState(-1, -1);
+    State* init = new GridWorldState(this, x0_, y0_);
+    absorbing = new GridWorldState(this, -1, -1);
     s0 = this->getState(init);
+    heuristic_ = h;
     gamma_ = Rational(1);
     addAllActions();
 }
@@ -126,7 +141,7 @@ void GridWorldProblem::addSuccessor(GridWorldState* state, std::list<Successor>&
                                     int val, int limit, int newx, int newy, Rational prob)
 {
     if (val > limit) {
-        GridWorldState *next = new GridWorldState(newx, newy);
+        GridWorldState *next = new GridWorldState(this, newx, newy);
         successors.push_front(Successor(this->getState(next), prob));
     } else {
         successors.push_front(Successor(state, prob));

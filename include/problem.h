@@ -4,6 +4,7 @@
 #include <list>
 #include "state.h"
 #include "action.h"
+#include "heuristic.h"
 #include "util/rational.h"
 
 /**
@@ -32,6 +33,11 @@ protected:
      * transition function.
      */
     StateSet states_;
+
+    /**
+     * A heuristic that estimates the cost to reach a goal from any state.
+     */
+    Heuristic* heuristic_ = nullptr;
 
 public:
     /**
@@ -131,6 +137,22 @@ public:
     Rational gamma()
     {
         return gamma_;
+    }
+
+    /**
+     * Returns the heuristic used for this problem.
+     */
+    Heuristic* heuristic()
+    {
+        return heuristic_;
+    }
+
+    /**
+     Sets the heuristic to use for this problem.
+     */
+    void setHeuristic(Heuristic* heuristic)
+    {
+        heuristic_ = heuristic;
     }
 };
 

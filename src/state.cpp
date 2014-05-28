@@ -1,4 +1,5 @@
 #include "../include/state.h"
+#include "../include/problem.h"
 #include "../include/mdplib.h"
 #include "../include/heuristic.h"
 #include <iostream>
@@ -11,10 +12,10 @@ std::ostream& operator<<(std::ostream& os, State* s)
 Rational State::cost() const
 {
     if (cost_ > mdplib::dead_end_cost) {
-        if (heuristic_ == 0)
+        if (problem_ == nullptr || problem_->heuristic() == nullptr)
             return Rational(0);
         else
-            return heuristic_->cost(this);
+            return problem_->heuristic()->cost(this);
     }
     return cost_;
 }

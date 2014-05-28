@@ -19,6 +19,8 @@ int main()
 
     Problem* problem = new GridWorldProblem(3, 3, 0, 0, &goals);
     GridWorldState* gws = (GridWorldState *) problem->initialState();
+    Heuristic* heuristic = new GWManhattanHeuristic((GridWorldProblem*) problem);
+    problem->setHeuristic(heuristic);
 
     problem->generateAll();
     problem->generateAll();
@@ -26,11 +28,10 @@ int main()
 
     VISolver solver(problem);
     solver.solve(100, Rational(1, 1000));
-    for (State* s : problem->states())
-    std::cout << s << " " << s->cost() << std::endl;
 
-    Heuristic* heuristic = new GWManhattanHeuristic((GridWorldProblem*) problem);
-    LRTDPSolver lrtdp(problem, heuristic);
+    for (State* s : problem->states())
+        std::cout << s << " " << s->cost() << " " << heuristic->cost(s) << std::endl;
+    LRTDPSolver lrtdp(problem);
     lrtdp.solve(100);
 
     delete heuristic;

@@ -13,7 +13,6 @@ class LRTDPSolver
 {
 private:
     Problem* problem_;
-    Heuristic* heuristic_;
 
     StateSet expanded;  /* States that have been expanded so far */
 
@@ -21,12 +20,11 @@ private:
 
 public:
     /**
-     * Creates a LRTDP solver for the given problem using given heuristic.
+     * Creates a LRTDP solver for the given problem.
      *
      * @param problem The problem to be solved.
-     * @param heuristic The heuristic to use.
      */
-    LRTDPSolver(Problem* problem, Heuristic* heuristic);
+    LRTDPSolver(Problem* problem);
 
     /**
      * Solves the associated problem using the Labeled RTDP algorithm.

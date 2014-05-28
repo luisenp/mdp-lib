@@ -44,15 +44,21 @@ public:
     /**
      * Default constructor.
      *
-     * Creates a grid world with a single goal state (0,0).
+     * Creates a grid world with a single goal state (0,0) an all-zero heuristic.
      */
     GridWorldProblem();
 
     /**
-     * Constructs a grid world with the specified width, height, goal states
-     * and initial state (x0,y0).
+     * Constructs a grid world with the specified width, height, goal states,
+     * initial state (x0,y0). Heuristic is initialized to all-zero heuristic.
      */
     GridWorldProblem(int width, int height, int x0, int y0, PairRationalMap* goals);
+
+    /**
+     * Constructs a grid world with the specified width, height, goal states,
+     * initial state (x0,y0) and heuristic.
+     */
+    GridWorldProblem(int width, int height, int x0, int y0, PairRationalMap* goals, Heuristic* h);
 
     ~GridWorldProblem();
 

@@ -12,20 +12,19 @@
 #define su_state first
 #define su_prob second
 
-class Heuristic;
+class Problem;
 
 /**
  * Abstract class for states.
  */
 class State
 {
-private:
+protected:
     bool visited_ = false;
     Rational cost_ = Rational(mdplib::dead_end_cost + 1);
-    Action* bestAction_ = 0;
-    Heuristic* heuristic_ = 0;
+    Action* bestAction_ = nullptr;
+    Problem* problem_ = nullptr;
 
-protected:
     virtual std::ostream& print(std::ostream& os) const =0;
 
 public:

@@ -7,6 +7,9 @@
 #include "../../include/state.h"
 #include "../../include/util/rational.h"
 
+#define bb_cost first
+#define bb_action second
+
 /**
  * Performs a Bellman backup of the state given as the second paramenter on the
  * problem given as first parameter.
@@ -18,6 +21,7 @@
  */
 inline std::pair<Rational, Action*> bellmanBackup(Problem* problem, State* s)
 {
+    /* Note that this backup uses fSSPUDE - see http://arxiv.org/pdf/1210.4875.pdf */
     Rational bestQ(mdplib::dead_end_cost);
     Action *bestAction = 0;
     for (Action* a : problem->actions()) {
