@@ -21,9 +21,10 @@ private:
 
 public:
     /**
-     * Creates a LRTDP solver for the specified problem.
+     * Creates a LRTDP solver for the given problem using given heuristic.
      *
      * @param problem The problem to be solved.
+     * @param heuristic The heuristic to use.
      */
     LRTDPSolver(Problem* problem, Heuristic* heuristic);
 

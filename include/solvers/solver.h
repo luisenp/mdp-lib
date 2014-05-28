@@ -3,8 +3,28 @@
 #include <random>
 
 #include "../../include/problem.h"
+#include "../../include/heuristic.h"
 #include "../../include/state.h"
 #include "../../include/util/rational.h"
+
+inline Rational bellmanBackupHeuristic(Problem* problem, Heuristic* h, State* s)
+{
+    Rational bestQ(mdplib::dead_end_cost);
+    for (Action* a : problem->actions()) {
+        if (!problem->applicable(s, a))
+            continue;
+        std::list<Successor> successors = problem->transition(s, a);
+        Rational qAction = problem->cost(s, a);
+        for (Successor su : successors) {
+            State* s = problem->getState(su.su_state);
+            qAction = qAction + su.su_prob * h->cost(problem, s);
+        }
+        if (qAction < bestQ) {
+            bestQ = qAction;
+        }
+    }
+    return bestQ;
+}
 
 inline Rational bellmanBackup(Problem* problem, State* s)
 {

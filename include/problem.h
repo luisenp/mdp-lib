@@ -94,7 +94,7 @@ public:
      *
      * This method relies on the equals() and hashValue() methods of the State class.
      *
-     * @param A state used as a model of an internal state to be returned.
+     * @param s A state used as a model of an internal state to be returned.
      * @return The state stored internally that equals the given state.
      */
     State *getState(State *s)
