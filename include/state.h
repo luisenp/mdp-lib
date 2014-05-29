@@ -20,9 +20,24 @@ class Problem;
 class State
 {
 protected:
-    bool visited_ = false;
+    /**
+     * A bit mask that is helpful to speed up solvers.
+     */
+    unsigned long bits_ = 0;
+
+    /**
+     * An estimate of the expected cost of reaching the goal from this state.
+     */
     Rational cost_ = Rational(mdplib::dead_end_cost + 1);
+
+    /**
+     * An estimate of the best action to reach a goal from this state.
+     */
     Action* bestAction_ = nullptr;
+
+    /**
+     * The problem to which this state belongs.
+     */
     Problem* problem_ = nullptr;
 
     virtual std::ostream& print(std::ostream& os) const =0;
@@ -49,29 +64,44 @@ public:
     virtual int hashValue() const =0;
 
     /**
-     * Returns true if the state has been visited by some search-based algorithm.
+     * Returns the bit mask associated to this state.
      *
-     * @return true if the state has been visited by some search-based algorithm.
+     * @return The bit mask associated to this state.
      */
-    bool visited() const
+    long bits() const
     {
-        return visited_;
+        return bits_;
     }
 
     /**
-     * Marks the state as visited by some search-based algorithm.
+     * Activates the bits that are activated in the given bit mask.
+     *
+     * @param bitMask A mask that specifies the bits to be activated.
      */
-    void visit()
+    void setBits(unsigned long bitMask)
     {
-        visited_ = true;
+        bits_ |= bitMask;
     }
 
     /**
-     * Marks the state as not-visited by some search-based algorithm.
+     * Clears the bits that are activated in the given bit mask.
+     *
+     * @param bitMask A mask that specifies the bits to be cleared.
      */
-    void unvisit()
+    void clearBits(unsigned long bitMask)
     {
-        visited_ = false;
+        bits_ &= ~bitMask;
+    }
+
+    /**
+     * Checks if the (single) bit specified by the given bit mask is activated.
+     * Doesn't work for bit masks with multiple bits activated.
+     *
+     * @param bitMask A mask that specifies the bits to be checked.
+     */
+    bool checkBits(unsigned long bitMask)
+    {
+        return bits_ & bitMask;
     }
 
     /**
@@ -118,7 +148,7 @@ public:
      */
     void reset()
     {
-        visited_ = false;
+        bits_ = 0;
         cost_ = Rational(mdplib::dead_end_cost + 1);
         bestAction_ = nullptr;
     }

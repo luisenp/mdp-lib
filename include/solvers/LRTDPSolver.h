@@ -14,9 +14,11 @@ class LRTDPSolver
 private:
     Problem* problem_;
 
-    StateSet expanded;  /* States that have been expanded so far */
+    StateSet expanded;              /* States that have been expanded so far */
 
-    void trial();   /* Performs a single LRTDP trial */
+    void trial();                   /* Performs a single LRTDP trial */
+
+    void checkSolved(State* s);     /* Checks if the state has been solved */
 
 public:
     /**
@@ -32,6 +34,7 @@ public:
      * @param maxTrials The maximum number of trials to perform.
      */
     void solve(int maxTrials);
+
 };
 
 #endif // MDPLIB_LRTDPSOLVER_H

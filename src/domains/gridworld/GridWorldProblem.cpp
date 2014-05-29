@@ -149,21 +149,21 @@ void GridWorldProblem::addSuccessor(GridWorldState* state, std::list<Successor>&
 }
 
 /*
- * Warning: This method changes the value of the 'visited' variable for all states in
+ * Warning: This method changes the value of the 'bits' variable for all states in
  * the state set . Do not call this method if other code is using these values.
  */
 void GridWorldProblem::generateAll()
 {
     for (State* state: states_)
-        state->unvisit();
+        state->clearBits(mdplib::VISITED);
     std::list<State *> queue;
     queue.push_front(s0);
     while (!queue.empty()) {
         State* cur = queue.front();
         queue.pop_front();
-        if (cur->visited())
+        if (cur->checkBits(mdplib::VISITED))
             continue;
-        cur->visit();
+        cur->setBits(mdplib::VISITED);
         for (Action* a : actions_) {
             std::list<Successor> successors = transition(cur, a);
             for (Successor sccr : successors) {

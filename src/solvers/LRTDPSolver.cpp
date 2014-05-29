@@ -8,13 +8,31 @@ LRTDPSolver::LRTDPSolver(Problem* problem)
 
 void LRTDPSolver::trial()
 {
-    State* cur = problem_->initialState();
-    while (!problem_->goal(cur)) {
-        std::pair<Rational, Action*> best = bellmanBackup(problem_, cur);
-        cur->setCost(best.bb_cost);
-        cur->setBestAction(best.bb_action);
-        cur = randomSuccessor(problem_, cur, best.bb_action);
+    State* tmp = problem_->initialState();
+    while (!problem_->goal(tmp)) {
+        std::pair<Rational, Action*> best = bellmanBackup(problem_, tmp);
+        tmp->setCost(best.bb_cost);
+        tmp->setBestAction(best.bb_action);
+        tmp = randomSuccessor(problem_, tmp, best.bb_action);
+    }
+}
 
+void LRTDPSolver::checkSolved(State* s)
+{
+    bool rv = true;
+    std::list<State*> open;
+    StateSet visited;
+
+    State* tmp = s;
+    if (!tmp->checkBits(mdplib::SOLVED))
+        open.push_front(s);
+
+    while (!open.empty()) {
+        tmp = open.front();
+        open.pop_front();
+
+        if (!visited.insert(tmp).second) // state was already visited
+            continue;
     }
 }
 

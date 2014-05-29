@@ -11,6 +11,26 @@
 #define bb_action second
 
 /**
+ * Computes the Q-value of a given state-action pair on a given problem.
+ * This method assumes that the action is applicable on the state.
+ *
+ * @param problem The problem that contains the given state.
+ * @param s The state for which the Q-value will be computed.
+ * @param a The action for which the Q-value will be computed
+ * @return The Q-value of the state-action pair.
+ */
+inline Rational qvalue(Problem* problem, State*s, Action* a)
+{
+    std::list<Successor> successors = problem->transition(s, a);
+    Rational qAction = problem->cost(s, a);
+    for (Successor su : successors) {
+        State* s = problem->getState(su.su_state);
+        qAction = qAction + su.su_prob * s->cost();
+    }
+    return qAction;
+}
+
+/**
  * Performs a Bellman backup of the state given as the second paramenter on the
  * problem given as first parameter.
  *
@@ -27,12 +47,7 @@ inline std::pair<Rational, Action*> bellmanBackup(Problem* problem, State* s)
     for (Action* a : problem->actions()) {
         if (!problem->applicable(s, a))
             continue;
-        std::list<Successor> successors = problem->transition(s, a);
-        Rational qAction = problem->cost(s, a);
-        for (Successor su : successors) {
-            State* s = problem->getState(su.su_state);
-            qAction = qAction + su.su_prob * s->cost();
-        }
+        Rational qAction = qvalue(problem, s, a);
         if (qAction < bestQ) {
             bestQ = qAction;
             bestAction = a;
