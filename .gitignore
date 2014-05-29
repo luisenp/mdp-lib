@@ -23,4 +23,5 @@
 # Other
 lib/*
 testgw
+testctp
 *.txt
