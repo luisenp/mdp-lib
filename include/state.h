@@ -143,7 +143,7 @@ public:
     }
 
     /**
-     * Resets all member values used by solvers to their default values.
+     * Resets all instance variables used by solvers to their default values.
      * The following variables are reset: visited, bestAction and cost.
      */
     void reset()

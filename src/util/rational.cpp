@@ -2,6 +2,11 @@
 
 #ifdef EXACT_COMP // Implementations for exact rational computation.
 
+/*
+ * These implementations are still not right.
+ * Need to add a gcd computation. Could be quite slow.
+ */
+
 Rational operator+(Rational r1, Rational r2)
 {
     return Rational(r1.num()*r2.den() + r1.den()*r2.num(), r1.den()*r2.den());

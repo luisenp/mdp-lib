@@ -14,11 +14,11 @@ class LRTDPSolver
 private:
     Problem* problem_;
 
-    StateSet expanded;              /* States that have been expanded so far */
+    /* Performs a single LRTDP trial */
+    void trial(Rational epsilon);
 
-    void trial();                   /* Performs a single LRTDP trial */
-
-    void checkSolved(State* s);     /* Checks if the state has been solved */
+    /* Checks if the state has been solved */
+    bool checkSolved(State* s, Rational epsilon);
 
 public:
     /**
@@ -32,8 +32,9 @@ public:
      * Solves the associated problem using the Labeled RTDP algorithm.
      *
      * @param maxTrials The maximum number of trials to perform.
+     * @param epsilon The error tolerance.
      */
-    void solve(int maxTrials);
+    void solve(int maxTrials, Rational epsilon);
 
 };
 

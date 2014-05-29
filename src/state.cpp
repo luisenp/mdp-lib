@@ -1,5 +1,6 @@
 #include "../include/state.h"
 #include "../include/problem.h"
+#include "../include/solvers/solver.h"
 #include "../include/mdplib.h"
 #include "../include/heuristic.h"
 #include <iostream>

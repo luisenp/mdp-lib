@@ -15,16 +15,13 @@ VISolver::VISolver(Problem* problem)
 void VISolver::solve(int maxIter, Rational tol)
 {
     for (int i = 0; i < maxIter; i++) {
-        Rational residual(0);
+        Rational maxResidual(0);
         for (State* s : problem_->states()) {
-            std::pair<Rational, Action*> best = bellmanBackup(problem_, s);
-            Rational diff(fabs(s->cost().value() - best.first.value()));
-            if (diff > residual)
-                residual = diff;
-            s->setCost(best.bb_cost);
-            s->setBestAction(best.bb_action);
+            Rational residual = bellmanUpdate(problem_, s);
+            if (residual > maxResidual)
+                maxResidual = residual;
         }
-        if (residual < tol)
+        if (maxResidual < tol)
             return;
     }
 }

@@ -58,14 +58,6 @@ public:
     friend std::ostream& operator<<(std::ostream& os, Rational r);
 };
 
-Rational operator+(Rational r1, Rational r2);
-
-Rational operator-(Rational r1, Rational r2);
-
-Rational operator*(Rational r1, Rational r2);
-
-Rational operator/(Rational r1, Rational r2);
-
 #else // Definition using floating point arithmetic
 
 #include <cmath>
@@ -128,8 +120,15 @@ public:
         return (rhs.value_ - value_) > (m * mdplib::epsilon);
     }
 
+    Rational abs() const
+    {
+        return Rational(fabs(value_));
+    }
+
     friend std::ostream& operator<<(std::ostream& os, Rational r);
 };
+
+#endif // EXACT_COMP
 
 Rational operator+(Rational r1, Rational r2);
 
@@ -138,7 +137,5 @@ Rational operator-(Rational r1, Rational r2);
 Rational operator*(Rational r1, Rational r2);
 
 Rational operator/(Rational r1, Rational r2);
-
-#endif // EXACT_COMP
 
 #endif // MDPLIB_RATIONAL_H
