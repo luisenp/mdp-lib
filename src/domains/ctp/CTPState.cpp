@@ -30,7 +30,7 @@ std::ostream& CTPState::print(std::ostream& os) const
 
 bool CTPState::equals(State* other) const
 {
-    return false;
+    return true;
 }
 
 int CTPState::hashValue() const

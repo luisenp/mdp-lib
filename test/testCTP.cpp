@@ -31,7 +31,9 @@ int main()
     for (double x : dijkstra(g1, 0))
         cout << x << endl;
 
-    CTPProblem(g1, 0, 7);
+    Problem* problem = new CTPProblem(g1, 0, 7);
+
+    delete ((CTPProblem*) problem);
 
     return 0;
 }

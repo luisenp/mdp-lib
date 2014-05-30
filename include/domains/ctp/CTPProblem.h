@@ -25,7 +25,6 @@ private:
 
 public:
     CTPProblem(Graph& roads, int start, int goal);
-     virtual ~CTPProblem() {}
 
     Graph& roads()
     {

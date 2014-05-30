@@ -40,7 +40,12 @@ public:
      */
     CTPState(CTPState& rhs);
 
-    virtual ~CTPState() {}
+    virtual ~CTPState()
+    {
+        for (std::vector<unsigned char> v : status_)
+            v.clear();
+        status_.clear();
+    }
 
     int location()
     {

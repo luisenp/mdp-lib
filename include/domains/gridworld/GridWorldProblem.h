@@ -60,11 +60,24 @@ public:
      */
     GridWorldProblem(int width, int height, int x0, int y0, PairRationalMap* goals, Heuristic* h);
 
-    ~GridWorldProblem();
-
+    /**
+     * Overrides method from Problem.
+     */
     virtual bool goal(State* s) const;
+
+    /**
+     * Overrides method from Problem.
+     */
     virtual std::list<Successor> transition(State* s, Action* a);
+
+    /**
+     * Overrides method from Problem.
+     */
     virtual Rational cost(State* s, Action* a) const;
+
+    /**
+     * Overrides method from Problem.
+     */
     virtual bool applicable(State* s, Action* a) const;
 };
 

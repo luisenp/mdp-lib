@@ -56,7 +56,7 @@ public:
     /**
      * Common destructor. Destroys all stored states and all actions.
      */
-    ~Problem()
+    virtual ~Problem()
     {
         for (State* state : states_)
             delete (state);
