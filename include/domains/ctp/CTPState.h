@@ -2,6 +2,8 @@
 #define MDPLIB_CTPSTATE_H
 
 #include <vector>
+#include <cassert>
+#include <unordered_set>
 
 #include "../../state.h"
 
@@ -15,6 +17,7 @@ class CTPState : public State
 private:
     int location_;
     std::vector< std::vector <unsigned char> > status_;
+    std::unordered_set<int> frontier_;
 
     virtual std::ostream& print(std::ostream& os) const;
 
@@ -47,16 +50,41 @@ public:
         status_.clear();
     }
 
+    /**
+     * Returns the location of the agent in this state.
+     */
     int location()
     {
         return location_;
     }
 
+    /**
+     * Returns a set containing all reachable vertices that haven't been visited so
+     * far in this state (i.e., all of their adjacent roads have unknown status).
+     */
+    std::unordered_set<int>& frontier()
+    {
+        return frontier_;
+    }
+
+    /**
+     * Returns a 2D vector containing the status of the roads for this state.
+     * Three status values are allowed: open, blocked and unknown. These are
+     * defined in namespace ctp.
+     */
     std::vector< std::vector <unsigned char> >& status()
     {
         return status_;
     }
 
+    /**
+     * Sets the status of the road between vertices i and j to the given value.
+     */
+    void setStatus(int i, int j, unsigned char st);
+
+    /**
+     * Overrides method from State.
+     */
     virtual State& operator=(const State& rhs)
     {
         if (this == &rhs)
@@ -68,13 +96,23 @@ public:
         return *this;
     }
 
+    /**
+     * Overrides method from State.
+     */
     virtual bool operator==(const State& rhs) const
     {
         CTPState* state = (CTPState*)  & rhs;
         return location_ == state->location_ && status_ == state->status_;
     }
 
+    /**
+     * Overrides method from State.
+     */
     virtual bool equals(State* other) const;
+
+    /**
+     * Overrides method from State.
+     */
     virtual int hashValue() const;
 };
 

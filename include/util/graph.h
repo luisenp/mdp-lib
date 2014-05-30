@@ -59,7 +59,7 @@ public:
         adjList[i][j] = weight;
     }
 
-    std::unordered_map<int, double> neighbors(int i)
+    std::unordered_map<int, double>& neighbors(int i)
     {
         assert(i < adjList.size());
         return adjList[i];

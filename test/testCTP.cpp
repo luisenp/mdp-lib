@@ -22,16 +22,34 @@ int main()
                             {0.0, 0.0, 0.0, 0.0, 5.0, 7.0, 3.0, 0.0}};   //T
 
     Graph g1(8);
-    for (int i = 0; i < 8; i++)
+    vector< vector<double> > probs;
+    for (int i = 0; i < 8; i++) {
+        probs.push_back(vector<double> (8));
         for (int j = 0; j < 8; j++) {
             if (graph1[i][j] != 0.0)
                 g1.connect(i, j, graph1[i][j]);
+            probs[i][j] = 0.5;
         }
+    }
 
     for (double x : dijkstra(g1, 0))
         cout << x << endl;
 
-    Problem* problem = new CTPProblem(g1, 0, 7);
+    Problem* problem = new CTPProblem(g1, probs, 0, 7);
+
+    vector< vector <unsigned char> > tmp(2, vector <unsigned char> (2));
+    tmp[0][1] = 1; tmp[0][0] = 1;
+    vector< vector <unsigned char> > tmp2 = tmp;
+    tmp2[0][1] = 2;
+
+    cout << (int) tmp[0][0] << " " << (int) tmp2[0][0] << endl;
+    cout << (int) tmp[0][1] << " " << (int) tmp2[0][1] << endl;
+
+    cout << "COMP " << (tmp == tmp2) << endl;
+    tmp[0][1] = 2;
+    cout << "COMP " << (tmp == tmp2) << endl;
+
+    cout << problem->initialState() << endl;
 
     delete ((CTPProblem*) problem);
 

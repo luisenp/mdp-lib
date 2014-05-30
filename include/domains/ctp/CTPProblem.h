@@ -20,12 +20,16 @@ class CTPProblem : public Problem
 private:
     int goal_;
     Graph& roads_;
-    CTPState* initial_;
+    std::vector< std::vector <double> > probs_;
     CTPState* absorbing_;
 
 public:
-    CTPProblem(Graph& roads, int start, int goal);
+    CTPProblem(Graph& roads, std::vector< std::vector <double> >& probs, int start, int goal);
 
+    /**
+     * Returns a graph structure containing all roads in the problem and their
+     * associated costs.
+     */
     Graph& roads()
     {
         return roads_;
