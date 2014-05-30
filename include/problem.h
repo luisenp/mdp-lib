@@ -115,8 +115,30 @@ public:
 
     /**
     * Generates all states that can be reached from s0 and stores them.
+    *
+    * Warning: This method changes the value of the 'bits' variable for all states in
+    * the state set. Do not call this method while other code is using these values.
     */
-    virtual void generateAll() { }
+    void generateAll()
+    {
+        for (State* state: states_)
+            state->clearBits(mdplib::VISITED);
+        std::list<State *> queue;
+        queue.push_front(s0);
+        while (!queue.empty()) {
+            State* cur = queue.front();
+            queue.pop_front();
+            if (cur->checkBits(mdplib::VISITED))
+                continue;
+            cur->setBits(mdplib::VISITED);
+            for (Action* a : actions_) {
+                std::list<Successor> successors = transition(cur, a);
+                for (Successor sccr : successors) {
+                    queue.push_front(sccr.first);
+                }
+            }
+        }
+    }
 
     /**
      * If a state equal to the given state has already been stored, it returns

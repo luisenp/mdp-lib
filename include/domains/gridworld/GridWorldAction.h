@@ -14,6 +14,9 @@ public:
 
     GridWorldAction(const unsigned char dir) : dir_(dir) {}
 
+    /**
+     * Overriding method from Action.
+     */
     virtual int hash_value() const
     {
         return (int) dir_;

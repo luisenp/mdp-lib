@@ -7,6 +7,9 @@
 
 class CTPProblem;
 
+/**
+ * A class implementing states in the Canadian Traveler Problem.
+ */
 class CTPState : public State
 {
 private:

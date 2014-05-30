@@ -66,7 +66,6 @@ public:
     virtual std::list<Successor> transition(State* s, Action* a);
     virtual Rational cost(State* s, Action* a) const;
     virtual bool applicable(State* s, Action* a) const;
-    virtual void generateAll();
 };
 
 #endif // MPDLIB_GRIDWORLDPROBLEM_H

@@ -4,6 +4,7 @@
 CTPProblem::CTPProblem(Graph& roads, int start, int goal) : roads_(roads), goal_(goal)
 {
     initial_ = new CTPState(this, start);
+    absorbing_ = new CTPState(this, -1);
     this->addState(initial_);
 }
 
@@ -20,7 +21,7 @@ std::list<Successor> CTPProblem::transition(State* s, Action* a)
 
 Rational CTPProblem::cost(State* s, Action* a) const
 {
-        return Rational(0);
+    return Rational(0);
 }
 
 bool CTPProblem::applicable(State* s, Action* a) const
