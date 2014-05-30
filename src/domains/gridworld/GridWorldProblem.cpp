@@ -48,14 +48,6 @@ GridWorldProblem::GridWorldProblem(int width, int height,
     addAllActions();
 }
 
-GridWorldProblem::~GridWorldProblem()
-{
-    for (State* state : states_)
-        delete (state);
-    for (Action* action : actions_)
-        delete (action);
-}
-
 bool GridWorldProblem::goal(State* s) const
 {
     GridWorldState* gws = (GridWorldState *) s;

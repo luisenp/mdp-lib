@@ -52,6 +52,18 @@ protected:
     Heuristic* heuristic_ = nullptr;
 
 public:
+
+    /**
+     * Common destructor. Destroys all stored states and all actions.
+     */
+    ~Problem()
+    {
+        for (State* state : states_)
+            delete (state);
+        for (Action* action : actions_)
+            delete (action);
+    }
+
     /**
      * Goal check.
      *

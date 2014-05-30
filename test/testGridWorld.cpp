@@ -40,5 +40,5 @@ int main()
         std::cout << s << " " << s->cost() << std::endl;
 
     delete heuristic;
-    delete ((GridWorldProblem *) problem);
+    delete problem;
 }
