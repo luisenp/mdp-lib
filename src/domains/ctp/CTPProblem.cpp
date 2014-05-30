@@ -1,8 +1,15 @@
 #include "../../../include/domains/ctp/CTPProblem.h"
 
+
+CTPProblem::CTPProblem(Graph& roads, int start, int goal) : roads_(roads), goal_(goal)
+{
+    initial_ = new CTPState(this, start);
+}
+
 bool CTPProblem::goal(State* s) const
 {
-    return false;
+    CTPState* state = (CTPState*) s;
+    return goal_ == state->location() ;
 }
 
 std::list<Successor> CTPProblem::transition(State* s, Action* a)

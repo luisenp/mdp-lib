@@ -6,6 +6,7 @@
 #include "../include/util/general.h"
 #include "../include/util/graph.h"
 #include "../include/util/rational.h"
+#include "../include/domains/ctp/CTPProblem.h"
 
 using namespace std;
 
@@ -29,6 +30,8 @@ int main()
 
     for (double x : dijkstra(g1, 0))
         cout << x << endl;
+
+    CTPProblem(g1, 0, 7);
 
     return 0;
 }

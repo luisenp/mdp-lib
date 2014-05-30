@@ -2,14 +2,31 @@
 #define MDPLIB_CTPPROBLEM_H
 
 #include "../../problem.h"
+#include "../../util/graph.h"
+#include "../../domains/ctp/CTPState.h"
 
+namespace ctp
+{
+    const int blocked = 0;
+    const int open = 1;
+    const int unknown = 2;
+}
 
 class CTPProblem : public Problem
 {
 private:
+    int goal_;
+    Graph& roads_;
+    CTPState* initial_;
+
 public:
-    CTPProblem();
-    virtual ~CTPProblem();
+    CTPProblem(Graph& roads, int start, int goal);
+     virtual ~CTPProblem() {}
+
+    Graph& roads()
+    {
+        return roads_;
+    }
 
     virtual bool goal(State* s) const;
     virtual std::list<Successor> transition(State* s, Action* a);

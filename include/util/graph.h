@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <unordered_set>
+#include <unordered_map>
 #include <queue>
 #include <limits>
 #include <cassert>
@@ -18,12 +19,30 @@ class Graph
 {
 private:
     std::vector< std::unordered_map<int, double> > adjList;
+
 public:
+    Graph() {}
+
     Graph(int numVertices)
     {
         for (int i = 0; i < numVertices; i++) {
             adjList.push_back(std::unordered_map<int, double> () );
         }
+    }
+
+    Graph(Graph& g)
+    {
+        adjList = g.adjList;
+    }
+
+    Graph& operator=(const Graph& rhs)
+    {
+        if (this == &rhs)
+            return *this;
+
+        adjList =  rhs.adjList;
+        return *this;
+
     }
 
     double weight(int i, int j)
@@ -65,25 +84,6 @@ public:
  * Returns the single source shortest distances from the given vertex to all
  * vertices on the given graph.
  */
-std::vector<double> dijkstra(Graph g, int v0)
-{
-    std::vector<double> distances(g.numVertices(), gr_inf);
-    std::priority_queue<vertexCost, std::vector<vertexCost>, cmpVertexDijkstra> Q;
-    Q.push(vertexCost(0, 0.0));
-    std::unordered_set<int> closed;
-    while (!Q.empty()) {
-        vertexCost uc = Q.top();
-        Q.pop();
-        distances[uc.vc_vertex] = std::min(uc.vc_cost, distances[uc.vc_vertex]);
-        closed.insert(uc.vc_vertex);
-        std::unordered_map<int,double> neighbors = g.neighbors(uc.vc_vertex);
-        for (std::pair<int,double> vc : neighbors) {
-            if (closed.find(vc.first) != closed.end())
-                continue;
-            Q.push(vertexCost(vc.first, uc.vc_cost + vc.second));
-        }
-    }
-    return distances;
-}
+std::vector<double> dijkstra(Graph g, int v0);
 
 #endif // MDPLIB_GRAPH_H

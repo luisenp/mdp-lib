@@ -43,7 +43,7 @@ protected:
     virtual std::ostream& print(std::ostream& os) const =0;
 
 public:
-    virtual State & operator=(const State& rhs) =0;
+    virtual State& operator=(const State& rhs) =0;
 
     virtual bool operator==(const State& rhs) const =0;
 

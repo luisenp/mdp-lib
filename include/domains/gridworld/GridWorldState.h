@@ -35,7 +35,7 @@ public:
         if (this == &rhs)
             return *this;
 
-        GridWorldState *gws = (GridWorldState *)  & rhs;
+        GridWorldState* gws = (GridWorldState *)  & rhs;
         x_ =  gws->x_;
         y_=  gws->y_;
         return *this;
@@ -43,7 +43,7 @@ public:
 
     virtual bool operator==(const State& rhs) const
     {
-        GridWorldState *gws = (GridWorldState *)  &rhs;
+        GridWorldState* gws = (GridWorldState *)  &rhs;
         return x_ == gws->x_ && y_ == gws->y_;
     }
 
