@@ -1,6 +1,7 @@
 #ifndef MDPLIB_SOLVER_H
 
 #include <random>
+#include <cassert>
 
 #include "../../include/problem.h"
 #include "../../include/heuristic.h"
@@ -93,6 +94,7 @@ inline State* randomSuccessor(Problem* problem, State* s, Action* a)
 
     Rational acc(0);
     std::list<Successor> successors = problem->transition(s, a);
+    assert(!successors.empty());
     for (Successor sccr : successors) {
         acc = acc + sccr.su_prob;
         if (acc.value() >= pick)

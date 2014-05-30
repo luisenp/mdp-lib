@@ -45,13 +45,17 @@ std::ostream& CTPState::print(std::ostream& os) const
                 os << "(" << i << "," << j << ") ";
         }
     }
+
+    os << "FRONTIER: ";
+    for (int x : frontier_)
+        os << x << " ";
     return os;
 }
 
 bool CTPState::equals(State* other) const
 {
     CTPState* ctps = (CTPState*) other;
-    return location_ == ctps->location_ && status_ == ctps->status_;
+    return (location_ == ctps->location_) && (status_ == ctps->status_);
 }
 
 int CTPState::hashValue() const

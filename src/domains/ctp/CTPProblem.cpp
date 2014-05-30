@@ -47,6 +47,11 @@ std::list<Successor> CTPProblem::transition(State* s, Action* a)
 
     assert(ctps->frontier().find(to) != ctps->frontier().end());
 
+    if (dijkstra(roads_, from)[goal_] == gr_infinity) { // Bad weather. Make this a goal state.
+        successors.push_front(Successor(absorbing_, Rational(1)));
+        return successors;
+    }
+
     std::vector<int> neighbors;
     for (std::pair<int, double> entry : roads_.neighbors(to))
         neighbors.push_back(entry.first);
@@ -54,23 +59,36 @@ std::list<Successor> CTPProblem::transition(State* s, Action* a)
 
     for (int i = 0; i < (1 << nadj); i++) {
         CTPState* next = new CTPState(*ctps);
+        next->setLocation(to);
         for (int j = 0; j < nadj; j++) {
             unsigned char st = (i & 1<<j) ? ctp::open : ctp::blocked;
+            double p = (st == ctp::blocked) ?
+                            probs_[to][neighbors[j]] : 1.0 - probs_[to][neighbors[j]];
             next->setStatus(to, neighbors[j], st);
             next->frontier().insert(neighbors[j]);
             next->frontier().erase(to);
+            successors.push_back(Successor(next, Rational(p)));
         }
+        std::cerr << s << " " << (State *) next << std::endl;
+        this->addState(next);
+        std::cerr << (s == next) << std::endl;
     }
+    std::cerr << "********************************************" << std::endl;
 
     return successors;
 }
 
 Rational CTPProblem::cost(State* s, Action* a) const
 {
+    std::cerr << s << " " << a << std::endl;
     assert(applicable(s, a));
+    if (s == absorbing_ || goal(s))
+        return Rational(0);
     CTPState* ctps = (CTPState *) s;
     CTPAction* ctpa = (CTPAction *) a;
     std::vector<double> distances = dijkstra(roads_, ctps->location());
+    if (distances[goal_] == gr_infinity)
+        return Rational(0);
     return Rational(distances[ctpa->to()]);
 }
 

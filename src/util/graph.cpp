@@ -2,7 +2,7 @@
 
 std::vector<double> dijkstra(Graph g, int v0)
 {
-    std::vector<double> distances(g.numVertices(), gr_inf);
+    std::vector<double> distances(g.numVertices(), gr_infinity);
     std::priority_queue<vertexCost, std::vector<vertexCost>, cmpVertexDijkstra> Q;
     Q.push(vertexCost(0, 0.0));
     std::unordered_set<int> closed;

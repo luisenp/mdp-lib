@@ -37,19 +37,27 @@ int main()
 
     Problem* problem = new CTPProblem(g1, probs, 0, 7);
 
-    vector< vector <unsigned char> > tmp(2, vector <unsigned char> (2));
-    tmp[0][1] = 1; tmp[0][0] = 1;
-    vector< vector <unsigned char> > tmp2 = tmp;
-    tmp2[0][1] = 2;
 
-    cout << (int) tmp[0][0] << " " << (int) tmp2[0][0] << endl;
-    cout << (int) tmp[0][1] << " " << (int) tmp2[0][1] << endl;
+    LRTDPSolver lrtdp(problem);
+    lrtdp.solve(10, Rational(1,1000));
 
-    cout << "COMP " << (tmp == tmp2) << endl;
-    tmp[0][1] = 2;
-    cout << "COMP " << (tmp == tmp2) << endl;
-
-    cout << problem->initialState() << endl;
+    std::cout << "LRTDP Estimates" << std::endl;
+    for (State* s : problem->states())
+        std::cout << s << " " << s->cost() << std::endl;
+//
+//    vector< vector <unsigned char> > tmp(2, vector <unsigned char> (2));
+//    tmp[0][1] = 1; tmp[0][0] = 1;
+//    vector< vector <unsigned char> > tmp2 = tmp;
+//    tmp2[0][1] = 2;
+//
+//    cout << (int) tmp[0][0] << " " << (int) tmp2[0][0] << endl;
+//    cout << (int) tmp[0][1] << " " << (int) tmp2[0][1] << endl;
+//
+//    cout << "COMP " << (tmp == tmp2) << endl;
+//    tmp[0][1] = 2;
+//    cout << "COMP " << (tmp == tmp2) << endl;
+//
+//    cout << problem->initialState() << endl;
 
     delete ((CTPProblem*) problem);
 

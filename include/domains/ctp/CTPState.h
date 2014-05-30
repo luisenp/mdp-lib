@@ -59,6 +59,14 @@ public:
     }
 
     /**
+     * Sets the location of the state to the given value.
+     */
+    void setLocation(int location)
+    {
+        location_ = location;
+    }
+
+    /**
      * Returns a set containing all reachable vertices that haven't been visited so
      * far in this state (i.e., all of their adjacent roads have unknown status).
      */

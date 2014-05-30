@@ -11,7 +11,7 @@
 #define vc_vertex first
 #define vc_cost second
 
-const double gr_inf = std::numeric_limits<double>::max();
+const double gr_infinity = std::numeric_limits<double>::max();
 
 typedef std::pair<int, double> vertexCost;
 
@@ -49,7 +49,7 @@ public:
     {
         assert(i < adjList.size() && j < adjList.size());
         if (adjList[i].find(j) == adjList[i].end())
-            return gr_inf;
+            return gr_infinity;
         else return adjList[i][j];
     }
 

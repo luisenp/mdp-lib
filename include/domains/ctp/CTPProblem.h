@@ -24,6 +24,10 @@ private:
     CTPState* absorbing_;
 
 public:
+    /**
+     * Constructs a Canadian Traveler problem instances with the given roads,
+     * bad weather probabilities, start state and goal.
+     */
     CTPProblem(Graph& roads, std::vector< std::vector <double> >& probs, int start, int goal);
 
     /**
