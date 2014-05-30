@@ -7,7 +7,7 @@
 
 class CTPProblem;
 
-class CTPState : State
+class CTPState : public State
 {
 private:
     int location_;

@@ -24,7 +24,7 @@ inline Rational qvalue(Problem* problem, State*s, Action* a)
     std::list<Successor> successors = problem->transition(s, a);
     Rational qAction = problem->cost(s, a);
     for (Successor su : successors) {
-        State* s = problem->getState(su.su_state);
+        State* s = problem->addState(su.su_state);
         qAction = qAction + su.su_prob * s->cost();
     }
     return qAction;

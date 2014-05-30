@@ -4,6 +4,7 @@
 CTPProblem::CTPProblem(Graph& roads, int start, int goal) : roads_(roads), goal_(goal)
 {
     initial_ = new CTPState(this, start);
+    this->addState(initial_);
 }
 
 bool CTPProblem::goal(State* s) const

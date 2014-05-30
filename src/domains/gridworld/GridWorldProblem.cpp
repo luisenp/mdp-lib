@@ -29,7 +29,7 @@ GridWorldProblem::GridWorldProblem(int width, int height, int x0, int y0, PairRa
 {
     State* init = new GridWorldState(this, x0_, y0_);
     absorbing = new GridWorldState(this, -1, -1);
-    s0 = this->getState(init);
+    s0 = this->addState(init);
     gamma_ = Rational(1);
     addAllActions();
 }
@@ -42,7 +42,7 @@ GridWorldProblem::GridWorldProblem(int width, int height,
 {
     State* init = new GridWorldState(this, x0_, y0_);
     absorbing = new GridWorldState(this, -1, -1);
-    s0 = this->getState(init);
+    s0 = this->addState(init);
     heuristic_ = h;
     gamma_ = Rational(1);
     addAllActions();
@@ -142,7 +142,7 @@ void GridWorldProblem::addSuccessor(GridWorldState* state, std::list<Successor>&
 {
     if (val > limit) {
         GridWorldState *next = new GridWorldState(this, newx, newy);
-        successors.push_front(Successor(this->getState(next), prob));
+        successors.push_front(Successor(this->addState(next), prob));
     } else {
         successors.push_front(Successor(state, prob));
     }
