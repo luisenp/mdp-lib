@@ -56,13 +56,12 @@ std::list<Successor> CTPProblem::transition(State* s, Action* a)
     for (std::pair<int, double> entry : roads_.neighbors(to))
         neighbors.push_back(entry.first);
     int nadj = neighbors.size();
-
     for (int i = 0; i < (1 << nadj); i++) {
         CTPState* next = new CTPState(*ctps);
         next->setLocation(to);
         double p = 1.0;
         for (int j = 0; j < nadj; j++) {
-            if (ctps->status()[to][nadj] != ctp::UNKNOWN)  {
+            if (ctps->status()[to][neighbors[j]] != ctp::UNKNOWN)  {
                 /* this state was already visited, no need to update anything */
                 continue;
             }
@@ -86,8 +85,7 @@ Rational CTPProblem::cost(State* s, Action* a) const
     }
     CTPState* ctps = (CTPState *) s;
     CTPAction* ctpa = (CTPAction *) a;
-    std::vector<double> distances = dijkstra(roads_, ctps->location());
-    return Rational(distances[ctpa->to()]);
+    return Rational(ctps->distanceOpen(ctpa->to()));
 }
 
 bool CTPProblem::applicable(State* s, Action* a) const

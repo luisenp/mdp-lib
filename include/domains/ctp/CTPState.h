@@ -114,6 +114,12 @@ public:
     bool badWeather();
 
     /**
+     * Returns the cost of reaching location v from the agent's location in this state
+     * using only open roads. It uses Dijkstra's algorithm for shortest path.
+     */
+    double distanceOpen(int v);
+
+    /**
      * Overrides method from State.
      */
     virtual State& operator=(const State& rhs)

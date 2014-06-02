@@ -1,6 +1,8 @@
 #include "../../../include/domains/ctp/CTPState.h"
 #include "../../../include/domains/ctp/CTPProblem.h"
 
+#include "../../../include/util/general.h"
+
 CTPState::CTPState(CTPProblem* problem)
 {
     problem_ = problem;
@@ -151,4 +153,27 @@ bool CTPState::badWeather()
     bool reachable = potentiallyReachable(((CTPProblem *) problem_)->goalLocation());
     badWeather_ = reachable ? false : true;
     return !reachable;
+}
+
+double CTPState::distanceOpen(int v)
+{
+    Graph& g = ((CTPProblem *) problem_)->roads();
+    std::vector<double> distances(g.numVertices(), gr_infinity);
+    std::priority_queue<vertexCost, std::vector<vertexCost>, cmpVertexDijkstra> Q;
+    Q.push(vertexCost(location_, 0.0));
+    std::unordered_set<int> closed;
+    while (!Q.empty()) {
+        vertexCost uc = Q.top();
+        Q.pop();
+        distances[uc.vc_vertex] = std::min(uc.vc_cost, distances[uc.vc_vertex]);
+        closed.insert(uc.vc_vertex);
+        std::unordered_map<int,double> neighbors = g.neighbors(uc.vc_vertex);
+        for (std::pair<int,double> vc : neighbors) {
+            if (closed.find(vc.first) != closed.end()
+                || status_[uc.vc_vertex][vc.first] != ctp::OPEN)
+                continue;
+            Q.push(vertexCost(vc.first, uc.vc_cost + vc.second));
+        }
+    }
+    return distances[v];
 }

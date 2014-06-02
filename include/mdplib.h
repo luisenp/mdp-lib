@@ -3,7 +3,7 @@
 
 namespace mdplib
 {
-    const int dead_end_cost = 10000;
+    const int dead_end_cost = 1000;
     const double epsilon = 1.0e-8;
     const unsigned long VISITED = 1;
     const unsigned long SOLVED = 2;
