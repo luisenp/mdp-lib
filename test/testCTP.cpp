@@ -50,6 +50,29 @@ int main(int argc, char* args[])
     cout << "LRTDP Estimates" << endl;
     cout << problem->initialState()->cost() << endl;
 
+    int nsim = 100;
+    int ngood = 0;
+    Rational eCost(0.0);
+    for (int i = 0; i < nsim; i++) {
+        State* tmp = problem->initialState();
+        Rational costSim(0.0);
+        while (true) {
+            if (problem->goal(tmp)) {
+                CTPState* ctps = (CTPState*) tmp;
+                if (!ctps->badWeather()) {
+                    eCost  = eCost + costSim;
+                    ngood++;
+                }
+                break;
+            }
+            Action* a = tmp->bestAction();
+            costSim = costSim + problem->cost(tmp, a);
+            tmp = randomSuccessor(problem, tmp, a);
+        }
+    }
+
+    cout << eCost.value() / ngood << " " << ngood << endl;
+
     delete ((CTPProblem*) problem);
     delete g;
     return 0;
