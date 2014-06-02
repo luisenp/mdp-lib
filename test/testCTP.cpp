@@ -1,4 +1,6 @@
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <unistd.h>
 
 #include "../include/solvers/solver.h"
@@ -12,34 +14,34 @@
 
 using namespace std;
 
-int main()
+int main(int argc, char* args[])
 {
-    double graph1[8][8] = {{0.0, 2.0, 5.0, 4.0 , 0.0, 0.0, 0.0, 0.0},   //O
-                            {2.0, 0.0, 2.0, 0.0, 7.0, 0.0, 12.0, 0.0},   //A
-                            {5.0, 2.0, 0.0, 1.0, 4.0, 3.0, 0.0, 0.0},    //B
-                            {4.0, 0.0, 1.0, 0.0, 0.0, 4.0, 0.0, 0.0},    //C
-                            {0.0, 7.0, 4.0, 0.0, 0.0, 1.0, 0.0, 5.0},    //D
-                            {0.0, 0.0, 3.0, 4.0, 1.0, 0.0, 0.0, 7.0},    //E
-                            {0.0, 12.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3.0},   //F
-                            {0.0, 0.0, 0.0, 0.0, 5.0, 7.0, 3.0, 0.0}};   //T
-
-//    double graph1[3][3] = {{0.0, 1.0, 0.0},
-//                            {1.0, 0.0, 1.0},
-//                            {0.0, 1.0, 0.0}};
-
-    int n = 8;
-    Graph g1(n);
+    int nvertices, nedges;
+    ifstream myfile (args[1]);
+    Graph* g;
     vector< vector<double> > probs;
-    for (int i = 0; i < n; i++) {
-        probs.push_back(vector<double> (n));
-        for (int j = 0; j < n; j++) {
-            if (graph1[i][j] != 0.0)
-                g1.connect(i, j, graph1[i][j]);
-            probs[i][j] = 0.5;
+    if (myfile.is_open()) {
+        char x;
+        string line;
+        getline(myfile, line);
+        istringstream iss(line);
+        iss >> x >> nvertices >> nedges;
+        g = new Graph(nvertices);
+        for (int i = 0; i < nvertices; i++)
+            probs.push_back(vector<double> (nvertices));
+        while ( getline (myfile, line) ) {
+            istringstream iss(line);
+            int u, v;
+            double p, w;
+            iss >> x >> u >> v >> p >> w;
+            probs[u - 1][v - 1] = p;
+            g->connect(u - 1, v - 1, w);
+            g->connect(v - 1, u - 1, w);
         }
+        myfile.close();
     }
 
-    Problem* problem = new CTPProblem(g1, probs, 0, n - 1);
+    Problem* problem = new CTPProblem(*g, probs, 0, nvertices - 1);
 
 
     LRTDPSolver lrtdp(problem);
@@ -47,14 +49,9 @@ int main()
 
     cout << "LRTDP Estimates" << endl;
     cout << problem->initialState()->cost() << endl;
-//    for (State* s : problem->states()) {
-//        cout << s << " VALUE " << s->cost() << endl;
-//        if (s->bestAction() != nullptr)
-//            cout << s->bestAction() << " " << problem->cost(s, s->bestAction()) << endl;
-//        cout << endl;
-//    }
-    delete ((CTPProblem*) problem);
 
+    delete ((CTPProblem*) problem);
+    delete g;
     return 0;
 }
 
