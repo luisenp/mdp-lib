@@ -7,6 +7,7 @@
 #include "../../include/heuristic.h"
 #include "../../include/state.h"
 #include "../../include/util/rational.h"
+#include "../../include/util/general.h"
 
 #define bb_cost first
 #define bb_action second
@@ -79,6 +80,10 @@ inline Rational bellmanUpdate(Problem* problem, State* s)
  * Samples a successor state of a state and action using the probabilities
  * defined by the problem's transition function.
  *
+ * If the given action is a null pointer or if the state is a dead-end (i.e., the
+ * transition function returns empty list of successors) this method will return
+ * the same state that is given.
+ *
  * @param problem The problem that contains the given state.
  * @param s The state for which the sucessor state will be sampled.
  * @param a The action that generates the successors.
@@ -92,9 +97,13 @@ inline State* randomSuccessor(Problem* problem, State* s, Action* a)
     std::uniform_real_distribution<> dis(0, 1);
     double pick = dis(gen);
 
+    if (a == nullptr)
+        return s;
+
     Rational acc(0);
     std::list<Successor> successors = problem->transition(s, a);
-    assert(!successors.empty());
+    if (successors.empty())
+        return s;
     for (Successor sccr : successors) {
         acc = acc + sccr.su_prob;
         if (acc.value() >= pick)
@@ -135,6 +144,8 @@ inline Action* greedyAction(Problem* problem, State* s)
 inline Rational residual(Problem* problem, State* s)
 {
     Action* bestAction = greedyAction(problem, s);
+    if (bestAction == nullptr)
+        return Rational(0); // state is a dead-end, nothing to do here
     Rational res = qvalue(problem, s, bestAction) - s->cost();
     return res.abs();
 }

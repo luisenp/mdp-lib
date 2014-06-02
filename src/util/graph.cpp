@@ -21,3 +21,26 @@ std::vector<double> dijkstra(Graph g, int v0)
     return distances;
 }
 
+
+bool reachable(Graph g, int u, int v)
+{
+    if (u == v)
+        return true;
+    std::list<int> Q;
+    Q.push_front(u);
+    std::unordered_set<int> visited;
+    while (!Q.empty()) {
+        int tmp = Q.front();
+        Q.pop_front();
+        visited.insert(tmp);
+        std::unordered_map<int,double> neighbors = g.neighbors(tmp);
+        for (std::pair<int, double> x : neighbors) {
+            if (visited.find(x.first) != visited.end())
+                continue;
+            if (x.first == v)
+                return true;
+            Q.push_front(x.first);
+        }
+    }
+    return false;
+}

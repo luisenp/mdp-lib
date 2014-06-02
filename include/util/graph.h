@@ -5,6 +5,7 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <queue>
+#include <list>
 #include <limits>
 #include <cassert>
 
@@ -47,7 +48,7 @@ public:
 
     double weight(int i, int j)
     {
-        assert(i < adjList.size() && j < adjList.size());
+        assert(i >= 0 && i < adjList.size() && j >= 0 && j < adjList.size());
         if (adjList[i].find(j) == adjList[i].end())
             return gr_infinity;
         else return adjList[i][j];
@@ -55,13 +56,13 @@ public:
 
     bool connect(int i, int j, double weight)
     {
-        assert(i < adjList.size() && j < adjList.size());
+        assert(i >= 0 && i < adjList.size() && j >= 0 && j < adjList.size());
         adjList[i][j] = weight;
     }
 
     std::unordered_map<int, double>& neighbors(int i)
     {
-        assert(i < adjList.size());
+        assert(i >= 0 && i < adjList.size());
         return adjList[i];
     }
 
@@ -85,5 +86,10 @@ public:
  * vertices on the given graph.
  */
 std::vector<double> dijkstra(Graph g, int v0);
+
+/**
+ * Checks if vertex v can be reached from vertex u in the given graph.
+ */
+ bool reachable(Graph g, int u, int v);
 
 #endif // MDPLIB_GRAPH_H

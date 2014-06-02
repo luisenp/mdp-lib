@@ -9,6 +9,13 @@
 
 class CTPProblem;
 
+namespace ctp
+{
+    const int UNKNOWN = 15;
+    const int TRUE = 1;
+    const int FALSE = 2;
+}
+
 /**
  * A class implementing states in the Canadian Traveler Problem.
  */
@@ -17,7 +24,8 @@ class CTPState : public State
 private:
     int location_;
     std::vector< std::vector <unsigned char> > status_;
-    std::unordered_set<int> frontier_;
+    std::unordered_set<int> explored_;
+    unsigned char badWeather_ = ctp::UNKNOWN;
 
     virtual std::ostream& print(std::ostream& os) const;
 
@@ -67,12 +75,12 @@ public:
     }
 
     /**
-     * Returns a set containing all reachable vertices that haven't been visited so
-     * far in this state (i.e., all of their adjacent roads have unknown status).
+     * Returns a set containing all vertices that have been explored so far
+     * in this state.
      */
-    std::unordered_set<int>& frontier()
+    std::unordered_set<int>& explored()
     {
-        return frontier_;
+        return explored_;
     }
 
     /**
@@ -91,6 +99,21 @@ public:
     void setStatus(int i, int j, unsigned char st);
 
     /**
+     * Checks if vertex v can be reached from vertex u given the known open roads.
+     */
+    bool reachable(int u);
+
+    /**
+     * Checks if vertex v can be reached from vertex u given the known blocked roads.
+     */
+    bool potentiallyReachable(int u);
+
+    /**
+     * Checks if this state is known to have bad weather.
+     */
+    bool badWeather();
+
+    /**
      * Overrides method from State.
      */
     virtual State& operator=(const State& rhs)
@@ -101,6 +124,7 @@ public:
         CTPState* state = (CTPState*)  & rhs;
         location_ =  state->location_;
         status_ =  state->status_;
+        explored_ = state->explored_;
         return *this;
     }
 
@@ -110,7 +134,11 @@ public:
     virtual bool operator==(const State& rhs) const
     {
         CTPState* state = (CTPState*)  & rhs;
-        return location_ == state->location_ && status_ == state->status_;
+        if (state->location_ == -1 && location_ == -1)
+            return true;
+        return location_ == state->location_
+                && status_ == state->status_
+                && explored_ == state->explored();
     }
 
     /**

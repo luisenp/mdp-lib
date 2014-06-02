@@ -1,4 +1,5 @@
 #include <iostream>
+#include <unistd.h>
 
 #include "../include/solvers/solver.h"
 #include "../include/solvers/VISolver.h"
@@ -7,6 +8,7 @@
 #include "../include/util/graph.h"
 #include "../include/util/rational.h"
 #include "../include/domains/ctp/CTPProblem.h"
+
 
 using namespace std;
 
@@ -32,33 +34,18 @@ int main()
         }
     }
 
-    for (double x : dijkstra(g1, 0))
-        cout << x << endl;
-
     Problem* problem = new CTPProblem(g1, probs, 0, 7);
 
 
     LRTDPSolver lrtdp(problem);
-    lrtdp.solve(10, Rational(1,1000));
+    lrtdp.solve(100, Rational(1,1000));
 
     std::cout << "LRTDP Estimates" << std::endl;
-    for (State* s : problem->states())
-        std::cout << s << " " << s->cost() << std::endl;
-//
-//    vector< vector <unsigned char> > tmp(2, vector <unsigned char> (2));
-//    tmp[0][1] = 1; tmp[0][0] = 1;
-//    vector< vector <unsigned char> > tmp2 = tmp;
-//    tmp2[0][1] = 2;
-//
-//    cout << (int) tmp[0][0] << " " << (int) tmp2[0][0] << endl;
-//    cout << (int) tmp[0][1] << " " << (int) tmp2[0][1] << endl;
-//
-//    cout << "COMP " << (tmp == tmp2) << endl;
-//    tmp[0][1] = 2;
-//    cout << "COMP " << (tmp == tmp2) << endl;
-//
-//    cout << problem->initialState() << endl;
-
+    for (State* s : problem->states()) {
+        cout << s << " " << s->cost() << endl;
+        if (s->bestAction() != nullptr)
+            cout << s->bestAction() << std::endl;
+    }
     delete ((CTPProblem*) problem);
 
     return 0;

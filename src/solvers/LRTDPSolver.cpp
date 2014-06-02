@@ -1,6 +1,8 @@
 #include "../../include/solvers/solver.h"
 #include "../../include/solvers/LRTDPSolver.h"
 
+#include <unistd.h>
+
 LRTDPSolver::LRTDPSolver(Problem* problem)
 {
     problem_ = problem;
@@ -14,6 +16,9 @@ void LRTDPSolver::trial(Rational epsilon)
         visited.push_front(tmp);
         if (problem_->goal(tmp))
             break;
+
+        dprint1(tmp);
+
         bellmanUpdate(problem_, tmp);
         tmp = randomSuccessor(problem_, tmp, tmp->bestAction());
     }
@@ -51,6 +56,7 @@ bool LRTDPSolver::checkSolved(State* s, Rational epsilon)
         }
 
         Action* a = greedyAction(problem_, tmp);
+        assert(problem_->applicable(tmp, a));
         std::list<Successor> successors = problem_->transition(tmp, a);
         for (Successor su : successors) {
             State* next = su.su_state;

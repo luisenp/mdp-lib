@@ -7,9 +7,8 @@
 
 namespace ctp
 {
-    const int blocked = 0;
-    const int open = 1;
-    const int unknown = 2;
+    const int BLOCKED = 0;
+    const int OPEN = 1;
 }
 
 /**
@@ -19,6 +18,7 @@ class CTPProblem : public Problem
 {
 private:
     int goal_;
+    int start_;
     Graph& roads_;
     std::vector< std::vector <double> > probs_;
     CTPState* absorbing_;
@@ -37,6 +37,14 @@ public:
     Graph& roads()
     {
         return roads_;
+    }
+
+    /**
+     * Returns the goal location for this problem.
+     */
+    int goalLocation()
+    {
+        return goal_;
     }
 
     /**
