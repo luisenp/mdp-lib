@@ -27,7 +27,7 @@ public:
     /**
      * Overriding method from Action.
      */
-    virtual int hash_value() const;
+    virtual int hashValue() const;
 };
 
 #endif // MDPLIB_CTPACTION_H

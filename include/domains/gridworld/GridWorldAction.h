@@ -17,7 +17,7 @@ public:
     /**
      * Overriding method from Action.
      */
-    virtual int hash_value() const
+    virtual int hashValue() const
     {
         return (int) dir_;
     }

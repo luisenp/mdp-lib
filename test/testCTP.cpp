@@ -6,9 +6,12 @@
 #include "../include/solvers/solver.h"
 #include "../include/solvers/VISolver.h"
 #include "../include/solvers/LRTDPSolver.h"
+#include "../include/solvers/UCTSolver.h"
+
 #include "../include/util/general.h"
 #include "../include/util/graph.h"
 #include "../include/util/rational.h"
+
 #include "../include/domains/ctp/CTPProblem.h"
 
 
@@ -46,8 +49,7 @@ int main(int argc, char* args[])
 
     LRTDPSolver lrtdp(problem);
     lrtdp.solve(100000, Rational(1,1000));
-
-    int nsim = 10000;
+    int nsim = 100;
     int ngood = 0;
     Rational eCost(0.0);
     for (int i = 0; i < nsim; i++) {
@@ -68,7 +70,29 @@ int main(int argc, char* args[])
         }
     }
 
-    cout << eCost.value() / ngood << " " << ngood << endl;
+    cout << "LRTDP " << eCost.value() / ngood << " " << ngood << endl;
+
+    UCTSolver uct(problem, 0);
+    ngood = 0;
+    eCost = Rational(0.0);
+    for (int i = 0; i < nsim; i++) {
+        State* tmp = problem->initialState();
+        Rational costSim(0.0);
+        while (true) {
+            if (problem->goal(tmp)) {
+                CTPState* ctps = (CTPState*) tmp;
+                if (!ctps->badWeather()) {
+                    eCost  = eCost + costSim;
+                    ngood++;
+                }
+                break;
+            }
+            Action* a = uct.solve(tmp, 100, 10);
+            costSim = costSim + problem->cost(tmp, a);
+            tmp = randomSuccessor(problem, tmp, a);
+        }
+    }
+    cout << "UCT " << eCost.value() / ngood << " " << ngood << endl;
 
     delete ((CTPProblem*) problem);
     delete g;

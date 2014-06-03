@@ -4,7 +4,7 @@
 #include "../problem.h"
 
 /**
- * A MDP solver using Value Iteration.
+ * A MDP solver that using Value Iteration.
  */
 class VISolver
 {

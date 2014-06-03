@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <unordered_set>
+#include <unordered_map>
 
 #include "action.h"
 #include "mdplib.h"
@@ -161,7 +162,6 @@ public:
  */
  typedef std::pair<State*, Rational> Successor;
 
-
 /**
  * Wrapper of the hash function for state objects (used to define StateSet below).
  */
@@ -185,5 +185,14 @@ struct StateEqual {
  */
 typedef std::unordered_set<State*, StateHash, StateEqual> StateSet;
 
+/**
+ * A map of states to integers.
+ */
+typedef std::unordered_map<State*, int, StateHash, StateEqual> StateIntMap;
+
+/**
+ * A map of states to doubles.
+ */
+typedef std::unordered_map<State*, double, StateHash, StateEqual> StateDoubleMap;
 
 #endif // MDPLIB_STATE_H

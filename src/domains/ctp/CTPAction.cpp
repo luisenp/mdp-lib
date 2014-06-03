@@ -6,7 +6,7 @@ std::ostream& CTPAction::print(std::ostream& os) const
     return os;
 }
 
-int CTPAction::hash_value() const
+int CTPAction::hashValue() const
 {
     return from_ + 31*to_;
 }
