@@ -60,17 +60,18 @@ std::list<Successor> CTPProblem::transition(State* s, Action* a)
         CTPState* next = new CTPState(*ctps);
         next->setLocation(to);
         double p = 1.0;
+        /* Updating adjacent roads */
         for (int j = 0; j < nadj; j++) {
             if (ctps->status()[to][neighbors[j]] != ctp::UNKNOWN)  {
                 /* this state was already visited, no need to update anything */
                 continue;
             }
-            unsigned char st = (i & 1<<j) ? ctp::OPEN : ctp::BLOCKED;
-            p *= (st == ctp::BLOCKED) ? probs_[to][neighbors[j]] : 1.0 - probs_[to][neighbors[j]];
+            unsigned char st = (i & (1<<j)) ? ctp::OPEN : ctp::BLOCKED;
+            p *= (st == ctp::BLOCKED) ? 1.0 - probs_[to][neighbors[j]] : probs_[to][neighbors[j]];
             next->setStatus(to, neighbors[j], st);
             next->setStatus(neighbors[j], to, st);
-            next->explored().insert(to);
         }
+        next->explored().insert(to);
         successors.push_back(Successor(this->addState(next), Rational(p)));
     }
 

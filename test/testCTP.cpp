@@ -34,7 +34,7 @@ int main(int argc, char* args[])
             int u, v;
             double p, w;
             iss >> x >> u >> v >> p >> w;
-            probs[u - 1][v - 1] = p;
+            probs[u - 1][v - 1] = probs[v - 1][u - 1] = p;
             g->connect(u - 1, v - 1, w);
             g->connect(v - 1, u - 1, w);
         }
@@ -45,12 +45,20 @@ int main(int argc, char* args[])
 
 
     LRTDPSolver lrtdp(problem);
-    lrtdp.solve(100, Rational(1,1000));
+    lrtdp.solve(1000, Rational(1,1000));
 
     cout << "LRTDP Estimates" << endl;
     cout << problem->initialState()->cost() << endl;
+    for (State* s: problem->states()) {
+        CTPState* ctps = (CTPState*) s;
+        if (ctps->location() == 2 && s->cost() > Rational(100))
+            dprint3(s, s->cost(), s->bestAction());
+//        if (ctps->location() == 4)
+//            dprint2(s, s->cost());
+    }
 
-    int nsim = 100;
+
+    int nsim = 0;
     int ngood = 0;
     Rational eCost(0.0);
     for (int i = 0; i < nsim; i++) {

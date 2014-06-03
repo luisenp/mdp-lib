@@ -45,7 +45,7 @@ inline Rational qvalue(Problem* problem, State*s, Action* a)
 inline std::pair<Rational, Action*> bellmanBackup(Problem* problem, State* s)
 {
     Rational bestQ(mdplib::dead_end_cost);
-    Action *bestAction = 0;
+    Action* bestAction = nullptr;
     for (Action* a : problem->actions()) {
         if (!problem->applicable(s, a))
             continue;
