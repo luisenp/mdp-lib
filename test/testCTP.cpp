@@ -45,20 +45,9 @@ int main(int argc, char* args[])
 
 
     LRTDPSolver lrtdp(problem);
-    lrtdp.solve(1000, Rational(1,1000));
+    lrtdp.solve(100000, Rational(1,1000));
 
-    cout << "LRTDP Estimates" << endl;
-    cout << problem->initialState()->cost() << endl;
-    for (State* s: problem->states()) {
-        CTPState* ctps = (CTPState*) s;
-        if (ctps->location() == 2 && s->cost() > Rational(100))
-            dprint3(s, s->cost(), s->bestAction());
-//        if (ctps->location() == 4)
-//            dprint2(s, s->cost());
-    }
-
-
-    int nsim = 0;
+    int nsim = 10000;
     int ngood = 0;
     Rational eCost(0.0);
     for (int i = 0; i < nsim; i++) {

@@ -53,8 +53,11 @@ std::list<Successor> CTPProblem::transition(State* s, Action* a)
     int to = ctpa->to();
 
     std::vector<int> neighbors;
-    for (std::pair<int, double> entry : roads_.neighbors(to))
-        neighbors.push_back(entry.first);
+    for (std::pair<int, double> entry : roads_.neighbors(to)) {
+        /* No need to go back to states that have already been explored */
+        if (ctps->explored().find(entry.first) == ctps->explored().end())
+            neighbors.push_back(entry.first);
+    }
     int nadj = neighbors.size();
     for (int i = 0; i < (1 << nadj); i++) {
         CTPState* next = new CTPState(*ctps);
@@ -62,10 +65,7 @@ std::list<Successor> CTPProblem::transition(State* s, Action* a)
         double p = 1.0;
         /* Updating adjacent roads */
         for (int j = 0; j < nadj; j++) {
-            if (ctps->status()[to][neighbors[j]] != ctp::UNKNOWN)  {
-                /* this state was already visited, no need to update anything */
-                continue;
-            }
+            assert(ctps->status()[to][neighbors[j]] == ctp::UNKNOWN);
             unsigned char st = (i & (1<<j)) ? ctp::OPEN : ctp::BLOCKED;
             p *= (st == ctp::BLOCKED) ? 1.0 - probs_[to][neighbors[j]] : probs_[to][neighbors[j]];
             next->setStatus(to, neighbors[j], st);
@@ -74,7 +74,6 @@ std::list<Successor> CTPProblem::transition(State* s, Action* a)
         next->explored().insert(to);
         successors.push_back(Successor(this->addState(next), Rational(p)));
     }
-
     return successors;
 }
 

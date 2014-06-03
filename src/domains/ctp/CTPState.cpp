@@ -30,6 +30,10 @@ CTPState::CTPState(CTPState& rhs)
 
 std::ostream& CTPState::print(std::ostream& os) const
 {
+    if (location_ == -1) {
+        os << "Absorbing State";
+        return os;
+    }
     os << "Location: " << location_;
     os << " Open: ";
     CTPProblem* ctpp = (CTPProblem* ) problem_;

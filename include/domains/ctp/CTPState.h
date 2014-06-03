@@ -144,7 +144,7 @@ public:
             return true;
         return location_ == state->location_
                 && status_ == state->status_
-                && explored_ == state->explored();
+                && explored_ == state->explored_;
     }
 
     /**
