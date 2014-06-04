@@ -49,7 +49,8 @@ Action* UCTSolver::solve(State* s0, int maxRollouts, int cutoff)
                     if (!problem_->applicable(tmp, a))
                         continue;
                     counterSA_[tmp][a] = 0;
-                    qvalues_[tmp][a] = 0.0;
+//                    qvalues_[tmp][a] = 0.0;
+                    qvalues_[tmp][a] = qvalue(problem_, tmp, a).value();
                 }
             }
             maxSteps = i;

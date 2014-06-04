@@ -98,7 +98,7 @@ int main(int argc, char* args[])
     cout << "UCT " << eCost.value() / ngood << " " << ngood << endl;
 
     delete ((CTPProblem *) problem);
-//    delete ((CTPOptimisticHeuristic *) heuristic);
+    delete ((CTPOptimisticHeuristic *) heuristic);
     delete g;
     return 0;
 }
