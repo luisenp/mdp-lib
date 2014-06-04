@@ -128,13 +128,9 @@ inline State* randomSuccessor(Problem* problem, State* s, Action* a)
  */
 inline Action* greedyAction(Problem* problem, State* s)
 {
-    Action* a = s->bestAction();
-    if (a == nullptr) {
+    if (s->bestAction() == nullptr)
         bellmanUpdate(problem, s);
-        return s->bestAction();
-//        return bellmanBackup(problem, s).bb_action;
-    }
-    return a;
+    return s->bestAction();
 }
 
 /**
