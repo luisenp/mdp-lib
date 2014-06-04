@@ -52,6 +52,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/mdplib.h" />
 		<Unit filename="include/problem.h" />
 		<Unit filename="include/solvers/LRTDPSolver.h" />
+		<Unit filename="include/solvers/UCTSolver.h" />
 		<Unit filename="include/solvers/VISolver.h" />
 		<Unit filename="include/solvers/solver.h" />
 		<Unit filename="include/state.h" />
@@ -189,6 +190,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="src/domains/gridworld/GridWorldProblem.cpp" />
 		<Unit filename="src/domains/gridworld/GridWorldState.cpp" />
 		<Unit filename="src/solvers/LRTDPSolver.cpp" />
+		<Unit filename="src/solvers/UCTSolver.cpp" />
 		<Unit filename="src/solvers/VISolver.cpp" />
 		<Unit filename="src/state.cpp" />
 		<Unit filename="src/util/graph.cpp" />

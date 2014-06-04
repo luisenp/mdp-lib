@@ -13,6 +13,7 @@
 #include "../include/util/rational.h"
 
 #include "../include/domains/ctp/CTPProblem.h"
+#include "../include/domains/ctp/CTPOptimisticHeuristic.h"
 
 
 using namespace std;
@@ -45,10 +46,11 @@ int main(int argc, char* args[])
     }
 
     Problem* problem = new CTPProblem(*g, probs, 0, nvertices - 1);
-
+    Heuristic* heuristic = new CTPOptimisticHeuristic((CTPProblem *) problem);
+    problem->setHeuristic(heuristic);
 
     LRTDPSolver lrtdp(problem);
-    lrtdp.solve(100000, Rational(1,1000));
+    lrtdp.solve(problem->initialState(), 1000, Rational(1,1000));
     int nsim = 100;
     int ngood = 0;
     Rational eCost(0.0);
@@ -73,6 +75,7 @@ int main(int argc, char* args[])
     cout << "LRTDP " << eCost.value() / ngood << " " << ngood << endl;
 
     UCTSolver uct(problem, 0);
+    uct.solve(problem->initialState(),1, 10);
     ngood = 0;
     eCost = Rational(0.0);
     for (int i = 0; i < nsim; i++) {
@@ -87,14 +90,15 @@ int main(int argc, char* args[])
                 }
                 break;
             }
-            Action* a = uct.solve(tmp, 100, 10);
+            Action* a = uct.solve(tmp, 10, 10);
             costSim = costSim + problem->cost(tmp, a);
             tmp = randomSuccessor(problem, tmp, a);
         }
     }
     cout << "UCT " << eCost.value() / ngood << " " << ngood << endl;
 
-    delete ((CTPProblem*) problem);
+    delete ((CTPProblem *) problem);
+//    delete ((CTPOptimisticHeuristic *) heuristic);
     delete g;
     return 0;
 }

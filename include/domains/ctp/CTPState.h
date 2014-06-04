@@ -115,9 +115,16 @@ public:
 
     /**
      * Returns the cost of reaching location v from the agent's location in this state
-     * using only open roads. It uses Dijkstra's algorithm for shortest path.
+     * using only open roads. It uses Dijkstra's shortest path algorithm.
      */
     double distanceOpen(int v);
+
+    /**
+     * Returns the cost of reaching location v from the agent's location in this state
+     * using only open or unknown roads.
+     * It uses Dijkstra's shortest path algorithm.
+     */
+    double distanceOptimistic(int v);
 
     /**
      * Overrides method from State.

@@ -79,12 +79,9 @@ bool LRTDPSolver::checkSolved(State* s, Rational epsilon)
     return rv;
 }
 
-void LRTDPSolver::solve(int maxTrials, Rational epsilon)
+void LRTDPSolver::solve(State* s0, int maxTrials, Rational epsilon)
 {
-    for (State* s: problem_->states())  // In case another algorithm modified these values
-        s->reset();
-
     int trials = 0;
-    while (!problem_->initialState()->checkBits(mdplib::SOLVED) && trials++ < maxTrials)
+    while (!s0->checkBits(mdplib::SOLVED) && trials++ < maxTrials)
         trial(epsilon);
 }

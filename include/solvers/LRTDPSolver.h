@@ -31,10 +31,11 @@ public:
     /**
      * Solves the associated problem using the Labeled RTDP algorithm.
      *
+     * @param s0 The state to start the search at.
      * @param maxTrials The maximum number of trials to perform.
      * @param epsilon The error tolerance.
      */
-    void solve(int maxTrials, Rational epsilon);
+    void solve(State* s0, int maxTrials, Rational epsilon);
 
 };
 

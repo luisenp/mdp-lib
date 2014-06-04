@@ -27,7 +27,7 @@ int main()
     StateSet states = problem->states();
 
     VISolver solver(problem);
-    solver.solve(100, Rational(1, 1000));
+    solver.solve(problem->initialState(), 100, Rational(1, 1000));
 
     std::cout << "Value Iteration Estimates" << std::endl;
     for (State* s : problem->states())
