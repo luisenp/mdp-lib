@@ -11,6 +11,12 @@ gw: src/domains/gridworld/*.cpp src/solvers/*.cpp src/util/*.cpp include/*.h inc
 	mv *.o test/
 	$(CC) $(CFLAGS) -Iinclude/domains/gridworld -Iinclude -Iinclude/solvers -Iinclude/util -o testgw test/testGridWorld.cpp test/*.o
 
+b2t: src/domains/binarytree/*.cpp src/solvers/*.cpp src/util/*.cpp include/*.h include/solvers/*.h include/domains/binarytree/*.h
+	$(CC) $(CFLAGS) -Iinclude/domains/binarytree -Iinclude -Iinclude/solvers -Include/util -c src/domains/binarytree/*.cpp src/util/*.cpp src/*.cpp src/solvers/*.cpp
+	mv *.o test/
+	$(CC) $(CFLAGS) -Iinclude/domains/binarytree -Iinclude -Iinclude/solvers -Iinclude/util -o testb2t test/testB2T.cpp test/*.o
+
+
 clean: test/*.o
 	rm test/*.o
 

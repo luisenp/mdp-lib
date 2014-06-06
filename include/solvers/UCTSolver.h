@@ -48,6 +48,28 @@ public:
     UCTSolver(Problem* problem, double C);
 
     /**
+     * Returns the Q-values estimated by the UCT algorithm.
+     */
+    StateActionDoubleMap& qvalues() { return qvalues_; }
+
+    /**
+     * Returns the counter for state-action pair visits.
+     */
+    StateActionIntMap& counterSA() { return counterSA_; }
+
+    /**
+     * Computes the UCB1 cost of the given state-action pair with the current
+     * visit counts.
+     *
+     * @param s The state for which the cost is going to be computed.
+     * @param a The action for which the cost is going to be computed.
+     * @param C The value of the exploration parameter to be used.
+     *
+     * @return The cost of the state-action according to the UCB1 formula.
+     */
+    double ucb1Cost(State* s, Action* a, double C);
+
+    /**
      * Picks an action for the given state using the UCT algorithm.
      *
      * @param s0 The state for which the action will be chosen.

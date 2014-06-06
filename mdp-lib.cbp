@@ -42,6 +42,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="Makefile" />
 		<Unit filename="include/action.h" />
 		<Unit filename="include/domains/ctp/CTPAction.h" />
+		<Unit filename="include/domains/ctp/CTPOptimisticHeuristic.h" />
 		<Unit filename="include/domains/ctp/CTPProblem.h" />
 		<Unit filename="include/domains/ctp/CTPState.h" />
 		<Unit filename="include/domains/gridworld/GWManhattanHeuristic.h" />

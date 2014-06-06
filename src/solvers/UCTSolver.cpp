@@ -23,15 +23,21 @@ Action* UCTSolver::pickAction(State* s, double C)
         Action* a = entry.first;
         if (counterSA_[s][a] == 0)
             return a;
-        C = qvalues_[s][a];
-        double tmp = entry.second - C*std::sqrt(std::log(counterS_[s]) / counterSA_[s][a]);
-        if (tmp > mdplib::dead_end_cost)
-            tmp = mdplib::dead_end_cost;
-        if (tmp < best) {
+        double ucb1 = ucb1Cost(s, a, entry.second);
+        if (ucb1 < best) {
             bestAction = a;
+            best = ucb1;
         }
     }
     return bestAction;
+}
+
+double UCTSolver::ucb1Cost(State* s, Action* a, double C)
+{
+    double cost = qvalues_[s][a] - C*std::sqrt(2 * std::log(counterS_[s]) / counterSA_[s][a]);
+    if (cost > mdplib::dead_end_cost)
+        cost = mdplib::dead_end_cost;
+    return cost;
 }
 
 Action* UCTSolver::solve(State* s0, int maxRollouts, int cutoff)
@@ -43,13 +49,12 @@ Action* UCTSolver::solve(State* s0, int maxRollouts, int cutoff)
         std::vector<Action*> actionsRoll(cutoff + 1);
         int maxSteps = 0;
         for (int i = 1; i <= cutoff; i++) {
-            if (visited_.find(tmp) == visited_.end()) {
+            if (visited_.insert(tmp).second) {
                 counterS_[tmp] = 0;
                 for (Action* a : problem_->actions()) {
                     if (!problem_->applicable(tmp, a))
                         continue;
                     counterSA_[tmp][a] = 0;
-//                    qvalues_[tmp][a] = 0.0;
                     qvalues_[tmp][a] = qvalue(problem_, tmp, a).value();
                 }
             }
@@ -70,6 +75,8 @@ Action* UCTSolver::solve(State* s0, int maxRollouts, int cutoff)
             double newq = counterSA_[s][a]*qvalues_[s][a] + cumCost[maxSteps] - cumCost[i - 1];
             newq /= (counterSA_[s][a] + 1);
             qvalues_[s][a] = newq;
+            counterS_[s]++;
+            counterSA_[s][a]++;
         }
     }
     return pickAction(s0, 0.0);
