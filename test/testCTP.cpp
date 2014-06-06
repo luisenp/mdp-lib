@@ -7,6 +7,7 @@
 #include "../include/solvers/VISolver.h"
 #include "../include/solvers/LRTDPSolver.h"
 #include "../include/solvers/UCTSolver.h"
+#include "../include/solvers/LAOStarSolver.h"
 
 #include "../include/util/general.h"
 #include "../include/util/graph.h"
@@ -20,6 +21,7 @@ using namespace std;
 
 int main(int argc, char* args[])
 {
+    /* Reading and setting up the problem */
     int nvertices, nedges;
     ifstream myfile (args[1]);
     Graph* g;
@@ -44,14 +46,14 @@ int main(int argc, char* args[])
         }
         myfile.close();
     }
-
     Problem* problem = new CTPProblem(*g, probs, 0, nvertices - 1);
     Heuristic* heuristic = new CTPOptimisticHeuristic((CTPProblem *) problem);
     problem->setHeuristic(heuristic);
 
+    /* Evaluating LRTDP policy */
     LRTDPSolver lrtdp(problem);
     lrtdp.solve(problem->initialState(), 1000, Rational(1,1000));
-    int nsim = 100;
+    int nsim = 1000;
     int ngood = 0;
     Rational eCost(0.0);
     for (int i = 0; i < nsim; i++) {
@@ -74,8 +76,9 @@ int main(int argc, char* args[])
 
     cout << "LRTDP " << eCost.value() / ngood << " " << ngood << endl;
 
+    /* Evaluating UCT policy */
     UCTSolver uct(problem, 0);
-    uct.solve(problem->initialState(),1, 10);
+    uct.solve(problem->initialState(),1000, 10);
     ngood = 0;
     eCost = Rational(0.0);
     for (int i = 0; i < nsim; i++) {
@@ -90,12 +93,39 @@ int main(int argc, char* args[])
                 }
                 break;
             }
-            Action* a = uct.solve(tmp, 10, 10);
+            Action* a = uct.solve(tmp, 1, 10);
             costSim = costSim + problem->cost(tmp, a);
             tmp = randomSuccessor(problem, tmp, a);
         }
     }
     cout << "UCT " << eCost.value() / ngood << " " << ngood << endl;
+
+    /* Evaluating LAO* policy */
+    for (State* s : problem->states())
+        s->reset();
+
+    LAOStarSolver lao(problem);
+    lao.solve(problem->initialState(), Rational(1, 10000));
+    ngood = 0;
+    eCost = Rational(0.0);
+    for (int i = 0; i < nsim; i++) {
+        State* tmp = problem->initialState();
+        Rational costSim(0.0);
+        while (true) {
+            if (problem->goal(tmp)) {
+                CTPState* ctps = (CTPState*) tmp;
+                if (!ctps->badWeather()) {
+                    eCost  = eCost + costSim;
+                    ngood++;
+                }
+                break;
+            }
+            Action* a = tmp->bestAction();
+            costSim = costSim + problem->cost(tmp, a);
+            tmp = randomSuccessor(problem, tmp, a);
+        }
+    }
+    cout << "LAO* " << eCost.value() / ngood << " " << ngood << endl;
 
     delete ((CTPProblem *) problem);
     delete ((CTPOptimisticHeuristic *) heuristic);

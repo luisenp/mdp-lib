@@ -18,6 +18,8 @@ public:
      */
     virtual int hashValue() const=0;
 
+    virtual Action& operator=(const Action& rhs) =0;
+
     friend std::ostream& operator<<(std::ostream& os, Action* a);
 };
 

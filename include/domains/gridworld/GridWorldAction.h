@@ -17,6 +17,19 @@ public:
     /**
      * Overriding method from Action.
      */
+    virtual Action& operator=(const Action& rhs)
+    {
+        if (this == &rhs)
+            return *this;
+
+        GridWorldAction* action = (GridWorldAction*)  & rhs;
+        dir_ =  action->dir_;
+        return *this;
+    }
+
+    /**
+     * Overriding method from Action.
+     */
     virtual int hashValue() const
     {
         return (int) dir_;

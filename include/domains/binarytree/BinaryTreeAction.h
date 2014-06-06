@@ -27,6 +27,19 @@ public:
     /**
      * Overriding method from Action.
      */
+    virtual Action& operator=(const Action& rhs)
+    {
+        if (this == &rhs)
+            return *this;
+
+        BinaryTreeAction* action = (BinaryTreeAction*)  & rhs;
+        left_ =  action->left_;
+        return *this;
+    }
+
+    /**
+     * Overriding method from Action.
+     */
     virtual int hashValue() const
     {
         return left_;

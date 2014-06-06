@@ -27,6 +27,20 @@ public:
     /**
      * Overriding method from Action.
      */
+    virtual Action& operator=(const Action& rhs)
+    {
+        if (this == &rhs)
+            return *this;
+
+        CTPAction* action = (CTPAction*)  & rhs;
+        from_ =  action->from_;
+        to_ =  action->to_;
+        return *this;
+    }
+
+    /**
+     * Overriding method from Action.
+     */
     virtual int hashValue() const;
 };
 

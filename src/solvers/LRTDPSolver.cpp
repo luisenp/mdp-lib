@@ -1,8 +1,6 @@
 #include "../../include/solvers/solver.h"
 #include "../../include/solvers/LRTDPSolver.h"
 
-#include <unistd.h>
-
 LRTDPSolver::LRTDPSolver(Problem* problem)
 {
     problem_ = problem;
