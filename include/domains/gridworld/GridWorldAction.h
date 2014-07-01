@@ -3,7 +3,7 @@
 
 #include "../../action.h"
 
-class GridWorldAction : public Action
+class GridWorldAction : public mlcore::Action
 {
 private:
     unsigned char dir_;
@@ -17,7 +17,7 @@ public:
     /**
      * Overriding method from Action.
      */
-    virtual Action& operator=(const Action& rhs)
+    virtual mlcore::Action& operator=(const mlcore::Action& rhs)
     {
         if (this == &rhs)
             return *this;

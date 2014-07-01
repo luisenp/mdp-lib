@@ -24,7 +24,7 @@ namespace gridworld
 /**
  * A class representing a grid world problem as described in AIAMA 3rd Edition.
  */
-class GridWorldProblem : public Problem
+class GridWorldProblem : public mlcore::Problem
 {
     friend class GWManhattanHeuristic;
 
@@ -34,9 +34,9 @@ private:
     int x0_;
     int y0_;
     PairRationalMap* goals_;
-    State* absorbing;
+    mlcore::State* absorbing;
 
-    void addSuccessor(GridWorldState* state, std::list<Successor>& successors, int val,
+    void addSuccessor(GridWorldState* state, std::list<mlcore::Successor>& successors, int val,
                       int limit, int newx, int newy, Rational prob);
 
     void addAllActions();
@@ -58,27 +58,28 @@ public:
      * Constructs a grid world with the specified width, height, goal states,
      * initial state (x0,y0) and heuristic.
      */
-    GridWorldProblem(int width, int height, int x0, int y0, PairRationalMap* goals, Heuristic* h);
+    GridWorldProblem(int width, int height, int x0, int y0,
+                     PairRationalMap* goals, mlcore::Heuristic* h);
 
     /**
      * Overrides method from Problem.
      */
-    virtual bool goal(State* s) const;
+    virtual bool goal(mlcore::State* s) const;
 
     /**
      * Overrides method from Problem.
      */
-    virtual std::list<Successor> transition(State* s, Action* a);
+    virtual std::list<mlcore::Successor> transition(mlcore::State* s, mlcore::Action* a);
 
     /**
      * Overrides method from Problem.
      */
-    virtual Rational cost(State* s, Action* a) const;
+    virtual Rational cost(mlcore::State* s, mlcore::Action* a) const;
 
     /**
      * Overrides method from Problem.
      */
-    virtual bool applicable(State* s, Action* a) const;
+    virtual bool applicable(mlcore::State* s, mlcore::Action* a) const;
 };
 
 #endif // MPDLIB_GRIDWORLDPROBLEM_H

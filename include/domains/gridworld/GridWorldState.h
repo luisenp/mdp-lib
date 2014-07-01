@@ -8,7 +8,7 @@
 /**
  * A class representing a grid world state as described in AIAMA 3rd Edition.
  */
-class GridWorldState : public State
+class GridWorldState : public mlcore::State
 {
 private:
     int x_;
@@ -22,7 +22,7 @@ public:
      * Constructs a GridWorldState representing grid position (x,y) on the problem
      * given as a first parameter.
      */
-    GridWorldState(Problem* problem, int x, int y);
+    GridWorldState(mlcore::Problem* problem, int x, int y);
 
     /**
      * Copy constructor. The resulting state represents the same position as the
@@ -30,7 +30,7 @@ public:
      */
     GridWorldState(const GridWorldState& gws) : x_(gws.x_), y_(gws.y_) {}
 
-    virtual State& operator=(const State& rhs)
+    virtual mlcore::State& operator=(const mlcore::State& rhs)
     {
         if (this == &rhs)
             return *this;
@@ -41,13 +41,13 @@ public:
         return *this;
     }
 
-    virtual bool operator==(const State& rhs) const
+    virtual bool operator==(const mlcore::State& rhs) const
     {
         GridWorldState* gws = (GridWorldState *)  &rhs;
         return x_ == gws->x_ && y_ == gws->y_;
     }
 
-    virtual bool equals(State* other) const;
+    virtual bool equals(mlcore::State* other) const;
     virtual int hashValue() const;
 
     int x() const;

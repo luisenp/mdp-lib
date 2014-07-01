@@ -11,6 +11,8 @@
 #include "../include/domains/gridworld/GWManhattanHeuristic.h"
 
 using namespace std;
+using namespace mlcore;
+using namespace mlsolvers;
 
 int main()
 {
@@ -27,13 +29,13 @@ int main()
     StateSet states = problem->states();
 
     VISolver solver(problem);
-    solver.solve(problem->initialState(), 100, Rational(1, 1000));
+    solver.solve(100, Rational(1, 1000));
 
     std::cout << "Value Iteration Estimates" << std::endl;
     for (State* s : problem->states())
         std::cout << s << " " << s->cost() << " " << heuristic->cost(s) << std::endl;
     LRTDPSolver lrtdp(problem);
-    lrtdp.solve(10, Rational(1,1000));
+    lrtdp.solve(problem->initialState(), 1000, Rational(1,1000));
 
     std::cout << "LRTDP Estimates" << std::endl;
     for (State* s : problem->states())

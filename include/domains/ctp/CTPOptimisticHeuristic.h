@@ -7,7 +7,7 @@
 
 #include "../../util/general.h"
 
-class CTPOptimisticHeuristic : public Heuristic
+class CTPOptimisticHeuristic : public mlcore::Heuristic
 {
 private:
     CTPProblem* problem_;
@@ -19,7 +19,7 @@ public:
     {
         problem_ = problem;
     }
-    virtual Rational cost(const State* s) const
+    virtual Rational cost(const mlcore::State* s) const
     {
         CTPState* ctps = (CTPState* ) s;
         if (ctps->location() < 0)   // absorbing state

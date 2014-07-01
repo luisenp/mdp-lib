@@ -7,21 +7,24 @@
 #include "../../include/state.h"
 #include "../../include/util/general.h"
 
-VISolver::VISolver(Problem* problem)
+namespace mlsolvers
 {
-    problem_ = problem;
-}
+    VISolver::VISolver(mlcore::Problem* problem)
+    {
+        problem_ = problem;
+    }
 
-void VISolver::solve(int maxIter, Rational tol)
-{
-    for (int i = 0; i < maxIter; i++) {
-        Rational maxResidual(0);
-        for (State* s : problem_->states()) {
-            Rational residual = bellmanUpdate(problem_, s);
-            if (residual > maxResidual)
-                maxResidual = residual;
+    void VISolver::solve(int maxIter, Rational tol)
+    {
+        for (int i = 0; i < maxIter; i++) {
+            Rational maxResidual(0);
+            for (mlcore::State* s : problem_->states()) {
+                Rational residual = bellmanUpdate(problem_, s);
+                if (residual > maxResidual)
+                    maxResidual = residual;
+            }
+            if (maxResidual < tol)
+                return;
         }
-        if (maxResidual < tol)
-            return;
     }
 }

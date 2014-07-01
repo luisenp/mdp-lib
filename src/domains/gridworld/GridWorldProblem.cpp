@@ -6,10 +6,10 @@
 
 void GridWorldProblem::addAllActions()
 {
-    Action* up = new GridWorldAction(gridworld::UP);
-    Action* down = new GridWorldAction(gridworld::DOWN);
-    Action* left = new GridWorldAction(gridworld::LEFT);
-    Action* right = new GridWorldAction(gridworld::RIGHT);
+    mlcore::Action* up = new GridWorldAction(gridworld::UP);
+    mlcore::Action* down = new GridWorldAction(gridworld::DOWN);
+    mlcore::Action* left = new GridWorldAction(gridworld::LEFT);
+    mlcore::Action* right = new GridWorldAction(gridworld::RIGHT);
     actions_.push_front(up);
     actions_.push_front(down);
     actions_.push_front(left);
@@ -27,7 +27,7 @@ GridWorldProblem::GridWorldProblem() :
 GridWorldProblem::GridWorldProblem(int width, int height, int x0, int y0, PairRationalMap* goals)
                                    : width_(width), height_(height), x0_(x0), y0_(y0), goals_(goals)
 {
-    State* init = new GridWorldState(this, x0_, y0_);
+    mlcore::State* init = new GridWorldState(this, x0_, y0_);
     absorbing = new GridWorldState(this, -1, -1);
     s0 = this->addState(init);
     gamma_ = Rational(1);
@@ -36,11 +36,11 @@ GridWorldProblem::GridWorldProblem(int width, int height, int x0, int y0, PairRa
 
 GridWorldProblem::GridWorldProblem(int width, int height,
                                    int x0, int y0,
-                                   PairRationalMap* goals, Heuristic* h)
+                                   PairRationalMap* goals, mlcore::Heuristic* h)
                                    : width_(width), height_(height),
                                       x0_(x0), y0_(y0), goals_(goals)
 {
-    State* init = new GridWorldState(this, x0_, y0_);
+    mlcore::State* init = new GridWorldState(this, x0_, y0_);
     absorbing = new GridWorldState(this, -1, -1);
     s0 = this->addState(init);
     heuristic_ = h;
@@ -48,27 +48,27 @@ GridWorldProblem::GridWorldProblem(int width, int height,
     addAllActions();
 }
 
-bool GridWorldProblem::goal(State* s) const
+bool GridWorldProblem::goal(mlcore::State* s) const
 {
     GridWorldState* gws = (GridWorldState *) s;
     std::pair<int,int> pos(gws->x(),gws->y());
     return goals_->find(pos) != goals_->end();
 }
 
-std::list<Successor> GridWorldProblem::transition(State *s, Action *a)
+std::list<mlcore::Successor> GridWorldProblem::transition(mlcore::State *s, mlcore::Action *a)
 {
     GridWorldState* state = (GridWorldState *) s;
     GridWorldAction* action = (GridWorldAction *) a;
 
-    std::list<Successor> successors;
+    std::list<mlcore::Successor> successors;
 
     if (s == absorbing) {
-        successors.push_front(Successor(s, Rational(1)));
+        successors.push_front(mlcore::Successor(s, Rational(1)));
         return successors;
     }
 
     if (goal(s)) {
-        successors.push_front(Successor(absorbing, Rational(1)));
+        successors.push_front(mlcore::Successor(absorbing, Rational(1)));
         return successors;
     }
 
@@ -112,7 +112,7 @@ std::list<Successor> GridWorldProblem::transition(State *s, Action *a)
     return successors;
 }
 
-Rational GridWorldProblem::cost(State* s, Action* a) const
+Rational GridWorldProblem::cost(mlcore::State* s, mlcore::Action* a) const
 {
     if (s == absorbing)
         return Rational(0);
@@ -124,18 +124,18 @@ Rational GridWorldProblem::cost(State* s, Action* a) const
     return Rational(3, 100);
 }
 
-bool GridWorldProblem::applicable(State* s, Action* a) const
+bool GridWorldProblem::applicable(mlcore::State* s, mlcore::Action* a) const
 {
     return true;
 }
 
-void GridWorldProblem::addSuccessor(GridWorldState* state, std::list<Successor>& successors,
+void GridWorldProblem::addSuccessor(GridWorldState* state, std::list<mlcore::Successor>& successors,
                                     int val, int limit, int newx, int newy, Rational prob)
 {
     if (val > limit) {
         GridWorldState *next = new GridWorldState(this, newx, newy);
-        successors.push_front(Successor(this->addState(next), prob));
+        successors.push_front(mlcore::Successor(this->addState(next), prob));
     } else {
-        successors.push_front(Successor(state, prob));
+        successors.push_front(mlcore::Successor(state, prob));
     }
 }

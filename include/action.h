@@ -5,59 +5,62 @@
 #include <unordered_set>
 #include <unordered_map>
 
-class Action
+namespace mlcore
 {
-protected:
-    virtual std::ostream& print(std::ostream& os) const =0;
+    class Action
+    {
+    protected:
+        virtual std::ostream& print(std::ostream& os) const =0;
 
-public:
+    public:
+        /**
+         * Returns a hash value for the action.
+         *
+         * @return The hash value of the action.
+         */
+        virtual int hashValue() const=0;
+
+        virtual Action& operator=(const Action& rhs) =0;
+
+        friend std::ostream& operator<<(std::ostream& os, Action* a);
+    };
+
     /**
-     * Returns a hash value for the action.
-     *
-     * @return The hash value of the action.
+     * Wrapper of the hash function for action objects (used to define ActionSet below).
      */
-    virtual int hashValue() const=0;
+    struct ActionHash {
+      size_t operator()(Action* a) const {
+        return a->hashValue();
+      }
+    };
 
-    virtual Action& operator=(const Action& rhs) =0;
-
-    friend std::ostream& operator<<(std::ostream& os, Action* a);
-};
-
-/**
- * Wrapper of the hash function for action objects (used to define ActionSet below).
- */
-struct ActionHash {
-  size_t operator()(Action* a) const {
-    return a->hashValue();
-  }
-};
-
-/**
- * Wrapper of the equality operator for action objects (used to define ActionSet below).
- */
-struct ActionEqual {
-  bool operator() (Action* a1, Action* a2) const {
-    /*
-     * Assuming actions can be compared by their address since no new actions are generated
-     * after the problem is created.
+    /**
+     * Wrapper of the equality operator for action objects (used to define ActionSet below).
      */
-    return a1 == a2;
-  }
-};
+    struct ActionEqual {
+      bool operator() (Action* a1, Action* a2) const {
+        /*
+         * Assuming actions can be compared by their address since no new actions are generated
+         * after the problem is created.
+         */
+        return a1 == a2;
+      }
+    };
 
-/**
- * A set of actions.
- */
-typedef std::unordered_set<Action*, ActionHash, ActionEqual> ActionSet;
+    /**
+     * A set of actions.
+     */
+    typedef std::unordered_set<Action*, ActionHash, ActionEqual> ActionSet;
 
-/**
- * A map of actions to integers.
- */
-typedef std::unordered_map<Action*, int, ActionHash, ActionEqual> ActionIntMap;
+    /**
+     * A map of actions to integers.
+     */
+    typedef std::unordered_map<Action*, int, ActionHash, ActionEqual> ActionIntMap;
 
-/**
- * A map of actions to doubles.
- */
-typedef std::unordered_map<Action*, double, ActionHash, ActionEqual> ActionDoubleMap;
+    /**
+     * A map of actions to doubles.
+     */
+    typedef std::unordered_map<Action*, double, ActionHash, ActionEqual> ActionDoubleMap;
+}
 
 #endif // MDPLIB_ACTION_H

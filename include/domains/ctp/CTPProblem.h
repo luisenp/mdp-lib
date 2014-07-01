@@ -14,7 +14,7 @@ namespace ctp
 /**
  * A class implementing the Canadian Traveler Problem.
  */
-class CTPProblem : public Problem
+class CTPProblem : public mlcore::Problem
 {
 private:
     int goal_;
@@ -50,22 +50,22 @@ public:
     /**
      * Overrides method from Problem.
      */
-    virtual bool goal(State* s) const;
+    virtual bool goal(mlcore::State* s) const;
 
     /**
      * Overrides method from Problem.
      */
-    virtual std::list<Successor> transition(State* s, Action* a);
+    virtual std::list<mlcore::Successor> transition(mlcore::State* s, mlcore::Action* a);
 
     /**
      * Overrides method from Problem.
      */
-    virtual Rational cost(State* s, Action* a) const;
+    virtual Rational cost(mlcore::State* s, mlcore::Action* a) const;
 
     /**
      * Overrides method from Problem.
      */
-    virtual bool applicable(State* s, Action* a) const;
+    virtual bool applicable(mlcore::State* s, mlcore::Action* a) const;
 };
 
 #endif // MDPLIB_CTPPROBLEM_H

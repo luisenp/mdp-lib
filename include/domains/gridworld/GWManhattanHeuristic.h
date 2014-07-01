@@ -7,7 +7,7 @@
 #include "GridWorldProblem.h"
 #include "GridWorldState.h"
 
-class GWManhattanHeuristic : public Heuristic
+class GWManhattanHeuristic : public mlcore::Heuristic
 {
 private:
     GridWorldProblem* problem_;
@@ -18,7 +18,7 @@ public:
         problem_ = problem;
     }
 
-    virtual Rational cost(const State* s) const
+    virtual Rational cost(const mlcore::State* s) const
     {
         GridWorldState* gws = (GridWorldState*) s;
         Rational cost_(mdplib::dead_end_cost);

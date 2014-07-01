@@ -3,7 +3,7 @@
 
 #include "../../action.h"
 
-class CTPAction : public Action
+class CTPAction : public mlcore::Action
 {
 private:
     int from_;
@@ -27,7 +27,7 @@ public:
     /**
      * Overriding method from Action.
      */
-    virtual Action& operator=(const Action& rhs)
+    virtual mlcore::Action& operator=(const mlcore::Action& rhs)
     {
         if (this == &rhs)
             return *this;

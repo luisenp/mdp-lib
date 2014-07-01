@@ -1,8 +1,10 @@
 #include "../include/action.h"
 #include <iostream>
 
-std::ostream& operator<<(std::ostream& os, Action* a)
+namespace mlcore
 {
-    a->print(os);
+    std::ostream& operator<<(std::ostream& os, Action* a)
+    {
+        a->print(os);
+    }
 }
-

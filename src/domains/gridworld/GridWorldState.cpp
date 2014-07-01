@@ -1,6 +1,6 @@
 #include "../../../include/domains/gridworld/GridWorldState.h"
 
-GridWorldState::GridWorldState(Problem* problem, int x, int y) : x_(x), y_(y)
+GridWorldState::GridWorldState(mlcore::Problem* problem, int x, int y) : x_(x), y_(y)
 {
     problem_ = problem;
 }
@@ -11,7 +11,7 @@ std::ostream& GridWorldState::print(std::ostream& os) const
     return os;
 }
 
-bool GridWorldState::equals(State* other) const
+bool GridWorldState::equals(mlcore::State* other) const
 {
     GridWorldState* gws = (GridWorldState*) other;
     return *this ==  *gws;

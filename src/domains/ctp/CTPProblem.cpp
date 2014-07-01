@@ -24,7 +24,7 @@ CTPProblem::CTPProblem(Graph& roads, std::vector< std::vector <double> >& probs,
     actions_.push_back(new CTPAction(-1,-1));
 }
 
-bool CTPProblem::goal(State* s) const
+bool CTPProblem::goal(mlcore::State* s) const
 {
     CTPState* ctps = (CTPState*) s;
     if (ctps->badWeather())
@@ -32,18 +32,18 @@ bool CTPProblem::goal(State* s) const
     return goal_ == ctps->location() ;
 }
 
-std::list<Successor> CTPProblem::transition(State* s, Action* a)
+std::list<mlcore::Successor> CTPProblem::transition(mlcore::State* s, mlcore::Action* a)
 {
     assert(applicable(s, a));
 
-    std::list<Successor> successors;
+    std::list<mlcore::Successor> successors;
     if (s == absorbing_) {
-        successors.push_front(Successor(s, Rational(1)));
+        successors.push_front(mlcore::Successor(s, Rational(1)));
         return successors;
     }
 
     if (goal(s)) {
-        successors.push_front(Successor(absorbing_, Rational(1)));
+        successors.push_front(mlcore::Successor(absorbing_, Rational(1)));
         return successors;
     }
 
@@ -72,12 +72,12 @@ std::list<Successor> CTPProblem::transition(State* s, Action* a)
             next->setStatus(neighbors[j], to, st);
         }
         next->explored().insert(to);
-        successors.push_back(Successor(this->addState(next), Rational(p)));
+        successors.push_back(mlcore::Successor(this->addState(next), Rational(p)));
     }
     return successors;
 }
 
-Rational CTPProblem::cost(State* s, Action* a) const
+Rational CTPProblem::cost(mlcore::State* s, mlcore::Action* a) const
 {
     assert(applicable(s, a));
     if (s == absorbing_ || goal(s)) {
@@ -88,7 +88,7 @@ Rational CTPProblem::cost(State* s, Action* a) const
     return Rational(ctps->distanceOpen(ctpa->to()));
 }
 
-bool CTPProblem::applicable(State* s, Action* a) const
+bool CTPProblem::applicable(mlcore::State* s, mlcore::Action* a) const
 {
     CTPState* ctps = (CTPState *) s;
     CTPAction* ctpa = (CTPAction *) a;

@@ -4,10 +4,13 @@
 #include "state.h"
 #include "util/rational.h"
 
-class Heuristic
+namespace mlcore
 {
-public:
-    virtual Rational cost(const State* s) const =0;
-};
+    class Heuristic
+    {
+    public:
+        virtual Rational cost(const State* s) const =0;
+    };
+}
 
 #endif // MDPLIB_HEURISTIC_H

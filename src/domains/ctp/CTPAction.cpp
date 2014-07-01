@@ -1,4 +1,4 @@
-#include "CTPAction.h"
+#include "../../../include/domains/ctp/CTPAction.h"
 
 std::ostream& CTPAction::print(std::ostream& os) const
 {
