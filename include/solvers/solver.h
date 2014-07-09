@@ -14,6 +14,15 @@
 
 namespace mlsolvers
 {
+    /**
+     * An interface for states to have some polymorphism on methods that want to call
+     * different planners.
+     */
+    class Solver
+    {
+    public:
+        void solve(mlcore::State* s0);
+    };
 
     /**
      * Computes the Q-value of a state-action pair.

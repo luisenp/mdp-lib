@@ -106,8 +106,8 @@ int main(int argc, char* args[])
     for (State* s : problem->states())
         s->reset();
 
-    LAOStarSolver lao(problem);
-    lao.solve(problem->initialState(), Rational(1, 10000));
+    LAOStarSolver lao(problem, Rational(1, 10000));
+    lao.solve(problem->initialState());
     ngood = 0;
     eCost = Rational(0.0);
     for (int i = 0; i < nsim; i++) {

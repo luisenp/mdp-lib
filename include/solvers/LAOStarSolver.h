@@ -9,11 +9,13 @@ namespace mlsolvers
      *
      * See http://www.sciencedirect.com/science/article/pii/S0004370201001060
      */
-    class LAOStarSolver
+    class LAOStarSolver : public Solver
     {
     private:
         mlcore::Problem* problem_;
         mlcore::StateSet visited;
+
+        Rational epsilon_;
 
         /* Expands the BPSG rooted at state s and returns the number of states expanded */
         int expand(mlcore::State* s, int level);
@@ -25,16 +27,17 @@ namespace mlsolvers
          * Creates a LAO* solver for the given problem.
          *
          * @param problem The problem to be solved.
+         * @param epsilon The error tolerance wanted for the solution.
          */
-        LAOStarSolver(mlcore::Problem* problem) : problem_(problem) { }
+        LAOStarSolver(mlcore::Problem* problem, Rational epsilon)
+            : problem_(problem), epsilon_(epsilon) { }
 
         /**
          * Solves the associated problem using the LAO* algorithm.
          *
          * @param s0 The state to start the search at.
-         * @param epsilon The error tolerance.
          */
-        void solve(mlcore::State* s0, Rational epsilon);
+        void solve(mlcore::State* s0);
 
     };
 }
