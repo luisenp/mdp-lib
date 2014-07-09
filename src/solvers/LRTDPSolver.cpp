@@ -3,12 +3,14 @@
 
 namespace mlsolvers
 {
-    LRTDPSolver::LRTDPSolver(mlcore::Problem* problem)
+    LRTDPSolver::LRTDPSolver(mlcore::Problem* problem, int maxTrials, Rational epsilon)
     {
         problem_ = problem;
+        maxTrials_ = maxTrials;
+        epsilon_ = epsilon;
     }
 
-    void LRTDPSolver::trial(Rational epsilon)
+    void LRTDPSolver::trial()
     {
         mlcore::State* tmp = problem_->initialState();
         std::list<mlcore::State*> visited;
@@ -23,12 +25,12 @@ namespace mlsolvers
         while (!visited.empty()) {
             tmp = visited.front();
             visited.pop_front();
-            if (!checkSolved(tmp, epsilon))
+            if (!checkSolved(tmp))
                 break;
         }
     }
 
-    bool LRTDPSolver::checkSolved(mlcore::State* s, Rational epsilon)
+    bool LRTDPSolver::checkSolved(mlcore::State* s)
     {
         bool rv = true;
         std::list<mlcore::State*> open, closed;
@@ -47,7 +49,7 @@ namespace mlsolvers
             closed.push_front(tmp);
             closedSet.insert(tmp);
 
-            if (residual(problem_, tmp) > epsilon) {
+            if (residual(problem_, tmp) > epsilon_) {
                 rv = false;
                 continue;
             }
@@ -79,11 +81,11 @@ namespace mlsolvers
         return rv;
     }
 
-    void LRTDPSolver::solve(mlcore::State* s0, int maxTrials, Rational epsilon)
+    mlcore::Action* LRTDPSolver::solve(mlcore::State* s0)
     {
         int trials = 0;
-        while (!s0->checkBits(mdplib::SOLVED) && trials++ < maxTrials)
-            trial(epsilon);
+        while (!s0->checkBits(mdplib::SOLVED) && trials++ < maxTrials_)
+            trial();
     }
 
 }

@@ -34,8 +34,8 @@ int main()
     std::cout << "Value Iteration Estimates" << std::endl;
     for (State* s : problem->states())
         std::cout << s << " " << s->cost() << " " << heuristic->cost(s) << std::endl;
-    LRTDPSolver lrtdp(problem);
-    lrtdp.solve(problem->initialState(), 1000, Rational(1,1000));
+    LRTDPSolver lrtdp(problem, 1000, Rational(1,1000));
+    lrtdp.solve(problem->initialState());
 
     std::cout << "LRTDP Estimates" << std::endl;
     for (State* s : problem->states())

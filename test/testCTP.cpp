@@ -53,8 +53,8 @@ int main(int argc, char* args[])
     problem->setHeuristic(heuristic);
 
     /* Evaluating LRTDP policy */
-    LRTDPSolver lrtdp(problem);
-    lrtdp.solve(problem->initialState(), 1000, Rational(1,1000));
+    LRTDPSolver lrtdp(problem, 1000, Rational(1,1000));
+    lrtdp.solve(problem->initialState());
     int nsim = 1000;
     int ngood = 0;
     Rational eCost(0.0);
