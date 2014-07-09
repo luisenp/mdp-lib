@@ -16,7 +16,10 @@ b2t: src/domains/binarytree/*.cpp src/solvers/*.cpp src/util/*.cpp include/*.h i
 	mv *.o test/
 	$(CC) $(CFLAGS) -Iinclude/domains/binarytree -Iinclude -Iinclude/solvers -Iinclude/util -o testb2t test/testB2T.cpp test/*.o
 
+ofiles: src/solvers/*.cpp src/util/*.cpp include/*.h include/solvers/*.h src/*.cpp
+	$(CC) $(CFLAGS) -fPIC -shared -Iinclude -Iinclude/solvers -Include/util src/util/*.cpp src/*.cpp src/solvers/*.cpp -o libmdp.so
 
 clean: test/*.o
 	rm test/*.o
+	rm *.o
 

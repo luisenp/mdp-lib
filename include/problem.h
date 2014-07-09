@@ -12,10 +12,10 @@ namespace mlcore
     /**
      * An abstract class for Stochastic Shortest Path Problem objects.
      *
-     * This class provides pure virtual methods used to implement the goal test,
-     * transition function, cost function and applicable action test for a SSPP.
-     * It also maintains the following information about the problem: initial state,
-     * discount factor (gamma), list of available actions and heuristic to use.
+     * This class provides pure virtual methods used to implement goal tests,
+     * transition functions, cost functions and applicable action tests for a SSPP.
+     * It also maintains the following information: initial state, discount factor
+     * (gamma), list of available actions and an heuristic for the problem.
      *
      * This class also provides an internal set for storing all states that have
      * been generated so far. The method 'addState' is used to populate this set,
@@ -73,7 +73,7 @@ namespace mlcore
          *
          * @return true if the given state is a goal.
          */
-        virtual bool goal(State *s) const =0;
+        virtual bool goal(State* s) const =0;
 
         /**
          * Transition function for the problem.
@@ -84,7 +84,7 @@ namespace mlcore
          * @return A list of succcessors of the given state after applying the
          *        given action.
          */
-        virtual std::list<Successor> transition(State *s, Action *a) =0;
+        virtual std::list<Successor> transition(State* s, Action *a) =0;
 
         /**
          * Cost function for the problem.
@@ -94,7 +94,7 @@ namespace mlcore
          *
          * @return The cost of applying action the given action to the given state.
          */
-        virtual Rational cost(State *s, Action *a) const =0;
+        virtual Rational cost(State* s, Action *a) const =0;
 
         /**
          * Applicability check.
@@ -104,7 +104,7 @@ namespace mlcore
          *
          * @return true if the given action can be applied to the given state.
          */
-        virtual bool applicable(State *s, Action *a) const =0;
+        virtual bool applicable(State* s, Action *a) const =0;
 
         /**
          * Initial state for this problem.
@@ -136,6 +136,8 @@ namespace mlcore
                     continue;
                 cur->setBits(mdplib::VISITED);
                 for (Action* a : actions_) {
+                    if (!applicable(cur, a))
+                        continue;
                     std::list<Successor> successors = transition(cur, a);
                     for (Successor sccr : successors) {
                         queue.push_front(sccr.first);
@@ -154,10 +156,10 @@ namespace mlcore
          * @param s A state used as a model of an internal state to be returned.
          * @return The state stored internally that equals the given state.
          */
-        State* addState(State *s)
+        State* addState(State* s)
         {
             bool check = states_.insert(s).second;
-            State *ret = *states_.find(s);
+            State* ret = *states_.find(s);
             // the void cast is used to check if the pointers point to the same object
             if ((void *) ret != (void *) s && !check)
                 delete s; // another state was already stored, get rid of the state used to find it

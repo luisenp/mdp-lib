@@ -25,6 +25,7 @@ include/mdpsim-2.2.2/*
 lib/*
 testgw
 testctp
+testb2t
 *.txt
 data/*
 mdp-lib.layout
