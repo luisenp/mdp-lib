@@ -4,11 +4,11 @@
 #include "../../problem.h"
 
 
-class BinaryTreeProblem : public Problem
+class BinaryTreeProblem : public mlcore::Problem
 {
 private:
     int levels_;
-    State* absorbing_;
+    mlcore::State* absorbing_;
 
 public:
     BinaryTreeProblem();
@@ -18,24 +18,24 @@ public:
     virtual ~BinaryTreeProblem() {}
 
     /**
-     * Overrides method from Problem.
+     * Overrides method from mlcore::Problem.
      */
-    virtual bool goal(State* s) const;
+    virtual bool goal(mlcore::State* s) const;
 
     /**
-     * Overrides method from Problem.
+     * Overrides method from mlcore::Problem.
      */
-    virtual std::list<Successor> transition(State* s, Action* a);
+    virtual std::list<mlcore::Successor> transition(mlcore::State* s, mlcore::Action* a);
 
     /**
-     * Overrides method from Problem.
+     * Overrides method from mlcore::Problem.
      */
-    virtual Rational cost(State* s, Action* a) const;
+    virtual Rational cost(mlcore::State* s, mlcore::Action* a) const;
 
     /**
-     * Overrides method from Problem.
+     * Overrides method from mlcore::Problem.
      */
-    virtual bool applicable(State* s, Action* a) const;
+    virtual bool applicable(mlcore::State* s, mlcore::Action* a) const;
 };
 
 #endif // MDPLIB_BINARYTREEPROBLEM_H

@@ -4,7 +4,7 @@
 #include "../../action.h"
 
 
-class BinaryTreeAction : public Action
+class BinaryTreeAction : public mlcore::Action
 {
 private:
     bool left_;
@@ -25,9 +25,9 @@ public:
     bool left() { return left_; }
 
     /**
-     * Overriding method from Action.
+     * Overriding method from mlcore::Action.
      */
-    virtual Action& operator=(const Action& rhs)
+    virtual mlcore::Action& operator=(const mlcore::Action& rhs)
     {
         if (this == &rhs)
             return *this;
@@ -38,7 +38,7 @@ public:
     }
 
     /**
-     * Overriding method from Action.
+     * Overriding method from mlcore::Action.
      */
     virtual int hashValue() const
     {

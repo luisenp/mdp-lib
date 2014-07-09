@@ -4,7 +4,7 @@
 #include "../../state.h"
 
 
-class BinaryTreeState : public State
+class BinaryTreeState : public mlcore::State
 {
 private:
     int level_;
@@ -24,9 +24,9 @@ public:
     int index() { return index_; }
 
     /**
-     * Overrides method from State.
+     * Overrides method from mlcore::State.
      */
-    virtual State& operator=(const State& rhs)
+    virtual mlcore::State& operator=(const mlcore::State& rhs)
     {
         if (this == &rhs)
             return *this;
@@ -38,21 +38,21 @@ public:
     }
 
     /**
-     * Overrides method from State.
+     * Overrides method from mlcore::State.
      */
-    virtual bool operator==(const State& rhs) const
+    virtual bool operator==(const mlcore::State& rhs) const
     {
         BinaryTreeState* state = (BinaryTreeState*)  & rhs;
         return level_ == state->level_ && index_ == state->index_;
     }
 
     /**
-     * Overrides method from State.
+     * Overrides method from mlcore::State.
      */
-    virtual bool equals(State* other) const;
+    virtual bool equals(mlcore::State* other) const;
 
     /**
-     * Overrides method from State.
+     * Overrides method from mlcore::State.
      */
     virtual int hashValue() const;
 

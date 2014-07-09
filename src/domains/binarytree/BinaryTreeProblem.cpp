@@ -12,28 +12,28 @@ BinaryTreeProblem::BinaryTreeProblem(int levels) : levels_(levels)
     actions_.push_front(new BinaryTreeAction(false));
 }
 
-bool BinaryTreeProblem::goal(State* s) const
+bool BinaryTreeProblem::goal(mlcore::State* s) const
 {
     BinaryTreeState* bts = (BinaryTreeState*) s;
     return bts->level() == (levels_ - 1);
 }
 
-std::list<Successor> BinaryTreeProblem::transition(State* s, Action* a)
+std::list<mlcore::Successor> BinaryTreeProblem::transition(mlcore::State* s, mlcore::Action* a)
 {
-    std::list<Successor> successors;
+    std::list<mlcore::Successor> successors;
     if (s == absorbing_ || goal(s)) {
-        successors.push_front(Successor(absorbing_, Rational(1)));
+        successors.push_front(mlcore::Successor(absorbing_, Rational(1)));
         return successors;
     }
     BinaryTreeState* bts = (BinaryTreeState *) s;
     BinaryTreeAction* bta = (BinaryTreeAction *) a;
-    State* next = new BinaryTreeState(bts->level() + 1, 2*bts->index() + ( 1 - bta->left()));
+    mlcore::State* next = new BinaryTreeState(bts->level() + 1, 2*bts->index() + ( 1 - bta->left()));
     next = this->addState(next);
-    successors.push_front(Successor(next, Rational(1)));
+    successors.push_front(mlcore::Successor(next, Rational(1)));
     return successors;
 }
 
-Rational BinaryTreeProblem::cost(State* s, Action* a) const
+Rational BinaryTreeProblem::cost(mlcore::State* s, mlcore::Action* a) const
 {
     BinaryTreeState* bts = (BinaryTreeState *) s;
     BinaryTreeAction* bta = (BinaryTreeAction *) a;
@@ -44,7 +44,7 @@ Rational BinaryTreeProblem::cost(State* s, Action* a) const
     return bta->left() ? Rational(0) : Rational(1);
 }
 
-bool BinaryTreeProblem::applicable(State* s, Action* a) const
+bool BinaryTreeProblem::applicable(mlcore::State* s, mlcore::Action* a) const
 {
     return true;
 }
