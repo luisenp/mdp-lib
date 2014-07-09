@@ -30,8 +30,8 @@ int main(int argc, char* args[])
     int nrolls = 100;
     if (argc > 1)
         nrolls = atoi(args[1]);
-    UCTSolver uct(problem, 0);
-    Action* a = uct.solve(problem->initialState(), nrolls, 10);
+    UCTSolver uct(problem, 0, nrolls, 0);
+    Action* a = uct.solve(problem->initialState());
     StateActionDoubleMap& qvalues = uct.qvalues();
     StateActionIntMap& counterSA = uct.counterSA();
 

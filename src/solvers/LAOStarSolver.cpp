@@ -5,7 +5,7 @@
 
 namespace mlsolvers
 {
-    void LAOStarSolver::solve(mlcore::State* s0)
+    mlcore::Action* LAOStarSolver::solve(mlcore::State* s0)
     {
         int totalExpanded = 0;
         int countExpanded = 0;
@@ -21,7 +21,7 @@ namespace mlsolvers
                 visited.clear();
                 error = testConvergence(s0, 0);
                 if (error < epsilon_.value())
-                    return;
+                    return s0->bestAction();
                 if (error > mdplib::dead_end_cost)
                     break;  // BPSG changed, must expand tip nodes again
             }

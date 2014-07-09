@@ -37,7 +37,7 @@ namespace mlsolvers
          *
          * @param s0 The state to start the search at.
          */
-        void solve(mlcore::State* s0);
+        virtual mlcore::Action* solve(mlcore::State* s0);
 
     };
 }

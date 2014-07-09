@@ -28,11 +28,13 @@ namespace mlsolvers
      * http://www.morganclaypool.com/doi/pdf/10.2200/S00426ED1V01Y201206AIM017
      *
      */
-    class UCTSolver
+    class UCTSolver : public Solver
     {
     private:
         mlcore::Problem* problem_;
         double C_;
+        int maxRollouts_;
+        int cutoff_;
 
         mlcore::StateSet visited_;
         mlcore::StateIntMap counterS_;
@@ -49,12 +51,14 @@ namespace mlsolvers
 
         /**
          * Creates an UCT solver for the given problem using the given exploration
-         * parameter.
+         * parameter, maximum number of rollouts, and cutoff (maximum rollout depth).
          *
          * @param problem The problem to be solved.
          * @param C The value of the exploration parameter.
+         * @param maxRollouts The maximum number of sample trajectories to gather.
+         * @param cutoff The maximum depth allowed for each rollout.
          */
-        UCTSolver(mlcore::Problem* problem, double C);
+        UCTSolver(mlcore::Problem* problem, double C, int maxRollouts, int cutoff);
 
         /**
          * Returns the Q-values estimated by the UCT algorithm.
@@ -65,6 +69,20 @@ namespace mlsolvers
          * Returns the counter for state-action pair visits.
          */
         StateActionIntMap& counterSA() { return counterSA_; }
+
+        /**
+        * Sets the maximum number of sample trajectories to gather.
+        *
+        * @param maxRollouts The maximum number of sample trajectories to gather.
+        */
+        void setMaxRollouts(int maxRollouts) { maxRollouts_ = maxRollouts; }
+
+        /**
+        * Sets the cutoff for the algorithm (i.e., the maximum depth of each rollout).
+        *
+        * @param cutoff The maximum depth of the rollouts.
+        */
+        void setCutoff(int cutoff) { cutoff_ = cutoff; }
 
         /**
          * Computes the UCB1 cost of the given state-action pair with the current
@@ -82,12 +100,10 @@ namespace mlsolvers
          * Picks an action for the given state using the UCT algorithm.
          *
          * @param s0 The state for which the action will be chosen.
-         * @param maxRollouts The maximum number of sample trajectories to gather.
-         * @param cutoff The maximum depth allowed for each rollout.
          *
          * @return The action chosen by UCT.
          */
-        mlcore::Action* solve(mlcore::State* s0, int maxRollouts, int cutoff);
+        virtual mlcore::Action* solve(mlcore::State* s0);
     };
 
 }

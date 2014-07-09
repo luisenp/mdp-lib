@@ -79,10 +79,11 @@ int main(int argc, char* args[])
     cout << "LRTDP " << eCost.value() / ngood << " " << ngood << endl;
 
     /* Evaluating UCT policy */
-    UCTSolver uct(problem, 0);
-    uct.solve(problem->initialState(),1000, 10);
+    UCTSolver uct(problem, 0, 1000, 10);
+    uct.solve(problem->initialState());
     ngood = 0;
     eCost = Rational(0.0);
+    uct.setMaxRollouts(1);
     for (int i = 0; i < nsim; i++) {
         State* tmp = problem->initialState();
         Rational costSim(0.0);
@@ -95,7 +96,7 @@ int main(int argc, char* args[])
                 }
                 break;
             }
-            Action* a = uct.solve(tmp, 1, 10);
+            Action* a = uct.solve(tmp);
             costSim = costSim + problem->cost(tmp, a);
             tmp = randomSuccessor(problem, tmp, a);
         }

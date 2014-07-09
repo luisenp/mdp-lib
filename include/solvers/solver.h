@@ -21,7 +21,14 @@ namespace mlsolvers
     class Solver
     {
     public:
-        void solve(mlcore::State* s0);
+
+        /**
+         * Solves the associated problem using this solver.
+         *
+         * @param s0 The state to start the search at.
+         * @return The action recommended by this algorithm for state s0.
+         */
+        virtual mlcore::Action* solve(mlcore::State* s0) =0;
     };
 
     /**

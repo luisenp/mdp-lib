@@ -6,10 +6,12 @@
 
 namespace mlsolvers
 {
-    UCTSolver::UCTSolver(mlcore::Problem* problem, double C)
+    UCTSolver::UCTSolver(mlcore::Problem* problem, double C, int maxRollouts, int cutoff)
     {
         problem_ = problem;
         C_ = C;
+        maxRollouts_ = maxRollouts;
+        cutoff_ = cutoff;
     }
 
     mlcore::Action* UCTSolver::pickUCB1Action(mlcore::State* s)
@@ -42,15 +44,15 @@ namespace mlsolvers
         return cost;
     }
 
-    mlcore::Action* UCTSolver::solve(mlcore::State* s0, int maxRollouts, int cutoff)
+    mlcore::Action* UCTSolver::solve(mlcore::State* s0)
     {
-        for (int r = 0; r < maxRollouts; r++) {
+        for (int r = 0; r < maxRollouts_; r++) {
             mlcore::State* tmp = s0;
-            std::vector<int> cumCost(cutoff + 1);
-            std::vector<mlcore::State*> statesRoll(cutoff + 1);
-            std::vector<mlcore::Action*> actionsRoll(cutoff + 1);
+            std::vector<int> cumCost(cutoff_ + 1);
+            std::vector<mlcore::State*> statesRoll(cutoff_ + 1);
+            std::vector<mlcore::Action*> actionsRoll(cutoff_ + 1);
             int maxSteps = 0;
-            for (int i = 1; i <= cutoff; i++) {
+            for (int i = 1; i <= cutoff_; i++) {
                 if (visited_.insert(tmp).second) {
                     counterS_[tmp] = 0;
                     for (mlcore::Action* a : problem_->actions()) {
