@@ -22,6 +22,7 @@
 
 # Other
 include/mdpsim-2.2.2/*
+include/mini-gpt/*
 lib/*
 testgw
 testctp
