@@ -8,7 +8,6 @@
 
 #include "action.h"
 #include "mdplib.h"
-#include "util/rational.h"
 
 #define su_state first
 #define su_prob second
@@ -31,7 +30,7 @@ namespace mlcore
         /**
          * An estimate of the expected cost of reaching the goal from this state.
          */
-        Rational cost_ = Rational(mdplib::dead_end_cost + 1);
+        double cost_ = mdplib::dead_end_cost + 1;
 
         /**
          * An estimate of the best action to reach a goal from this state.
@@ -115,14 +114,14 @@ namespace mlcore
          *
          * @return An estimate of the optimal expected cost to reach a goal from this state.
          */
-        Rational cost() const;
+        double cost() const;
 
         /**
          * Updates the estimate of the expected cost to reach a goal from this state.
          *
          * @param c The updated expected cost to reach a goal from this state.
          */
-        void setCost(Rational c)
+        void setCost(double c)
         {
             cost_ = c;
         }
@@ -154,15 +153,15 @@ namespace mlcore
         void reset()
         {
             bits_ = 0;
-            cost_ = Rational(mdplib::dead_end_cost + 1);
+            cost_ = mdplib::dead_end_cost + 1;
             bestAction_ = nullptr;
         }
     };
 
     /**
-     * A successor is just a <State*, Rational> pair.
+     * A successor is just a <State*, double> pair.
      */
-     typedef std::pair<State*, Rational> Successor;
+     typedef std::pair<State*, double> Successor;
 
     /**
      * Wrapper of the hash function for state objects (used to define StateSet below).

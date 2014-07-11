@@ -22,26 +22,26 @@ std::list<mlcore::Successor> BinaryTreeProblem::transition(mlcore::State* s, mlc
 {
     std::list<mlcore::Successor> successors;
     if (s == absorbing_ || goal(s)) {
-        successors.push_front(mlcore::Successor(absorbing_, Rational(1)));
+        successors.push_front(mlcore::Successor(absorbing_, 1.0));
         return successors;
     }
     BinaryTreeState* bts = (BinaryTreeState *) s;
     BinaryTreeAction* bta = (BinaryTreeAction *) a;
     mlcore::State* next = new BinaryTreeState(bts->level() + 1, 2*bts->index() + ( 1 - bta->left()));
     next = this->addState(next);
-    successors.push_front(mlcore::Successor(next, Rational(1)));
+    successors.push_front(mlcore::Successor(next, 1.0));
     return successors;
 }
 
-Rational BinaryTreeProblem::cost(mlcore::State* s, mlcore::Action* a) const
+double BinaryTreeProblem::cost(mlcore::State* s, mlcore::Action* a) const
 {
     BinaryTreeState* bts = (BinaryTreeState *) s;
     BinaryTreeAction* bta = (BinaryTreeAction *) a;
     if (bts->level() != levels_ - 2)
-        return Rational(0);
+        return 0.0;
     if (bts->index() != 0)
-        return Rational(1);
-    return bta->left() ? Rational(0) : Rational(1);
+        return 1.0;
+    return bta->left() ? 0.0 : 1.0;
 }
 
 bool BinaryTreeProblem::applicable(mlcore::State* s, mlcore::Action* a) const

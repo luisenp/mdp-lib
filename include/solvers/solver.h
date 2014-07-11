@@ -6,7 +6,6 @@
 #include "../../include/problem.h"
 #include "../../include/heuristic.h"
 #include "../../include/state.h"
-#include "../../include/util/rational.h"
 #include "../../include/util/general.h"
 
 #define bb_cost first
@@ -40,10 +39,10 @@ namespace mlsolvers
      * @param a The action for which the Q-value will be computed
      * @return The Q-value of the state-action pair.
      */
-    inline Rational qvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
+    inline double qvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
     {
         std::list<mlcore::Successor> successors = problem->transition(s, a);
-        Rational qAction = problem->cost(s, a);
+        double qAction = problem->cost(s, a);
         for (mlcore::Successor su : successors) {
             mlcore::State* s = problem->addState(su.su_state);
             qAction = qAction + su.su_prob * s->cost();
@@ -61,14 +60,14 @@ namespace mlsolvers
      * @return A pair containing the estimated cost and estimated best action according
      *        to this Bellman backup.
      */
-    inline std::pair<Rational, mlcore::Action*> bellmanBackup(mlcore::Problem* problem, mlcore::State* s)
+    inline std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem, mlcore::State* s)
     {
-        Rational bestQ(mdplib::dead_end_cost);
+        double bestQ = mdplib::dead_end_cost;
         mlcore::Action* bestAction = nullptr;
         for (mlcore::Action* a : problem->actions()) {
             if (!problem->applicable(s, a))
                 continue;
-            Rational qAction = qvalue(problem, s, a);
+            double qAction = qvalue(problem, s, a);
             if (qAction < bestQ) {
                 bestQ = qAction;
                 bestAction = a;
@@ -85,13 +84,13 @@ namespace mlsolvers
      * @param s The state on which the Bellman backup will be performed.
      * @return The residual of the state.
      */
-    inline Rational bellmanUpdate(mlcore::Problem* problem, mlcore::State* s)
+    inline double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s)
     {
-        std::pair<Rational, mlcore::Action*> best = bellmanBackup(problem, s);
-        Rational residual = s->cost() - best.bb_cost;
+        std::pair<double, mlcore::Action*> best = bellmanBackup(problem, s);
+        double residual = s->cost() - best.bb_cost;
         s->setCost(best.bb_cost);
         s->setBestAction(best.bb_action);
-        return residual.abs();
+        return fabs(residual);
     }
 
 
@@ -120,13 +119,13 @@ namespace mlsolvers
         if (a == nullptr)
             return s;
 
-        Rational acc(0);
+        double acc = 0.0;
         std::list<mlcore::Successor> successors = problem->transition(s, a);
         if (successors.empty())
             return s;
         for (mlcore::Successor sccr : successors) {
             acc = acc + sccr.su_prob;
-            if (acc.value() >= pick)
+            if (acc >= pick)
                 return sccr.su_state;
         }
     }
@@ -160,13 +159,13 @@ namespace mlsolvers
      * @param s The state for which the residual will be computed.
      * @return The residual of the given state.
      */
-    inline Rational residual(mlcore::Problem* problem, mlcore::State* s)
+    inline double residual(mlcore::Problem* problem, mlcore::State* s)
     {
         mlcore::Action* bestAction = greedyAction(problem, s);
         if (bestAction == nullptr)
-            return Rational(0); // state is a dead-end, nothing to do here
-        Rational res = qvalue(problem, s, bestAction) - s->cost();
-        return res.abs();
+            return 0.0; // state is a dead-end, nothing to do here
+        double res = qvalue(problem, s, bestAction) - s->cost();
+        return fabs(res);
     }
 
 }

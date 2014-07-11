@@ -5,7 +5,6 @@
 #include "state.h"
 #include "action.h"
 #include "heuristic.h"
-#include "util/rational.h"
 
 namespace mlcore
 {
@@ -35,7 +34,7 @@ namespace mlcore
         /**
          * Discount factor.
          */
-        Rational gamma_;
+        double gamma_;
 
         /**
          * A list of all the possible actions in this problem.
@@ -94,7 +93,7 @@ namespace mlcore
          *
          * @return The cost of applying action the given action to the given state.
          */
-        virtual Rational cost(State* s, Action *a) const =0;
+        virtual double cost(State* s, Action *a) const =0;
 
         /**
          * Applicability check.
@@ -187,7 +186,7 @@ namespace mlcore
         /**
          * Returns the discount factor.
          */
-        Rational gamma()
+        double gamma()
         {
             return gamma_;
         }

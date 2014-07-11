@@ -59,13 +59,13 @@ namespace mlsolvers
                         if (!problem_->applicable(tmp, a))
                             continue;
                         counterSA_[tmp][a] = 0;
-                        qvalues_[tmp][a] = qvalue(problem_, tmp, a).value();
+                        qvalues_[tmp][a] = qvalue(problem_, tmp, a);
                     }
                 }
                 maxSteps = i;
                 mlcore::Action* a = pickUCB1Action(tmp);
                 mlcore::State* next = randomSuccessor(problem_, tmp, a);
-                cumCost[i] = cumCost[i - 1] + problem_->cost(tmp, a).value();
+                cumCost[i] = cumCost[i - 1] + problem_->cost(tmp, a);
                 statesRoll[i] = tmp;
                 actionsRoll[i] = a;
                 tmp = next;

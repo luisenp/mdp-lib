@@ -28,7 +28,7 @@ struct pair_int_hash {
 typedef std::unordered_set< std::pair <int,int> , pair_int_hash, pair_int_equal> IntPairSet;
 
 typedef std::unordered_map< std::pair <int,int> ,
-                             Rational, pair_int_hash,
-                             pair_int_equal> PairRationalMap;
+                             double, pair_int_hash,
+                             pair_int_equal> PairDoubleMap;
 
 #endif // MDP_LIB_GENERAL_H

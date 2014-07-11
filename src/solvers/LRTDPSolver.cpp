@@ -3,7 +3,7 @@
 
 namespace mlsolvers
 {
-    LRTDPSolver::LRTDPSolver(mlcore::Problem* problem, int maxTrials, Rational epsilon)
+    LRTDPSolver::LRTDPSolver(mlcore::Problem* problem, int maxTrials, double epsilon)
     {
         problem_ = problem;
         maxTrials_ = maxTrials;

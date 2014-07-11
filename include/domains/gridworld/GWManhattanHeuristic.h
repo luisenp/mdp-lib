@@ -18,20 +18,20 @@ public:
         problem_ = problem;
     }
 
-    virtual Rational cost(const mlcore::State* s) const
+    virtual double cost(const mlcore::State* s) const
     {
         GridWorldState* gws = (GridWorldState*) s;
-        Rational cost_(mdplib::dead_end_cost);
+        double cost_ = mdplib::dead_end_cost;
         if (gws->x() == -1) // absorbing dummy state
             return 0;
-        for (PairRationalMap::iterator it = problem_->goals_->begin();
+        for (PairDoubleMap::iterator it = problem_->goals_->begin();
                                         it != problem_->goals_->end(); it++) {
             std::pair<int,int> goal = it->first;
-            Rational value = it->second;
+            double value = it->second;
             if (gws->x() == goal.first && gws->y() == goal.second)
                 return value;
-            Rational md(abs(gws->x() - goal.first) + abs(gws->y() - goal.second));
-            Rational goalCost = md * Rational(3, 100) + value;
+            double md = abs(gws->x() - goal.first) + abs(gws->y() - goal.second);
+            double goalCost = 0.03* md + value;
             if (goalCost < cost_)
                 cost_ = goalCost;
         }

@@ -10,7 +10,6 @@
 
 #include "../include/util/general.h"
 #include "../include/util/graph.h"
-#include "../include/util/rational.h"
 
 #include "../include/domains/binarytree/BinaryTreeProblem.h"
 
@@ -30,7 +29,7 @@ int main(int argc, char* args[])
     int nrolls = 100;
     if (argc > 1)
         nrolls = atoi(args[1]);
-    UCTSolver uct(problem, 0, nrolls, 0);
+    UCTSolver uct(problem, 0, nrolls, 100);
     Action* a = uct.solve(problem->initialState());
     StateActionDoubleMap& qvalues = uct.qvalues();
     StateActionIntMap& counterSA = uct.counterSA();

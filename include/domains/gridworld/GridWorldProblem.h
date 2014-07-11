@@ -9,7 +9,6 @@
 #include "../../state.h"
 #include "../../action.h"
 #include "../../util/general.h"
-#include "../../util/rational.h"
 
 class GWManhattanHeuristic;
 
@@ -33,11 +32,11 @@ private:
     int height_;
     int x0_;
     int y0_;
-    PairRationalMap* goals_;
+    PairDoubleMap* goals_;
     mlcore::State* absorbing;
 
     void addSuccessor(GridWorldState* state, std::list<mlcore::Successor>& successors, int val,
-                      int limit, int newx, int newy, Rational prob);
+                      int limit, int newx, int newy, double prob);
 
     void addAllActions();
 public:
@@ -52,14 +51,14 @@ public:
      * Constructs a grid world with the specified width, height, goal states,
      * initial state (x0,y0). Heuristic is initialized to all-zero heuristic.
      */
-    GridWorldProblem(int width, int height, int x0, int y0, PairRationalMap* goals);
+    GridWorldProblem(int width, int height, int x0, int y0, PairDoubleMap* goals);
 
     /**
      * Constructs a grid world with the specified width, height, goal states,
      * initial state (x0,y0) and heuristic.
      */
     GridWorldProblem(int width, int height, int x0, int y0,
-                     PairRationalMap* goals, mlcore::Heuristic* h);
+                     PairDoubleMap* goals, mlcore::Heuristic* h);
 
     /**
      * Overrides method from Problem.
@@ -74,7 +73,7 @@ public:
     /**
      * Overrides method from Problem.
      */
-    virtual Rational cost(mlcore::State* s, mlcore::Action* a) const;
+    virtual double cost(mlcore::State* s, mlcore::Action* a) const;
 
     /**
      * Overrides method from Problem.

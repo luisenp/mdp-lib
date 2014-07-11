@@ -14,12 +14,12 @@ namespace mlsolvers
         problem_ = problem;
     }
 
-    void VISolver::solve(int maxIter, Rational tol)
+    void VISolver::solve(int maxIter, double tol)
     {
         for (int i = 0; i < maxIter; i++) {
-            Rational maxResidual(0);
+            double maxResidual = 0.0;
             for (mlcore::State* s : problem_->states()) {
-                Rational residual = bellmanUpdate(problem_, s);
+                double residual = bellmanUpdate(problem_, s);
                 if (residual > maxResidual)
                     maxResidual = residual;
             }

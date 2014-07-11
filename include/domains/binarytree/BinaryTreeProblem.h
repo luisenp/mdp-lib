@@ -30,7 +30,7 @@ public:
     /**
      * Overrides method from mlcore::Problem.
      */
-    virtual Rational cost(mlcore::State* s, mlcore::Action* a) const;
+    virtual double cost(mlcore::State* s, mlcore::Action* a) const;
 
     /**
      * Overrides method from mlcore::Problem.

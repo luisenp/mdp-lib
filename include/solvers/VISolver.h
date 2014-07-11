@@ -28,7 +28,7 @@ namespace mlsolvers
          * @param tol The tolerance for the Bellman residual. If the residual is less
          *           than the tolerance the method stops.
          */
-        void solve(int maxIter, Rational tol);
+        void solve(int maxIter, double tol);
     };
 }
 

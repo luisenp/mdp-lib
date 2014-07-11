@@ -4,7 +4,6 @@
 #include "../include/solvers/VISolver.h"
 #include "../include/solvers/LRTDPSolver.h"
 #include "../include/util/general.h"
-#include "../include/util/rational.h"
 #include "../include/domains/gridworld/GridWorldState.h"
 #include "../include/domains/gridworld/GridWorldProblem.h"
 #include "../include/domains/gridworld/GridWorldAction.h"
@@ -16,8 +15,8 @@ using namespace mlsolvers;
 
 int main()
 {
-    PairRationalMap goals;
-    goals.insert(make_pair(pair<int,int> (2,2), Rational(-1)));
+    PairDoubleMap goals;
+    goals.insert(make_pair(pair<int,int> (2,2), -1.0));
 
     Problem* problem = new GridWorldProblem(3, 3, 0, 0, &goals);
     GridWorldState* gws = (GridWorldState *) problem->initialState();
@@ -29,12 +28,12 @@ int main()
     StateSet states = problem->states();
 
     VISolver solver(problem);
-    solver.solve(100, Rational(1, 1000));
+    solver.solve(100, 1.0e-3);
 
     std::cout << "Value Iteration Estimates" << std::endl;
     for (State* s : problem->states())
         std::cout << s << " " << s->cost() << " " << heuristic->cost(s) << std::endl;
-    LRTDPSolver lrtdp(problem, 1000, Rational(1,1000));
+    LRTDPSolver lrtdp(problem, 1000, 1.0e-3);
     lrtdp.solve(problem->initialState());
 
     std::cout << "LRTDP Estimates" << std::endl;

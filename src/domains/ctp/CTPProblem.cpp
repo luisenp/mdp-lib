@@ -38,12 +38,12 @@ std::list<mlcore::Successor> CTPProblem::transition(mlcore::State* s, mlcore::Ac
 
     std::list<mlcore::Successor> successors;
     if (s == absorbing_) {
-        successors.push_front(mlcore::Successor(s, Rational(1)));
+        successors.push_front(mlcore::Successor(s, 1.0));
         return successors;
     }
 
     if (goal(s)) {
-        successors.push_front(mlcore::Successor(absorbing_, Rational(1)));
+        successors.push_front(mlcore::Successor(absorbing_, 1.0));
         return successors;
     }
 
@@ -72,20 +72,20 @@ std::list<mlcore::Successor> CTPProblem::transition(mlcore::State* s, mlcore::Ac
             next->setStatus(neighbors[j], to, st);
         }
         next->explored().insert(to);
-        successors.push_back(mlcore::Successor(this->addState(next), Rational(p)));
+        successors.push_back(mlcore::Successor(this->addState(next), p));
     }
     return successors;
 }
 
-Rational CTPProblem::cost(mlcore::State* s, mlcore::Action* a) const
+double CTPProblem::cost(mlcore::State* s, mlcore::Action* a) const
 {
     assert(applicable(s, a));
     if (s == absorbing_ || goal(s)) {
-        return Rational(0);
+        return 0.0;
     }
     CTPState* ctps = (CTPState *) s;
     CTPAction* ctpa = (CTPAction *) a;
-    return Rational(ctps->distanceOpen(ctpa->to()));
+    return ctps->distanceOpen(ctpa->to());
 }
 
 bool CTPProblem::applicable(mlcore::State* s, mlcore::Action* a) const

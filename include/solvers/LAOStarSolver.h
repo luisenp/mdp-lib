@@ -15,7 +15,7 @@ namespace mlsolvers
         mlcore::Problem* problem_;
         mlcore::StateSet visited;
 
-        Rational epsilon_;
+        double epsilon_;
 
         /* Expands the BPSG rooted at state s and returns the number of states expanded */
         int expand(mlcore::State* s, int level);
@@ -29,7 +29,7 @@ namespace mlsolvers
          * @param problem The problem to be solved.
          * @param epsilon The error tolerance wanted for the solution.
          */
-        LAOStarSolver(mlcore::Problem* problem, Rational epsilon)
+        LAOStarSolver(mlcore::Problem* problem, double epsilon)
             : problem_(problem), epsilon_(epsilon) { }
 
         /**

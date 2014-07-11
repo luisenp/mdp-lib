@@ -16,7 +16,7 @@ namespace mlsolvers
     private:
         mlcore::Problem* problem_;
         int maxTrials_;
-        Rational epsilon_;
+        double epsilon_;
 
         /* Performs a single LRTDP trial */
         void trial();
@@ -32,7 +32,7 @@ namespace mlsolvers
          * @param maxTrials The maximum number of trials to perform.
          * @param epsilon The error tolerance.
          */
-        LRTDPSolver(mlcore::Problem* problem, int maxTrials, Rational epsilon);
+        LRTDPSolver(mlcore::Problem* problem, int maxTrials, double epsilon);
 
         /**
          * Solves the associated problem using the Labeled RTDP algorithm.

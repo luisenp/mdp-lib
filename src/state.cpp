@@ -12,11 +12,11 @@ namespace mlcore
         s->print(os);
     }
 
-    Rational State::cost() const
+    double State::cost() const
     {
         if (cost_ > mdplib::dead_end_cost) {
             if (problem_ == nullptr || problem_->heuristic() == nullptr)
-                return Rational(0);
+                return 0.0;
             else
                 return problem_->heuristic()->cost(this);
         }

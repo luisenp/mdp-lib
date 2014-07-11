@@ -2,7 +2,6 @@
 #include "../../../include/domains/gridworld/GridWorldProblem.h"
 #include "../../../include/domains/gridworld/GridWorldState.h"
 #include "../../../include/domains/gridworld/GridWorldAction.h"
-#include "../../../include/util/rational.h"
 
 void GridWorldProblem::addAllActions()
 {
@@ -20,23 +19,23 @@ GridWorldProblem::GridWorldProblem() :
                     width_(0), height_(0), x0_(0), y0_(0), goals_(0)
 {
     absorbing = new GridWorldState(this, -1, -1);
-    gamma_ = Rational(1);
+    gamma_ = 1.0;
     addAllActions();
 }
 
-GridWorldProblem::GridWorldProblem(int width, int height, int x0, int y0, PairRationalMap* goals)
+GridWorldProblem::GridWorldProblem(int width, int height, int x0, int y0, PairDoubleMap* goals)
                                    : width_(width), height_(height), x0_(x0), y0_(y0), goals_(goals)
 {
     mlcore::State* init = new GridWorldState(this, x0_, y0_);
     absorbing = new GridWorldState(this, -1, -1);
     s0 = this->addState(init);
-    gamma_ = Rational(1);
+    gamma_ = 1.0;
     addAllActions();
 }
 
 GridWorldProblem::GridWorldProblem(int width, int height,
                                    int x0, int y0,
-                                   PairRationalMap* goals, mlcore::Heuristic* h)
+                                   PairDoubleMap* goals, mlcore::Heuristic* h)
                                    : width_(width), height_(height),
                                       x0_(x0), y0_(y0), goals_(goals)
 {
@@ -44,7 +43,7 @@ GridWorldProblem::GridWorldProblem(int width, int height,
     absorbing = new GridWorldState(this, -1, -1);
     s0 = this->addState(init);
     heuristic_ = h;
-    gamma_ = Rational(1);
+    gamma_ = 1.0;
     addAllActions();
 }
 
@@ -63,65 +62,65 @@ std::list<mlcore::Successor> GridWorldProblem::transition(mlcore::State *s, mlco
     std::list<mlcore::Successor> successors;
 
     if (s == absorbing) {
-        successors.push_front(mlcore::Successor(s, Rational(1)));
+        successors.push_front(mlcore::Successor(s, 1.0));
         return successors;
     }
 
     if (goal(s)) {
-        successors.push_front(mlcore::Successor(absorbing, Rational(1)));
+        successors.push_front(mlcore::Successor(absorbing, 1.0));
         return successors;
     }
 
     if (action->dir() == gridworld::UP) {
         addSuccessor(state, successors, height_ - 1, state->y(),
-                     state->x(), state->y() + 1, Rational(8, 10));
+                     state->x(), state->y() + 1, 0.8);
 
         addSuccessor(state, successors, state->x(), 0,
-                     state->x() - 1, state->y(), Rational(1, 10));
+                     state->x() - 1, state->y(), 0.1);
 
         addSuccessor(state, successors, width_ - 1, state->x(),
-                     state->x() + 1, state->y(), Rational(1, 10));
+                     state->x() + 1, state->y(), 0.1);
     } else if (action->dir() == gridworld::DOWN) {
         addSuccessor(state, successors, state->y(), 0,
-                     state->x(), state->y() - 1, Rational(8, 10));
+                     state->x(), state->y() - 1, 0.8);
 
         addSuccessor(state, successors, state->x(), 0,
-                     state->x() - 1, state->y(), Rational(1, 10));
+                     state->x() - 1, state->y(), 0.1);
 
         addSuccessor(state, successors, width_ - 1, state->x(),
-                     state->x() + 1, state->y(), Rational(1, 10));
+                     state->x() + 1, state->y(), 0.1);
     } else if (action->dir() == gridworld::LEFT) {
         addSuccessor(state, successors, state->x(), 0,
-                     state->x() - 1, state->y(), Rational(8, 10));
+                     state->x() - 1, state->y(), 0.8);
 
         addSuccessor(state, successors, state->y(), 0,
-                     state->x(), state->y() - 1, Rational(1, 10));
+                     state->x(), state->y() - 1, 0.1);
 
         addSuccessor(state, successors, height_ - 1, state->y(),
-                     state->x(), state->y() + 1, Rational(1, 10));
+                     state->x(), state->y() + 1, 0.1);
     } else if (action->dir() == gridworld::RIGHT) {
         addSuccessor(state, successors, width_ - 1, state->x(),
-                     state->x() + 1, state->y(), Rational(8, 10));
+                     state->x() + 1, state->y(), 0.8);
 
         addSuccessor(state, successors, state->y(), 0,
-                     state->x(), state->y() - 1, Rational(1, 10));
+                     state->x(), state->y() - 1, 0.1);
 
         addSuccessor(state, successors, height_ - 1, state->y(),
-                     state->x(), state->y() + 1, Rational(1, 10));
+                     state->x(), state->y() + 1, 0.1);
     }
     return successors;
 }
 
-Rational GridWorldProblem::cost(mlcore::State* s, mlcore::Action* a) const
+double GridWorldProblem::cost(mlcore::State* s, mlcore::Action* a) const
 {
     if (s == absorbing)
-        return Rational(0);
+        return 0.0;
     if (goal(s)) {
         GridWorldState* gws = (GridWorldState *) s;
         std::pair<int,int> pos(gws->x(),gws->y());
         return (*goals_)[pos];
     }
-    return Rational(3, 100);
+    return 0.03;
 }
 
 bool GridWorldProblem::applicable(mlcore::State* s, mlcore::Action* a) const
@@ -130,7 +129,7 @@ bool GridWorldProblem::applicable(mlcore::State* s, mlcore::Action* a) const
 }
 
 void GridWorldProblem::addSuccessor(GridWorldState* state, std::list<mlcore::Successor>& successors,
-                                    int val, int limit, int newx, int newy, Rational prob)
+                                    int val, int limit, int newx, int newy, double prob)
 {
     if (val > limit) {
         GridWorldState *next = new GridWorldState(this, newx, newy);
