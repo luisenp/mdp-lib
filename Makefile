@@ -19,6 +19,9 @@ b2t: src/domains/binarytree/*.cpp src/solvers/*.cpp src/util/*.cpp include/*.h i
 ofiles: src/solvers/*.cpp src/util/*.cpp include/*.h include/solvers/*.h src/*.cpp
 	$(CC) $(CFLAGS) -fPIC -shared -Iinclude -Iinclude/solvers -Include/util src/util/*.cpp src/*.cpp src/solvers/*.cpp -o libmdp.so
 
+ppddl: src/ppddl/*.cpp include/*.h include/ppddl/*.h include/ppddl/mdpsim/*.h
+	$(CC) $(CFLAGS) -Iinclude -Iinclude/ppddl -Include/ppddl/mdpsim -c src/ppddl/*.cpp
+
 clean: test/*.o
 	rm test/*.o
 	rm *.o

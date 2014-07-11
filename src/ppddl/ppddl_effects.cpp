@@ -15,10 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "effects.h"
-#include <stack>
-#include <stdexcept>
-#include <typeinfo>
+
+//#include "effects.h"
+//#include <stack>
+//#include <stdexcept>
+//#include <typeinfo>
 
 
 /* ====================================================================== */
