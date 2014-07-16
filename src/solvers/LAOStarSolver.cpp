@@ -34,12 +34,14 @@ namespace mlsolvers
             return 0;
 
         int cnt = 0;
+
+        if (s->deadEnd() || problem_->goal(s))
+            return 0;
+
         if (s->bestAction() == nullptr) {   // this means state has not been expanded
             bellmanUpdate(problem_, s);
             cnt = 1;
         } else {
-            if (problem_->goal(s))
-                return 0;
             mlcore::Action* a = s->bestAction();
             std::list<mlcore::Successor> successors = problem_->transition(s, a);
             for (mlcore::Successor sccr : successors)
@@ -52,16 +54,18 @@ namespace mlsolvers
     double LAOStarSolver::testConvergence(mlcore::State* s, int level)
     {
         double error = 0.0;
+
+        if (s->deadEnd() || problem_->goal(s))
+            return 0.0;
+
         if (!visited.insert(s).second)
-            return (s->bestAction() == nullptr) ? mdplib::dead_end_cost + 1 : 0.0;
+            return 0.0;
 
         mlcore::Action* prevAction = s->bestAction();
         if (prevAction == nullptr) {
             // hasn't converged because a state in BPSG doesn't have an action ready
             return mdplib::dead_end_cost + 1;
         } else {
-            if (problem_->goal(s))
-                return 0.0;
             std::list<mlcore::Successor> successors = problem_->transition(s, prevAction);
             for (mlcore::Successor sccr : successors)
                 error =  std::max(error, testConvergence(sccr.su_state, level + 1));

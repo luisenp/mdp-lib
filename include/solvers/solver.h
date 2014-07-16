@@ -64,16 +64,21 @@ namespace mlsolvers
     inline std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem, mlcore::State* s)
     {
         double bestQ = problem->goal(s) ? 0.0 : mdplib::dead_end_cost;
+        bool hasAction = false;
         mlcore::Action* bestAction = nullptr;
         for (mlcore::Action* a : problem->actions()) {
             if (!problem->applicable(s, a))
                 continue;
+            hasAction = true;
             double qAction = qvalue(problem, s, a);
             if (qAction < bestQ) {
                 bestQ = qAction;
                 bestAction = a;
             }
         }
+
+        if (!hasAction && bestQ == mdplib::dead_end_cost)
+            s->markDeadEnd();
         return std::make_pair(bestQ, bestAction);
     }
 

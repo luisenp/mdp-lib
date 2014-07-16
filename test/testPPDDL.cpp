@@ -85,7 +85,7 @@ int main(int argc, char **argv)
     mlcore::State* tmp = MLProblem->initialState();
     while (true) {
         mlcore::Action* a = tmp->bestAction();
-        cerr << tmp << " " << tmp->cost() << endl;
+//        cerr << tmp << " " << tmp->cost() << endl;
         if (MLProblem->goal(tmp)) {
             cerr << "GOAL :-)" << endl;
             break;
@@ -94,7 +94,7 @@ int main(int argc, char **argv)
             cerr << "DEAD-END!!" << endl;
             break;
         }
-        cerr << tmp->bestAction() << endl;
+//        cerr << tmp->bestAction() << endl;
         tmp = mlsolvers::randomSuccessor(MLProblem, tmp, a);
     }
 

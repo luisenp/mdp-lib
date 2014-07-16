@@ -42,6 +42,11 @@ namespace mlcore
          */
         Problem* problem_ = nullptr;
 
+        /**
+        * Whether this state was found to be a dead-end or not.
+        */
+        bool deadEnd_ = false;
+
         virtual std::ostream& print(std::ostream& os) const =0;
 
     public:
@@ -115,6 +120,24 @@ namespace mlcore
          * @return An estimate of the optimal expected cost to reach a goal from this state.
          */
         double cost() const;
+
+        /**
+         * Marks this state as a dead-end.
+         */
+        void markDeadEnd()
+        {
+            deadEnd_ = true;
+        }
+
+        /**
+         * Returns whether this state is a dead-end or not.
+         *
+         * @return whether this state is a dead-end or not.
+         */
+        bool deadEnd() const
+        {
+            return deadEnd_;
+        }
 
         /**
          * Updates the estimate of the expected cost to reach a goal from this state.
