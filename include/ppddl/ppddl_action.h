@@ -3,6 +3,8 @@
 
 #include "../action.h"
 #include "mini-gpt/states.h"
+#include "mini-gpt/actions.h"
+#include "mini-gpt/problems.h"
 
 namespace mlppddl
 {
@@ -16,11 +18,9 @@ private:
     virtual std::ostream& print(std::ostream& os) const;
 
 public:
-    Action(const action_t* pAction, int index) : index_(index), pAction_(pAction) {}
+    Action(const action_t* pAction, int index) : pAction_(pAction), index_(index) {}
 
     const action_t* pAction() { return pAction_; }
-
-    int index() { return index_; }
 
     /**
      * Overriding method from Action.
@@ -31,7 +31,8 @@ public:
             return *this;
 
         Action* action = (Action*)  & rhs;
-        pAction_ =  action->pAction_;
+        pAction_ = action->pAction_;
+        index_ = action->index_;
         return *this;
     }
 

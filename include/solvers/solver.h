@@ -1,4 +1,5 @@
 #ifndef MDPLIB_SOLVER_H
+#define MDPLIB_SOLVER_H
 
 #include <random>
 #include <cassert>
@@ -62,7 +63,7 @@ namespace mlsolvers
      */
     inline std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem, mlcore::State* s)
     {
-        double bestQ = mdplib::dead_end_cost;
+        double bestQ = problem->goal(s) ? 0.0 : mdplib::dead_end_cost;
         mlcore::Action* bestAction = nullptr;
         for (mlcore::Action* a : problem->actions()) {
             if (!problem->applicable(s, a))

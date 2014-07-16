@@ -19,8 +19,8 @@ b2t: src/domains/binarytree/*.cpp src/solvers/*.cpp src/util/*.cpp include/*.h i
 ofiles: src/solvers/*.cpp src/util/*.cpp include/*.h include/solvers/*.h src/*.cpp
 	$(CC) $(CFLAGS) -fPIC -shared -Iinclude -Iinclude/solvers -Include/util src/util/*.cpp src/*.cpp src/solvers/*.cpp -o libmdp.so
 
-ppddl: src/ppddl/*.cpp include/*.h include/ppddl/*.h include/ppddl/mini-gpt/*.h
-	$(CC) $(CFLAGS) -Iinclude -Iinclude/ppddl -Include/ppddl/mini-gpt -c src/ppddl/*.cpp
+ppddl: src/ppddl/*.cpp include/*.h include/ppddl/*.h include/ppddl/mini-gpt/*.h src/solvers/*.cpp src/util/*.cpp
+	$(CC) $(CFLAGS) -Iinclude -Iinclude/ppddl -Include/ppddl/mini-gpt -Iinclude/solvers -c src/ppddl/*.cpp src/*.cpp src/solvers/*.cpp src/util/*.cpp
 	mv *.o test/
 	$(CC) $(CFLAGS) -Iinclude -Iinclude/solvers -Iinclude/util -L. -lmdp -o testppddl test/testPPDDL.cpp test/*.o lib/libminigpt.a
 

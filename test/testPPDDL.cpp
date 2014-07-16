@@ -9,7 +9,10 @@
 
 #include "../include/state.h"
 #include "../include/ppddl/ppddl_problem.h"
+
+#include "../include/solvers/solver.h"
 #include "../include/solvers/LRTDPSolver.h"
+#include "../include/solvers/LAOStarSolver.h"
 
 using namespace std;
 
@@ -70,15 +73,31 @@ int main(int argc, char **argv)
     }
 
     /* Initializing problem */
-    mlcore::Problem* MLProblem = new mlppddl::Problem(problem);
+    mlppddl::Problem* MLProblem = new mlppddl::Problem(problem);
 
-    mlsolvers::LRTDPSolver lrtdp(MLProblem, 100, 0.001);
-    lrtdp.solve(MLProblem->initialState());
+    mlsolvers::LAOStarSolver lao(MLProblem, 0.1);
 
-    cout << MLProblem->states().size() << " " << MLProblem->initialState()->cost() << endl;
+    lao.solve(MLProblem->initialState());
 
+    cerr << "MAIN: " << MLProblem->initialState() << " "
+                << MLProblem->initialState()->cost() << endl;
 
-    delete MLProblem;
+    mlcore::State* tmp = MLProblem->initialState();
+    while (true) {
+        mlcore::Action* a = tmp->bestAction();
+        cerr << tmp << " " << tmp->cost() << endl;
+        if (MLProblem->goal(tmp)) {
+            cerr << "GOAL :-)" << endl;
+            break;
+        }
+        if (a == nullptr) {
+            cerr << "DEAD-END!!" << endl;
+            break;
+        }
+        cerr << tmp->bestAction() << endl;
+        tmp = mlsolvers::randomSuccessor(MLProblem, tmp, a);
+    }
+
 
     state_t::finalize();
     problem_t::unregister_use(problem);

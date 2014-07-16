@@ -413,6 +413,9 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/mdpsim-2.2.2/strxml.h" />
 		<Unit filename="include/mdpsim-2.2.2/terms.h" />
 		<Unit filename="include/mdpsim-2.2.2/types.h" />
+		<Unit filename="include/ppddl/ppddl_action.h" />
+		<Unit filename="include/ppddl/ppddl_problem.h" />
+		<Unit filename="include/ppddl/ppddl_state.h" />
 		<Unit filename="include/ppddl_problem.h" />
 		<Unit filename="include/ppddl_state.h" />
 		<Unit filename="include/problem.h" />
@@ -660,6 +663,9 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="src/domains/gridworld/GridWorldAction.cpp" />
 		<Unit filename="src/domains/gridworld/GridWorldProblem.cpp" />
 		<Unit filename="src/domains/gridworld/GridWorldState.cpp" />
+		<Unit filename="src/ppddl/ppddl_action.cpp" />
+		<Unit filename="src/ppddl/ppddl_problem.cpp" />
+		<Unit filename="src/ppddl/ppddl_state.cpp" />
 		<Unit filename="src/ppddl_problem.cpp" />
 		<Unit filename="src/ppddl_state.cpp" />
 		<Unit filename="src/solvers/LAOStarSolver.cpp" />

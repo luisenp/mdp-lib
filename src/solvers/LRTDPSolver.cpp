@@ -1,4 +1,3 @@
-#include "../../include/solvers/solver.h"
 #include "../../include/solvers/LRTDPSolver.h"
 
 namespace mlsolvers
@@ -19,6 +18,9 @@ namespace mlsolvers
             if (problem_->goal(tmp))
                 break;
             bellmanUpdate(problem_, tmp);
+            if (tmp->bestAction() == nullptr) { // state is a dead-end
+                break;
+            }
             tmp = randomSuccessor(problem_, tmp, tmp->bestAction());
         }
 
@@ -55,6 +57,9 @@ namespace mlsolvers
             }
 
             mlcore::Action* a = greedyAction(problem_, tmp);
+            if (a == nullptr) { // state is a dead-end
+                continue;
+            }
             assert(problem_->applicable(tmp, a));
             std::list<mlcore::Successor> successors = problem_->transition(tmp, a);
             for (mlcore::Successor su : successors) {
