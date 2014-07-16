@@ -6,8 +6,6 @@
 #include <unordered_map>
 #include <unistd.h>
 
-#include "rational.h"
-
 #define dprint1(x) std::cerr << x << std::endl
 #define dprint2(x,y) std::cerr << x << " "  << y << std::endl
 #define dprint3(x,y,z) std::cerr << x << " "  << y << " " << z << std::endl

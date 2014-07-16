@@ -2,9 +2,12 @@
 #define MDPLIB_PROBLEM_H
 
 #include <list>
+
 #include "state.h"
 #include "action.h"
 #include "heuristic.h"
+
+#include "util/general.h"
 
 namespace mlcore
 {

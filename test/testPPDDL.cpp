@@ -1,13 +1,15 @@
-#include <cstdlib>
-#include <cstdio>
-#include <iostream>
-#include <cerrno>
-#include <cstring>
+#include <sstream>
+#include <typeinfo>
 
-#include "../lib/mdpsim-2.2.2/states.h"
-#include "../lib/mdpsim-2.2.2/problems.h"
-#include "../lib/mdpsim-2.2.2/domains.h"
-#include "../lib/mdpsim-2.2.2/actions.h"
+#include "../include/ppddl/mini-gpt/states.h"
+#include "../include/ppddl/mini-gpt/problems.h"
+#include "../include/ppddl/mini-gpt/domains.h"
+#include "../include/ppddl/mini-gpt/states.h"
+#include "../include/ppddl/mini-gpt/exceptions.h"
+
+#include "../include/state.h"
+#include "../include/ppddl/ppddl_problem.h"
+#include "../include/solvers/LRTDPSolver.h"
 
 using namespace std;
 
@@ -18,61 +20,67 @@ int warning_level = 0;
 int verbosity = 0;
 
 /* Parses the given file, and returns true on success. */
-static bool read_file(const char* name)
+static bool read_file( const char* name )
 {
-  yyin = fopen(name, "r");
-  if (yyin == 0) {
-    cerr << "mdpclient:" << name << ": " << strerror(errno)
-              << endl;
-    return false;
-  } else {
-    current_file = name;
-    bool success = (yyparse() == 0);
-    fclose(yyin);
-    return success;
-  }
+    yyin = fopen( name, "r" );
+    if( yyin == NULL ) {
+        std::cout << "parser:" << name << ": " << strerror( errno ) << std::endl;
+        return( false );
+    }
+    else {
+        current_file = name;
+        bool success;
+        try {
+            success = (yyparse() == 0);
+        }
+        catch( Exception exception ) {
+            fclose( yyin );
+            std::cout << exception << std::endl;
+            return( false );
+        }
+        fclose( yyin );
+        return( success );
+    }
 }
 
 int main(int argc, char **argv)
 {
-    read_file(argv[1]);
+    std::string file;
+    std::string prob;
+    problem_t *problem = NULL;
+    std::pair<state_t *,Rational> *initial = NULL;
 
-    /* Display domains and problems */
-    cerr << "----------------------------------------"<< endl << "domains:" << endl;
-    for (Domain::DomainMap::const_iterator di = Domain::begin(); di != Domain::end(); di++) {
-        cerr << endl << *(*di).second << endl;
+    if (argc < 2) {
+        std::cout << "Usage: testPPDDL [file] [problem]\n";
+        return -1;
     }
-    cerr << "----------------------------------------"<< endl << "problems:" << endl;
-    for (Problem::ProblemMap::const_iterator pi = Problem::begin(); pi != Problem::end(); pi++) {
-        const Problem* problem = (*pi).second;
 
-        cerr << "***************** Initial Atoms *****************" << endl;
-        const AtomSet& atoms = problem->init_atoms();
-        for (const Atom *a : atoms)
-            cerr << *a << endl;
+    file = argv[1];
+    prob = argv[2];
 
-        cerr << "***************** Actions *****************" << endl;
-        ValueMap values = problem->init_values();
-        ActionList alist;
-        problem->enabled_actions(alist, atoms, values);
-        for (const Action* action : alist) {
-            cerr << *action << endl;
-            cerr << "---------------------------" << endl;
-            for (int i = 0; i < 5; i++) {
-                AtomSet atoms2 = atoms;
-                action->affect(problem->terms(), atoms2, values);
-                for (const Atom *a : atoms2)
-                    cerr << *a << endl;
-                cerr << "........" << endl;
-                for (const Atom *a : atoms)
-                    cerr << *a << endl;
-                cerr << "---------------------------" << endl;
-            }
-            cerr << "+++++++++++++++++++++++++++++++" << endl;
-        }
+    if( !read_file( file.c_str() ) ) {
+        std::cout << "<main>: ERROR: couldn't read problem file `" << file << std::endl;
+        return( -1 );
     }
-    cerr << "******************************************************"<< endl;
+    problem = (problem_t*) problem_t::find( prob.c_str() );
+    if( !problem ) {
+        std::cout << "<main>: ERROR: problem `" << prob <<
+            "' is not defined in file '" << file << "'" << std::endl;
+        return( -1 );
+    }
 
-    Problem::clear();
-    Domain::clear();
+    /* Initializing problem */
+    mlcore::Problem* MLProblem = new mlppddl::Problem(problem);
+
+    mlsolvers::LRTDPSolver lrtdp(MLProblem, 100, 0.001);
+    lrtdp.solve(MLProblem->initialState());
+
+    cout << MLProblem->states().size() << " " << MLProblem->initialState()->cost() << endl;
+
+
+    delete MLProblem;
+
+    state_t::finalize();
+    problem_t::unregister_use(problem);
+    problem_t::clear();
 }

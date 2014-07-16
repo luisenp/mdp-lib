@@ -1,6 +1,8 @@
 #ifndef MDPLIB_LRTDPSOLVER_H
 #define MDPLIB_LRTDPSOLVER_H
 
+#include "solver.h"
+
 #include "../problem.h"
 #include "../heuristic.h"
 

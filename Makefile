@@ -4,7 +4,7 @@ CFLAGS = -std=c++11 -g -DATOM_STATES
 ctp: src/domains/ctp/*.cpp src/solvers/*.cpp src/util/*.cpp include/*.h include/solvers/*.h include/domains/ctp/*.h
 	$(CC) $(CFLAGS) -Iinclude/domains/ctp -Iinclude -Iinclude/solvers -Include/util -c src/domains/ctp/*.cpp src/util/*.cpp src/*.cpp src/solvers/*.cpp
 	mv *.o test/
-	$(CC) $(CFLAGS) -Iinclude/domains/ctp -Iinclude -Iinclude/solvers -Iinclude/util -o testctp test/testCTP.cpp test/*.o
+	$(CC) $(CFLAGS) -Iinclude/domains/ctp -Iinclude -Iinclude/solvers -Iinclude/util -o testctp test/testCTP.cpp test/*.o lib/libminigpt.a
 
 gw: src/domains/gridworld/*.cpp src/solvers/*.cpp src/util/*.cpp include/*.h include/solvers/*.h include/domains/gridworld/*.h
 	$(CC) $(CFLAGS) -Iinclude/domains/gridworld -Iinclude -Iinclude/solvers -c src/domains/gridworld/*.cpp src/util/*.cpp src/*.cpp src/solvers/*.cpp
@@ -21,6 +21,8 @@ ofiles: src/solvers/*.cpp src/util/*.cpp include/*.h include/solvers/*.h src/*.c
 
 ppddl: src/ppddl/*.cpp include/*.h include/ppddl/*.h include/ppddl/mini-gpt/*.h
 	$(CC) $(CFLAGS) -Iinclude -Iinclude/ppddl -Include/ppddl/mini-gpt -c src/ppddl/*.cpp
+	mv *.o test/
+	$(CC) $(CFLAGS) -Iinclude -Iinclude/solvers -Iinclude/util -L. -lmdp -o testppddl test/testPPDDL.cpp test/*.o lib/libminigpt.a
 
 clean: test/*.o
 	rm test/*.o

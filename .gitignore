@@ -29,6 +29,7 @@ lib/*
 testgw
 testctp
 testb2t
+testppddl
 *.txt
 data/*
 mdp-lib.layout
