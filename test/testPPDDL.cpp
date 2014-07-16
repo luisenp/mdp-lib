@@ -13,6 +13,7 @@
 #include "../include/solvers/solver.h"
 #include "../include/solvers/LRTDPSolver.h"
 #include "../include/solvers/LAOStarSolver.h"
+#include "../include/solvers/UCTSolver.h"
 
 using namespace std;
 
@@ -75,29 +76,46 @@ int main(int argc, char **argv)
     /* Initializing problem */
     mlppddl::Problem* MLProblem = new mlppddl::Problem(problem);
 
-    mlsolvers::LAOStarSolver lao(MLProblem, 0.1);
+    mlsolvers::LRTDPSolver solver(MLProblem, 100, 0.1);
 
-    lao.solve(MLProblem->initialState());
+    solver.solve(MLProblem->initialState());
 
     cerr << "MAIN: " << MLProblem->initialState() << " "
                 << MLProblem->initialState()->cost() << endl;
 
-    mlcore::State* tmp = MLProblem->initialState();
-    while (true) {
-        mlcore::Action* a = tmp->bestAction();
-//        cerr << tmp << " " << tmp->cost() << endl;
-        if (MLProblem->goal(tmp)) {
-            cerr << "GOAL :-)" << endl;
-            break;
-        }
-        if (a == nullptr) {
-            cerr << "DEAD-END!!" << endl;
-            break;
-        }
-//        cerr << tmp->bestAction() << endl;
-        tmp = mlsolvers::randomSuccessor(MLProblem, tmp, a);
-    }
+    int verbosity = 0;
 
+    int nsims = 100;
+    double expectedCost = 0.0;
+    for (int i = 0; i < nsims; i++) {
+        mlcore::State* tmp = MLProblem->initialState();
+        double cost = 0.0;
+        while (true) {
+            mlcore::Action* a = tmp->bestAction();
+
+            if (verbosity > 100)
+                cerr << tmp << " " << tmp->cost() << endl;
+
+            if (MLProblem->goal(tmp)) {
+                if (verbosity > 1)
+                    cerr << "GOAL :-)" << endl;
+                expectedCost += cost;
+                break;
+            }
+            if (a == nullptr) {
+                if (verbosity > 1)
+                    cerr << "DEAD-END!!" << endl;
+                expectedCost += mdplib::dead_end_cost;
+                break;
+            }
+            cost += MLProblem->cost(tmp, a);
+
+            if (verbosity > 100)
+                cerr << tmp->bestAction() << endl;
+            tmp = mlsolvers::randomSuccessor(MLProblem, tmp, a);
+        }
+    }
+    cerr << "Expected Cost: " << expectedCost / nsims << endl;
 
     state_t::finalize();
     problem_t::unregister_use(problem);
