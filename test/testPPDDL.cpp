@@ -85,7 +85,7 @@ int main(int argc, char **argv)
 
     int verbosity = 0;
 
-    int nsims = 100;
+    int nsims = 1000;
     double expectedCost = 0.0;
     for (int i = 0; i < nsims; i++) {
         mlcore::State* tmp = MLProblem->initialState();

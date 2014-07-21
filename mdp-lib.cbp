@@ -416,8 +416,6 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/ppddl/ppddl_action.h" />
 		<Unit filename="include/ppddl/ppddl_problem.h" />
 		<Unit filename="include/ppddl/ppddl_state.h" />
-		<Unit filename="include/ppddl_problem.h" />
-		<Unit filename="include/ppddl_state.h" />
 		<Unit filename="include/problem.h" />
 		<Unit filename="include/solvers/LAOStarSolver.h" />
 		<Unit filename="include/solvers/LRTDPSolver.h" />
