@@ -3,31 +3,23 @@
 namespace mlsolvers
 {
 
-    void ConcurrentSolver::threadEntry(ConcurrentSolver* instance, mlcore::State* s0)
+    void ConcurrentSolver::threadEntry(ConcurrentSolver* instance)
     {
-        instance->runSolver(s0);
+        instance->runSolver();
     }
 
-    void ConcurrentSolver::runSolver(mlcore::State* s0) const
+    void ConcurrentSolver::runSolver() const
     {
         while (keepRunning_) {
             solverThreadMutex_.lock();
-            solver_.solve(s0);
+            solver_.solve(state_);
             solverThreadMutex_.unlock();
         }
     }
 
-    void ConcurrentSolver::run(mlcore::State* s0)
+    void ConcurrentSolver::run()
     {
-        solverThread = new std::thread(&threadEntry, this, s0);
+        solverThread = new std::thread(&threadEntry, this);
     }
 
-    mlcore::Action* ConcurrentSolver::getBestAction(mlcore::State* s)
-    {
-        solverThreadMutex_.lock();
-        mlcore::Action* action = (mlcore::Action*) malloc(sizeof(s->bestAction()));
-        memcpy(action, s->bestAction(), sizeof(s->bestAction()));
-        solverThreadMutex_.unlock();
-        return action;
-    }
 }

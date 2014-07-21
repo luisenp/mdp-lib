@@ -2,33 +2,42 @@
 #define MDPLIB_VISOLVER_H
 
 #include "../problem.h"
+#include "../state.h"
 
 namespace mlsolvers
 {
     /**
      * A MDP solver that using Value Iteration.
      */
-    class VISolver
+    class VISolver : public Solver
     {
     private:
         mlcore::Problem* problem_;
+
+        int maxIter_;
+
+        double tol_;
 
     public:
         /**
          * Creates a Value Iteration solver for the specified problem.
          *
          * @param problem The problem to be solved.
-         */
-        VISolver(mlcore::Problem* problem);
-
-        /**
-         * Solves the associated problem using Value Iteration.
-         *
          * @param maxIter The maximum number of iterations to perform.
          * @param tol The tolerance for the Bellman residual. If the residual is less
          *           than the tolerance the method stops.
          */
-        void solve(int maxIter, double tol);
+        VISolver(mlcore::Problem* problem, int maxIter, double tol);
+
+        /**
+         * Solves the associated problem using Value Iteration.
+         *
+         * Parameter s0 and return value only kept for compatibiliy with Solver
+         * abstract class, they are not used by the method and the return value
+         * is always a nullptr.
+         *
+         */
+        virtual mlcore::Action* solve(mlcore::State* s0 = nullptr);
     };
 }
 

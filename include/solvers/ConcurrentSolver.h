@@ -15,21 +15,26 @@ namespace mlsolvers
  * A ConcurrentSolver runs a specific base solver (e.g., LAO*, LRTDP) on a separate
  * thread. The base idea is to use the solver concurrently with the execution thread
  * to take advantage of the time it takes to execute and action for planning.
+ * The base solvers supported are LAO* and LRTDP.
  *
- * The base planners supported are LAO* and LRTDP.
+ * The class provides a mutex object to ensure that no race conditions arise between
+ * the planning and execution threads try to access state variables (e.g., cost,
+ * best actions).
  */
 class ConcurrentSolver
 {
 private:
     Solver& solver_;
 
+    mlcore::State* state_ = nullptr;
+
     std::thread* solverThread;
 
     mutable std::mutex solverThreadMutex_;
 
-    static void threadEntry(ConcurrentSolver* instance, mlcore::State* s0);
+    static void threadEntry(ConcurrentSolver* instance);
 
-    void runSolver(mlcore::State* s0) const;
+    void runSolver() const;
 
     bool keepRunning_ = true;
 
@@ -52,33 +57,35 @@ public:
         delete solverThread;
     }
 
-    bool setKeepRunning(bool keepRunning)  { keepRunning_ = keepRunning; }
+    /**
+     * Sets the state the base solver must plan for in the next iteration.
+     *
+     * @param the state that the base solver must plan for.
+     */
+    void setState(mlcore::State* state) { state_ = state; }
+
+    /**
+     * Sets whether the base solver should keep running or not.
+     *
+     * @param true if the base solver should keep running, false otherwise.
+     */
+    void setKeepRunning(bool keepRunning)  { keepRunning_ = keepRunning; }
 
     /**
      *
-     Returns the mutex used to lock the thread that runs the base solver.
+     * Returns the mutex used to lock the thread that runs the base solver.
+     * This mutex should be used to ensure that the execution thread doesn't access
+     * the state and action at the same time that the base solver does.
      *
      * @return the mutex used to lock the thread that runs the base solver.
      */
     std::mutex& solverThreadMutex() { return solverThreadMutex_; }
 
     /**
-     * Starts running the base solver on the given initial state.
-     *
-     * @param the initial state for which a solution policy is to be found.
+     * Starts running the base solver to get an action for the state stored.
      */
-    void run(mlcore::State* s0);
+    void run();
 
-    /**
-     * Returns a *copy* of the best action found so far for the given state.
-     *
-     * It is recommended that the returned action is deleted right after using it
-     * to reduce memory consumption.
-     *
-     * @param the state for which the action is to be returned.
-     * @return the best action found so far for the given state.
-     */
-    mlcore::Action* getBestAction(mlcore::State* s);
 };
 
 }
