@@ -22,7 +22,7 @@ int main()
     GridWorldState* s0 = (GridWorldState *) problem->initialState();
     Heuristic* heuristic = new GWManhattanHeuristic((GridWorldProblem*) problem);
 
-    LRTDPSolver lrtdp(problem, 100, 1.0e-1);
+    LRTDPSolver lrtdp(problem, 1, 1.0e-1);
     ConcurrentSolver* solver = new ConcurrentSolver(lrtdp);
     solver->run(problem->initialState());
 
