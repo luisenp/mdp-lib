@@ -1,27 +1,64 @@
 #include <cassert>
+#include <unistd.h>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 
 #include "../../../include/domains/ctp/CTPProblem.h"
 #include "../../../include/domains/ctp/CTPAction.h"
 
 #include "../../../include/util/general.h"
 
-#include <unistd.h>
-
-CTPProblem::CTPProblem(Graph& roads, std::vector< std::vector <double> >& probs,
-                       int start, int goal)
-                       : roads_(roads), probs_(probs), start_(start), goal_(goal)
+void CTPProblem::init()
 {
-    s0 = new CTPState(this, start);
+    s0 = new CTPState(this, start_);
     absorbing_ = new CTPState(this, -1);
     this->addState(s0);
     this->addState(absorbing_);
-    int n = roads_.numVertices();
+    int n = roads_->numVertices();
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
             actions_.push_back(new CTPAction(i, j));
         }
     }
     actions_.push_back(new CTPAction(-1,-1));
+}
+
+CTPProblem::CTPProblem(Graph* roads, std::vector< std::vector <double> >& probs,
+                       int start, int goal)
+                       : roads_(roads), probs_(probs), start_(start), goal_(goal)
+{
+    init();
+}
+
+CTPProblem::CTPProblem(char* filename)
+{
+    int nvertices, nedges;
+    std::ifstream myfile (filename);
+    if (myfile.is_open()) {
+        char x;
+        std::string line;
+        std::getline(myfile, line);
+        std::istringstream iss(line);
+        iss >> x >> nvertices >> nedges;
+        roads_ = new Graph(nvertices);
+        for (int i = 0; i < nvertices; i++)
+            probs_.push_back(std::vector<double> (nvertices));
+        while ( std::getline (myfile, line) ) {
+            std::istringstream iss(line);
+            int u, v;
+            double p, w;
+            iss >> x >> u >> v >> p >> w;
+            probs_[u - 1][v - 1] = probs_[v - 1][u - 1] = p;
+            roads_->connect(u - 1, v - 1, w);
+            roads_->connect(v - 1, u - 1, w);
+        }
+        myfile.close();
+    }
+    start_ = 0;
+    goal_ = nvertices - 1;
+
+    init();
 }
 
 bool CTPProblem::goal(mlcore::State* s) const
@@ -53,7 +90,7 @@ std::list<mlcore::Successor> CTPProblem::transition(mlcore::State* s, mlcore::Ac
     int to = ctpa->to();
 
     std::vector<int> neighbors;
-    for (std::pair<int, double> entry : roads_.neighbors(to)) {
+    for (std::pair<int, double> entry : roads_->neighbors(to)) {
         /* No need to go back to states that have already been explored */
         if (ctps->explored().find(entry.first) == ctps->explored().end())
             neighbors.push_back(entry.first);

@@ -37,7 +37,7 @@ std::ostream& CTPState::print(std::ostream& os) const
     os << "Location: " << location_;
     os << " Open: ";
     CTPProblem* ctpp = (CTPProblem* ) problem_;
-    int n = ctpp->roads().numVertices();
+    int n = ctpp->roads()->numVertices();
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
             if (status_[i][j] == ctp::OPEN)
@@ -69,7 +69,7 @@ int CTPState::hashValue() const
 {
     int hash = location_;
     CTPProblem* ctpp = (CTPProblem* ) problem_;
-    int n = ctpp->roads().numVertices();
+    int n = ctpp->roads()->numVertices();
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
             hash = 31*hash + status_[i][j];
@@ -81,9 +81,9 @@ int CTPState::hashValue() const
 void CTPState::initAllUnkown()
 {
     CTPProblem* pr = (CTPProblem *) problem_;
-    for (int i = 0; i < pr->roads().numVertices(); i++) {
-        status_.push_back(std::vector<unsigned char> (pr->roads().numVertices()));
-        for (int j = 0; j < pr->roads().numVertices(); j++) {
+    for (int i = 0; i < pr->roads()->numVertices(); i++) {
+        status_.push_back(std::vector<unsigned char> (pr->roads()->numVertices()));
+        for (int j = 0; j < pr->roads()->numVertices(); j++) {
             status_[i][j] = ctp::UNKNOWN;
         }
     }
@@ -100,7 +100,7 @@ bool CTPState::reachable(int v)
 {
     if (location_ == v)
         return true;
-    Graph& g = ((CTPProblem *) problem_)->roads();
+    Graph* g = ((CTPProblem *) problem_)->roads();
     std::list<int> Q;
     Q.push_front(location_);
     std::unordered_set<int> visited;
@@ -108,7 +108,7 @@ bool CTPState::reachable(int v)
         int tmp = Q.front();
         Q.pop_front();
         visited.insert(tmp);
-        std::unordered_map<int,double> neighbors = g.neighbors(tmp);
+        std::unordered_map<int,double> neighbors = g->neighbors(tmp);
         for (std::pair<int, double> ne : neighbors) {
             int x = ne.first;
             if (status_[tmp][x] != ctp::OPEN)
@@ -127,7 +127,7 @@ bool CTPState::potentiallyReachable(int v)
 {
     if (location_ == v)
         return true;
-    Graph& g = ((CTPProblem *) problem_)->roads();
+    Graph* g = ((CTPProblem *) problem_)->roads();
     std::list<int> Q;
     Q.push_front(location_);
     std::unordered_set<int> visited;
@@ -135,7 +135,7 @@ bool CTPState::potentiallyReachable(int v)
         int tmp = Q.front();
         Q.pop_front();
         visited.insert(tmp);
-        std::unordered_map<int,double> neighbors = g.neighbors(tmp);
+        std::unordered_map<int,double> neighbors = g->neighbors(tmp);
         for (std::pair<int, double> ne : neighbors) {
             int x = ne.first;
             if (status_[tmp][x] == ctp::BLOCKED)
@@ -161,8 +161,8 @@ bool CTPState::badWeather()
 
 double CTPState::distanceOpen(int v)
 {
-    Graph& g = ((CTPProblem *) problem_)->roads();
-    std::vector<double> distances(g.numVertices(), gr_infinity);
+    Graph* g = ((CTPProblem *) problem_)->roads();
+    std::vector<double> distances(g->numVertices(), gr_infinity);
     std::priority_queue<vertexCost, std::vector<vertexCost>, cmpVertexDijkstra> Q;
     Q.push(vertexCost(location_, 0.0));
     std::unordered_set<int> closed;
@@ -171,7 +171,7 @@ double CTPState::distanceOpen(int v)
         Q.pop();
         distances[uc.vc_vertex] = std::min(uc.vc_cost, distances[uc.vc_vertex]);
         closed.insert(uc.vc_vertex);
-        std::unordered_map<int,double> neighbors = g.neighbors(uc.vc_vertex);
+        std::unordered_map<int,double> neighbors = g->neighbors(uc.vc_vertex);
         for (std::pair<int,double> vc : neighbors) {
             if (closed.find(vc.first) != closed.end()
                 || status_[uc.vc_vertex][vc.first] != ctp::OPEN)
@@ -185,8 +185,8 @@ double CTPState::distanceOpen(int v)
 
 double CTPState::distanceOptimistic(int v)
 {
-    Graph& g = ((CTPProblem *) problem_)->roads();
-    std::vector<double> distances(g.numVertices(), gr_infinity);
+    Graph* g = ((CTPProblem *) problem_)->roads();
+    std::vector<double> distances(g->numVertices(), gr_infinity);
     std::priority_queue<vertexCost, std::vector<vertexCost>, cmpVertexDijkstra> Q;
     Q.push(vertexCost(location_, 0.0));
     std::unordered_set<int> closed;
@@ -195,7 +195,7 @@ double CTPState::distanceOptimistic(int v)
         Q.pop();
         distances[uc.vc_vertex] = std::min(uc.vc_cost, distances[uc.vc_vertex]);
         closed.insert(uc.vc_vertex);
-        std::unordered_map<int,double> neighbors = g.neighbors(uc.vc_vertex);
+        std::unordered_map<int,double> neighbors = g->neighbors(uc.vc_vertex);
         for (std::pair<int,double> vc : neighbors) {
             if (closed.find(vc.first) != closed.end()
                 || status_[uc.vc_vertex][vc.first] == ctp::BLOCKED)

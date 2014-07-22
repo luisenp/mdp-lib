@@ -383,6 +383,8 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="data/ppddl/ippc2008/zenotravel/p14-c15-p10-a6-s11709.pddl" />
 		<Unit filename="data/ppddl/ippc2008/zenotravel/p15-c20-p10-a6-s24164.pddl" />
 		<Unit filename="include/action.h" />
+		<Unit filename="include/domains/DummyState.h" />
+		<Unit filename="include/domains/WrapperProblem.h" />
 		<Unit filename="include/domains/ctp/CTPAction.h" />
 		<Unit filename="include/domains/ctp/CTPOptimisticHeuristic.h" />
 		<Unit filename="include/domains/ctp/CTPProblem.h" />
@@ -417,6 +419,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/ppddl/ppddl_problem.h" />
 		<Unit filename="include/ppddl/ppddl_state.h" />
 		<Unit filename="include/problem.h" />
+		<Unit filename="include/solvers/ConcurrentSolver.h" />
 		<Unit filename="include/solvers/LAOStarSolver.h" />
 		<Unit filename="include/solvers/LRTDPSolver.h" />
 		<Unit filename="include/solvers/UCTSolver.h" />
@@ -655,6 +658,8 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="lib/prost/src/utils/timer.cc" />
 		<Unit filename="lib/prost/src/utils/timer.h" />
 		<Unit filename="src/action.cpp" />
+		<Unit filename="src/domains/DummyState.cpp" />
+		<Unit filename="src/domains/WrapperProblem.cpp" />
 		<Unit filename="src/domains/ctp/CTPAction.cpp" />
 		<Unit filename="src/domains/ctp/CTPProblem.cpp" />
 		<Unit filename="src/domains/ctp/CTPState.cpp" />
@@ -666,6 +671,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="src/ppddl/ppddl_state.cpp" />
 		<Unit filename="src/ppddl_problem.cpp" />
 		<Unit filename="src/ppddl_state.cpp" />
+		<Unit filename="src/solvers/ConcurrentSolver.cpp" />
 		<Unit filename="src/solvers/LAOStarSolver.cpp" />
 		<Unit filename="src/solvers/LRTDPSolver.cpp" />
 		<Unit filename="src/solvers/UCTSolver.cpp" />
@@ -675,6 +681,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="src/util/rational.cpp" />
 		<Unit filename="test/testB2T.cpp" />
 		<Unit filename="test/testCTP.cpp" />
+		<Unit filename="test/testConc.cpp" />
 		<Unit filename="test/testGridWorld.cpp" />
 		<Unit filename="test/testPPDDL.cpp" />
 		<Extensions>

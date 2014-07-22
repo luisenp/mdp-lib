@@ -19,22 +19,37 @@ class CTPProblem : public mlcore::Problem
 private:
     int goal_;
     int start_;
-    Graph& roads_;
+    Graph* roads_;
     std::vector< std::vector <double> > probs_;
     CTPState* absorbing_;
+
+    void init();
 
 public:
     /**
      * Constructs a Canadian Traveler problem instances with the given roads,
      * bad weather probabilities, start state and goal.
      */
-    CTPProblem(Graph& roads, std::vector< std::vector <double> >& probs, int start, int goal);
+    CTPProblem(Graph* roads, std::vector< std::vector <double> >& probs, int start, int goal);
+
+    ~CTPProblem()
+    {
+        delete roads_;
+    }
+
+    /**
+     * Reads a CTP problem from a file and constructs a problem instance representing
+     * this problem.
+     *
+     * @param filename the name of the file describing the problem.
+     */
+    CTPProblem(char* filename);
 
     /**
      * Returns a graph structure containing all roads in the problem and their
      * associated costs.
      */
-    Graph& roads()
+    Graph* roads()
     {
         return roads_;
     }

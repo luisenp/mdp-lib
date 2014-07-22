@@ -22,32 +22,7 @@ using namespace mlsolvers;
 
 int main(int argc, char* args[])
 {
-    /* Reading and setting up the problem */
-    int nvertices, nedges;
-    ifstream myfile (args[1]);
-    Graph* g;
-    vector< vector<double> > probs;
-    if (myfile.is_open()) {
-        char x;
-        string line;
-        getline(myfile, line);
-        istringstream iss(line);
-        iss >> x >> nvertices >> nedges;
-        g = new Graph(nvertices);
-        for (int i = 0; i < nvertices; i++)
-            probs.push_back(vector<double> (nvertices));
-        while ( getline (myfile, line) ) {
-            istringstream iss(line);
-            int u, v;
-            double p, w;
-            iss >> x >> u >> v >> p >> w;
-            probs[u - 1][v - 1] = probs[v - 1][u - 1] = p;
-            g->connect(u - 1, v - 1, w);
-            g->connect(v - 1, u - 1, w);
-        }
-        myfile.close();
-    }
-    Problem* problem = new CTPProblem(*g, probs, 0, nvertices - 1);
+    Problem* problem = new CTPProblem(args[1]);
     Heuristic* heuristic = new CTPOptimisticHeuristic((CTPProblem *) problem);
     problem->setHeuristic(heuristic);
 
@@ -131,7 +106,6 @@ int main(int argc, char* args[])
 
     delete ((CTPProblem *) problem);
     delete ((CTPOptimisticHeuristic *) heuristic);
-    delete g;
     return 0;
 }
 

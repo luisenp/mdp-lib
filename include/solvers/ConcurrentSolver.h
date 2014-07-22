@@ -42,7 +42,7 @@ public:
     /**
      * Constructs a ConcurrentSolver that uses the given base MDP solver.
      *
-     * @param the base MDP solver to use.
+     * @param solver the base MDP solver to use.
      */
     ConcurrentSolver(Solver& solver) : solver_(solver) { }
 
@@ -60,14 +60,14 @@ public:
     /**
      * Sets the state the base solver must plan for in the next iteration.
      *
-     * @param the state that the base solver must plan for.
+     * @param state the state that the base solver must plan for.
      */
     void setState(mlcore::State* state) { state_ = state; }
 
     /**
      * Sets whether the base solver should keep running or not.
      *
-     * @param true if the base solver should keep running, false otherwise.
+     * @param keepRunning true if the base solver should keep running, false otherwise.
      */
     void setKeepRunning(bool keepRunning)  { keepRunning_ = keepRunning; }
 
