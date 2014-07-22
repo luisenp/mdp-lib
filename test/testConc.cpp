@@ -9,6 +9,8 @@
 #include "../include/domains/gridworld/GridWorldProblem.h"
 #include "../include/domains/gridworld/GridWorldAction.h"
 #include "../include/domains/gridworld/GWManhattanHeuristic.h"
+#include "../include/domains/WrapperProblem.h"
+#include "../include/domains/DummyState.h"
 
 #include "../include/solvers/ConcurrentSolver.h"
 #include "../include/solvers/LRTDPSolver.h"
@@ -27,31 +29,14 @@ int main(int argc, char *args[])
     GridWorldState* s0 = (GridWorldState *) problem->initialState();
     Heuristic* heuristic = new GWManhattanHeuristic((GridWorldProblem*) problem);
 
-    LRTDPSolver lrtdp(problem, 1, 1.0e-1);
-    VISolver vi(problem, 1, 1.0e-1);
+    WrapperProblem* wrapper = new WrapperProblem(problem);
+    DummyState* dummy = wrapper->dummyState();
 
-
-//    for (int i = 0; i < 1000; i++) {
-//        lrtdp.solve(problem->initialState());
-//    }
-//    State* cur = problem->initialState();
-//    while (true) {
-//        Action* a = cur->bestAction();
-//        if (a == nullptr) {
-//            cerr << "Not enough planning time" << endl;
-//            return 0;
-//        }
-//
-//        cerr << cur << " " << a << endl;
-//        cur = randomSuccessor(problem, cur, a);
-//        if (problem->goal(cur)) {
-//            cerr << "GOAL!!" << endl;
-//            return 0;
-//        }
-//    }
+    LRTDPSolver lrtdp(wrapper, 1, 1.0e-1);
+    VISolver vi(wrapper, 1, 1.0e-1);
 
     ConcurrentSolver* solver = new ConcurrentSolver(lrtdp);
-    solver->setState(problem->initialState());
+    solver->setState(wrapper->initialState());
     mutex& solverMutex = solver->solverThreadMutex();
 
     solver->run();
@@ -72,7 +57,8 @@ int main(int argc, char *args[])
 
         cost += problem->cost(cur, a);
         cur = randomSuccessor(problem, cur, a);
-        solver->setState(cur);
+        dummy->setSuccessors(problem->transition(cur, a));
+        solver->setState(dummy);
 
         cerr << cur << " " << a << " " << cost << endl;
 
@@ -82,6 +68,7 @@ int main(int argc, char *args[])
             solver->setKeepRunning(false);
             solverMutex.unlock();
             delete solver;
+            delete wrapper;
 
             return 0;
         }

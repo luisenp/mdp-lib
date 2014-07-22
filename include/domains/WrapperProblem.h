@@ -4,7 +4,11 @@
 #include "../problem.h"
 #include "DummyState.h"
 
-class WrapperProblem : mlcore::Problem
+/**
+ * This class wraps a mlcore::Problem instance and adds to it a DummyState whose
+ * successors can be defined externally.
+ */
+class WrapperProblem : public mlcore::Problem
 {
 private:
 
@@ -18,12 +22,17 @@ public:
     WrapperProblem(mlcore::Problem* problem) : problem_(problem)
     {
         dummyState_ = new DummyState();
+        s0 = problem_->initialState();
+        actions_ = problem->actions();
+        heuristic_ = problem->heuristic();
     }
 
     virtual ~WrapperProblem()
     {
         delete dummyState_;
     }
+
+    DummyState* dummyState() { return dummyState_; }
 
     /**
      * Overrides method from Problem.
