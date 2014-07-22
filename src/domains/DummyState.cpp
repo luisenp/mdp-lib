@@ -2,5 +2,5 @@
 
 std::ostream& DummyState::print(std::ostream& os) const
 {
-    os << "Dummy State" << std::endl;
+    os << "Dummy State";
 }

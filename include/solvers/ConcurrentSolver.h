@@ -30,8 +30,6 @@ private:
 
     std::thread* solverThread;
 
-    mutable std::mutex solverThreadMutex_;
-
     static void threadEntry(ConcurrentSolver* instance);
 
     void runSolver() const;
@@ -70,16 +68,6 @@ public:
      * @param keepRunning true if the base solver should keep running, false otherwise.
      */
     void setKeepRunning(bool keepRunning)  { keepRunning_ = keepRunning; }
-
-    /**
-     *
-     * Returns the mutex used to lock the thread that runs the base solver.
-     * This mutex should be used to ensure that the execution thread doesn't access
-     * the state and action at the same time that the base solver does.
-     *
-     * @return the mutex used to lock the thread that runs the base solver.
-     */
-    std::mutex& solverThreadMutex() { return solverThreadMutex_; }
 
     /**
      * Starts running the base solver to get an action for the state stored.

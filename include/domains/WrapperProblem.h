@@ -34,6 +34,8 @@ public:
 
     DummyState* dummyState() { return dummyState_; }
 
+    void setDummyAction(mlcore::Action* action) { dummyAction_ = action; }
+
     /**
      * Overrides method from Problem.
      */

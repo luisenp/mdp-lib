@@ -9,11 +9,12 @@ namespace mlsolvers
         epsilon_ = epsilon;
     }
 
-    void LRTDPSolver::trial()
+    void LRTDPSolver::trial(mlcore::State* s)
     {
-        mlcore::State* tmp = problem_->initialState();
+        mlcore::State* tmp = s;
         std::list<mlcore::State*> visited;
         while (!tmp->checkBits(mdplib::SOLVED)) {
+            dprint2("TRIAL ********* ", tmp);
             visited.push_front(tmp);
             if (problem_->goal(tmp))
                 break;
@@ -56,8 +57,18 @@ namespace mlsolvers
                 continue;
             }
 
+            /////////////////// THIS BLOCK IS A TEST ////////////////////////
+            if (closedSet.size() > 1000) {
+                break;
+            }
+            if (tmp->checkBits(mdplib::SOLVED)) {
+                continue;
+            }
+            /////////////////// THIS BLOCK WAS A TEST ////////////////////////
+
             mlcore::Action* a = greedyAction(problem_, tmp);
-            if (a == nullptr) { // state is a dead-end
+
+            if (a == nullptr) {     // state is dead-end or goal, considered solved
                 continue;
             }
             assert(problem_->applicable(tmp, a));
@@ -72,7 +83,7 @@ namespace mlsolvers
             }
         }
 
-        if (rv) {
+        if (rv && openSet.empty()) {
             for (mlcore::State* sc : closed)
                 sc->setBits(mdplib::SOLVED);
         } else {
@@ -90,7 +101,7 @@ namespace mlsolvers
     {
         int trials = 0;
         while (!s0->checkBits(mdplib::SOLVED) && trials++ < maxTrials_)
-            trial();
+            trial(s0);
     }
 
 }

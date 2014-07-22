@@ -11,9 +11,8 @@ namespace mlsolvers
     void ConcurrentSolver::runSolver() const
     {
         while (keepRunning_) {
-            solverThreadMutex_.lock();
             solver_.solve(state_);
-            solverThreadMutex_.unlock();
+            //dprint1("Finished Trial");
         }
     }
 

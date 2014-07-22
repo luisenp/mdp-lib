@@ -3,6 +3,7 @@
 
 #include <random>
 #include <cassert>
+#include <mutex>
 
 #include "../../include/problem.h"
 #include "../../include/heuristic.h"
@@ -14,6 +15,12 @@
 
 namespace mlsolvers
 {
+    /**
+     * A mutex used by BellmanUpdate in order to avoid race conditions while
+     * planning/executing concurrently.
+     */
+    extern std::mutex bellman_mutex;
+
     /**
      * An interface for states to have some polymorphism on methods that want to call
      * different planners.
@@ -94,8 +101,10 @@ namespace mlsolvers
     {
         std::pair<double, mlcore::Action*> best = bellmanBackup(problem, s);
         double residual = s->cost() - best.bb_cost;
+        bellman_mutex.lock();
         s->setCost(best.bb_cost);
         s->setBestAction(best.bb_action);
+        bellman_mutex.unlock();
         return fabs(residual);
     }
 

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <mutex>
 #include <fstream>
 #include <sstream>
 #include <unistd.h>
@@ -14,7 +15,6 @@
 
 #include "../include/domains/ctp/CTPProblem.h"
 #include "../include/domains/ctp/CTPOptimisticHeuristic.h"
-
 
 using namespace std;
 using namespace mlcore;

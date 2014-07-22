@@ -28,7 +28,7 @@ using namespace mlsolvers;
 using namespace mlcore;
 
 int initialPlanningT = 1000;
-int noopPlanningT = 50;
+int noopPlanningT = 500;
 int actionT = 500;
 
 int main(int argc, char *args[])
@@ -52,12 +52,11 @@ int main(int argc, char *args[])
     } else if (strcmp(args[1], "ctp") == 0) {
         problem = new CTPProblem(args[2]);
         heuristic = new CTPOptimisticHeuristic((CTPProblem *) problem);
-        problem->setHeuristic(heuristic);
+//        problem->setHeuristic(heuristic);
     } else {
         cerr << "Input Error " << args[1] << endl;
         return 1;
     }
-
 
     /* ************************************************************************************** */
     /*                            Setting up concurrent planner                               */
@@ -69,7 +68,7 @@ int main(int argc, char *args[])
 
     ConcurrentSolver* solver = new ConcurrentSolver(lrtdp);
     solver->setState(wrapper->initialState());
-    mutex& solverMutex = solver->solverThreadMutex();
+    mutex& solverMutex = mlsolvers::bellman_mutex;
 
     solver->run();
     this_thread::sleep_for(chrono::milliseconds( initialPlanningT ));   // Initial planning time
@@ -82,24 +81,6 @@ int main(int argc, char *args[])
     double cost = 0;
     while (true) {
         solverMutex.lock();
-
-        Action* a = cur->bestAction();
-
-        if (a == nullptr) {
-            solverMutex.unlock();
-            this_thread::sleep_for(chrono::milliseconds( noopPlanningT ));
-            continue;
-        }
-
-        cerr << cur << " --- " << a << endl;
-
-        dummy->setSuccessors(problem->transition(cur, a));
-        solver->setState(dummy);
-
-        cost += problem->cost(cur, a);
-        cur = randomSuccessor(problem, cur, a);
-
-        cerr << "    succ: " << cur << " " << cost << endl;
 
         if (problem->goal(cur)) {
             cerr << "Finished with cost " << cost << endl;
@@ -114,7 +95,30 @@ int main(int argc, char *args[])
             return 0;
         }
 
+        Action* a = cur->bestAction();
+
+        if (a == nullptr) {
+            solverMutex.unlock();
+            cerr << "No Action! " << cur << endl;
+            this_thread::sleep_for(chrono::milliseconds( noopPlanningT ));
+            continue;
+        }
+
+        cerr << cur << " --- " << a << endl;
+
+        dummy->setSuccessors(problem->transition(cur, a));
+        wrapper->setDummyAction(a);
+        solver->setState(dummy);
+
+        cost += problem->cost(cur, a);
+        cur = randomSuccessor(problem, cur, a);
+
+        cerr << "    succ: " << cur << " " << cost << endl;
+
+
         solverMutex.unlock();
         this_thread::sleep_for(chrono::milliseconds( actionT ));
+
+        cerr << "Executing Action " << endl;
     }
 }

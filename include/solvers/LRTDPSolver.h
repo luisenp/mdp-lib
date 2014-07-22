@@ -21,7 +21,7 @@ namespace mlsolvers
         double epsilon_;
 
         /* Performs a single LRTDP trial */
-        void trial();
+        void trial(mlcore::State* s);
 
         /* Checks if the state has been solved */
         bool checkSolved(mlcore::State* s);
