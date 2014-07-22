@@ -1,19 +1,26 @@
 CC = g++
 CFLAGS = -std=c++11 -g -DATOM_STATES -pthread
-INCLUDE = -Iinclude/domains/gridworld -Iinclude/domains/ -Iinclude -Iinclude/solvers -Include/util
 
-conc: src/domains/gridworld/*.cpp src/solvers/*.cpp src/util/*.cpp include/*.h include/solvers/*.h include/domains/gridworld/*.h include/domains/*.h
-	$(CC) $(CFLAGS) $(INCLUDE) -c src/domains/gridworld/*.cpp src/domains/*.cpp src/util/*.cpp src/*.cpp src/solvers/*.cpp
+GWSDIR = src/domains/gridworld
+GWIDIR = include/domains/gridworld
+
+CTPSDIR = src/domains/ctp
+CTPIDIR = include/domains/ctp
+
+INCLUDE = -I$(GWIDIR) -I$(CTPIDIR) -Iinclude/domains/ -Iinclude -Iinclude/solvers -Include/util
+
+conc: $(GWSDIR)/*.cpp src/solvers/*.cpp src/util/*.cpp include/*.h include/solvers/*.h $(GWIDIR)/*.h include/domains/*.h $(CTPIDIR)/*.h
+	$(CC) $(CFLAGS) $(INCLUDE) -c $(GWSDIR)/*.cpp $(CTPSDIR)/*.cpp src/domains/*.cpp src/util/*.cpp src/*.cpp src/solvers/*.cpp
 	mv *.o test/
-	$(CC) $(CFLAGS) -Iinclude/domains/gw -Iinclude -Iinclude/solvers -Iinclude/util -o testconc test/testConc.cpp test/*.o lib/libminigpt.a
+	$(CC) $(CFLAGS) $(INCLUDE) -o testconc test/testConc.cpp test/*.o lib/libminigpt.a
 
 ctp: src/domains/ctp/*.cpp src/solvers/*.cpp src/util/*.cpp include/*.h include/solvers/*.h include/domains/ctp/*.h
 	$(CC) $(CFLAGS) -Iinclude/domains/ctp -Iinclude -Iinclude/solvers -Include/util -c src/domains/ctp/*.cpp src/util/*.cpp src/*.cpp src/solvers/*.cpp
 	mv *.o test/
 	$(CC) $(CFLAGS) -Iinclude/domains/ctp -Iinclude -Iinclude/solvers -Iinclude/util -o testctp test/testCTP.cpp test/*.o lib/libminigpt.a
 
-gw: src/domains/gridworld/*.cpp src/solvers/*.cpp src/util/*.cpp include/*.h include/solvers/*.h include/domains/gridworld/*.h
-	$(CC) $(CFLAGS) -Iinclude/domains/gridworld -Iinclude -Iinclude/solvers -c src/domains/gridworld/*.cpp src/util/*.cpp src/*.cpp src/solvers/*.cpp
+gw: $(GWSDIR)/*.cpp src/solvers/*.cpp src/util/*.cpp include/*.h include/solvers/*.h $(GWIDIR)/*.h
+	$(CC) $(CFLAGS) -Iinclude/domains/gridworld -Iinclude -Iinclude/solvers -c $(GWSDIR)/*.cpp src/util/*.cpp src/*.cpp src/solvers/*.cpp
 	mv *.o test/
 	$(CC) $(CFLAGS) -Iinclude/domains/gridworld -Iinclude -Iinclude/solvers -Iinclude/util -o testgw test/testGridWorld.cpp test/*.o
 
