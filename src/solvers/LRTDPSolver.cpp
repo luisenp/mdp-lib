@@ -14,14 +14,15 @@ namespace mlsolvers
         mlcore::State* tmp = s;
         std::list<mlcore::State*> visited;
         while (!tmp->checkBits(mdplib::SOLVED)) {
-            dprint2("TRIAL ********* ", tmp);
             visited.push_front(tmp);
             if (problem_->goal(tmp))
                 break;
             bellmanUpdate(problem_, tmp);
+
             if (tmp->bestAction() == nullptr) { // state is a dead-end
                 break;
             }
+
             tmp = randomSuccessor(problem_, tmp, tmp->bestAction());
         }
 
@@ -58,7 +59,11 @@ namespace mlsolvers
             }
 
             /////////////////// THIS BLOCK IS A TEST ////////////////////////
-            if (closedSet.size() > 1000) {
+            /*
+             * The set of states reachable from 's' can be very large.
+             * In that case checkSolved would take a lot of time.
+             */
+            if (closedSet.size() > maxChecked_) {
                 break;
             }
             if (tmp->checkBits(mdplib::SOLVED)) {

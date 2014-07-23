@@ -27,9 +27,9 @@ using namespace std;
 using namespace mlsolvers;
 using namespace mlcore;
 
-int initialPlanningT = 1000;
-int noopPlanningT = 500;
-int actionT = 500;
+int initialPlanningT = 10000;
+int noopPlanningT = 1000;
+int actionT = 1000;
 
 int main(int argc, char *args[])
 {
@@ -52,7 +52,7 @@ int main(int argc, char *args[])
     } else if (strcmp(args[1], "ctp") == 0) {
         problem = new CTPProblem(args[2]);
         heuristic = new CTPOptimisticHeuristic((CTPProblem *) problem);
-//        problem->setHeuristic(heuristic);
+        problem->setHeuristic(heuristic);
     } else {
         cerr << "Input Error " << args[1] << endl;
         return 1;
@@ -65,6 +65,7 @@ int main(int argc, char *args[])
     DummyState* dummy = wrapper->dummyState();
 
     LRTDPSolver lrtdp(wrapper, 1, 1.0e-1);
+    lrtdp.setMaxChecked(1000);
 
     ConcurrentSolver* solver = new ConcurrentSolver(lrtdp);
     solver->setState(wrapper->initialState());
@@ -100,6 +101,12 @@ int main(int argc, char *args[])
         if (a == nullptr) {
             solverMutex.unlock();
             cerr << "No Action! " << cur << endl;
+
+            // At this point we know the current state, so the planner can be updated
+            list<Successor> sccrs;
+            sccrs.push_back(Successor(cur, 1.0));
+            dummy->setSuccessors(sccrs);
+
             this_thread::sleep_for(chrono::milliseconds( noopPlanningT ));
             continue;
         }

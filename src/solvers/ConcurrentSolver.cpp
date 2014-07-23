@@ -12,7 +12,6 @@ namespace mlsolvers
     {
         while (keepRunning_) {
             solver_.solve(state_);
-            //dprint1("Finished Trial");
         }
     }
 

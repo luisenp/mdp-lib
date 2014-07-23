@@ -16,9 +16,13 @@ namespace mlsolvers
     class LRTDPSolver : public Solver
     {
     private:
+
         mlcore::Problem* problem_;
         int maxTrials_;
         double epsilon_;
+
+        /* The maximum number of states that are visited on a call to checkSolved */
+        int maxChecked_ = 1000000;
 
         /* Performs a single LRTDP trial */
         void trial(mlcore::State* s);
@@ -42,6 +46,18 @@ namespace mlsolvers
          * @param s0 The state to start the search at.
          */
         virtual mlcore::Action* solve(mlcore::State* s0);
+
+        /**
+        * Sets the maximum number of states that are visited on a call to checkSolved.
+        * Usually there is no upper bound on this quantity. However, in some problems
+        * the set of states that can be visited can be quite large. Since no backups
+        * are performed in checkSolved until all reachable states are visited, this
+        * impairs the performance of LRTDP in online settings.
+        *
+        * param maxChecked the maximum number of states that are visited on a call
+        * to checkSolved.
+        */
+        void setMaxChecked(int maxChecked) { maxChecked_ = maxChecked; }
 
     };
 }
