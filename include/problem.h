@@ -37,8 +37,7 @@ namespace mlcore
         /**
          * Discount factor.
          */
-        double gamma_;
-
+        double gamma_ = 1.0;
         /**
          * A list of all the possible actions in this problem.
          */
