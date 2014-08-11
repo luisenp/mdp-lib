@@ -25,9 +25,11 @@ private:
 
     std::vector<double> costs_;
 
+    double* windTransition_;
+
     int tack(SailingState* state, SailingAction* action) const;
 
-    bool inLake(SailingState* state);
+    bool inLake(short x, short y);
 
     mlcore::State* absorbing_;
 
@@ -35,7 +37,8 @@ public:
     SailingProblem(short startX, short startY,
                    short goalX, short goalY,
                    short rows, short cols,
-                   std::vector<double> & costs);
+                   std::vector<double> & costs,
+                   double* windTransition);
 
     virtual ~SailingProblem() {}
 

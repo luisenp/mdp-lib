@@ -1,51 +1,109 @@
+#########################################################################
+#                                VARIABLES                              #
+#########################################################################
+
+
+# Compilation flags and variables #
 CC = g++
 CFLAGS = -std=c++11 -g -DATOM_STATES -pthread
 
-GWSDIR = src/domains/gridworld
-GWIDIR = include/domains/gridworld
+# Variables for directories #
+ID = include
+SD = src
+TD = test
+ID_UTIL = $(ID)/util
+SD_UTIL = $(SD)/util
+ID_SOLV = $(ID)/solvers
+SD_SOLV = $(SD)/solvers
 
-CTPSDIR = src/domains/ctp
-CTPIDIR = include/domains/ctp
+ID_DOM = $(ID)/domains
+SD_DOM = $(SD)/domains
+SD_GW = $(SD_DOM)/gridworld
+ID_GW = $(ID_DOM)/gridworld
+SD_CTP = $(SD_DOM)/ctp
+ID_CTP = $(ID_DOM)/ctp
+SD_SAIL = $(SD_DOM)/sailing
+ID_SAIL = $(ID_DOM)/sailing
+SD_BT = $(SD_DOM)/binarytree
+ID_BT = $(ID_DOM)/binarytree
 
-SAILSDIR = src/domains/sailing
-SAILIDIR = include/domains/sailing
+# Variables for include directives #
+INCLUDE_DOM = -I$(ID_GW) -I$(ID_CTP) -I$(ID_SAIL) -I$(ID_DOM)
+INCLUDE_CORE = -I$(ID_SOLV) -I$(ID_UTIL) -I$(ID)
+INCLUDE = $(INCLUDE_DOM) $(INCLUDE_CORE)
 
-INCLUDE = -I$(GWIDIR) -I$(CTPIDIR) -I$(SAILIDIR) -Iinclude/domains/ -Iinclude -Iinclude/solvers -Include/util
+# Variables for source/header files #
+I_H = $(ID)/*.h
+S_CPP = $(SD)/*.cpp
+SOLV_CPP = $(SD_SOLV)/*.cpp
+SOLV_H = $(ID_SOLV)/*.h
+UTIL_CPP = $(SD_UTIL)/*.cpp
+UTIL_H = $(ID_UTIL)/*.h
 
-conc: $(GWSDIR)/*.cpp src/solvers/*.cpp src/util/*.cpp include/*.h include/solvers/*.h $(GWIDIR)/*.h include/domains/*.h $(CTPIDIR)/*.h
-	$(CC) $(CFLAGS) $(INCLUDE) -c $(GWSDIR)/*.cpp $(CTPSDIR)/*.cpp src/domains/*.cpp src/util/*.cpp src/*.cpp src/solvers/*.cpp
+GW_CPP = $(SD_GW)/*.cpp
+GW_H = $(ID_GW)/*.h
+CTP_CPP = $(SD_CTP)/*.cpp
+CTP_H = $(ID_CTP)/*.h
+SAIL_CPP = $(SD_SAIL)/*.cpp
+SAIL_H = $(ID_SAIL)/*.h
+BT_CPP = $(SD_BT)/*.cpp
+BT_H = $(ID_BT)/*.h
+DOM_CPP = $(GW_CPP) $(CTP_CPP) $(SAIL_CPP)
+DOM_H = $(GW_H) $(CTP_H) $(SAIL_H)
+
+ALL_H = $(I_H) $(SOLV_H) $(GW_H) $(CTP_H) $(SAIL_H) $(DOM_H)
+ALL_CPP = $(DOM_CPP) $(SOLV_CPP) $(UTIL_CPP)
+
+# Libraries
+LIBS = lib/libmdp.a lib/libminigpt.a
+
+#########################################################################
+#                                 TARGETS                               #
+#########################################################################
+
+# Compiles the concurrent planning test program #
+conc: $(ALL_CPP) $(ALL_H)
+	$(CC) $(CFLAGS) $(INCLUDE) -c $(DOM_CPP) $(UTIL_CPP) $(S_CPP) $(SOLV_CPP)
 	mv *.o test/
-	$(CC) $(CFLAGS) $(INCLUDE) -o testconc test/testConc.cpp test/*.o lib/libminigpt.a
+	$(CC) $(CFLAGS) $(INCLUDE) -o testconc $(TD)/testConc.cpp $(TD)/*.o $(LIBS)
 
-sail: include/*.h $(SAILIDIR)/*.h $(SAILSDIR)/*.cpp  src/*.cpp
-	$(CC) $(CFLAGS) -I$(SAILIDIR) -Iinclude -c $(SAILSDIR)/*.cpp
-	# mv *.o test/
-	# $(CC) $(CFLAGS) $(INCLUDE) -o testsail test/testsail.cpp test/*.o lib/libminigpt.a
-
-ctp: src/domains/ctp/*.cpp src/solvers/*.cpp src/util/*.cpp include/*.h include/solvers/*.h include/domains/ctp/*.h
-	$(CC) $(CFLAGS) -Iinclude/domains/ctp -Iinclude -Iinclude/solvers -Include/util -c src/domains/ctp/*.cpp src/util/*.cpp src/*.cpp src/solvers/*.cpp
+# Compiles the Sailing domain test program #
+sail: $(I_H) $(SAIL_H) $(SAIL_CPP) $(S_CPP)
+	$(CC) $(CFLAGS) -I$(ID_SAIL) -I$(ID) -c $(SAIL_CPP)
 	mv *.o test/
-	$(CC) $(CFLAGS) -Iinclude/domains/ctp -Iinclude -Iinclude/solvers -Iinclude/util -o testctp test/testCTP.cpp test/*.o lib/libminigpt.a
+	$(CC) $(CFLAGS) $(INCLUDE) -o testsail $(TD)/testSail.cpp $(TD)/*.o $(LIBS)
 
-gw: $(GWSDIR)/*.cpp src/solvers/*.cpp src/util/*.cpp include/*.h include/solvers/*.h $(GWIDIR)/*.h
-	$(CC) $(CFLAGS) -Iinclude/domains/gridworld -Iinclude -Iinclude/solvers -c $(GWSDIR)/*.cpp src/util/*.cpp src/*.cpp src/solvers/*.cpp
+# Compiles the Canadian Traveler Problem domain test program #
+ctp: $(CTP_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(CTP_H)
+	$(CC) $(CFLAGS) -I$(ID_CTP) $(INCLUDE_CORE) -c $(CTP_CPP)
 	mv *.o test/
-	$(CC) $(CFLAGS) -Iinclude/domains/gridworld -Iinclude -Iinclude/solvers -Iinclude/util -o testgw test/testGridWorld.cpp test/*.o
+	$(CC) $(CFLAGS) -I$(ID_CTP) $(INCLUDE_CORE) -o testctp $(TD)/testCTP.cpp $(TD)/*.o $(LIBS)
 
-b2t: src/domains/binarytree/*.cpp src/solvers/*.cpp src/util/*.cpp include/*.h include/solvers/*.h include/domains/binarytree/*.h
-	$(CC) $(CFLAGS) -Iinclude/domains/binarytree -Iinclude -Iinclude/solvers -Include/util -c src/domains/binarytree/*.cpp src/util/*.cpp src/*.cpp src/solvers/*.cpp
+# Compiles the Gridworld domain test program #
+gw: $(GW_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(GW_H)
+	$(CC) $(CFLAGS) -I$(ID_GW) -I$(ID) -I$(ID_SOLV) -c $(GW_CPP)
 	mv *.o test/
-	$(CC) $(CFLAGS) -Iinclude/domains/binarytree -Iinclude -Iinclude/solvers -Iinclude/util -o testb2t test/testB2T.cpp test/*.o
+	$(CC) $(CFLAGS) -I$(ID_GW) $(INCLUDE_CORE) -o testgw $(TD)/testGridWorld.cpp $(TD)/*.o $(LIBS)
 
-ofiles: src/solvers/*.cpp src/util/*.cpp include/*.h include/solvers/*.h src/*.cpp
-	$(CC) $(CFLAGS) -fPIC -shared -Iinclude -Iinclude/solvers -Include/util src/util/*.cpp src/*.cpp src/solvers/*.cpp -o libmdp.so
-
-ppddl: src/ppddl/*.cpp include/*.h include/ppddl/*.h include/ppddl/mini-gpt/*.h src/solvers/*.cpp src/util/*.cpp
-	$(CC) $(CFLAGS) -Iinclude -Iinclude/ppddl -Include/ppddl/mini-gpt -Iinclude/solvers -c src/ppddl/*.cpp src/*.cpp src/solvers/*.cpp src/util/*.cpp
+# Compiles a test program for a simple binary tree domain  #
+b2t: $(BT_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(BT_H)
+	$(CC) $(CFLAGS) -I$(ID_BT) $(INCLUDE_CORE) -c $(BT_CPP)
 	mv *.o test/
-	$(CC) $(CFLAGS) -Iinclude -Iinclude/solvers -Iinclude/util -L. -lmdp -o testppddl test/testPPDDL.cpp test/*.o lib/libminigpt.a
+	$(CC) $(CFLAGS) -I$(ID_BT) $(INCLUDE_CORE) -o testb2t $(TD)/testB2T.cpp $(TD)/*.o $(LIBS)
+
+# Compiles the core MDP-LIB library #
+libmdp: $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(S_CPP)
+	rm -f *.o
+	$(CC) $(CFLAGS) $(INCLUDE_CORE) -c $(UTIL_CPP) $(S_CPP) $(SOLV_CPP)
+	ar rvs libmdp.a *.o
+	mv libmdp.a lib
+
+ppddl: src/ppddl/*.cpp $(I_H) include/ppddl/*.h include/ppddl/mini-gpt/*.h $(SOLV_CPP) $(UTIL_CPP)
+	$(CC) $(CFLAGS) -Iinclude -Iinclude/ppddl -Include/ppddl/mini-gpt -I$(ID_SOLV) -c src/ppddl/*.cpp src/*.cpp $(SOLV_CPP) $(UTIL_CPP)
+	mv *.o test/
+	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) -L. -lmdp -o testppddl test/testPPDDL.cpp test/*.o $(LIBS)
 
 clean: test/*.o
-	rm test/*.o
-	rm *.o
+	rm -f test/*.o
+	rm -f *.o
 

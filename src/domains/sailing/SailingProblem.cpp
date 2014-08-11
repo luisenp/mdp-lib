@@ -7,7 +7,8 @@
 SailingProblem::SailingProblem(short startX, short startY,
                                short goalX, short goalY,
                                short rows, short cols,
-                               std::vector<double> & costs)
+                               std::vector<double> & costs,
+                               double* windTransition)
 {
     startX_ = startX;
     startY_ = startY;
@@ -16,17 +17,23 @@ SailingProblem::SailingProblem(short startX, short startY,
     rows_ = rows;
     cols_ = cols;
     costs_ = costs;
+    windTransition_ = windTransition;
 
-    mlcore::State* absorbing_ = new SailingState(-1, -1, -1);
+    absorbing_ = new SailingState(-1, -1, -1);
+    s0 = new SailingState(startX, startY, 0);
+    this->addState(s0);
     this->addState(absorbing_);
+
+    for (short i = 0; i < 8; i++) {
+        mlcore::Action* a = new SailingAction(i);
+        actions_.push_back(a);
+    }
 }
 
 
-bool SailingProblem::inLake(SailingState* state)
+bool SailingProblem::inLake(short x, short y)
 {
-    short x = state->x();
-    short y = state->y();
-    return x >= 0 && x < rows_ && y >= 0 && y <= cols_;
+    return x >= 0 && x < rows_ && y >= 0 && y < cols_;
 }
 
 int SailingProblem::tack(SailingState* state, SailingAction* action) const
@@ -58,8 +65,19 @@ std::list<mlcore::Successor> SailingProblem::transition(mlcore::State* s, mlcore
         short dy[] = {1, 1, 0, -1, -1, -1,  0,  1};
         short nextX = (short) (state->x() + dx[action->dir()]);
         short nextY = (short) (state->y() + dy[action->dir()]);
-    }
 
+        if (inLake(nextX, nextY)) {
+            for (short nextWind = 0; nextWind < 8; nextWind++) {
+                double p = windTransition_[8*state->wind() + nextWind];
+                if (p > 0.0) {
+                    mlcore::State* next = new SailingState(nextX, nextY, nextWind);
+                    successors.push_back(mlcore::Successor(this->addState(next), p));
+                }
+            }
+        }
+    } else {
+        successors.push_back(mlcore::Successor(state, 1.0));
+    }
     return successors;
 }
 
