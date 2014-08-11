@@ -74,6 +74,8 @@ std::list<mlcore::Successor> SailingProblem::transition(mlcore::State* s, mlcore
                     successors.push_back(mlcore::Successor(this->addState(next), p));
                 }
             }
+        } else {
+            successors.push_back(mlcore::Successor(state, 1.0));
         }
     } else {
         successors.push_back(mlcore::Successor(state, 1.0));

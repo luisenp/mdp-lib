@@ -49,6 +49,20 @@ int main(int argc, char* args[])
 
     cerr << problem->states().size() << " states" << endl;
 
+    VISolver vi(problem, 1000, 0.001);
+    vi.solve();
+
+//    LAOStarSolver lao(problem, 0.001);
+//    lao.solve(problem->initialState());
+
+    State* tmp = problem->initialState();
+    cerr << tmp << " -- cost " << problem->initialState()->cost() << endl;
+    while (!problem->goal(tmp)) {
+        Action* a = tmp->bestAction();
+        tmp = randomSuccessor(problem, tmp,a );
+        cerr << a << " cost " << problem->cost(tmp,a) << " succ: " << tmp << endl;
+    }
+
     delete problem;
 }
 

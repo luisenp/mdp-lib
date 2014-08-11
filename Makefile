@@ -48,7 +48,7 @@ SAIL_CPP = $(SD_SAIL)/*.cpp
 SAIL_H = $(ID_SAIL)/*.h
 BT_CPP = $(SD_BT)/*.cpp
 BT_H = $(ID_BT)/*.h
-DOM_CPP = $(GW_CPP) $(CTP_CPP) $(SAIL_CPP)
+DOM_CPP = $(GW_CPP) $(CTP_CPP) $(SAIL_CPP) $(SD_DOM)/*.cpp
 DOM_H = $(GW_H) $(CTP_H) $(SAIL_H)
 
 ALL_H = $(I_H) $(SOLV_H) $(GW_H) $(CTP_H) $(SAIL_H) $(DOM_H)
@@ -63,7 +63,7 @@ LIBS = lib/libmdp.a lib/libminigpt.a
 
 # Compiles the concurrent planning test program #
 conc: $(ALL_CPP) $(ALL_H)
-	$(CC) $(CFLAGS) $(INCLUDE) -c $(DOM_CPP) $(UTIL_CPP) $(S_CPP) $(SOLV_CPP)
+	$(CC) $(CFLAGS) $(INCLUDE) -c $(DOM_CPP)
 	mv *.o test/
 	$(CC) $(CFLAGS) $(INCLUDE) -o testconc $(TD)/testConc.cpp $(TD)/*.o $(LIBS)
 
@@ -92,7 +92,7 @@ b2t: $(BT_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(BT_H)
 	$(CC) $(CFLAGS) -I$(ID_BT) $(INCLUDE_CORE) -o testb2t $(TD)/testB2T.cpp $(TD)/*.o $(LIBS)
 
 # Compiles the core MDP-LIB library #
-libmdp: $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(S_CPP)
+libmdp: $(S_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(UTIL_H)
 	rm -f *.o
 	$(CC) $(CFLAGS) $(INCLUDE_CORE) -c $(UTIL_CPP) $(S_CPP) $(SOLV_CPP)
 	ar rvs libmdp.a *.o

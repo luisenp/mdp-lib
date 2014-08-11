@@ -16,6 +16,10 @@
 #include "../include/domains/ctp/CTPAction.h"
 #include "../include/domains/ctp/CTPOptimisticHeuristic.h"
 
+#include "../include/domains/sailing/SailingState.h"
+#include "../include/domains/sailing/SailingProblem.h"
+#include "../include/domains/sailing/SailingAction.h"
+
 #include "../include/domains/WrapperProblem.h"
 #include "../include/domains/DummyState.h"
 
@@ -53,6 +57,29 @@ int main(int argc, char *args[])
         problem = new CTPProblem(args[2]);
         heuristic = new CTPOptimisticHeuristic((CTPProblem *) problem);
         problem->setHeuristic(heuristic);
+    } else if (strcmp(args[1], "sail") == 0) {
+        vector<double> costs;
+        costs.push_back(1);
+        costs.push_back(2);
+        costs.push_back(5);
+        costs.push_back(10);
+        costs.push_back(mdplib::dead_end_cost + 1);
+
+        double windTransition[] = {
+            0.50, 0.15, 0.10, 0.00, 0.00, 0.00, 0.10, 0.15,
+            0.15, 0.50, 0.15, 0.10, 0.00, 0.00, 0.00, 0.10,
+            0.10, 0.15, 0.50, 0.15, 0.10, 0.00, 0.00, 0.00,
+            0.00, 0.10, 0.15, 0.50, 0.15, 0.10, 0.00, 0.00,
+            0.00, 0.00, 0.10, 0.15, 0.50, 0.15, 0.10, 0.00,
+            0.00, 0.00, 0.00, 0.10, 0.15, 0.50, 0.15, 0.10,
+            0.10, 0.00, 0.00, 0.00, 0.10, 0.15, 0.50, 0.15,
+            0.15, 0.10, 0.00, 0.00, 0.00, 0.10, 0.15, 0.50};
+
+        int size = atoi(args[2]);
+
+        cerr << size << endl;
+
+        problem = new SailingProblem(0, 0, size -1 , size -1, size, size, costs, windTransition);
     } else {
         cerr << "Input Error " << args[1] << endl;
         return 1;
