@@ -40,6 +40,17 @@ int main(int argc, char *args[])
     Problem* problem;
     Heuristic* heuristic = nullptr;
     PairDoubleMap goals;
+    vector<double> costs;
+
+    double windTransition[] = {
+        0.50, 0.15, 0.10, 0.00, 0.00, 0.00, 0.10, 0.15,
+        0.15, 0.50, 0.15, 0.10, 0.00, 0.00, 0.00, 0.10,
+        0.10, 0.15, 0.50, 0.15, 0.10, 0.00, 0.00, 0.00,
+        0.00, 0.10, 0.15, 0.50, 0.15, 0.10, 0.00, 0.00,
+        0.00, 0.00, 0.10, 0.15, 0.50, 0.15, 0.10, 0.00,
+        0.00, 0.00, 0.00, 0.10, 0.15, 0.50, 0.15, 0.10,
+        0.10, 0.00, 0.00, 0.00, 0.10, 0.15, 0.50, 0.15,
+        0.15, 0.10, 0.00, 0.00, 0.00, 0.10, 0.15, 0.50};
 
     /* ************************************************************************************** */
     /*                                  Setting up the problem                                */
@@ -58,28 +69,16 @@ int main(int argc, char *args[])
         heuristic = new CTPOptimisticHeuristic((CTPProblem *) problem);
         problem->setHeuristic(heuristic);
     } else if (strcmp(args[1], "sail") == 0) {
-        vector<double> costs;
         costs.push_back(1);
         costs.push_back(2);
         costs.push_back(5);
         costs.push_back(10);
         costs.push_back(mdplib::dead_end_cost + 1);
 
-        double windTransition[] = {
-            0.50, 0.15, 0.10, 0.00, 0.00, 0.00, 0.10, 0.15,
-            0.15, 0.50, 0.15, 0.10, 0.00, 0.00, 0.00, 0.10,
-            0.10, 0.15, 0.50, 0.15, 0.10, 0.00, 0.00, 0.00,
-            0.00, 0.10, 0.15, 0.50, 0.15, 0.10, 0.00, 0.00,
-            0.00, 0.00, 0.10, 0.15, 0.50, 0.15, 0.10, 0.00,
-            0.00, 0.00, 0.00, 0.10, 0.15, 0.50, 0.15, 0.10,
-            0.10, 0.00, 0.00, 0.00, 0.10, 0.15, 0.50, 0.15,
-            0.15, 0.10, 0.00, 0.00, 0.00, 0.10, 0.15, 0.50};
-
         int size = atoi(args[2]);
-
-        cerr << size << endl;
-
         problem = new SailingProblem(0, 0, size -1 , size -1, size, size, costs, windTransition);
+        heuristic = new SailingNoWindHeuristic((SailingProblem *) problem);
+        problem->setHeuristic(heuristic);
     } else {
         cerr << "Input Error " << args[1] << endl;
         return 1;

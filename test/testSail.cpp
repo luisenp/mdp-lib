@@ -43,25 +43,26 @@ int main(int argc, char* args[])
     Problem* problem =
         new SailingProblem(0, 0, size -1 , size -1, size, size, costs, windTransition);
 
-    cerr << problem->initialState() << endl;
-
     problem->generateAll();
 
     cerr << problem->states().size() << " states" << endl;
 
-    VISolver vi(problem, 1000, 0.001);
-    vi.solve();
+    LAOStarSolver lao(problem, 0.001);
+    lao.solve(problem->initialState());
 
-//    LAOStarSolver lao(problem, 0.001);
-//    lao.solve(problem->initialState());
-
-    State* tmp = problem->initialState();
-    cerr << tmp << " -- cost " << problem->initialState()->cost() << endl;
-    while (!problem->goal(tmp)) {
-        Action* a = tmp->bestAction();
-        tmp = randomSuccessor(problem, tmp,a );
-        cerr << a << " cost " << problem->cost(tmp,a) << " succ: " << tmp << endl;
+    double expectedCost = 0.0;
+    int numSims = 1000;
+    for (int i = 0; i < numSims; i++) {
+        State* tmp = problem->initialState();
+        while (!problem->goal(tmp)) {
+            Action* a = tmp->bestAction();
+            expectedCost += problem->cost(tmp, a);
+            tmp = randomSuccessor(problem, tmp, a);
+        }
     }
+
+    cerr << endl << "Estimated cost " << problem->initialState()->cost() << endl;
+    cerr << "Avg. cost " << expectedCost / numSims << endl;
 
     delete problem;
 }

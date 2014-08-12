@@ -19,8 +19,8 @@ SailingProblem::SailingProblem(short startX, short startY,
     costs_ = costs;
     windTransition_ = windTransition;
 
-    absorbing_ = new SailingState(-1, -1, -1);
-    s0 = new SailingState(startX, startY, 0);
+    absorbing_ = new SailingState(-1, -1, -1, this);
+    s0 = new SailingState(startX, startY, 0, this);
     this->addState(s0);
     this->addState(absorbing_);
 
@@ -70,7 +70,7 @@ std::list<mlcore::Successor> SailingProblem::transition(mlcore::State* s, mlcore
             for (short nextWind = 0; nextWind < 8; nextWind++) {
                 double p = windTransition_[8*state->wind() + nextWind];
                 if (p > 0.0) {
-                    mlcore::State* next = new SailingState(nextX, nextY, nextWind);
+                    mlcore::State* next = new SailingState(nextX, nextY, nextWind, this);
                     successors.push_back(mlcore::Successor(this->addState(next), p));
                 }
             }

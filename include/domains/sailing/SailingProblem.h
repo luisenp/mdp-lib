@@ -9,12 +9,17 @@
 
 #include "SailingState.h"
 #include "SailingAction.h"
+#include "SailingNoWindHeuristic.h"
 
 enum tack_t {AWAY = 0, DOWN = 1, CROSS = 2, UP = 3, INTO = 4};
 
+class SailingNoWindHeuristic;
+class SailingState;
 
 class SailingProblem : public mlcore::Problem
 {
+friend SailingNoWindHeuristic;
+
 private:
     short startX_;
     short startY_;

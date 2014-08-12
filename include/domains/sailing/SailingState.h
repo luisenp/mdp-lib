@@ -3,9 +3,14 @@
 
 #include "../../state.h"
 
+#include "SailingNoWindHeuristic.h"
+
+class SailingNoWindHeuristic;
 
 class SailingState : public mlcore::State
 {
+friend SailingNoWindHeuristic;
+
 private:
     short x_;
     short y_;
@@ -18,11 +23,12 @@ private:
     }
 
 public:
-    SailingState(short x, short y, short wind)
+    SailingState(short x, short y, short wind, mlcore::Problem* problem)
     {
         x_ = x;
         y_ = y;
         wind_ = wind;
+        problem_ = problem;
     }
 
     virtual ~SailingState() {}
@@ -45,6 +51,7 @@ public:
         x_ =  state->x_;
         y_ =  state->y_;
         wind_ = state->wind_;
+        problem_ = state->problem_;
         return *this;
     }
 
