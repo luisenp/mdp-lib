@@ -23,11 +23,17 @@ RacetrackProblem::RacetrackProblem(char* filename)
 
         int y = 0;
         while ( std::getline (myfile, line) ) {
-            grid_.push_back(std::vector<char> ());
+            track_.push_back(std::vector<char> ());
             for (int x = 0; x < line.size(); x++) {
-                grid_.back().push_back(line.at(x));
+                if (!rtrack::checkValid(line.at(x)))
+                    continue;
+                track_.back().push_back(line.at(x));
                 if (line.at(x) == rtrack::start) {
                     starts_.insert(std::pair<int,int> (y, x));
+                }
+                if (line.at(x) == rtrack::goal) {
+                    goals_.insert(std::pair<int,int> (y, x));
+                    dprint2(y,x);
                 }
             }
             y++;
@@ -44,9 +50,9 @@ RacetrackProblem::RacetrackProblem(char* filename)
         for (int ay = -1; ay <= 1; ay++)
         actions_.push_back(new RacetrackAction(ax, ay));
 
-                    for (int i = 0; i < grid_.size(); i++) {
-                        for (int j = 0; j < grid_[i].size(); j++) {
-                            std::cout << grid_[i][j];
+                    for (int i = 0; i < track_.size(); i++) {
+                        for (int j = 0; j < track_[i].size(); j++) {
+                            std::cout << track_[i][j];
                         }
                         std::cout << std::endl;
                     }
@@ -61,6 +67,8 @@ bool RacetrackProblem::goal(mlcore::State* s) const
 
 std::list<mlcore::Successor> RacetrackProblem::transition(mlcore::State* s, mlcore::Action* a)
 {
+    assert(applicable(s, a));
+
     if (s == s0) {
         std::list<mlcore::Successor> successors;
         for (std::pair<int,int> start : starts_) {
@@ -86,6 +94,15 @@ std::list<mlcore::Successor> RacetrackProblem::transition(mlcore::State* s, mlco
         return allSuccessors->at(idAction);
     }
 
+    /* At walls the car can deterministically move to the track again */
+    if (track_[rts->x()][rts->y()] == rtrack::wall) {
+        int x = rts->x(), y = rts->y();
+        int ax = rta->ax(), ay = rta->ay();
+        mlcore::State* next = this->addState(new RacetrackState(x + ax, y + ay, ax, ay, this));
+        allSuccessors->at(idAction).push_back(mlcore::Successor(next, 1.0));
+        return allSuccessors->at(idAction);
+    }
+
     if (pSlip_ != 0.0) {
         mlcore::State* next = this->addState(resultingState(rts, 0, 0));
         allSuccessors->at(idAction).push_back(mlcore::Successor(next, pSlip_));
@@ -100,11 +117,11 @@ std::list<mlcore::Successor> RacetrackProblem::transition(mlcore::State* s, mlco
 
 double RacetrackProblem::cost(mlcore::State* s, mlcore::Action* a) const
 {
-    if (s == absorbing_ || goal(s))
+    if (s == s0 || s == absorbing_ || goal(s))
         return 0.0;
 
     RacetrackState* rts = (RacetrackState*) s;
-    if (grid_[rts->x()][rts->y()] == rtrack::wall)
+    if (track_[rts->x()][rts->y()] == rtrack::wall)
         return 10.0;
 
     return 1.0;
@@ -112,6 +129,20 @@ double RacetrackProblem::cost(mlcore::State* s, mlcore::Action* a) const
 
 bool RacetrackProblem::applicable(mlcore::State* s, mlcore::Action* a) const
 {
+    RacetrackState* rts = (RacetrackState*) s;
+    RacetrackAction* rta = (RacetrackAction*) a;
+
+    if (s == s0 || s == absorbing_)
+        return true;
+
+    int x = rts->x() + rta->ax(), y = rts->y() + rta->ay();
+
+    if (x < 0 || x >= track_.size() || y < 0 || y >= track_[x].size())
+        return false;
+
+    if (track_[rts->x()][rts->y()] == rtrack::wall && track_[x][y] == rtrack::wall)
+        return false;
+
     return true;
 }
 
@@ -128,7 +159,7 @@ RacetrackState* RacetrackProblem::resultingState(RacetrackState* rts, int ax, in
     for (int d = 0; d <= m; d++) {
         int x2 = round(x1 + (double) (d * vx) / m);
         int y2 = round(y1 + (double) (d * vy) / m);
-        if (grid_[x2][y2] == rtrack::wall || grid_[x2][y2] == rtrack::goal) {
+        if (track_[x2][y2] == rtrack::wall || track_[x2][y2] == rtrack::goal) {
             return new RacetrackState(x2, y2, 0, 0, this);
         }
     }

@@ -13,6 +13,8 @@
 #include "../include/util/graph.h"
 
 #include "../include/domains/racetrack/RacetrackProblem.h"
+#include "../include/domains/racetrack/RacetrackState.h"
+#include "../include/domains/racetrack/RacetrackAction.h"
 
 using namespace mlcore;
 using namespace mlsolvers;
@@ -26,6 +28,25 @@ int main(int argc, char* args[])
     problem->generateAll();
 
     cerr << problem->states().size() << endl;
+
+    LAOStarSolver lao(problem, 0.001);
+    lao.solve(problem->initialState());
+
+    int nsims = atoi(args[2]);
+    for (int i = 0; i < nsims; i++) {
+        cerr << " ********* Simulation Starts ********* " << endl;
+        State* tmp = problem->initialState();
+        cerr << tmp << " ";
+        double cost = 0.0;
+        while (!problem->goal(tmp)) {
+            Action* a = tmp->bestAction();
+            cost += problem->cost(tmp, a);
+            tmp = randomSuccessor(problem, tmp, a);
+            cerr << a << " " << " - Cost: " << cost << endl;
+            cerr << tmp << " ";
+        }
+        cerr << endl;
+    }
+
+    delete problem;
 }
-
-

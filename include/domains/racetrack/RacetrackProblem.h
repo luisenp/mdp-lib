@@ -18,6 +18,16 @@ namespace rtrack
 	const char start = 'S';
 	const char blank = ' ';
 	const char error = 'o';
+
+    /* Checks if the character is one of the valid track characters */
+    inline bool checkValid(char c)
+    {
+        char valid[] = {wall, goal, start, blank, error};
+        for (int i = 0; i < 5; i++)
+            if (c == valid[i])
+                return true;
+        return false;
+    }
 }
 
 /**
@@ -39,6 +49,8 @@ namespace rtrack
  *
  *   - Crashing with a wall does not return the car to the start but leaves it in
  *     the wall with speed 0. Moving out of a wall has a cost of 10 actions.
+ *     The only actions available at walls are the ones that attempt to bring the
+ *     car back to the track.
  */
 class RacetrackProblem : public mlcore::Problem
 {
@@ -46,16 +58,16 @@ private:
     mlcore::State* absorbing_;
 
     /* Maximum deterministic speed */
-    int mds_;
+    int mds_ = 2;
 
     /* Probability of slipping as in the original racetrack */
-    double pSlip_ = 0.20;
+    double pSlip_ = 0.10;
 
     /* Probability of picking wrong action */
     double pError_ = 0.05;
 
     /* Stores the track to be used in this problem */
-    std::vector<std::vector <char> > grid_;
+    std::vector<std::vector <char> > track_;
 
     /* All the start locations */
     IntPairSet starts_;
@@ -76,9 +88,14 @@ public:
     virtual ~RacetrackProblem() {}
 
     /**
-     * Returns the character grid that stores the track.
+     * Returns the track.
      */
-    std::vector<std::vector <char> > & grid() { return grid_; }
+    std::vector<std::vector <char> > & track() { return track_; }
+
+    /**
+     * Prints the track.
+     */
+    void printGrid();
 
     /**
      * Sets the maximum deterministic speed for this problem.

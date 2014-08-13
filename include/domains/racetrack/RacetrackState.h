@@ -19,11 +19,7 @@ private:
     /* A cache of all successors (for all actions) of this state */
     all_successor_t allSuccessors_;
 
-
-    virtual std::ostream& print(std::ostream& os) const
-    {
-        os << "Racetrack State: (" << x_  << ", " << y_ << ", " << vx_ << ", " << vy_ << ")";
-    }
+    virtual std::ostream& print(std::ostream& os) const;
 
 public:
     /**
@@ -32,19 +28,7 @@ public:
      *
      * Every tuple (x, y, vx, vy) should be assigned to a unique index.
      */
-    RacetrackState(int x, int y, int vx, int vy, mlcore::Problem* problem)
-    {
-        x_ = x;
-        y_ = y;
-        vx_ = vx;
-        vy_ = vy;
-        problem_ = problem;
-
-        /* Adding a successor entry for each action */
-        for (int i = 0; i < 9; i++) {
-            allSuccessors_.push_back(std::list<mlcore::Successor> ());
-        }
-    }
+    RacetrackState(int x, int y, int vx, int vy, mlcore::Problem* problem);
 
     virtual ~RacetrackState() {}
 
@@ -64,48 +48,22 @@ public:
     /**
      * Overrides method from State.
      */
-    virtual mlcore::State& operator=(const mlcore::State& rhs)
-    {
-        if (this == &rhs)
-            return *this;
-
-        RacetrackState* state = (RacetrackState*)  & rhs;
-        x_ = state->x_;
-        y_ = state->y_;
-        vx_ = state->vx_;
-        vy_ = state->vy_;
-        problem_ = state->problem_;
-        return *this;
-    }
+    virtual mlcore::State& operator=(const mlcore::State& rhs);
 
     /**
      * Overrides method from State.
      */
-    virtual bool operator==(const mlcore::State& rhs) const
-    {
-        RacetrackState* state = (RacetrackState*)  & rhs;
-        return x_ == state->x_
-                && y_ == state->y_
-                && vx_ == state->vx_
-                && vy_ == state->vy_;
-    }
+    virtual bool operator==(const mlcore::State& rhs) const;
 
     /**
      * Overrides method from State.
      */
-    virtual bool equals(mlcore::State* other) const
-    {
-        RacetrackState* state = (RacetrackState*) other;
-        return *this ==  *state;
-    }
+    virtual bool equals(mlcore::State* other) const;
 
     /**
      * Overrides method from State.
      */
-    virtual int hashValue() const
-    {
-        return x_ + 31*(y_ + 31*(vx_ + 31*vy_));
-    }
+    virtual int hashValue() const;
 };
 
 #endif // MDPLIB_RACETRACKSTATE_H
