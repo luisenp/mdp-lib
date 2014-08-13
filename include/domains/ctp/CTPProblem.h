@@ -13,6 +13,7 @@ namespace ctp
 
 /**
  * A class implementing the Canadian Traveler Problem.
+ * See - https://www.cs.ucsb.edu/~suri/cs235/Rlist/noMapNavigation.pdf
  */
 class CTPProblem : public mlcore::Problem
 {

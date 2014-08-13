@@ -393,6 +393,13 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/domains/gridworld/GridWorldAction.h" />
 		<Unit filename="include/domains/gridworld/GridWorldProblem.h" />
 		<Unit filename="include/domains/gridworld/GridWorldState.h" />
+		<Unit filename="include/domains/racetrack/RacetrackAction.h" />
+		<Unit filename="include/domains/racetrack/RacetrackProblem.h" />
+		<Unit filename="include/domains/racetrack/RacetrackState.h" />
+		<Unit filename="include/domains/sailing/SailingAction.h" />
+		<Unit filename="include/domains/sailing/SailingNoWindHeuristic.h" />
+		<Unit filename="include/domains/sailing/SailingProblem.h" />
+		<Unit filename="include/domains/sailing/SailingState.h" />
 		<Unit filename="include/heuristic.h" />
 		<Unit filename="include/mdplib.h" />
 		<Unit filename="include/mdpsim-2.2.2/actions.h" />
@@ -438,6 +445,11 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="src/domains/gridworld/GridWorldAction.cpp" />
 		<Unit filename="src/domains/gridworld/GridWorldProblem.cpp" />
 		<Unit filename="src/domains/gridworld/GridWorldState.cpp" />
+		<Unit filename="src/domains/racetrack/RacetrackAction.cpp" />
+		<Unit filename="src/domains/racetrack/RacetrackProblem.cpp" />
+		<Unit filename="src/domains/racetrack/RacetrackState.cpp" />
+		<Unit filename="src/domains/sailing/SailingNoWindHeuristic.cpp" />
+		<Unit filename="src/domains/sailing/SailingProblem.cpp" />
 		<Unit filename="src/ppddl/ppddl_action.cpp" />
 		<Unit filename="src/ppddl/ppddl_problem.cpp" />
 		<Unit filename="src/ppddl/ppddl_state.cpp" />
@@ -456,6 +468,8 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="test/testConc.cpp" />
 		<Unit filename="test/testGridWorld.cpp" />
 		<Unit filename="test/testPPDDL.cpp" />
+		<Unit filename="test/testRace.cpp" />
+		<Unit filename="test/testSail.cpp" />
 		<Extensions>
 			<code_completion />
 			<debugger />

@@ -26,9 +26,11 @@ SD_SAIL = $(SD_DOM)/sailing
 ID_SAIL = $(ID_DOM)/sailing
 SD_BT = $(SD_DOM)/binarytree
 ID_BT = $(ID_DOM)/binarytree
+SD_RACE = $(SD_DOM)/racetrack
+ID_RACE = $(ID_DOM)/racetrack
 
 # Variables for include directives #
-INCLUDE_DOM = -I$(ID_GW) -I$(ID_CTP) -I$(ID_SAIL) -I$(ID_DOM)
+INCLUDE_DOM = -I$(ID_GW) -I$(ID_CTP) -I$(ID_SAIL) -I$(ID_DOM) -I$(ID_RACE)
 INCLUDE_CORE = -I$(ID_SOLV) -I$(ID_UTIL) -I$(ID)
 INCLUDE = $(INCLUDE_DOM) $(INCLUDE_CORE)
 
@@ -48,10 +50,12 @@ SAIL_CPP = $(SD_SAIL)/*.cpp
 SAIL_H = $(ID_SAIL)/*.h
 BT_CPP = $(SD_BT)/*.cpp
 BT_H = $(ID_BT)/*.h
-DOM_CPP = $(GW_CPP) $(CTP_CPP) $(SAIL_CPP) $(SD_DOM)/*.cpp
-DOM_H = $(GW_H) $(CTP_H) $(SAIL_H)
+RACE_CPP = $(SD_RACE)/*.cpp
+RACE_H = $(ID_RACE)/*.h
+DOM_CPP = $(GW_CPP) $(CTP_CPP) $(SAIL_CPP) $(RACE_CPP) $(SD_DOM)/*.cpp
+DOM_H = $(GW_H) $(CTP_H) $(SAIL_H) $(RACE_H)
 
-ALL_H = $(I_H) $(SOLV_H) $(GW_H) $(CTP_H) $(SAIL_H) $(DOM_H)
+ALL_H = $(I_H) $(SOLV_H) $(DOM_H) $(UTIL_H)
 ALL_CPP = $(DOM_CPP) $(SOLV_CPP) $(UTIL_CPP)
 
 # Libraries
@@ -66,6 +70,12 @@ conc: $(ALL_CPP) $(ALL_H)
 	$(CC) $(CFLAGS) $(INCLUDE) -c $(DOM_CPP)
 	mv *.o test/
 	$(CC) $(CFLAGS) $(INCLUDE) -o testconc $(TD)/testConc.cpp $(TD)/*.o $(LIBS)
+
+# Compiles the Racetrack domain test program #
+race: $(I_H) $(RACE_H) $(RACE_CPP) $(S_CPP)
+	$(CC) $(CFLAGS) -I$(ID_RACE) -I$(ID) -c $(RACE_CPP)
+	mv *.o test/
+	$(CC) $(CFLAGS) $(INCLUDE) -o testrace $(TD)/testRace.cpp $(TD)/*.o $(LIBS)
 
 # Compiles the Sailing domain test program #
 sail: $(I_H) $(SAIL_H) $(SAIL_CPP) $(S_CPP)
