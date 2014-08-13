@@ -31,6 +31,7 @@ testctp
 testb2t
 testppddl
 testconc
+testrace
 *.txt
 data/*
 mdp-lib.layout
