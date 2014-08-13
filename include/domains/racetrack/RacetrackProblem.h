@@ -9,6 +9,8 @@
 #include "../../state.h"
 #include "../../action.h"
 
+#include "RacetrackState.h"
+
 namespace rtrack
 {
 	const char wall = 'X';
@@ -34,18 +36,23 @@ namespace rtrack
  *   - There are error-prone locations where there is a non-zero probability
  *     of choosing the wrong action.
  *     (see http://anytime.cs.umass.edu/shlomo/papers/PZicaps14.pdf).
+ *
+ *   - Crashing with a wall does not return the car to the start but leaves it in
+ *     the wall with speed 0. Moving out of a wall has a cost of 10 actions.
  */
 class RacetrackProblem : public mlcore::Problem
 {
 private:
+    mlcore::State* absorbing_;
+
     /* Maximum deterministic speed */
     int mds_;
 
     /* Probability of slipping as in the original racetrack */
-    double pSlip_;
+    double pSlip_ = 0.20;
 
     /* Probability of picking wrong action */
-    double pError_;
+    double pError_ = 0.05;
 
     /* Stores the track to be used in this problem */
     std::vector<std::vector <char> > grid_;
@@ -56,7 +63,8 @@ private:
     /* All the goal locations */
     IntPairSet goals_;
 
-    mlcore::State* absorbing_;
+    /* Returns the resulting state of applying the given acceleration to the given state */
+    RacetrackState* resultingState(RacetrackState* rts, int ax, int ay);
 
 public:
 

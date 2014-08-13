@@ -22,6 +22,10 @@ int main(int argc, char* args[])
 {
     char* filename = args[1];
     Problem* problem = new RacetrackProblem(filename);
+
+    problem->generateAll();
+
+    cerr << problem->states().size() << endl;
 }
 
 

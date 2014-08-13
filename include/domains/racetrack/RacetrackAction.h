@@ -33,7 +33,11 @@ public:
         ay_ = ay;
     }
 
-    virtual ~RacetrackAction();
+    virtual ~RacetrackAction() {}
+
+    int ax() { return ax_; }
+
+    int ay() { return ay_; }
 
     /**
      * Overriding method from Action.
@@ -54,7 +58,9 @@ public:
      */
     virtual int hashValue() const
     {
-        return (int) 3*(ax_ + 1) + ay_ + 1;
+        int tmp = 3*(ax_ + 1) + ay_ + 1;
+        assert(tmp >= 0 && tmp < 9);
+        return 3*(ax_ + 1) + ay_ + 1;
     }
 };
 
