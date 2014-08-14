@@ -29,6 +29,20 @@ int main(int argc, char* args[])
 
     cerr << problem->states().size() << endl;
 
+    for (State* s : problem->states()) {
+        cerr << s << endl;
+        for (Action* a : problem->actions()) {
+            cerr << " *** " << a << endl;
+            if (!problem->applicable(s, a)) continue;
+            list<Successor> sccrs = problem->transition(s,a);
+            for (Successor su : sccrs) {
+                cerr << " **************** " << su.su_prob << " ";
+                cerr << su.su_state << endl;
+            }
+        }
+    }
+
+
     LAOStarSolver lao(problem, 0.001);
     lao.solve(problem->initialState());
 

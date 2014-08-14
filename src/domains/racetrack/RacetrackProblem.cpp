@@ -103,13 +103,33 @@ std::list<mlcore::Successor> RacetrackProblem::transition(mlcore::State* s, mlco
         return allSuccessors->at(idAction);
     }
 
-    if (pSlip_ != 0.0) {
+    bool isDet = (abs(rts->vx()) + abs(rts->vy())) < mds_;
+    double p_err = isDet ? 0.0 : pError_*(1 - pSlip_);
+    double p_slip = isDet ? 0.0 : pSlip_;
+    double p_int = isDet? 1.0 : (1.0 - pSlip_)*(1.0 - pError_);
+
+    if (p_slip != 0.0) {
         mlcore::State* next = this->addState(resultingState(rts, 0, 0));
         allSuccessors->at(idAction).push_back(mlcore::Successor(next, pSlip_));
     }
-    if (pSlip_ != 1.0) {
+    if (p_int != 0.0) {
         mlcore::State* next = this->addState(resultingState(rts, rta->ax(), rta->ay()));
-        allSuccessors->at(idAction).push_back(mlcore::Successor(next, 1.0 - pSlip_));
+        allSuccessors->at(idAction).push_back(mlcore::Successor(next, p_int));
+    }
+    if (p_err != 0.0) {
+        /* "ta" stores how many other actions are within distance 1 of the current action */
+        int ta = abs(rta->ax()) + abs(rta->ay());
+        int cnt = 5;
+        if (ta == 1) cnt = 4;
+        if (ta == 2) cnt = 3;
+        for (mlcore::Action* a2 : actions_) {
+            RacetrackAction* rtaE = (RacetrackAction*) a2;
+            int dist = abs(rtaE->ax() - rta->ax()) + abs(rtaE->ay() - rta->ay());
+            if (dist > 1)
+                continue;
+            mlcore::State* next = this->addState(resultingState(rts, rtaE->ax(), rtaE->ay()));
+            allSuccessors->at(idAction).push_back(mlcore::Successor(next, p_err / cnt));
+        }
     }
 
     return allSuccessors->at(idAction);
