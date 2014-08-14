@@ -4,6 +4,8 @@
 #include "../problem.h"
 #include "../state.h"
 
+#include "solver.h"
+
 namespace mlsolvers
 {
     /**

@@ -95,12 +95,22 @@ public:
     /**
      * Prints the track.
      */
-    void printGrid();
+    void printTrack(std::ostream& os);
 
     /**
      * Sets the maximum deterministic speed for this problem.
      */
     void setMDS(int mds) { mds_ = mds; }
+
+    /**
+     * Sets the probability of chossing an unintended acceleration.
+     */
+    void setPError(double pError) { pError_ = pError; }
+
+    /**
+     * Sets the probability of slipping.
+     */
+    void setPSlip(double pSlip) { pError_ = pSlip_; }
 
     /**
      * Overrides method from Problem.

@@ -33,7 +33,6 @@ RacetrackProblem::RacetrackProblem(char* filename)
                 }
                 if (line.at(x) == rtrack::goal) {
                     goals_.insert(std::pair<int,int> (y, x));
-                    dprint2(y,x);
                 }
             }
             y++;
@@ -49,13 +48,16 @@ RacetrackProblem::RacetrackProblem(char* filename)
     for (int ax = -1; ax <= 1; ax++)
         for (int ay = -1; ay <= 1; ay++)
         actions_.push_back(new RacetrackAction(ax, ay));
+}
 
-                    for (int i = 0; i < track_.size(); i++) {
-                        for (int j = 0; j < track_[i].size(); j++) {
-                            std::cout << track_[i][j];
-                        }
-                        std::cout << std::endl;
-                    }
+void RacetrackProblem::printTrack(std::ostream& os)
+{
+    for (int i = 0; i < track_.size(); i++) {
+        for (int j = 0; j < track_[i].size(); j++) {
+            os << track_[i][j];
+        }
+        os << std::endl;
+    }
 }
 
 bool RacetrackProblem::goal(mlcore::State* s) const

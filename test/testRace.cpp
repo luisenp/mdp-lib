@@ -27,40 +27,48 @@ int main(int argc, char* args[])
 
     problem->generateAll();
 
-    cerr << problem->states().size() << endl;
+    cerr << problem->states().size() << " states" << endl;
 
-    for (State* s : problem->states()) {
-        cerr << s << endl;
-        for (Action* a : problem->actions()) {
-            cerr << " *** " << a << endl;
-            if (!problem->applicable(s, a)) continue;
-            list<Successor> sccrs = problem->transition(s,a);
-            for (Successor su : sccrs) {
-                cerr << " **************** " << su.su_prob << " ";
-                cerr << su.su_state << endl;
-            }
-        }
-    }
-
+//    for (State* s : problem->states()) {
+//        cerr << s << endl;
+//        for (Action* a : problem->actions()) {
+//            cerr << " *** " << a << endl;
+//            if (!problem->applicable(s, a)) continue;
+//            list<Successor> sccrs = problem->transition(s,a);
+//            for (Successor su : sccrs) {
+//                cerr << " **************** " << su.su_prob << " ";
+//                cerr << su.su_state << endl;
+//            }
+//        }
+//    }
 
     LAOStarSolver lao(problem, 0.001);
     lao.solve(problem->initialState());
+    cerr << "Estimated cost " << problem->initialState()->cost() << endl;
 
     int nsims = atoi(args[2]);
+    int verbosity = 1;
+    double expectedCost = 0.0;
     for (int i = 0; i < nsims; i++) {
-        cerr << " ********* Simulation Starts ********* " << endl;
         State* tmp = problem->initialState();
-        cerr << tmp << " ";
-        double cost = 0.0;
-        while (!problem->goal(tmp)) {
-            Action* a = tmp->bestAction();
-            cost += problem->cost(tmp, a);
-            tmp = randomSuccessor(problem, tmp, a);
-            cerr << a << " " << " - Cost: " << cost << endl;
+        if (verbosity > 100) {
+            cerr << " ********* Simulation Starts ********* " << endl;
             cerr << tmp << " ";
         }
-        cerr << endl;
+        while (!problem->goal(tmp)) {
+            Action* a = tmp->bestAction();
+            expectedCost += problem->cost(tmp, a);
+            tmp = randomSuccessor(problem, tmp, a);
+            if (verbosity > 100) {
+                cerr << a << " " << endl;
+                cerr << tmp << " ";
+            }
+        }
+        if (verbosity > 100)
+            cerr << endl;
     }
+
+    cerr << "Avg. cost " << expectedCost / nsims << endl;
 
     delete problem;
 }

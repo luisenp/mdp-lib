@@ -16,6 +16,11 @@
 #include "../include/domains/ctp/CTPAction.h"
 #include "../include/domains/ctp/CTPOptimisticHeuristic.h"
 
+#include "../include/domains/racetrack/RacetrackState.h"
+#include "../include/domains/racetrack/RacetrackProblem.h"
+#include "../include/domains/racetrack/RacetrackAction.h"
+#include "../include/domains/racetrack/RTrackDetHeuristic.h"
+
 #include "../include/domains/sailing/SailingState.h"
 #include "../include/domains/sailing/SailingProblem.h"
 #include "../include/domains/sailing/SailingAction.h"
@@ -79,8 +84,13 @@ int main(int argc, char *args[])
         problem = new SailingProblem(0, 0, size -1 , size -1, size, size, costs, windTransition);
         heuristic = new SailingNoWindHeuristic((SailingProblem *) problem);
         problem->setHeuristic(heuristic);
+    } else if (strcmp(args[1], "race") == 0) {
+        problem = new RacetrackProblem(args[2]);
+        problem->generateAll();
+        heuristic = new RTrackDetHeuristic(args[2]);
+        problem->setHeuristic(heuristic);
     } else {
-        cerr << "Input Error " << args[1] << endl;
+        cerr << "Usage: testconc [domain-name] [problem-instance]" << endl;
         return 1;
     }
 
