@@ -15,6 +15,7 @@
 #include "../include/domains/racetrack/RacetrackProblem.h"
 #include "../include/domains/racetrack/RacetrackState.h"
 #include "../include/domains/racetrack/RacetrackAction.h"
+#include "../include/domains/racetrack/RTrackDetHeuristic.h"
 
 using namespace mlcore;
 using namespace mlsolvers;
@@ -22,29 +23,34 @@ using namespace std;
 
 int main(int argc, char* args[])
 {
-    char* filename = args[1];
-    Problem* problem = new RacetrackProblem(filename);
-
+    Problem* problem = new RacetrackProblem(args[1]);
+    ((RacetrackProblem*) problem)->setPError(0.10);
+    ((RacetrackProblem*) problem)->setPSlip(0.20);
+    ((RacetrackProblem*) problem)->setMDS(-1);
     problem->generateAll();
+
+    Heuristic* heuristic = new RTrackDetHeuristic(args[1]);
+    problem->setHeuristic(heuristic);
 
     cerr << problem->states().size() << " states" << endl;
 
+    VISolver vi(problem, 1000000, 1.0e-6);
+    vi.solve();
+
+//    LAOStarSolver lao(problem, 0.001);
+//    lao.solve(problem->initialState());
+    cerr << "Estimated cost " << problem->initialState()->cost() << endl;
+
 //    for (State* s : problem->states()) {
-//        cerr << s << endl;
-//        for (Action* a : problem->actions()) {
-//            cerr << " *** " << a << endl;
-//            if (!problem->applicable(s, a)) continue;
-//            list<Successor> sccrs = problem->transition(s,a);
-//            for (Successor su : sccrs) {
-//                cerr << " **************** " << su.su_prob << " ";
-//                cerr << su.su_state << endl;
-//            }
+//        cerr << s << " " << s->cost() << endl;
+//        Action* a = new RacetrackAction(1,1);
+//        if (!problem->applicable(s, a))
+//            continue;
+//        list<Successor> sccrs = problem->transition(s, a);
+//        for (Successor su : sccrs) {
+//            cerr << " **** " << su.su_state << " " << su.su_prob << endl;
 //        }
 //    }
-
-    LAOStarSolver lao(problem, 0.001);
-    lao.solve(problem->initialState());
-    cerr << "Estimated cost " << problem->initialState()->cost() << endl;
 
     int nsims = atoi(args[2]);
     int verbosity = 1;
@@ -71,4 +77,5 @@ int main(int argc, char* args[])
     cerr << "Avg. cost " << expectedCost / nsims << endl;
 
     delete problem;
+    delete ((RTrackDetHeuristic*) heuristic);
 }

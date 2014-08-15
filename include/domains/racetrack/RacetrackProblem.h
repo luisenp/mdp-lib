@@ -110,7 +110,7 @@ public:
     /**
      * Sets the probability of slipping.
      */
-    void setPSlip(double pSlip) { pError_ = pSlip_; }
+    void setPSlip(double pSlip) { pSlip_ = pSlip; }
 
     /**
      * Overrides method from Problem.

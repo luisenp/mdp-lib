@@ -20,9 +20,14 @@ RacetrackState::RacetrackState(int x, int y, int vx, int vy, mlcore::Problem* pr
 std::ostream& RacetrackState::print(std::ostream& os) const
 {
     RacetrackProblem* rtp = (RacetrackProblem*) problem_;
-    os << "Racetrack State: (" << x_  << ", " << y_ << ", " << vx_ << ", " << vy_ << ")";
-    if (x_ >= 0 && rtp->track()[x_][y_] == rtrack::wall)
-        os << " - Wall";
+    os << "(" << x_  << ", " << y_ << ", " << vx_ << ", " << vy_ << ", w";
+    if (x_ >= 0) {
+        if  (rtp->track()[x_][y_] == rtrack::wall)
+            os << "1";
+        else
+            os << "0";
+    }
+    os << ")";
     return os;
 }
 

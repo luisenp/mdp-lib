@@ -36,12 +36,15 @@ using namespace std;
 using namespace mlsolvers;
 using namespace mlcore;
 
-int initialPlanningT = 10000;
-int noopPlanningT = 1000;
-int actionT = 1000;
-
 int main(int argc, char *args[])
 {
+    /* Simulation parameters */
+    int initialPlanningT = 10000;
+    int noopPlanningT = 1000;
+    int actionT = 1000;
+    double kappa = 250;
+    int verbosity = 1;
+
     Problem* problem;
     Heuristic* heuristic = nullptr;
     PairDoubleMap goals;
@@ -109,18 +112,21 @@ int main(int argc, char *args[])
 
     solver->run();
     this_thread::sleep_for(chrono::milliseconds( initialPlanningT ));   // Initial planning time
-    cerr << "Initial planning completed." << endl;
+
+    if (verbosity > 100)
+        cerr << "Initial planning completed." << endl;
 
     /* ************************************************************************************** */
     /*                         Starting execution/planning simulation                         */
     /* ************************************************************************************** */
     State* cur = wrapper->initialState();
-    double cost = 0;
+    double cost = initialPlanningT / kappa;
     while (true) {
         solverMutex.lock();
 
         if (problem->goal(cur)) {
-            cerr << "Finished with cost " << cost << endl;
+            if (verbosity > 0)
+                cerr << "Finished with cost " << cost << endl;
 
             solver->setKeepRunning(false);
             solverMutex.unlock();
@@ -136,7 +142,8 @@ int main(int argc, char *args[])
 
         if (a == nullptr) {
             solverMutex.unlock();
-            cerr << "No Action! " << cur << endl;
+            if (verbosity > 100)
+                cerr << "No Action! " << cur << endl;
 
             // At this point we know the current state, so the planner can be updated
             list<Successor> sccrs;
@@ -144,10 +151,12 @@ int main(int argc, char *args[])
             dummy->setSuccessors(sccrs);
 
             this_thread::sleep_for(chrono::milliseconds( noopPlanningT ));
+            cost += noopPlanningT / kappa;
             continue;
         }
 
-        cerr << cur << " --- " << a << endl;
+        if (verbosity > 100)
+            cerr << cur << " --- " << a << endl;
 
         dummy->setSuccessors(problem->transition(cur, a));
         wrapper->setDummyAction(a);
@@ -156,12 +165,14 @@ int main(int argc, char *args[])
         cost += problem->cost(cur, a);
         cur = randomSuccessor(problem, cur, a);
 
-        cerr << "    succ: " << cur << " " << cost << endl;
+        if (verbosity > 100)
+            cerr << "    succ: " << cur << " " << cost << endl;
 
 
         solverMutex.unlock();
         this_thread::sleep_for(chrono::milliseconds( actionT ));
 
-        cerr << "Executing Action " << endl;
+        if (verbosity > 100)
+            cerr << "Executing Action " << endl;
     }
 }

@@ -13,29 +13,34 @@
 RacetrackProblem::RacetrackProblem(char* filename)
 {
     std::ifstream myfile (filename);
-    std::istringstream iss;
     int width, height;
     if (myfile.is_open()) {
         std::string line;
+        int x = 0, y;
 
-        std::getline (myfile, line);
-        std::getline (myfile, line);
 
-        int y = 0;
+        std::getline(myfile, line);
+        std::istringstream iss(line);
+        iss >> x;
+        std::getline(myfile, line);
+        iss.str(line); iss.clear();
+        iss >> y;
+
+        track_ = std::vector <std::vector<char> > (x, std::vector<char> (y));
+
         while ( std::getline (myfile, line) ) {
-            track_.push_back(std::vector<char> ());
-            for (int x = 0; x < line.size(); x++) {
-                if (!rtrack::checkValid(line.at(x)))
+            y--;
+            for (int i = 0; i < line.size(); i++) {
+                if (!rtrack::checkValid(line.at(i)))
                     continue;
-                track_.back().push_back(line.at(x));
-                if (line.at(x) == rtrack::start) {
-                    starts_.insert(std::pair<int,int> (y, x));
+                track_[i][y] = line.at(i);
+                if (line.at(i) == rtrack::start) {
+                    starts_.insert(std::pair<int,int> (i, y));
                 }
-                if (line.at(x) == rtrack::goal) {
-                    goals_.insert(std::pair<int,int> (y, x));
+                if (line.at(i) == rtrack::goal) {
+                    goals_.insert(std::pair<int,int> (i, y));
                 }
             }
-            y++;
         }
         myfile.close();
     }
@@ -106,9 +111,15 @@ std::list<mlcore::Successor> RacetrackProblem::transition(mlcore::State* s, mlco
     }
 
     bool isDet = (abs(rts->vx()) + abs(rts->vy())) < mds_;
+    bool isErr = track_[rts->x()][rts->y()] == rtrack::error;
     double p_err = isDet ? 0.0 : pError_*(1 - pSlip_);
     double p_slip = isDet ? 0.0 : pSlip_;
-    double p_int = isDet? 1.0 : (1.0 - pSlip_)*(1.0 - pError_);
+    double p_int = isDet ? 1.0 : (1.0 - pSlip_)*(1.0 - pError_);
+
+    if (!isErr) {
+        p_int = 1.0 - p_slip;
+        p_err = 0.0;
+    }
 
     if (p_slip != 0.0) {
         mlcore::State* next = this->addState(resultingState(rts, 0, 0));
@@ -121,13 +132,13 @@ std::list<mlcore::Successor> RacetrackProblem::transition(mlcore::State* s, mlco
     if (p_err != 0.0) {
         /* "ta" stores how many other actions are within distance 1 of the current action */
         int ta = abs(rta->ax()) + abs(rta->ay());
-        int cnt = 5;
-        if (ta == 1) cnt = 4;
-        if (ta == 2) cnt = 3;
+        int cnt = 4;
+        if (ta == 1) cnt = 3;
+        if (ta == 2) cnt = 2;
         for (mlcore::Action* a2 : actions_) {
             RacetrackAction* rtaE = (RacetrackAction*) a2;
             int dist = abs(rtaE->ax() - rta->ax()) + abs(rtaE->ay() - rta->ay());
-            if (dist > 1)
+            if (dist > 1 || (rtaE->ax() == 0 && rtaE->ay() == 0) )
                 continue;
             mlcore::State* next = this->addState(resultingState(rts, rtaE->ax(), rtaE->ay()));
             allSuccessors->at(idAction).push_back(mlcore::Successor(next, p_err / cnt));
@@ -181,8 +192,11 @@ RacetrackState* RacetrackProblem::resultingState(RacetrackState* rts, int ax, in
     for (int d = 0; d <= m; d++) {
         int x2 = round(x1 + (double) (d * vx) / m);
         int y2 = round(y1 + (double) (d * vy) / m);
-        if (track_[x2][y2] == rtrack::wall || track_[x2][y2] == rtrack::goal) {
+        if (track_[x2][y2] == rtrack::wall) {
             return new RacetrackState(x2, y2, 0, 0, this);
+        }
+        if (track_[x2][y2] == rtrack::goal) {
+            return new RacetrackState(x2, y2, vx, vy, this);
         }
     }
     return new RacetrackState(x1 + vx, y1 + vy, vx, vy, this);

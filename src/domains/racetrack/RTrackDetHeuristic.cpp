@@ -1,4 +1,5 @@
 #include <cassert>
+#include <ctime>
 
 #include "../../../include/state.h"
 #include "../../../include/solvers/VISolver.h"
@@ -10,11 +11,14 @@
 RTrackDetHeuristic::RTrackDetHeuristic(char* filename)
 {
     detProblem_ = new RacetrackProblem(filename);
-    detProblem_->setPSlip(0.0);
-    detProblem_->setPError(0.0);
+    detProblem_->setPSlip(0.00);
+    detProblem_->setPError(0.00);
     detProblem_->generateAll();
-    mlsolvers::VISolver vi(detProblem_, 1000, 0.01);
+    mlsolvers::VISolver vi(detProblem_, 1000, 0.001);
+    std::cerr << "Computing heuristic" << std::endl;
+    time_t initialTime = std::time(NULL);
     vi.solve();
+    std::cerr << "Took " << (std::time(NULL) - initialTime) << " seconds" << std::endl;
 }
 
 double RTrackDetHeuristic::cost(const mlcore::State* s) const
@@ -24,5 +28,6 @@ double RTrackDetHeuristic::cost(const mlcore::State* s) const
         new RacetrackState(rts->x(), rts->y(), rts->vx(), rts->vy(), detProblem_);
     mlcore::StateSet::const_iterator it = detProblem_->states().find((mlcore::State *) tmp);
     assert(it != detProblem_->states().end());
+    delete tmp;
     return (*it)->cost();
 }
