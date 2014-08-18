@@ -111,7 +111,7 @@ libmdp: $(S_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(UTIL_H)
 ppddl: src/ppddl/*.cpp $(I_H) include/ppddl/*.h include/ppddl/mini-gpt/*.h $(SOLV_CPP) $(UTIL_CPP)
 	$(CC) $(CFLAGS) -Iinclude -Iinclude/ppddl -Include/ppddl/mini-gpt -I$(ID_SOLV) -c src/ppddl/*.cpp src/*.cpp $(SOLV_CPP) $(UTIL_CPP)
 	mv *.o test/
-	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) -L. -lmdp -o testppddl test/testPPDDL.cpp test/*.o $(LIBS)
+	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) -o testppddl test/testPPDDL.cpp test/*.o $(LIBS)
 
 clean: test/*.o
 	rm -f test/*.o

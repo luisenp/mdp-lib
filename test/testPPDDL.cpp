@@ -132,7 +132,7 @@ int main(int argc, char **argv)
             tmp = mlsolvers::randomSuccessor(MLProblem, tmp, a);
         }
     }
-    cerr << "Expected Cost: " << expectedCost / numSuccess << endl;
+    cerr << "Expected Cost: " << expectedCost / totalSuccess << endl;
     cerr << "Total Successes " << totalSuccess << "/" << nsims << endl;
 
     state_t::finalize();

@@ -52,7 +52,7 @@ namespace mlsolvers
         std::list<mlcore::Successor> successors = problem->transition(s, a);
         double qAction = problem->cost(s, a);
         for (mlcore::Successor su : successors) {
-            mlcore::State* s = problem->addState(su.su_state);
+            mlcore::State* s = su.su_state;
             qAction = qAction + su.su_prob * s->cost();
         }
         return qAction;

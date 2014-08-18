@@ -30,15 +30,15 @@ int main(int argc, char* args[])
     problem->generateAll();
 
     Heuristic* heuristic = new RTrackDetHeuristic(args[1]);
-    problem->setHeuristic(heuristic);
+//    problem->setHeuristic(heuristic);
 
     cerr << problem->states().size() << " states" << endl;
 
-    VISolver vi(problem, 1000000, 1.0e-6);
-    vi.solve();
+//    VISolver vi(problem, 1000000, 1.0e-6);
+//    vi.solve();
 
-//    LAOStarSolver lao(problem, 0.001);
-//    lao.solve(problem->initialState());
+    LAOStarSolver lao(problem, 0.001);
+    lao.solve(problem->initialState());
     cerr << "Estimated cost " << problem->initialState()->cost() << endl;
 
 //    for (State* s : problem->states()) {
