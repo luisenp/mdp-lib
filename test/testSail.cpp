@@ -40,7 +40,9 @@ int main(int argc, char* args[])
 
     int size = atoi(args[1]);
     Problem* problem =
-        new SailingProblem(0, 0, size -1 , size -1, size, size, costs, windTransition);
+        new SailingProblem(0, 0, 20, 20, size, size, costs, windTransition);
+    Heuristic* heuristic = new SailingNoWindHeuristic((SailingProblem*) problem);
+    problem->setHeuristic(heuristic);
 
     problem->generateAll();
 

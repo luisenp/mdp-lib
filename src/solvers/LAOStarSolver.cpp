@@ -14,16 +14,19 @@ namespace mlsolvers
             do {
                 visited.clear();
                 countExpanded = expand(s0, 0);
-                totalExpanded += countExpanded ;
+                totalExpanded += countExpanded;
             } while (countExpanded != 0);
+
+                dprint2(s0->cost(), totalExpanded);
 
             while (true) {
                 visited.clear();
                 error = testConvergence(s0, 0);
                 if (error < epsilon_)
                     return s0->bestAction();
-                if (error > mdplib::dead_end_cost)
+                if (error > mdplib::dead_end_cost) {
                     break;  // BPSG changed, must expand tip nodes again
+                }
             }
         }
     }
@@ -74,7 +77,7 @@ namespace mlsolvers
         error = std::max(error, bellmanUpdate(problem_, s));
         if (prevAction == s->bestAction())
             return error;
-        return mdplib::dead_end_cost + 1; // hasn't converged because the best action changed
+        return mdplib::dead_end_cost + 2; // hasn't converged because the best action changed
     }
 
 }

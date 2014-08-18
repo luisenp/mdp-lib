@@ -43,7 +43,7 @@ int main(int argc, char *args[])
     int noopPlanningT = 1000;
     int actionT = 1000;
     double kappa = 250;
-    int verbosity = 1;
+    int verbosity = 1000;
 
     Problem* problem;
     Heuristic* heuristic = nullptr;
@@ -84,7 +84,7 @@ int main(int argc, char *args[])
         costs.push_back(mdplib::dead_end_cost + 1);
 
         int size = atoi(args[2]);
-        problem = new SailingProblem(0, 0, size -1 , size -1, size, size, costs, windTransition);
+        problem = new SailingProblem(0, 0, 20, 20, size, size, costs, windTransition);
         heuristic = new SailingNoWindHeuristic((SailingProblem *) problem);
         problem->setHeuristic(heuristic);
     } else if (strcmp(args[1], "race") == 0) {
@@ -103,10 +103,13 @@ int main(int argc, char *args[])
     WrapperProblem* wrapper = new WrapperProblem(problem);
     DummyState* dummy = wrapper->dummyState();
 
-    LRTDPSolver lrtdp(wrapper, 1, 1.0e-1);
-    lrtdp.setMaxChecked(1000);
+    LRTDPSolver lrtdp(wrapper, 100000, 1.0e-3);
+    lrtdp.setMaxChecked(10000000);
+//    ConcurrentSolver* solver = new ConcurrentSolver(lrtdp);
 
-    ConcurrentSolver* solver = new ConcurrentSolver(lrtdp);
+    LAOStarSolver lao(wrapper, 1.0e-3);
+    ConcurrentSolver* solver = new ConcurrentSolver(lao);
+
     solver->setState(wrapper->initialState());
     mutex& solverMutex = mlsolvers::bellman_mutex;
 
@@ -145,14 +148,17 @@ int main(int argc, char *args[])
             if (verbosity > 100)
                 cerr << "No Action! " << cur << endl;
 
-            // At this point we know the current state, so the planner can be updated
-            list<Successor> sccrs;
-            sccrs.push_back(Successor(cur, 1.0));
-            dummy->setSuccessors(sccrs);
+            a = greedyAction(problem, cur);
 
-            this_thread::sleep_for(chrono::milliseconds( noopPlanningT ));
-            cost += noopPlanningT / kappa;
-            continue;
+            assert(a != nullptr);
+
+            // At this point we know the current state, so the planner can be updated
+//            list<Successor> sccrs;
+//            sccrs.push_back(Successor(cur, 1.0));
+//            dummy->setSuccessors(sccrs);
+//            this_thread::sleep_for(chrono::milliseconds( noopPlanningT ));
+//            cost += noopPlanningT / kappa;
+//            continue;
         }
 
         if (verbosity > 100)

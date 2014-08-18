@@ -30,7 +30,7 @@ int main(int argc, char* args[])
     problem->generateAll();
 
     Heuristic* heuristic = new RTrackDetHeuristic(args[1]);
-//    problem->setHeuristic(heuristic);
+    problem->setHeuristic(heuristic);
 
     cerr << problem->states().size() << " states" << endl;
 
