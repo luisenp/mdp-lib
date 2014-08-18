@@ -42,13 +42,17 @@ int main(int argc, char* args[])
     cerr << "Estimated cost " << problem->initialState()->cost() << endl;
 
 //    for (State* s : problem->states()) {
+//        RacetrackState* rts = (RacetrackState*) s;
+//        if (rts->x() != 1 || rts->y() != 1)
+//            continue;
+//        Action* a = s->bestAction();
 //        cerr << s << " " << s->cost() << endl;
-//        Action* a = new RacetrackAction(1,1);
 //        if (!problem->applicable(s, a))
 //            continue;
 //        list<Successor> sccrs = problem->transition(s, a);
 //        for (Successor su : sccrs) {
-//            cerr << " **** " << su.su_state << " " << su.su_prob << endl;
+//            cerr << " **** " << su.su_state << " " << su.su_prob;
+//            cerr << " " << su.su_state->cost() << endl;
 //        }
 //    }
 

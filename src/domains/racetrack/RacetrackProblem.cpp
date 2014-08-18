@@ -121,13 +121,17 @@ std::list<mlcore::Successor> RacetrackProblem::transition(mlcore::State* s, mlco
         p_err = 0.0;
     }
 
+
+    double acc = 0.0;
     if (p_slip != 0.0) {
         mlcore::State* next = this->addState(resultingState(rts, 0, 0));
         allSuccessors->at(idAction).push_back(mlcore::Successor(next, pSlip_));
+        acc += pSlip_;
     }
     if (p_int != 0.0) {
         mlcore::State* next = this->addState(resultingState(rts, rta->ax(), rta->ay()));
         allSuccessors->at(idAction).push_back(mlcore::Successor(next, p_int));
+        acc += p_int;
     }
     if (p_err != 0.0) {
         /* "ta" stores how many other actions are within distance 1 of the current action */
@@ -138,12 +142,15 @@ std::list<mlcore::Successor> RacetrackProblem::transition(mlcore::State* s, mlco
         for (mlcore::Action* a2 : actions_) {
             RacetrackAction* rtaE = (RacetrackAction*) a2;
             int dist = abs(rtaE->ax() - rta->ax()) + abs(rtaE->ay() - rta->ay());
-            if (dist > 1 || (rtaE->ax() == 0 && rtaE->ay() == 0) )
+            if (dist == 0 || dist > 1)
                 continue;
             mlcore::State* next = this->addState(resultingState(rts, rtaE->ax(), rtaE->ay()));
             allSuccessors->at(idAction).push_back(mlcore::Successor(next, p_err / cnt));
+            acc += p_err / cnt;
         }
     }
+
+    assert(fabs(acc - 1.0) < 1.0e-6);
 
     return allSuccessors->at(idAction);
 }
