@@ -18,7 +18,8 @@ SailingNoWindHeuristic::SailingNoWindHeuristic(SailingProblem* problem)
 double SailingNoWindHeuristic::cost(const mlcore::State* s) const
 {
     SailingState* state = (SailingState* ) s;
-    if (state->x() < 0)   // absorbing state
+    if (state->x() < 0
+        || (state->x() == problem_->goalX_ && state->y() == problem_->goalY_))   // absorbing state
         return 0.0;
 
     int x = state->x_;
