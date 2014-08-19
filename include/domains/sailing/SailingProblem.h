@@ -39,7 +39,7 @@ private:
     mlcore::State* absorbing_;
 
 public:
-    SailingProblem(short startX, short startY,
+    SailingProblem(short startX, short startY, short startWind,
                    short goalX, short goalY,
                    short rows, short cols,
                    std::vector<double> & costs,

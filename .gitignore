@@ -32,6 +32,8 @@ testb2t
 testppddl
 testconc
 testrace
+runsail.sh
 *.txt
 data/*
+experiments/*
 mdp-lib.layout

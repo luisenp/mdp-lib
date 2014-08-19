@@ -29,6 +29,7 @@
 #include "../include/domains/DummyState.h"
 
 #include "../include/solvers/ConcurrentSolver.h"
+#include "../include/solvers/LAOStarSolver.h"
 #include "../include/solvers/LRTDPSolver.h"
 #include "../include/solvers/VISolver.h"
 
@@ -43,7 +44,7 @@ int main(int argc, char *args[])
     int noopPlanningT = 1000;
     int actionT = 1000;
     double kappa = 250;
-    int verbosity = 1000;
+    int verbosity = 1;
 
     Problem* problem;
     Heuristic* heuristic = nullptr;
@@ -84,9 +85,11 @@ int main(int argc, char *args[])
         costs.push_back(mdplib::dead_end_cost + 1);
 
         int size = atoi(args[2]);
-        problem = new SailingProblem(0, 0, 20, 20, size, size, costs, windTransition);
+        int goal = atoi(args[3]);
+        problem = new SailingProblem(0, 0, 1, goal, goal, size, size, costs, windTransition);
+        problem->generateAll();
         heuristic = new SailingNoWindHeuristic((SailingProblem *) problem);
-        problem->setHeuristic(heuristic);
+//        problem->setHeuristic(heuristic);
     } else if (strcmp(args[1], "race") == 0) {
         problem = new RacetrackProblem(args[2]);
         problem->generateAll();
@@ -123,7 +126,7 @@ int main(int argc, char *args[])
     /*                         Starting execution/planning simulation                         */
     /* ************************************************************************************** */
     State* cur = wrapper->initialState();
-    double cost = initialPlanningT / kappa;
+    double cost = (double) initialPlanningT / kappa;
     while (true) {
         solverMutex.lock();
 

@@ -17,8 +17,6 @@ namespace mlsolvers
                 totalExpanded += countExpanded;
             } while (countExpanded != 0);
 
-                dprint2(s0->cost(), totalExpanded);
-
             while (true) {
                 visited.clear();
                 error = testConvergence(s0, 0);

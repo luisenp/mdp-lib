@@ -4,7 +4,7 @@
 #include "../../../include/domains/sailing/SailingState.h"
 #include "../../../include/domains/sailing/SailingAction.h"
 
-SailingProblem::SailingProblem(short startX, short startY,
+SailingProblem::SailingProblem(short startX, short startY, short startWind,
                                short goalX, short goalY,
                                short rows, short cols,
                                std::vector<double> & costs,
@@ -20,7 +20,7 @@ SailingProblem::SailingProblem(short startX, short startY,
     windTransition_ = windTransition;
 
     absorbing_ = new SailingState(-1, -1, -1, this);
-    s0 = new SailingState(startX, startY, 0, this);
+    s0 = new SailingState(startX, startY, startWind, this);
     this->addState(s0);
     this->addState(absorbing_);
 

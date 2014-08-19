@@ -39,10 +39,11 @@ int main(int argc, char* args[])
 
 
     int size = atoi(args[1]);
+    int goal = atoi(args[2]);
     Problem* problem =
-        new SailingProblem(0, 0, 20, 20, size, size, costs, windTransition);
+        new SailingProblem(0, 0, 1, goal , goal, size, size, costs, windTransition);
     Heuristic* heuristic = new SailingNoWindHeuristic((SailingProblem*) problem);
-    problem->setHeuristic(heuristic);
+//    problem->setHeuristic(heuristic);
 
     problem->generateAll();
 
@@ -52,7 +53,7 @@ int main(int argc, char* args[])
     lao.solve(problem->initialState());
 
     double expectedCost = 0.0;
-    int numSims = 1000;
+    int numSims = 0;
     for (int i = 0; i < numSims; i++) {
         State* tmp = problem->initialState();
         while (!problem->goal(tmp)) {
