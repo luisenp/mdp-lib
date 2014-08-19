@@ -18,10 +18,14 @@ namespace mlsolvers
         double epsilon_;
 
         /* Expands the BPSG rooted at state s and returns the number of states expanded */
-        int expand(mlcore::State* s, int level);
+        int expand(mlcore::State* s);
 
         /* Test if the BPSG rooted at state s has converged */
-        double testConvergence(mlcore::State* s, int level);
+        double testConvergence(mlcore::State* s);
+
+        /* Time limit for LAO* in milliseconds */
+        int timeLimit_;
+
     public:
         /**
          * Creates a LAO* solver for the given problem.
@@ -29,8 +33,8 @@ namespace mlsolvers
          * @param problem The problem to be solved.
          * @param epsilon The error tolerance wanted for the solution.
          */
-        LAOStarSolver(mlcore::Problem* problem, double epsilon)
-            : problem_(problem), epsilon_(epsilon) { }
+        LAOStarSolver(mlcore::Problem* problem, double epsilon, int timeLimit)
+            : problem_(problem), epsilon_(epsilon), timeLimit_(timeLimit) { }
 
         /**
          * Solves the associated problem using the LAO* algorithm.

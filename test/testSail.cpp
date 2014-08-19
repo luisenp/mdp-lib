@@ -49,8 +49,9 @@ int main(int argc, char* args[])
 
     cerr << problem->states().size() << " states" << endl;
 
-    LAOStarSolver lao(problem, 0.001);
-    lao.solve(problem->initialState());
+    LAOStarSolver lao(problem, 0.001, -10);
+    for (int i = 0; i < 500; i++)
+        lao.solve(problem->initialState());
 
     double expectedCost = 0.0;
     int numSims = 0;

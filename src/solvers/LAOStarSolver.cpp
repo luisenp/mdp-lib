@@ -3,23 +3,42 @@
 
 #include "../../include/util/general.h"
 
+#include <ctime>
+
 namespace mlsolvers
 {
     mlcore::Action* LAOStarSolver::solve(mlcore::State* s0)
     {
+        clock_t startTime = clock();
         int totalExpanded = 0;
         int countExpanded = 0;
         double error = mdplib::dead_end_cost;
         while (true) {
             do {
                 visited.clear();
-                countExpanded = expand(s0, 0);
+                countExpanded = expand(s0);
                 totalExpanded += countExpanded;
+
+                clock_t currentTime = clock();
+
+                double t = (0.001 * (currentTime - startTime)) / CLOCKS_PER_SEC ;
+                dprint3("t ", t, (currentTime - startTime));
+
+                if ((0.001 * (currentTime - startTime)) / CLOCKS_PER_SEC > timeLimit_)
+                    return s0->bestAction();
+
             } while (countExpanded != 0);
 
+            dprint1("HERE");
+
             while (true) {
+
+                clock_t currentTime = clock();
+                if ((0.001 * (currentTime - startTime)) / CLOCKS_PER_SEC > timeLimit_)
+                    return s0->bestAction();
+
                 visited.clear();
-                error = testConvergence(s0, 0);
+                error = testConvergence(s0);
                 if (error < epsilon_)
                     return s0->bestAction();
                 if (error > mdplib::dead_end_cost) {
@@ -29,9 +48,9 @@ namespace mlsolvers
         }
     }
 
-    int LAOStarSolver::expand(mlcore::State* s, int level)
+    int LAOStarSolver::expand(mlcore::State* s)
     {
-        if (!visited.insert(s).second)
+        if (!visited.insert(s).second)  // state was already visited
             return 0;
 
         int cnt = 0;
@@ -46,13 +65,13 @@ namespace mlsolvers
             mlcore::Action* a = s->bestAction();
             std::list<mlcore::Successor> successors = problem_->transition(s, a);
             for (mlcore::Successor sccr : successors)
-                cnt += expand(sccr.su_state, level + 1);
+                cnt += expand(sccr.su_state);
         }
-        bellmanBackup(problem_, s);
+        bellmanUpdate(problem_, s);
         return cnt;
     }
 
-    double LAOStarSolver::testConvergence(mlcore::State* s, int level)
+    double LAOStarSolver::testConvergence(mlcore::State* s)
     {
         double error = 0.0;
 
@@ -69,7 +88,7 @@ namespace mlsolvers
         } else {
             std::list<mlcore::Successor> successors = problem_->transition(s, prevAction);
             for (mlcore::Successor sccr : successors)
-                error =  std::max(error, testConvergence(sccr.su_state, level + 1));
+                error =  std::max(error, testConvergence(sccr.su_state));
         }
 
         error = std::max(error, bellmanUpdate(problem_, s));

@@ -40,11 +40,11 @@ using namespace mlcore;
 int main(int argc, char *args[])
 {
     /* Simulation parameters */
-    int initialPlanningT = 10000;
+    int initialPlanningT = 1000;
     int noopPlanningT = 1000;
     int actionT = 1000;
-    double kappa = 250;
-    int verbosity = 1;
+    double kappa = actionT;
+    int verbosity = 1000;
 
     Problem* problem;
     Heuristic* heuristic = nullptr;
@@ -106,11 +106,11 @@ int main(int argc, char *args[])
     WrapperProblem* wrapper = new WrapperProblem(problem);
     DummyState* dummy = wrapper->dummyState();
 
-    LRTDPSolver lrtdp(wrapper, 100000, 1.0e-3);
+    LRTDPSolver lrtdp(wrapper, 1, 1.0e-3);
     lrtdp.setMaxChecked(10000000);
 //    ConcurrentSolver* solver = new ConcurrentSolver(lrtdp);
 
-    LAOStarSolver lao(wrapper, 1.0e-3);
+    LAOStarSolver lao(wrapper, 1.0e-3, 0);
     ConcurrentSolver* solver = new ConcurrentSolver(lao);
 
     solver->setState(wrapper->initialState());
@@ -136,12 +136,14 @@ int main(int argc, char *args[])
 
             solver->setKeepRunning(false);
             solverMutex.unlock();
-            delete solver;
-            delete wrapper;
-            if (heuristic != nullptr)
-                delete heuristic;
-
             return 0;
+
+//            delete solver;
+//            delete wrapper;
+//            if (heuristic != nullptr)
+//                delete heuristic;
+//
+//            return 0;
         }
 
         Action* a = cur->bestAction();
