@@ -58,23 +58,12 @@ namespace mlsolvers
                 continue;
             }
 
-            /////////////////// THIS BLOCK IS A TEST ////////////////////////
-            /*
-             * The set of states reachable from 's' can be very large.
-             * In that case checkSolved would take a lot of time.
-             */
-            if (closed.size() > maxChecked_) {
-                break;
-            }
-            /////////////////// THAT BLOCK WAS A TEST ////////////////////////
-
             mlcore::Action* a = greedyAction(problem_, tmp);
 
             if (problem_->goal(tmp) || tmp->deadEnd())
                 continue;
 
-            std::list<mlcore::Successor> successors = problem_->transition(tmp, a);
-            for (mlcore::Successor su : successors) {
+            for (mlcore::Successor su : problem_->transition(tmp, a)) {
                 mlcore::State* next = su.su_state;
                 if (!next->checkBits(mdplib::SOLVED)
                     && openSet.find(next) == openSet.end()

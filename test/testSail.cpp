@@ -58,13 +58,6 @@ int main(int argc, char* args[])
         lrtdp.solve(problem->initialState());
     }
 
-//    lrtdp.setMaxChecked(-1);
-//    for (int i = 0; i < 500; i++) {
-//        lrtdp.solve(problem->initialState());
-//        if (i % 10 == 0)
-//            cerr << i << endl;
-//    }
-
     double expectedCost = 0.0;
     int numSims = 0;
     for (int i = 0; i < numSims; i++) {

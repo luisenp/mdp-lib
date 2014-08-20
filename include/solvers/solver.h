@@ -22,6 +22,21 @@ namespace mlsolvers
     extern std::mutex bellman_mutex;
 
     /**
+     * Random number generator.
+     */
+    extern std::random_device rand_dev;
+
+    /**
+     * Mersenne Twister 19937 generator.
+     */
+    extern std::mt19937 gen;
+
+    /**
+     * Uniform distribution [0,1] generator.
+     */
+    extern std::uniform_real_distribution<> dis;
+
+    /**
      * An interface for states to have some polymorphism on methods that want to call
      * different planners.
      */
@@ -127,23 +142,19 @@ namespace mlsolvers
     inline mlcore::State*
                 randomSuccessor(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
     {
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        std::uniform_real_distribution<> dis(0, 1);
         double pick = dis(gen);
 
         if (a == nullptr)
             return s;
 
         double acc = 0.0;
-        std::list<mlcore::Successor> successors = problem->transition(s, a);
-        if (successors.empty())
-            return s;
-        for (mlcore::Successor sccr : successors) {
+        for (mlcore::Successor sccr : problem->transition(s, a)) {
             acc = acc + sccr.su_prob;
             if (acc >= pick)
                 return sccr.su_state;
         }
+
+        return s;
     }
 
     /**

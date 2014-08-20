@@ -57,8 +57,7 @@ namespace mlsolvers
             cnt = 1;
         } else {
             mlcore::Action* a = s->bestAction();
-            std::list<mlcore::Successor> successors = problem_->transition(s, a);
-            for (mlcore::Successor sccr : successors)
+            for (mlcore::Successor sccr : problem_->transition(s, a))
                 cnt += expand(sccr.su_state);
         }
         bellmanUpdate(problem_, s);
@@ -80,8 +79,7 @@ namespace mlsolvers
             // hasn't converged because a state in BPSG doesn't have an action ready
             return mdplib::dead_end_cost + 1;
         } else {
-            std::list<mlcore::Successor> successors = problem_->transition(s, prevAction);
-            for (mlcore::Successor sccr : successors)
+            for (mlcore::Successor sccr : problem_->transition(s, prevAction))
                 error =  std::max(error, testConvergence(sccr.su_state));
         }
 
