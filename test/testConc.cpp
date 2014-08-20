@@ -44,7 +44,7 @@ int main(int argc, char *args[])
     int noopPlanningT = 1000;
     int actionT = 1000;
     double kappa = actionT;
-    int verbosity = 1000;
+    int verbosity = 1;
 
     Problem* problem;
     Heuristic* heuristic = nullptr;
@@ -106,12 +106,12 @@ int main(int argc, char *args[])
     WrapperProblem* wrapper = new WrapperProblem(problem);
     DummyState* dummy = wrapper->dummyState();
 
-    LRTDPSolver lrtdp(wrapper, 1, 1.0e-3);
+    LRTDPSolver lrtdp(wrapper, 10, 1.0e-3);
     lrtdp.setMaxChecked(10000000);
-//    ConcurrentSolver* solver = new ConcurrentSolver(lrtdp);
+    ConcurrentSolver* solver = new ConcurrentSolver(lrtdp);
 
-    LAOStarSolver lao(wrapper, 1.0e-3, 0);
-    ConcurrentSolver* solver = new ConcurrentSolver(lao);
+//    LAOStarSolver lao(wrapper, 1.0e-3, -1);
+//    ConcurrentSolver* solver = new ConcurrentSolver(lao);
 
     solver->setState(wrapper->initialState());
     mutex& solverMutex = mlsolvers::bellman_mutex;
@@ -138,12 +138,12 @@ int main(int argc, char *args[])
             solverMutex.unlock();
             return 0;
 
-//            delete solver;
-//            delete wrapper;
-//            if (heuristic != nullptr)
-//                delete heuristic;
-//
-//            return 0;
+            delete solver;
+            delete wrapper;
+            if (heuristic != nullptr)
+                delete heuristic;
+
+            return 0;
         }
 
         Action* a = cur->bestAction();

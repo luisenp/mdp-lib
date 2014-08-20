@@ -43,15 +43,27 @@ int main(int argc, char* args[])
     Problem* problem =
         new SailingProblem(0, 0, 1, goal , goal, size, size, costs, windTransition);
     Heuristic* heuristic = new SailingNoWindHeuristic((SailingProblem*) problem);
-//    problem->setHeuristic(heuristic);
+    problem->setHeuristic(heuristic);
 
     problem->generateAll();
 
     cerr << problem->states().size() << " states" << endl;
 
-    LAOStarSolver lao(problem, 0.001, -10);
-    for (int i = 0; i < 500; i++)
+    double tol = 0.001;
+    if (strcmp(args[3], "lao") == 0) {
+        LAOStarSolver lao(problem, tol, 100000);
         lao.solve(problem->initialState());
+    } else {
+        LRTDPSolver lrtdp(problem, 100000, tol);
+        lrtdp.solve(problem->initialState());
+    }
+
+//    lrtdp.setMaxChecked(-1);
+//    for (int i = 0; i < 500; i++) {
+//        lrtdp.solve(problem->initialState());
+//        if (i % 10 == 0)
+//            cerr << i << endl;
+//    }
 
     double expectedCost = 0.0;
     int numSims = 0;

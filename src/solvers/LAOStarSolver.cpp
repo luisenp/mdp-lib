@@ -20,16 +20,10 @@ namespace mlsolvers
                 totalExpanded += countExpanded;
 
                 clock_t currentTime = clock();
-
-                double t = (0.001 * (currentTime - startTime)) / CLOCKS_PER_SEC ;
-                dprint3("t ", t, (currentTime - startTime));
-
                 if ((0.001 * (currentTime - startTime)) / CLOCKS_PER_SEC > timeLimit_)
                     return s0->bestAction();
 
             } while (countExpanded != 0);
-
-            dprint1("HERE");
 
             while (true) {
 

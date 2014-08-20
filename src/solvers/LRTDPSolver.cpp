@@ -17,11 +17,11 @@ namespace mlsolvers
             visited.push_front(tmp);
             if (problem_->goal(tmp))
                 break;
+
             bellmanUpdate(problem_, tmp);
 
-            if (tmp->bestAction() == nullptr) { // state is a dead-end
+            if (tmp->deadEnd())
                 break;
-            }
 
             tmp = randomSuccessor(problem_, tmp, tmp->bestAction());
         }
@@ -63,20 +63,16 @@ namespace mlsolvers
              * The set of states reachable from 's' can be very large.
              * In that case checkSolved would take a lot of time.
              */
-            if (closedSet.size() > maxChecked_) {
+            if (closed.size() > maxChecked_) {
                 break;
             }
-            if (tmp->checkBits(mdplib::SOLVED)) {
-                continue;
-            }
-            /////////////////// THIS BLOCK WAS A TEST ////////////////////////
+            /////////////////// THAT BLOCK WAS A TEST ////////////////////////
 
             mlcore::Action* a = greedyAction(problem_, tmp);
 
-            if (a == nullptr) {     // state is dead-end or goal, considered solved
+            if (problem_->goal(tmp) || tmp->deadEnd())
                 continue;
-            }
-            assert(problem_->applicable(tmp, a));
+
             std::list<mlcore::Successor> successors = problem_->transition(tmp, a);
             for (mlcore::Successor su : successors) {
                 mlcore::State* next = su.su_state;
@@ -88,9 +84,10 @@ namespace mlsolvers
             }
         }
 
-        if (rv && openSet.empty()) {
-            for (mlcore::State* sc : closed)
+        if (rv && open.empty()) {
+            for (mlcore::State* sc : closed) {
                 sc->setBits(mdplib::SOLVED);
+            }
         } else {
             while (!closed.empty()) {
                 tmp = closed.front();
