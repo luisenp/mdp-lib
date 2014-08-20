@@ -69,34 +69,32 @@ int main(int argc, char *args[])
         return 1;
     }
 
-    if (strcmp(args[1], "grid") == 0) {
-        int n = atoi(args[2]);
+    if (strcmp(args[2], "grid") == 0) {
+        int n = atoi(args[3]);
         goals.insert(make_pair(pair<int,int> (n - 1,n - 1), -1.0));
         problem = new GridWorldProblem(n, n, 0, 0, &goals);
-    } else if (strcmp(args[1], "ctp") == 0) {
-        problem = new CTPProblem(args[2]);
+    } else if (strcmp(args[2], "ctp") == 0) {
+        problem = new CTPProblem(args[3]);
         heuristic = new CTPOptimisticHeuristic((CTPProblem *) problem);
         problem->setHeuristic(heuristic);
-    } else if (strcmp(args[1], "sail") == 0) {
+    } else if (strcmp(args[2], "sail") == 0) {
         costs.push_back(1);
         costs.push_back(2);
         costs.push_back(5);
         costs.push_back(10);
         costs.push_back(mdplib::dead_end_cost + 1);
-
-        int size = atoi(args[2]);
-        int goal = atoi(args[3]);
+        int size = atoi(args[3]);
+        int goal = atoi(args[4]);
         problem = new SailingProblem(0, 0, 1, goal, goal, size, size, costs, windTransition);
         problem->generateAll();
         heuristic = new SailingNoWindHeuristic((SailingProblem *) problem);
-//        problem->setHeuristic(heuristic);
-    } else if (strcmp(args[1], "race") == 0) {
-        problem = new RacetrackProblem(args[2]);
+    } else if (strcmp(args[2], "race") == 0) {
+        problem = new RacetrackProblem(args[3]);
         problem->generateAll();
-        heuristic = new RTrackDetHeuristic(args[2]);
+        heuristic = new RTrackDetHeuristic(args[3]);
         problem->setHeuristic(heuristic);
     } else {
-        cerr << "Usage: testconc [domain-name] [problem-instance]" << endl;
+        cerr << "Usage: testconc [algorithm] [domain-name] [problem-instance] [parameters]" << endl;
         return 1;
     }
 
@@ -106,12 +104,14 @@ int main(int argc, char *args[])
     WrapperProblem* wrapper = new WrapperProblem(problem);
     DummyState* dummy = wrapper->dummyState();
 
-    LRTDPSolver lrtdp(wrapper, 10, 1.0e-3);
-    lrtdp.setMaxChecked(10000000);
-    ConcurrentSolver* solver = new ConcurrentSolver(lrtdp);
-
-//    LAOStarSolver lao(wrapper, 1.0e-3, -1);
-//    ConcurrentSolver* solver = new ConcurrentSolver(lao);
+    ConcurrentSolver* solver;
+    LRTDPSolver lrtdp(wrapper, 1, 1.0e-3);
+    LAOStarSolver lao(wrapper, 1.0e-3, -1);
+    if (strcmp(args[1], "lrtdp") == 0) {
+        solver = new ConcurrentSolver(lrtdp);
+    } else if (strcmp(args[1], "lao") == 0) {
+        solver = new ConcurrentSolver(lao);
+    }
 
     solver->setState(wrapper->initialState());
     mutex& solverMutex = mlsolvers::bellman_mutex;

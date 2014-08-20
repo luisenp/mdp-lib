@@ -1,4 +1,5 @@
 #include <iostream>
+#include <ctime>
 #include <fstream>
 #include <sstream>
 #include <unistd.h>
@@ -34,27 +35,18 @@ int main(int argc, char* args[])
 
     cerr << problem->states().size() << " states" << endl;
 
-//    VISolver vi(problem, 1000000, 1.0e-6);
-//    vi.solve();
-
-    LAOStarSolver lao(problem, 0.001);
-    lao.solve(problem->initialState());
+    clock_t startTime = clock();
+    double tol = 0.001;
+    if (strcmp(args[3], "lao") == 0) {
+        LAOStarSolver lao(problem, tol, 1000000);
+        lao.solve(problem->initialState());
+    } else if (strcmp(args[3], "lrtdp") == 0) {
+        LRTDPSolver lrtdp(problem, 1000000, tol);
+        lrtdp.solve(problem->initialState());
+    }
     cerr << "Estimated cost " << problem->initialState()->cost() << endl;
-
-//    for (State* s : problem->states()) {
-//        RacetrackState* rts = (RacetrackState*) s;
-//        if (rts->x() != 1 || rts->y() != 1)
-//            continue;
-//        Action* a = s->bestAction();
-//        cerr << s << " " << s->cost() << endl;
-//        if (!problem->applicable(s, a))
-//            continue;
-//        list<Successor> sccrs = problem->transition(s, a);
-//        for (Successor su : sccrs) {
-//            cerr << " **** " << su.su_state << " " << su.su_prob;
-//            cerr << " " << su.su_state->cost() << endl;
-//        }
-//    }
+    clock_t endTime = clock();
+    cerr << "Time: " << (double(endTime - startTime) / CLOCKS_PER_SEC) << endl;
 
     int nsims = atoi(args[2]);
     int verbosity = 1;

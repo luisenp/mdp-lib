@@ -43,7 +43,7 @@ int main(int argc, char* args[])
     Problem* problem =
         new SailingProblem(0, 0, 1, goal , goal, size, size, costs, windTransition);
     Heuristic* heuristic = new SailingNoWindHeuristic((SailingProblem*) problem);
-    problem->setHeuristic(heuristic);
+//    problem->setHeuristic(heuristic);
 
     problem->generateAll();
 
