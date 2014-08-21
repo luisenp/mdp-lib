@@ -38,20 +38,17 @@ namespace mlsolvers
     {
         bool rv = true;
         std::list<mlcore::State*> open, closed;
-        mlcore::StateSet openSet, closedSet;
 
         mlcore::State* tmp = s;
         if (!tmp->checkBits(mdplib::SOLVED)) {
             open.push_front(s);
-            openSet.insert(s);
+            s->setBits(mdplib::CLOSED);
         }
 
         while (!open.empty()) {
             tmp = open.front();
             open.pop_front();
-            openSet.erase(tmp);
             closed.push_front(tmp);
-            closedSet.insert(tmp);
 
             if (residual(problem_, tmp) > epsilon_) {
                 rv = false;
@@ -65,11 +62,10 @@ namespace mlsolvers
 
             for (mlcore::Successor su : problem_->transition(tmp, a)) {
                 mlcore::State* next = su.su_state;
-                if (!next->checkBits(mdplib::SOLVED)
-                    && openSet.find(next) == openSet.end()
-                    && closedSet.find(next) == closedSet.end())
+                if (!next->checkBits(mdplib::SOLVED) && !next->checkBits(mdplib::CLOSED)) {
                     open.push_front(next);
-                    openSet.insert(next);
+                    next->setBits(mdplib::CLOSED);
+                }
             }
         }
 
@@ -81,6 +77,7 @@ namespace mlsolvers
             while (!closed.empty()) {
                 tmp = closed.front();
                 closed.pop_front();
+                tmp->clearBits(mdplib::CLOSED);
                 bellmanUpdate(problem_, tmp);
             }
         }

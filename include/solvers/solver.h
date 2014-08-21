@@ -36,6 +36,8 @@ namespace mlsolvers
      */
     extern std::uniform_real_distribution<> dis;
 
+    extern int bbcount;
+
     /**
      * An interface for states to have some polymorphism on methods that want to call
      * different planners.
@@ -85,6 +87,7 @@ namespace mlsolvers
      */
     inline std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem, mlcore::State* s)
     {
+        bbcount++;
         double bestQ = problem->goal(s) ? 0.0 : mdplib::dead_end_cost;
         bool hasAction = false;
         mlcore::Action* bestAction = nullptr;

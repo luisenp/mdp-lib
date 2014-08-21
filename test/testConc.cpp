@@ -69,6 +69,8 @@ int main(int argc, char *args[])
         return 1;
     }
 
+    cerr << args[2] << endl;
+
     if (strcmp(args[2], "grid") == 0) {
         int n = atoi(args[3]);
         goals.insert(make_pair(pair<int,int> (n - 1,n - 1), -1.0));

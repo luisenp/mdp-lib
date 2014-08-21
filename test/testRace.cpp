@@ -37,18 +37,22 @@ int main(int argc, char* args[])
 
     clock_t startTime = clock();
     double tol = 0.001;
-    if (strcmp(args[3], "lao") == 0) {
+    if (strcmp(args[2], "lao") == 0) {
         LAOStarSolver lao(problem, tol, 1000000);
         lao.solve(problem->initialState());
-    } else if (strcmp(args[3], "lrtdp") == 0) {
+    } else if (strcmp(args[2], "lrtdp") == 0) {
         LRTDPSolver lrtdp(problem, 1000000, tol);
         lrtdp.solve(problem->initialState());
+    } else {
+        cerr << "Unknown algorithm: " << args[2] << endl;
+        return -1;
     }
+
     cerr << "Estimated cost " << problem->initialState()->cost() << endl;
     clock_t endTime = clock();
     cerr << "Time: " << (double(endTime - startTime) / CLOCKS_PER_SEC) << endl;
 
-    int nsims = atoi(args[2]);
+    int nsims = atoi(args[3]);
     int verbosity = 1;
     double expectedCost = 0.0;
     for (int i = 0; i < nsims; i++) {
@@ -71,6 +75,8 @@ int main(int argc, char* args[])
     }
 
     cerr << "Avg. cost " << expectedCost / nsims << endl;
+
+    cerr << bbcount << endl;
 
     delete problem;
     delete ((RTrackDetHeuristic*) heuristic);
