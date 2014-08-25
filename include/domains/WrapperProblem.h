@@ -27,10 +27,7 @@ public:
         heuristic_ = problem->heuristic();
     }
 
-    virtual ~WrapperProblem()
-    {
-        delete dummyState_;
-    }
+    virtual ~WrapperProblem() { }
 
     DummyState* dummyState() { return dummyState_; }
 

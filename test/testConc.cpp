@@ -28,6 +28,7 @@
 #include "../include/domains/WrapperProblem.h"
 #include "../include/domains/DummyState.h"
 
+#include "../include/solvers/DeterministicSolver.h"
 #include "../include/solvers/ConcurrentSolver.h"
 #include "../include/solvers/LAOStarSolver.h"
 #include "../include/solvers/LRTDPSolver.h"
@@ -40,8 +41,8 @@ using namespace mlcore;
 int main(int argc, char *args[])
 {
     /* Simulation parameters */
-    int initialPlanningT = 250;
-    int noopPlanningT = 250;
+    int initialPlanningT = 0;
+    int noopPlanningT = 0;
     int actionT = 250;
     double kappa = actionT;
     int verbosity = 1;
@@ -65,7 +66,7 @@ int main(int argc, char *args[])
     /*                                  Setting up the problem                                */
     /* ************************************************************************************** */
     if (argc < 3) {
-        cerr << "Input Error " << endl;
+        cerr << "Usage: testconc [algorithm] [domain-name] [problem-instance] [parameters]" << endl;
         return 1;
     }
 
@@ -107,15 +108,18 @@ int main(int argc, char *args[])
     ConcurrentSolver* solver;
     LRTDPSolver lrtdp(wrapper, 1, 1.0e-3);
     LAOStarSolver lao(wrapper, 1.0e-3, -1);
+    DeterministicSolver det(problem);
     if (strcmp(args[1], "lrtdp") == 0) {
         solver = new ConcurrentSolver(lrtdp);
     } else if (strcmp(args[1], "lao") == 0) {
         solver = new ConcurrentSolver(lao);
+    } else if (strcmp(args[1], "det") == 0) {
+        solver = new ConcurrentSolver(det); // not really used, only here to avoid null pointers
+        solver->setKeepRunning(false);
     }
 
     solver->setState(wrapper->initialState());
     mutex& solverMutex = mlsolvers::bellman_mutex;
-
     solver->run();
     this_thread::sleep_for(chrono::milliseconds( initialPlanningT ));   // Initial planning time
 
@@ -136,19 +140,36 @@ int main(int argc, char *args[])
 
             solver->setKeepRunning(false);
             solverMutex.unlock();
-            return 0;
 
             delete solver;
-            delete wrapper;
-            if (heuristic != nullptr)
-                delete heuristic;
+            delete problem;
+            if (heuristic != nullptr) {
+                if (strcmp(args[2], "ctp") == 0)
+                    delete (CTPOptimisticHeuristic*) heuristic;
+                else if (strcmp(args[2], "sail") == 0)
+                    delete (SailingNoWindHeuristic*) heuristic;
+                else if (strcmp(args[2], "race") == 0)
+                    delete (RTrackDetHeuristic*) heuristic;
+            }
 
             return 0;
         }
 
-        Action* a = cur->bestAction();
+        /* Choosing action an updating cost */
+        Action* a;
+        if (strcmp(args[1], "det") == 0) {
+            clock_t time1 = clock();
+            a = det.solve(cur);
+            clock_t time2 = clock();
+            cost += problem->cost(cur, a);  // action cost
+            cost += (double(time2 - time1) / CLOCKS_PER_SEC) * 1000 / kappa;  // planning-time cost
+        } else {
+            a = cur->bestAction();
+            cost += problem->cost(cur, a);
+        }
 
         if (a == nullptr) {
+            exit(-1);
             solverMutex.unlock();
             if (verbosity > 100)
                 cerr << "No Action! " << cur << endl;
@@ -156,14 +177,6 @@ int main(int argc, char *args[])
             a = greedyAction(problem, cur);
 
             assert(a != nullptr);
-
-            // At this point we know the current state, so the planner can be updated
-//            list<Successor> sccrs;
-//            sccrs.push_back(Successor(cur, 1.0));
-//            dummy->setSuccessors(sccrs);
-//            this_thread::sleep_for(chrono::milliseconds( noopPlanningT ));
-//            cost += noopPlanningT / kappa;
-//            continue;
         }
 
         if (verbosity > 100)
@@ -173,7 +186,6 @@ int main(int argc, char *args[])
         wrapper->setDummyAction(a);
         solver->setState(dummy);
 
-        cost += problem->cost(cur, a);
         cur = randomSuccessor(problem, cur, a);
 
         if (verbosity > 100)
@@ -181,7 +193,9 @@ int main(int argc, char *args[])
 
 
         solverMutex.unlock();
-        this_thread::sleep_for(chrono::milliseconds( actionT ));
+
+        if (strcmp(args[1], "det") != 0)
+            this_thread::sleep_for(chrono::milliseconds( actionT ));
 
         if (verbosity > 100)
             cerr << "Executing Action " << endl;

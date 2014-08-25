@@ -9,13 +9,14 @@ mlcore::Action* DeterministicSolver::solve(mlcore::State* s0)
 {
     NodeComparer comp();
     std::priority_queue<Node*, std::vector<Node*>, NodeComparer> frontier(comp);
-    frontier.push(new Node(nullptr, s0, nullptr, 0.0, heuristic_));
+    Node* init = new Node(nullptr, s0, nullptr, 0.0, heuristic_);
+    frontier.push(init);
     std::list<Node*> allNodes;  // for memory clean-up later
+    allNodes.push_back(init);
     Node* final;
     while (!frontier.empty()) {
         Node* node = frontier.top();
         frontier.pop();
-        allNodes.push_back(node);
 
         if (node->state()->checkBits(mdplib::VISITED_ASTAR))
             continue;   // valid because this is using path-max
@@ -36,7 +37,9 @@ mlcore::Action* DeterministicSolver::solve(mlcore::State* s0)
 
             double cost = problem_->cost(node->state(), a);
 
-            frontier.push(new Node(node, nextState, a, cost, heuristic_, true));
+            Node* next = new Node(node, nextState, a, cost, heuristic_, true);
+            frontier.push(next);
+            allNodes.push_back(next);
         }
     }
 
