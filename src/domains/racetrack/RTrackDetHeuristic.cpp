@@ -15,10 +15,10 @@ RTrackDetHeuristic::RTrackDetHeuristic(char* filename)
     detProblem_->setPError(0.00);
     detProblem_->generateAll();
     mlsolvers::VISolver vi(detProblem_, 1000, 0.001);
-    std::cerr << "Computing heuristic" << std::endl;
-    time_t initialTime = std::time(NULL);
+//    std::cerr << "Computing heuristic" << std::endl;
+//    time_t initialTime = std::time(NULL);
     vi.solve();
-    std::cerr << "Took " << (std::time(NULL) - initialTime) << " seconds" << std::endl;
+//    std::cerr << "Took " << (std::time(NULL) - initialTime) << " seconds" << std::endl;
 }
 
 double RTrackDetHeuristic::cost(const mlcore::State* s) const

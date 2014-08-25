@@ -33,7 +33,7 @@ testppddl
 testconc
 testsail
 testrace
-runsail.sh
+run*.sh
 *.txt
 data/*
 experiments/*

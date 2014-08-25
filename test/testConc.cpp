@@ -40,9 +40,9 @@ using namespace mlcore;
 int main(int argc, char *args[])
 {
     /* Simulation parameters */
-    int initialPlanningT = 1000;
-    int noopPlanningT = 1000;
-    int actionT = 1000;
+    int initialPlanningT = 250;
+    int noopPlanningT = 250;
+    int actionT = 250;
     double kappa = actionT;
     int verbosity = 1;
 
@@ -68,8 +68,6 @@ int main(int argc, char *args[])
         cerr << "Input Error " << endl;
         return 1;
     }
-
-    cerr << args[2] << endl;
 
     if (strcmp(args[2], "grid") == 0) {
         int n = atoi(args[3]);

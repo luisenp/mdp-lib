@@ -9,6 +9,7 @@
 #include "../include/solvers/LRTDPSolver.h"
 #include "../include/solvers/UCTSolver.h"
 #include "../include/solvers/LAOStarSolver.h"
+#include "../include/solvers/DeterministicSolver.h"
 
 #include "../include/util/general.h"
 #include "../include/util/graph.h"
@@ -35,6 +36,7 @@ int main(int argc, char* args[])
 
     cerr << problem->states().size() << " states" << endl;
 
+    DeterministicSolver det(problem);
     clock_t startTime = clock();
     double tol = 0.001;
     if (strcmp(args[2], "lao") == 0) {
@@ -43,7 +45,7 @@ int main(int argc, char* args[])
     } else if (strcmp(args[2], "lrtdp") == 0) {
         LRTDPSolver lrtdp(problem, 1000000, tol);
         lrtdp.solve(problem->initialState());
-    } else {
+    } else if (strcmp(args[2], "det") != 0) {
         cerr << "Unknown algorithm: " << args[2] << endl;
         return -1;
     }
@@ -62,7 +64,7 @@ int main(int argc, char* args[])
             cerr << tmp << " ";
         }
         while (!problem->goal(tmp)) {
-            Action* a = tmp->bestAction();
+            Action* a = (strcmp(args[2], "det") == 0) ? det.solve(tmp) : tmp->bestAction();
             expectedCost += problem->cost(tmp, a);
             tmp = randomSuccessor(problem, tmp, a);
             if (verbosity > 100) {
