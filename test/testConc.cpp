@@ -41,7 +41,7 @@ using namespace mlcore;
 int main(int argc, char *args[])
 {
     /* Simulation parameters */
-    int initialPlanningT = 0;
+    int initialPlanningT = 250;
     int noopPlanningT = 0;
     int actionT = 250;
     double kappa = actionT;
@@ -130,13 +130,14 @@ int main(int argc, char *args[])
     /*                         Starting execution/planning simulation                         */
     /* ************************************************************************************** */
     State* cur = wrapper->initialState();
-    double cost = (double) initialPlanningT / kappa;
+    double costPlan = (double) initialPlanningT / kappa;
+    double costExec = 0.0;
     while (true) {
         solverMutex.lock();
 
         if (problem->goal(cur)) {
             if (verbosity > 0)
-                cerr << "Finished with cost " << cost << endl;
+                cerr << "Finished with cost " << costExec << " " << costPlan << endl;
 
             solver->setKeepRunning(false);
             solverMutex.unlock();
@@ -161,11 +162,11 @@ int main(int argc, char *args[])
             clock_t time1 = clock();
             a = det.solve(cur);
             clock_t time2 = clock();
-            cost += problem->cost(cur, a);  // action cost
-            cost += (double(time2 - time1) / CLOCKS_PER_SEC) * 1000 / kappa;  // planning-time cost
+            costExec += problem->cost(cur, a);  // action cost
+            costPlan += (double(time2 - time1) / CLOCKS_PER_SEC) * 1000 / kappa;  // planning-time cost
         } else {
             a = cur->bestAction();
-            cost += problem->cost(cur, a);
+            costExec += problem->cost(cur, a);
         }
 
         if (a == nullptr) {
