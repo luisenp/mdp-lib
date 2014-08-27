@@ -33,6 +33,16 @@ namespace mlcore
         double cost_ = mdplib::dead_end_cost + 1;
 
         /**
+         * For weighted methods such as weighted-LAO*.
+         */
+        double gValue_ = mdplib::dead_end_cost + 1;
+
+        /**
+         * For weighted methods such as weighted-LAO*.
+         */
+        double hValue_ = mdplib::dead_end_cost + 1;
+
+        /**
          * An estimate of the best action to reach a goal from this state.
          */
         Action* bestAction_ = nullptr;
@@ -114,14 +124,6 @@ namespace mlcore
         }
 
         /**
-         * Returns an estimate of the optimal expected cost to reach
-         * a goal from this state.
-         *
-         * @return An estimate of the optimal expected cost to reach a goal from this state.
-         */
-        double cost() const;
-
-        /**
          * Marks this state as a dead-end.
          */
         void markDeadEnd()
@@ -140,6 +142,14 @@ namespace mlcore
         }
 
         /**
+         * Returns an estimate of the optimal expected cost to reach
+         * a goal from this state.
+         *
+         * @return An estimate of the optimal expected cost to reach a goal from this state.
+         */
+        double cost() const;
+
+        /**
          * Updates the estimate of the expected cost to reach a goal from this state.
          *
          * @param c The updated expected cost to reach a goal from this state.
@@ -147,6 +157,40 @@ namespace mlcore
         void setCost(double c)
         {
             cost_ = c;
+        }
+
+        /**
+         * Returns the g-value of the state (for weighted methods, e.g. w-LAO*)
+         *
+         * @return The g-value of the state.
+         */
+        double gValue() const;
+
+        /**
+         * Updates the g-value of the state (for weighted methods, e.g. w-LAO*).
+         *
+         * @param g The g-value of the state.
+         */
+        void gValue(double g)
+        {
+            gValue_ = g;
+        }
+
+        /**
+         * Returns the h-value of the state (for weighted methods, e.g. w-LAO*)
+         *
+         * @return The h-value of the state.
+         */
+        double hValue() const;
+
+        /**
+         * Updates the h-value of the state (for weighted methods, e.g. w-LAO*).
+         *
+         * @param h The h-value of the state.
+         */
+        void hValue(double h)
+        {
+            hValue_ = h;
         }
 
         /**
@@ -218,6 +262,11 @@ namespace mlcore
      * A map of states to doubles.
      */
     typedef std::unordered_map<State*, double, StateHash, StateEqual> StateDoubleMap;
+
+    /**
+     * A map of states to actions.
+     */
+    typedef std::unordered_map<State*, Action*, StateHash, StateEqual> StateActionMap;
 
 }
 

@@ -9,6 +9,7 @@
 #include "../include/solvers/LRTDPSolver.h"
 #include "../include/solvers/UCTSolver.h"
 #include "../include/solvers/LAOStarSolver.h"
+#include "../include/solvers/WeightedLAOStarSolver.h"
 #include "../include/solvers/DeterministicSolver.h"
 
 #include "../include/util/general.h"
@@ -39,7 +40,10 @@ int main(int argc, char* args[])
     DeterministicSolver det(problem);
     clock_t startTime = clock();
     double tol = 0.001;
-    if (strcmp(args[2], "lao") == 0) {
+    if (strcmp(args[2], "wlao") == 0) {
+        WeightedLAOStarSolver wlao(problem, atof(args[4]), tol, 1000000);
+        wlao.solve(problem->initialState());
+    } else if (strcmp(args[2], "lao") == 0) {
         LAOStarSolver lao(problem, tol, 1000000);
         lao.solve(problem->initialState());
     } else if (strcmp(args[2], "lrtdp") == 0) {

@@ -1,15 +1,13 @@
-#ifndef MDPLIB_LAOSTARSOLVER_H
-#define MDPLIB_LAOSTARSOLVER_H
+#ifndef MDPLIB_WLAO_H
+#define MDPLIB_WLAO_H
+
+#include "solver.h"
+
 
 namespace mlsolvers
 {
 
-/**
- * A SSPP solver using the LAO* algorithm.
- *
- * See http://www.sciencedirect.com/science/article/pii/S0004370201001060
- */
-class LAOStarSolver : public Solver
+class WeightedLAOStarSolver : public Solver
 {
 private:
     mlcore::Problem* problem_;
@@ -26,16 +24,28 @@ private:
     /* Time limit for LAO* in milliseconds */
     int timeLimit_;
 
+    mlcore::StateDoubleMap hValues_;
+    mlcore::StateDoubleMap gValues_;
+    mlcore::StateActionMap bestActions_;
+
+    double weight_;
+
+    double bellmanUpdate(mlcore::State* s);
+
 public:
+
     /**
-     * Creates a LAO* solver for the given problem.
+     * Creates a weighted-LAO* solver for the given problem.
      *
      * @param problem The problem to be solved.
+     * @param weight The weight to use.
      * @param epsilon The error tolerance wanted for the solution.
      * @param timeLimit The maximum time allowed for running the algorithm.
      */
-    LAOStarSolver(mlcore::Problem* problem, double epsilon, int timeLimit)
-        : problem_(problem), epsilon_(epsilon), timeLimit_(timeLimit) { }
+    WeightedLAOStarSolver(mlcore::Problem* problem, double weight, double epsilon, int timeLimit)
+        : problem_(problem), weight_(weight), epsilon_(epsilon), timeLimit_(timeLimit) { }
+
+    virtual ~WeightedLAOStarSolver() { }
 
     /**
      * Solves the associated problem using the LAO* algorithm.
@@ -43,9 +53,10 @@ public:
      * @param s0 The state to start the search at.
      */
     virtual mlcore::Action* solve(mlcore::State* s0);
-
 };
+
 
 }
 
-#endif // MDPLIB_LAOSTARSOLVER_H
+
+#endif // MDPLIB_WLAO_H

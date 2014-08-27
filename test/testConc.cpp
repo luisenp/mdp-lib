@@ -41,9 +41,9 @@ using namespace mlcore;
 int main(int argc, char *args[])
 {
     /* Simulation parameters */
-    int initialPlanningT = 250;
+    int initialPlanningT = 1000;
     int noopPlanningT = 0;
-    int actionT = 250;
+    int actionT = 1000;
     double kappa = actionT;
     int verbosity = 1;
 
@@ -61,6 +61,16 @@ int main(int argc, char *args[])
         0.00, 0.00, 0.00, 0.10, 0.15, 0.50, 0.15, 0.10,
         0.10, 0.00, 0.00, 0.00, 0.10, 0.15, 0.50, 0.15,
         0.15, 0.10, 0.00, 0.00, 0.00, 0.10, 0.15, 0.50};
+
+    double windTransition2[] = {
+        0.20, 0.20, 0.20, 0.00, 0.00, 0.00, 0.20, 0.20,
+        0.20, 0.20, 0.20, 0.20, 0.00, 0.00, 0.00, 0.20,
+        0.20, 0.20, 0.20, 0.20, 0.20, 0.00, 0.00, 0.00,
+        0.00, 0.20, 0.20, 0.20, 0.20, 0.20, 0.00, 0.00,
+        0.00, 0.00, 0.20, 0.20, 0.20, 0.20, 0.20, 0.00,
+        0.00, 0.00, 0.00, 0.20, 0.20, 0.20, 0.20, 0.20,
+        0.20, 0.00, 0.00, 0.00, 0.20, 0.20, 0.20, 0.20,
+        0.20, 0.20, 0.00, 0.00, 0.00, 0.20, 0.20, 0.20};
 
     /* ************************************************************************************** */
     /*                                  Setting up the problem                                */
@@ -81,16 +91,19 @@ int main(int argc, char *args[])
     } else if (strcmp(args[2], "sail") == 0) {
         costs.push_back(1);
         costs.push_back(2);
-        costs.push_back(5);
-        costs.push_back(10);
+        costs.push_back(3);
+        costs.push_back(4);
         costs.push_back(mdplib::dead_end_cost + 1);
         int size = atoi(args[3]);
         int goal = atoi(args[4]);
-        problem = new SailingProblem(0, 0, 1, goal, goal, size, size, costs, windTransition);
+        problem = new SailingProblem(0, 0, 1, goal, goal, size, size, costs, windTransition2);
         problem->generateAll();
         heuristic = new SailingNoWindHeuristic((SailingProblem *) problem);
     } else if (strcmp(args[2], "race") == 0) {
         problem = new RacetrackProblem(args[3]);
+        ((RacetrackProblem*) problem)->setPError(0.10);
+        ((RacetrackProblem*) problem)->setPSlip(0.20);
+        ((RacetrackProblem*) problem)->setMDS(-1);
         problem->generateAll();
         heuristic = new RTrackDetHeuristic(args[3]);
         problem->setHeuristic(heuristic);
@@ -137,7 +150,7 @@ int main(int argc, char *args[])
 
         if (problem->goal(cur)) {
             if (verbosity > 0)
-                cerr << "Finished with cost " << costExec << " " << costPlan << endl;
+                cerr << costExec << " " << costPlan << endl;
 
             solver->setKeepRunning(false);
             solverMutex.unlock();
@@ -163,14 +176,13 @@ int main(int argc, char *args[])
             a = det.solve(cur);
             clock_t time2 = clock();
             costExec += problem->cost(cur, a);  // action cost
-            costPlan += (double(time2 - time1) / CLOCKS_PER_SEC) * 1000 / kappa;  // planning-time cost
+            costPlan += (double(time2 - time1) / CLOCKS_PER_SEC) * 1000 / kappa;
         } else {
             a = cur->bestAction();
             costExec += problem->cost(cur, a);
         }
 
         if (a == nullptr) {
-            exit(-1);
             solverMutex.unlock();
             if (verbosity > 100)
                 cerr << "No Action! " << cur << endl;
@@ -190,8 +202,7 @@ int main(int argc, char *args[])
         cur = randomSuccessor(problem, cur, a);
 
         if (verbosity > 100)
-            cerr << "    succ: " << cur << " " << cost << endl;
-
+            cerr << "    succ: " << cur << " " << costExec << " " << costPlan << endl;
 
         solverMutex.unlock();
 

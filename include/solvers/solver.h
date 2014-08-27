@@ -3,6 +3,7 @@
 
 #include <random>
 #include <cassert>
+#include <vector>
 #include <mutex>
 
 #include "../../include/problem.h"
@@ -209,15 +210,19 @@ inline double residual(mlcore::Problem* problem, mlcore::State* s)
 inline mlcore::State* mostLikelyOutcome(mlcore::Problem* problem,
                                          mlcore::State* s, mlcore::Action* a)
 {
-    mlcore::State* mlo = nullptr;
     double prob = -1.0;
+    double eps = 1.0e-6;
+    std::vector<mlcore::State*> outcomes;
     for (mlcore::Successor sccr : problem->transition(s, a)) {
-        if (sccr.su_prob > prob) {
+        if (sccr.su_prob > prob + eps) {
             prob = sccr.su_prob;
-            mlo = sccr.su_state;
+            outcomes.clear();
+            outcomes.push_back(sccr.su_state);
+        } else if (sccr.su_prob > prob - eps) {
+            outcomes.push_back(sccr.su_state);
         }
     }
-    return mlo;
+    return outcomes[rand() % outcomes.size()];
 }
 
 }
