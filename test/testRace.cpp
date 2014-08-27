@@ -55,6 +55,8 @@ int main(int argc, char* args[])
     }
 
     cerr << "Estimated cost " << problem->initialState()->cost() << endl;
+    cerr << problem->initialState()->gValue() << endl;
+    cerr << problem->initialState()->hValue() << endl;
     clock_t endTime = clock();
     cerr << "Time: " << (double(endTime - startTime) / CLOCKS_PER_SEC) << endl;
 

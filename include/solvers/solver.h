@@ -62,19 +62,43 @@ public:
  *
  * @param problem The problem that contains the given state.
  * @param s The state for which the Q-value will be computed.
- * @param a The action for which the Q-value will be computed
+ * @param a The action for which the Q-value will be computed.
  * @return The Q-value of the state-action pair.
  */
 inline double qvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
 {
-    std::list<mlcore::Successor> successors = problem->transition(s, a);
     double qAction = problem->cost(s, a);
-    for (mlcore::Successor su : successors) {
+    for (mlcore::Successor su : problem->transition(s, a)) {
         mlcore::State* s = su.su_state;
-        qAction = qAction + su.su_prob * s->cost();
+        qAction += su.su_prob * s->cost();
     }
     return qAction;
 }
+
+/**
+ * Computes the weighted-Q-value of a state-action pair.
+ * This method assumes that the given action is applicable on the state.
+ *
+ * @param problem The problem that contains the given state.
+ * @param s The state for which the Q-value will be computed.
+ * @param a The action for which the Q-value will be computed.
+ * @param weight The weight to use.
+ * @return A pair of doubles representing the g-value and h-value of the state-action
+ *        pair. The weighted-Q-value can be recovered as g + weight * h.
+ */
+inline std::pair<double, double>
+weightQvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
+{
+    double g = problem->cost(s, a);
+    double h = 0.0;
+    for (mlcore::Successor su : problem->transition(s, a)) {
+        mlcore::State* s = su.su_state;
+        g += problem->gamma() * su.su_prob * s->gValue();
+        h += problem->gamma() * su.su_prob * s->hValue();
+    }
+    return std::make_pair(g, h);
+}
+
 
 /**
  * Performs a Bellman backup a state.
@@ -86,7 +110,8 @@ inline double qvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action*
  * @return A pair containing the estimated cost and estimated best action according
  *        to this Bellman backup.
  */
-inline std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem, mlcore::State* s)
+inline
+std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem, mlcore::State* s)
 {
     bbcount++;
     double bestQ = problem->goal(s) ? 0.0 : mdplib::dead_end_cost;
@@ -110,7 +135,46 @@ inline std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem
 }
 
 /**
- * Performs a Bellman backup a state, and then updates the state with
+ * Performs a weighted-Bellman backup a state, and then updates the state with
+ * the resulting expected cost and greedy action.
+ *
+ * @param problem The problem that contains the given state.
+ * @param s The state on which the Bellman backup will be performed.
+ * @param weight The weight to use.
+ * @return The residual of the state.
+ */
+inline double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s, double weight)
+{
+
+    double bestQ = problem->goal(s) ? 0.0 : mdplib::dead_end_cost;
+    bool hasAction = false;
+    mlcore::Action* bestAction = nullptr;
+    double prevCost = s->cost();
+    for (mlcore::Action* a : problem->actions()) {
+        if (!problem->applicable(s, a))
+            continue;
+        hasAction = true;
+        std::pair<double, double> gh = weightQvalue(problem, s, a);
+        double qAction = gh.first + weight * gh.second;
+        if (qAction < bestQ) {
+            bellman_mutex.lock();
+            s->setCost(qAction);
+            s->gValue(gh.first);
+            s->hValue(gh.second);
+            s->setBestAction(a);
+            bellman_mutex.unlock();
+            bestQ = qAction;
+        }
+    }
+
+    if (!hasAction && bestQ == mdplib::dead_end_cost)
+        s->markDeadEnd();
+
+    return fabs(s->cost() - prevCost);
+}
+
+/**
+ * Performs a Bellman backup of a state, and then updates the state with
  * the resulting expected cost and greedy action.
  *
  * @param problem The problem that contains the given state.

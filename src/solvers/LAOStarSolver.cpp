@@ -54,14 +54,14 @@ int LAOStarSolver::expand(mlcore::State* s)
         return 0;
 
     if (s->bestAction() == nullptr) {   // this means state has not been expanded
-        bellmanUpdate(problem_, s);
+        bellmanUpdate(problem_, s, 1.0);
         cnt = 1;
     } else {
         mlcore::Action* a = s->bestAction();
         for (mlcore::Successor sccr : problem_->transition(s, a))
             cnt += expand(sccr.su_state);
     }
-    bellmanUpdate(problem_, s);
+    bellmanUpdate(problem_, s, 1.0);
     return cnt;
 }
 
@@ -84,7 +84,7 @@ double LAOStarSolver::testConvergence(mlcore::State* s)
             error =  std::max(error, testConvergence(sccr.su_state));
     }
 
-    error = std::max(error, bellmanUpdate(problem_, s));
+    error = std::max(error, bellmanUpdate(problem_, s, 1.0));
     if (prevAction == s->bestAction())
         return error;
     return mdplib::dead_end_cost + 2; // hasn't converged because the best action changed
