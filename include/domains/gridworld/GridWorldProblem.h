@@ -32,6 +32,7 @@ private:
     int height_;
     int x0_;
     int y0_;
+    double actionCost_;
     PairDoubleMap* goals_;
     mlcore::State* absorbing;
 
@@ -51,7 +52,8 @@ public:
      * Constructs a grid world with the specified width, height, goal states,
      * initial state (x0,y0). Heuristic is initialized to all-zero heuristic.
      */
-    GridWorldProblem(int width, int height, int x0, int y0, PairDoubleMap* goals);
+    GridWorldProblem(int width, int height, int x0, int y0,
+                     PairDoubleMap* goals, double actionCost);
 
     /**
      * Constructs a grid world with the specified width, height, goal states,

@@ -31,7 +31,7 @@ public:
             if (gws->x() == goal.first && gws->y() == goal.second)
                 return value;
             double md = abs(gws->x() - goal.first) + abs(gws->y() - goal.second);
-            double goalCost = 0.03* md + value;
+            double goalCost = problem_->actionCost_ * md + value;
             if (goalCost < cost_)
                 cost_ = goalCost;
         }

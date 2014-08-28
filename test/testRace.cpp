@@ -39,7 +39,7 @@ int main(int argc, char* args[])
 
     DeterministicSolver det(problem);
     clock_t startTime = clock();
-    double tol = 0.001;
+    double tol = 1.0e-6;
     if (strcmp(args[2], "wlao") == 0) {
         LAOStarSolver wlao(problem, tol, 1000000, atof(args[4]));
         wlao.solve(problem->initialState());
@@ -49,6 +49,9 @@ int main(int argc, char* args[])
     } else if (strcmp(args[2], "lrtdp") == 0) {
         LRTDPSolver lrtdp(problem, 1000000000, tol);
         lrtdp.solve(problem->initialState());
+    } else if (strcmp(args[2], "vi") == 0) {
+        VISolver vi(problem, 1000000000, tol);
+        vi.solve();
     } else if (strcmp(args[2], "det") != 0) {
         cerr << "Unknown algorithm: " << args[2] << endl;
         return -1;

@@ -67,11 +67,11 @@ public:
  */
 inline double qvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
 {
-    double qAction = problem->cost(s, a);
+    double qAction = 0.0;
     for (mlcore::Successor su : problem->transition(s, a)) {
-        mlcore::State* s = su.su_state;
-        qAction += su.su_prob * s->cost();
+        qAction += su.su_prob * su.su_state->cost();
     }
+    qAction = (qAction * problem->gamma()) + problem->cost(s, a);
     return qAction;
 }
 
@@ -89,13 +89,15 @@ inline double qvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action*
 inline std::pair<double, double>
 weightedQvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
 {
-    double g = problem->cost(s, a);
-    double h = 0.0;
+    double g = 0.0, h = 0.0;
     for (mlcore::Successor su : problem->transition(s, a)) {
-        mlcore::State* s = su.su_state;
-        g += problem->gamma() * su.su_prob * s->gValue();
-        h += problem->gamma() * su.su_prob * s->hValue();
+        g += su.su_prob * su.su_state->gValue();
+        h += su.su_prob * su.su_state->hValue();
+        dprint3("*********", su.su_state, su.su_state->hValue());
     }
+    g = (g * problem->gamma()) + problem->cost(s, a);
+    h *= problem->gamma();
+    dprint3(s, a, h);
     return std::make_pair(g, h);
 }
 
@@ -114,14 +116,14 @@ inline
 std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem, mlcore::State* s)
 {
     bbcount++;
-    double bestQ = problem->goal(s) ? 0.0 : mdplib::dead_end_cost;
+    double bestQ = problem->goal(s) ? 0.0 : mdplib::dead_end_cost + 1;
     bool hasAction = false;
     mlcore::Action* bestAction = nullptr;
     for (mlcore::Action* a : problem->actions()) {
         if (!problem->applicable(s, a))
             continue;
         hasAction = true;
-        double qAction = qvalue(problem, s, a);
+        double qAction = std::min(mdplib::dead_end_cost, qvalue(problem, s, a));
         if (qAction < bestQ) {
             bestQ = qAction;
             bestAction = a;
@@ -132,45 +134,6 @@ std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem, mlcor
         s->markDeadEnd();
 
     return std::make_pair(bestQ, bestAction);
-}
-
-/**
- * Performs a weighted-Bellman backup a state, and then updates the state with
- * the resulting expected cost and greedy action.
- *
- * @param problem The problem that contains the given state.
- * @param s The state on which the Bellman backup will be performed.
- * @param weight The weight to use.
- * @return The residual of the state.
- */
-inline double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s, double weight)
-{
-
-    double bestQ = problem->goal(s) ? 0.0 : mdplib::dead_end_cost;
-    bool hasAction = false;
-    mlcore::Action* bestAction = nullptr;
-    double prevCost = s->cost();
-    for (mlcore::Action* a : problem->actions()) {
-        if (!problem->applicable(s, a))
-            continue;
-        hasAction = true;
-        std::pair<double, double> gh = weightedQvalue(problem, s, a);
-        double qAction = gh.first + weight * gh.second;
-        if (qAction < bestQ) {
-            bellman_mutex.lock();
-            s->setCost(gh.first);
-            s->gValue(gh.first);
-            s->hValue(gh.second);
-            s->setBestAction(a);
-            bellman_mutex.unlock();
-            bestQ = qAction;
-        }
-    }
-
-    if (!hasAction && bestQ == mdplib::dead_end_cost)
-        s->markDeadEnd();
-
-    return fabs(s->cost() - prevCost);
 }
 
 /**
@@ -192,6 +155,53 @@ inline double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s)
     return fabs(residual);
 }
 
+/**
+ * Performs a weighted-Bellman backup a state, and then updates the state with
+ * the resulting expected cost and greedy action.
+ *
+ * This backup uses fSSPUDE - see http://arxiv.org/pdf/1210.4875.pdf
+ *
+ * @param problem The problem that contains the given state.
+ * @param s The state on which the Bellman backup will be performed.
+ * @param weight The weight to use.
+ * @return The residual of the state.
+ */
+inline double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s, double weight)
+{
+    if (weight == 1.0)
+        return bellmanUpdate(problem, s);
+
+    double bestQ = problem->goal(s) ? 0.0 : mdplib::dead_end_cost + 1;
+    double bestG = bestQ, bestH = bestQ;
+    bool hasAction = false;
+    mlcore::Action* bestAction = nullptr;
+    double prevCost = s->cost();
+    for (mlcore::Action* a : problem->actions()) {
+        if (!problem->applicable(s, a))
+            continue;
+        hasAction = true;
+        std::pair<double, double> gh = weightedQvalue(problem, s, a);
+        double qAction = std::min(mdplib::dead_end_cost, gh.first + weight * gh.second);
+        if (qAction < bestQ) {
+            bestQ = qAction;
+            bestG = gh.first;
+            bestH = gh.second;
+            bestAction = a;
+        }
+    }
+
+    if (!hasAction && bestQ == mdplib::dead_end_cost)
+        s->markDeadEnd();
+
+    bellman_mutex.lock();
+    s->setCost(bestQ);
+    s->gValue(bestG);
+    s->hValue(bestH);
+    s->setBestAction(bestAction);
+    bellman_mutex.unlock();
+
+    return fabs(bestQ - prevCost);
+}
 
 /**
  * Samples a successor state of a state and action using the probabilities
@@ -217,7 +227,7 @@ inline mlcore::State*
 
     double acc = 0.0;
     for (mlcore::Successor sccr : problem->transition(s, a)) {
-        acc = acc + sccr.su_prob;
+        acc += sccr.su_prob;
         if (acc >= pick)
             return sccr.su_state;
     }

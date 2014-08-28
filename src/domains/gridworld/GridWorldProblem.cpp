@@ -16,15 +16,17 @@ void GridWorldProblem::addAllActions()
 }
 
 GridWorldProblem::GridWorldProblem() :
-                    width_(0), height_(0), x0_(0), y0_(0), goals_(0)
+                    width_(0), height_(0), x0_(0), y0_(0), goals_(0), actionCost_(0.03)
 {
     absorbing = new GridWorldState(this, -1, -1);
     gamma_ = 1.0;
     addAllActions();
 }
 
-GridWorldProblem::GridWorldProblem(int width, int height, int x0, int y0, PairDoubleMap* goals)
-                                   : width_(width), height_(height), x0_(x0), y0_(y0), goals_(goals)
+GridWorldProblem::GridWorldProblem(int width, int height, int x0, int y0,
+                                   PairDoubleMap* goals, double actionCost)
+                                   : width_(width), height_(height), x0_(x0), y0_(y0),
+                                     goals_(goals), actionCost_(actionCost)
 {
     mlcore::State* init = new GridWorldState(this, x0_, y0_);
     absorbing = new GridWorldState(this, -1, -1);
@@ -120,7 +122,7 @@ double GridWorldProblem::cost(mlcore::State* s, mlcore::Action* a) const
         std::pair<int,int> pos(gws->x(),gws->y());
         return (*goals_)[pos];
     }
-    return 0.03;
+    return actionCost_;
 }
 
 bool GridWorldProblem::applicable(mlcore::State* s, mlcore::Action* a) const

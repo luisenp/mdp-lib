@@ -48,14 +48,13 @@ int LAOStarSolver::expand(mlcore::State* s)
     if (!visited.insert(s).second)  // state was already visited
         return 0;
 
-    int cnt = 0;
-
     if (s->deadEnd() || problem_->goal(s))
         return 0;
 
+    int cnt = 0;
     if (s->bestAction() == nullptr) {   // this means state has not been expanded
         bellmanUpdate(problem_, s, weight_);
-        cnt = 1;
+        return 1;
     } else {
         mlcore::Action* a = s->bestAction();
         for (mlcore::Successor sccr : problem_->transition(s, a))

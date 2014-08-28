@@ -3,7 +3,10 @@
 #include "../include/solvers/solver.h"
 #include "../include/solvers/VISolver.h"
 #include "../include/solvers/LRTDPSolver.h"
+#include "../include/solvers/LAOStarSolver.h"
+
 #include "../include/util/general.h"
+
 #include "../include/domains/gridworld/GridWorldState.h"
 #include "../include/domains/gridworld/GridWorldProblem.h"
 #include "../include/domains/gridworld/GridWorldAction.h"
@@ -13,32 +16,36 @@ using namespace std;
 using namespace mlcore;
 using namespace mlsolvers;
 
-int main()
+int main(int argc, char* args[])
 {
     PairDoubleMap goals;
-    goals.insert(make_pair(pair<int,int> (99, 99), -1.0));
+    goals.insert(make_pair(pair<int,int> (0, 4), 0.0));
 
-    Problem* problem = new GridWorldProblem(100, 100, 0, 0, &goals);
+    Problem* problem = new GridWorldProblem(1, 5, 0, 0, &goals, 1.0);
     GridWorldState* gws = (GridWorldState *) problem->initialState();
     Heuristic* heuristic = new GWManhattanHeuristic((GridWorldProblem*) problem);
     problem->setHeuristic(heuristic);
 
     problem->generateAll();
-    problem->generateAll();
     StateSet states = problem->states();
 
-    VISolver solver(problem, 100, 1.0e-3);
-    solver.solve();
+    double tol = 1.0e-6;
+    if (strcmp(args[1], "wlao") == 0) {
+        LAOStarSolver wlao(problem, tol, 1000000, atof(args[2]));
+        wlao.solve(problem->initialState());
+    } else if (strcmp(args[1], "lao") == 0) {
+        LAOStarSolver lao(problem, tol, 1000000);
+        lao.solve(problem->initialState());
+    } else if (strcmp(args[1], "lrtdp") == 0) {
+        LRTDPSolver lrtdp(problem, 1000000000, tol);
+        lrtdp.solve(problem->initialState());
+    } else if (strcmp(args[1], "vi") == 0) {
+        VISolver vi(problem, 1000000000, tol);
+        vi.solve();
+    }
 
-//    std::cout << "Value Iteration Estimates" << std::endl;
-//    for (State* s : problem->states())
-//        std::cout << s << " " << s->cost() << " " << heuristic->cost(s) << std::endl;
-
-//    LRTDPSolver lrtdp(problem, 1000, 1.0e-3);
-//    lrtdp.solve(problem->initialState());
-//    std::cout << "LRTDP Estimates" << std::endl;
-//    for (State* s : problem->states())
-//        std::cout << s << " " << s->cost() << std::endl;
+    for (State* s : problem->states())
+        std::cout << s << " " << s->cost() << std::endl;
 
     delete heuristic;
     delete problem;
