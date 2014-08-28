@@ -15,7 +15,11 @@ private:
     mlcore::Problem* problem_;
     mlcore::StateSet visited;
 
+    /* Error tolerance */
     double epsilon_;
+
+    /* Weight for the Bellman backup */
+    double weight_;
 
     /* Expands the BPSG rooted at state s and returns the number of states expanded */
     int expand(mlcore::State* s);
@@ -33,9 +37,10 @@ public:
      * @param problem The problem to be solved.
      * @param epsilon The error tolerance wanted for the solution.
      * @param timeLimit The maximum time allowed for running the algorithm.
+     * @param timeLimit The weight for the Bellman backup.
      */
-    LAOStarSolver(mlcore::Problem* problem, double epsilon, int timeLimit)
-        : problem_(problem), epsilon_(epsilon), timeLimit_(timeLimit) { }
+    LAOStarSolver(mlcore::Problem* problem, double epsilon, int timeLimit, double weight = 1.0)
+        : problem_(problem), epsilon_(epsilon), timeLimit_(timeLimit), weight_(weight) { }
 
     /**
      * Solves the associated problem using the LAO* algorithm.

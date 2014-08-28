@@ -41,13 +41,13 @@ int main(int argc, char* args[])
     clock_t startTime = clock();
     double tol = 0.001;
     if (strcmp(args[2], "wlao") == 0) {
-        WeightedLAOStarSolver wlao(problem, atof(args[4]), tol, 1000000);
+        LAOStarSolver wlao(problem, tol, 1000000, atof(args[4]));
         wlao.solve(problem->initialState());
     } else if (strcmp(args[2], "lao") == 0) {
         LAOStarSolver lao(problem, tol, 1000000);
         lao.solve(problem->initialState());
     } else if (strcmp(args[2], "lrtdp") == 0) {
-        LRTDPSolver lrtdp(problem, 1000000, tol);
+        LRTDPSolver lrtdp(problem, 1000000000, tol);
         lrtdp.solve(problem->initialState());
     } else if (strcmp(args[2], "det") != 0) {
         cerr << "Unknown algorithm: " << args[2] << endl;

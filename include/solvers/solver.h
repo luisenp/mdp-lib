@@ -87,7 +87,7 @@ inline double qvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action*
  *        pair. The weighted-Q-value can be recovered as g + weight * h.
  */
 inline std::pair<double, double>
-weightQvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
+weightedQvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
 {
     double g = problem->cost(s, a);
     double h = 0.0;
@@ -154,11 +154,11 @@ inline double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s, double w
         if (!problem->applicable(s, a))
             continue;
         hasAction = true;
-        std::pair<double, double> gh = weightQvalue(problem, s, a);
+        std::pair<double, double> gh = weightedQvalue(problem, s, a);
         double qAction = gh.first + weight * gh.second;
         if (qAction < bestQ) {
             bellman_mutex.lock();
-            s->setCost(qAction);
+            s->setCost(gh.first);
             s->gValue(gh.first);
             s->hValue(gh.second);
             s->setBestAction(a);
