@@ -61,7 +61,8 @@ int main(int argc, char* args[])
     cerr << problem->initialState()->gValue() << endl;
     cerr << problem->initialState()->hValue() << endl;
     clock_t endTime = clock();
-    cerr << "Time: " << (double(endTime - startTime) / CLOCKS_PER_SEC) << endl;
+    double costTime = (double(endTime - startTime) / CLOCKS_PER_SEC) * 4.0;
+    cerr << "Planning Time: " <<  costTime / 4.0 << endl;
 
     int nsims = atoi(args[3]);
     int verbosity = 1;
@@ -85,7 +86,8 @@ int main(int argc, char* args[])
             cerr << endl;
     }
 
-    cerr << "Avg. cost " << expectedCost / nsims << endl;
+    cerr << "Avg. Exec cost " << expectedCost / nsims << endl;
+    cerr << "Avg.Total cost " << expectedCost / nsims + costTime << endl;
 
     cerr << bbcount << endl;
 

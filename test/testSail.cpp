@@ -28,14 +28,14 @@ int main(int argc, char* args[])
     costs.push_back(mdplib::dead_end_cost + 1);
 
 	double windTransition[] = {
-        0.50, 0.15, 0.10, 0.00, 0.00, 0.00, 0.10, 0.15,
-        0.15, 0.50, 0.15, 0.10, 0.00, 0.00, 0.00, 0.10,
-        0.10, 0.15, 0.50, 0.15, 0.10, 0.00, 0.00, 0.00,
-        0.00, 0.10, 0.15, 0.50, 0.15, 0.10, 0.00, 0.00,
-        0.00, 0.00, 0.10, 0.15, 0.50, 0.15, 0.10, 0.00,
-        0.00, 0.00, 0.00, 0.10, 0.15, 0.50, 0.15, 0.10,
-        0.10, 0.00, 0.00, 0.00, 0.10, 0.15, 0.50, 0.15,
-        0.15, 0.10, 0.00, 0.00, 0.00, 0.10, 0.15, 0.50};
+        0.20, 0.20, 0.20, 0.00, 0.00, 0.00, 0.20, 0.20,
+        0.20, 0.20, 0.20, 0.20, 0.00, 0.00, 0.00, 0.20,
+        0.20, 0.20, 0.20, 0.20, 0.20, 0.00, 0.00, 0.00,
+        0.00, 0.20, 0.20, 0.20, 0.20, 0.20, 0.00, 0.00,
+        0.00, 0.00, 0.20, 0.20, 0.20, 0.20, 0.20, 0.00,
+        0.00, 0.00, 0.00, 0.20, 0.20, 0.20, 0.20, 0.20,
+        0.20, 0.00, 0.00, 0.00, 0.20, 0.20, 0.20, 0.20,
+        0.20, 0.20, 0.00, 0.00, 0.00, 0.20, 0.20, 0.20};
 
 
     int size = atoi(args[1]);
@@ -43,22 +43,36 @@ int main(int argc, char* args[])
     Problem* problem =
         new SailingProblem(0, 0, 1, goal , goal, size, size, costs, windTransition);
     Heuristic* heuristic = new SailingNoWindHeuristic((SailingProblem*) problem);
+    problem->setHeuristic(heuristic);
 
     problem->generateAll();
 
     cerr << problem->states().size() << " states" << endl;
 
-    double tol = 0.001;
-    if (strcmp(args[3], "lao") == 0) {
-        LAOStarSolver lao(problem, tol, 100000);
+    double tol = 1.0e-6;
+    clock_t startTime = clock();
+    if (strcmp(args[3], "wlao") == 0) {
+        LAOStarSolver wlao(problem, tol, 1000000, atof(args[4]));
+        wlao.solve(problem->initialState());
+    } else if (strcmp(args[3], "lao") == 0) {
+        LAOStarSolver lao(problem, tol, 1000000);
         lao.solve(problem->initialState());
-    } else {
-        LRTDPSolver lrtdp(problem, 100000, tol);
+    } else if (strcmp(args[3], "lrtdp") == 0) {
+        LRTDPSolver lrtdp(problem, 1000000000, tol);
         lrtdp.solve(problem->initialState());
+    } else if (strcmp(args[3], "vi") == 0) {
+        VISolver vi(problem, 1000000000, tol);
+        vi.solve();
+    } else if (strcmp(args[3], "det") != 0) {
+        cerr << "Unknown algorithm: " << args[3] << endl;
+        return -1;
     }
+    clock_t endTime = clock();
+    double costTime = (double(endTime - startTime) / CLOCKS_PER_SEC);
+    cerr << "Planning Time: " <<  costTime << endl;
 
     double expectedCost = 0.0;
-    int numSims = 0;
+    int numSims = 1000;
     for (int i = 0; i < numSims; i++) {
         State* tmp = problem->initialState();
         while (!problem->goal(tmp)) {
@@ -68,8 +82,9 @@ int main(int argc, char* args[])
         }
     }
 
-    cerr << endl << "Estimated cost " << problem->initialState()->cost() << endl;
-    cerr << "Avg. cost " << expectedCost / numSims << endl;
+    cerr << "Avg. Exec cost " << expectedCost / numSims << endl;
+    cerr << "Avg.Total cost " << expectedCost / numSims + costTime << endl;
+
 
     delete problem;
 }

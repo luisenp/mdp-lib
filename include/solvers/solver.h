@@ -93,11 +93,9 @@ weightedQvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
     for (mlcore::Successor su : problem->transition(s, a)) {
         g += su.su_prob * su.su_state->gValue();
         h += su.su_prob * su.su_state->hValue();
-        dprint3("*********", su.su_state, su.su_state->hValue());
     }
     g = (g * problem->gamma()) + problem->cost(s, a);
     h *= problem->gamma();
-    dprint3(s, a, h);
     return std::make_pair(g, h);
 }
 
