@@ -41,9 +41,9 @@ using namespace mlcore;
 int main(int argc, char *args[])
 {
     /* Simulation parameters */
-    int initialPlanningT = 1000;
+    int initialPlanningT = 250;
     int noopPlanningT = 0;
-    int actionT = 1000;
+    int actionT = 250;
     double kappa = actionT;
     int verbosity = 1;
 
@@ -83,7 +83,7 @@ int main(int argc, char *args[])
     if (strcmp(args[2], "grid") == 0) {
         int n = atoi(args[3]);
         goals.insert(make_pair(pair<int,int> (n - 1,n - 1), -1.0));
-        problem = new GridWorldProblem(n, n, 0, 0, &goals);
+        problem = new GridWorldProblem(n, n, 0, 0, &goals, 0.03);
     } else if (strcmp(args[2], "ctp") == 0) {
         problem = new CTPProblem(args[3]);
         heuristic = new CTPOptimisticHeuristic((CTPProblem *) problem);
@@ -91,14 +91,15 @@ int main(int argc, char *args[])
     } else if (strcmp(args[2], "sail") == 0) {
         costs.push_back(1);
         costs.push_back(2);
-        costs.push_back(3);
         costs.push_back(4);
+        costs.push_back(8);
         costs.push_back(mdplib::dead_end_cost + 1);
         int size = atoi(args[3]);
         int goal = atoi(args[4]);
         problem = new SailingProblem(0, 0, 1, goal, goal, size, size, costs, windTransition2);
         problem->generateAll();
         heuristic = new SailingNoWindHeuristic((SailingProblem *) problem);
+        problem->setHeuristic(heuristic);
     } else if (strcmp(args[2], "race") == 0) {
         problem = new RacetrackProblem(args[3]);
         ((RacetrackProblem*) problem)->setPError(0.10);
@@ -121,11 +122,14 @@ int main(int argc, char *args[])
     ConcurrentSolver* solver;
     LRTDPSolver lrtdp(wrapper, 1, 1.0e-3);
     LAOStarSolver lao(wrapper, 1.0e-3, -1);
-    DeterministicSolver det(problem);
+    LAOStarSolver wlao(wrapper, 1.0e-3, -1, 5.0);
+    DeterministicSolver det(problem, mlsolvers::det_most_likely, heuristic);
     if (strcmp(args[1], "lrtdp") == 0) {
         solver = new ConcurrentSolver(lrtdp);
     } else if (strcmp(args[1], "lao") == 0) {
         solver = new ConcurrentSolver(lao);
+    } else if (strcmp(args[1], "wlao") == 0) {
+        solver = new ConcurrentSolver(wlao);
     } else if (strcmp(args[1], "det") == 0) {
         solver = new ConcurrentSolver(det); // not really used, only here to avoid null pointers
         solver->setKeepRunning(false);
@@ -171,6 +175,7 @@ int main(int argc, char *args[])
 
         /* Choosing action an updating cost */
         Action* a;
+        double costCurAction;
         if (strcmp(args[1], "det") == 0) {
             clock_t time1 = clock();
             a = det.solve(cur);
@@ -179,7 +184,8 @@ int main(int argc, char *args[])
             costPlan += (double(time2 - time1) / CLOCKS_PER_SEC) * 1000 / kappa;
         } else {
             a = cur->bestAction();
-            costExec += problem->cost(cur, a);
+            costCurAction = problem->cost(cur, a);
+            costExec += costCurAction;
         }
 
         if (a == nullptr) {
@@ -207,7 +213,7 @@ int main(int argc, char *args[])
         solverMutex.unlock();
 
         if (strcmp(args[1], "det") != 0)
-            this_thread::sleep_for(chrono::milliseconds( actionT ));
+            this_thread::sleep_for(chrono::milliseconds( int(costCurAction) * actionT ));
 
         if (verbosity > 100)
             cerr << "Executing Action " << endl;

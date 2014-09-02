@@ -23,8 +23,8 @@ int main(int argc, char* args[])
     vector<double> costs;
     costs.push_back(1);
     costs.push_back(2);
-    costs.push_back(5);
-    costs.push_back(10);
+    costs.push_back(4);
+    costs.push_back(8);
     costs.push_back(mdplib::dead_end_cost + 1);
 
 	double windTransition[] = {
@@ -70,6 +70,7 @@ int main(int argc, char* args[])
     clock_t endTime = clock();
     double costTime = (double(endTime - startTime) / CLOCKS_PER_SEC);
     cerr << "Planning Time: " <<  costTime << endl;
+    cerr << "Expected cost " << problem->initialState()->cost() << endl;
 
     double expectedCost = 0.0;
     int numSims = 1000;
