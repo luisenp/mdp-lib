@@ -23,8 +23,8 @@ int main(int argc, char* args[])
     vector<double> costs;
     costs.push_back(1);
     costs.push_back(2);
-    costs.push_back(4);
-    costs.push_back(8);
+    costs.push_back(5);
+    costs.push_back(10);
     costs.push_back(mdplib::dead_end_cost + 1);
 
 	double windTransition[] = {

@@ -91,8 +91,8 @@ int main(int argc, char *args[])
     } else if (strcmp(args[2], "sail") == 0) {
         costs.push_back(1);
         costs.push_back(2);
-        costs.push_back(4);
-        costs.push_back(8);
+        costs.push_back(5);
+        costs.push_back(10);
         costs.push_back(mdplib::dead_end_cost + 1);
         int size = atoi(args[3]);
         int goal = atoi(args[4]);
@@ -190,13 +190,16 @@ int main(int argc, char *args[])
 
         if (a == nullptr) {
             solverMutex.unlock();
-            if (verbosity > 100)
+            if (verbosity > 100 || costExec > 400)
                 cerr << "No Action! " << cur << endl;
 
             a = greedyAction(problem, cur);
 
             assert(a != nullptr);
         }
+
+        if (costExec > 400)
+            dprint3(cur, a, cur->cost());
 
         if (verbosity > 100)
             cerr << cur << " --- " << a << endl;
@@ -207,8 +210,11 @@ int main(int argc, char *args[])
 
         cur = randomSuccessor(problem, cur, a);
 
-        if (verbosity > 100)
-            cerr << "    succ: " << cur << " " << costExec << " " << costPlan << endl;
+        if (verbosity > 100) {
+            cerr << "    succ: " << cur << " ";
+            cerr << "cost action " << costCurAction << "; acc. cost exec. " << costExec;
+            cerr << "; acc. cost plan. " << costPlan << endl;
+        }
 
         solverMutex.unlock();
 

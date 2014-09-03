@@ -237,8 +237,8 @@ inline mlcore::State*
  * the latest expected costs in the problem. This is guaranteed by any solver that
  * performs backup operations through calls to bellmanUpdate(problem, state).
 
- * When no action is stored in the state, then a Bellman backup is performed to
- * compute the action with minimum Q-value.
+ * When no action is stored in the state, then action is chosen greedily on the
+ * states estimated costs as stored in state.cost().
  *
  * @param problem The problem that contains the given state.
  * @param s The state for which the action will be computed.
@@ -246,9 +246,20 @@ inline mlcore::State*
  */
 inline mlcore::Action* greedyAction(mlcore::Problem* problem, mlcore::State* s)
 {
-    if (s->bestAction() == nullptr)
-        bellmanUpdate(problem, s);
-    return s->bestAction();
+    if (s->bestAction() != nullptr)
+        return s->bestAction();
+    mlcore::Action* bestAction;
+    double bestQ = mdplib::dead_end_cost + 1;
+    for (mlcore::Action* a : problem->actions()) {
+        if (!problem->applicable(s, a))
+            continue;
+        double qAction = std::min(mdplib::dead_end_cost, qvalue(problem, s, a));
+        if (qAction < bestQ) {
+            bestQ = qAction;
+            bestAction = a;
+        }
+    }
+    return bestAction;
 }
 
 /**
