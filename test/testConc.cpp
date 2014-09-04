@@ -41,9 +41,9 @@ using namespace mlcore;
 int main(int argc, char *args[])
 {
     /* Simulation parameters */
-    int initialPlanningT = 250;
+    int initialPlanningT = atoi(args[5]);
     int noopPlanningT = 0;
-    int actionT = 250;
+    int actionT = atoi(args[5]);
     double kappa = actionT;
     int verbosity = 1;
 
@@ -53,16 +53,6 @@ int main(int argc, char *args[])
     vector<double> costs;
 
     double windTransition[] = {
-        0.50, 0.15, 0.10, 0.00, 0.00, 0.00, 0.10, 0.15,
-        0.15, 0.50, 0.15, 0.10, 0.00, 0.00, 0.00, 0.10,
-        0.10, 0.15, 0.50, 0.15, 0.10, 0.00, 0.00, 0.00,
-        0.00, 0.10, 0.15, 0.50, 0.15, 0.10, 0.00, 0.00,
-        0.00, 0.00, 0.10, 0.15, 0.50, 0.15, 0.10, 0.00,
-        0.00, 0.00, 0.00, 0.10, 0.15, 0.50, 0.15, 0.10,
-        0.10, 0.00, 0.00, 0.00, 0.10, 0.15, 0.50, 0.15,
-        0.15, 0.10, 0.00, 0.00, 0.00, 0.10, 0.15, 0.50};
-
-    double windTransition2[] = {
         0.20, 0.20, 0.20, 0.00, 0.00, 0.00, 0.20, 0.20,
         0.20, 0.20, 0.20, 0.20, 0.00, 0.00, 0.00, 0.20,
         0.20, 0.20, 0.20, 0.20, 0.20, 0.00, 0.00, 0.00,
@@ -96,7 +86,7 @@ int main(int argc, char *args[])
         costs.push_back(mdplib::dead_end_cost + 1);
         int size = atoi(args[3]);
         int goal = atoi(args[4]);
-        problem = new SailingProblem(0, 0, 1, goal, goal, size, size, costs, windTransition2);
+        problem = new SailingProblem(0, 0, 1, goal, goal, size, size, costs, windTransition);
         problem->generateAll();
         heuristic = new SailingNoWindHeuristic((SailingProblem *) problem);
         problem->setHeuristic(heuristic);
@@ -169,7 +159,6 @@ int main(int argc, char *args[])
                 else if (strcmp(args[2], "race") == 0)
                     delete (RTrackDetHeuristic*) heuristic;
             }
-
             return 0;
         }
 
@@ -184,13 +173,11 @@ int main(int argc, char *args[])
             costPlan += (double(time2 - time1) / CLOCKS_PER_SEC) * 1000 / kappa;
         } else {
             a = cur->bestAction();
-            costCurAction = problem->cost(cur, a);
-            costExec += costCurAction;
         }
 
         if (a == nullptr) {
             solverMutex.unlock();
-            if (verbosity > 100 || costExec > 400)
+            if (verbosity > 100)
                 cerr << "No Action! " << cur << endl;
 
             a = greedyAction(problem, cur);
@@ -198,8 +185,8 @@ int main(int argc, char *args[])
             assert(a != nullptr);
         }
 
-        if (costExec > 400)
-            dprint3(cur, a, cur->cost());
+        costCurAction = problem->cost(cur, a);
+        costExec += costCurAction;
 
         if (verbosity > 100)
             cerr << cur << " --- " << a << endl;
