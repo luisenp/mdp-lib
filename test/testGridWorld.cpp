@@ -19,9 +19,9 @@ using namespace mlsolvers;
 int main(int argc, char* args[])
 {
     PairDoubleMap goals;
-    goals.insert(make_pair(pair<int,int> (0, 4), 0.0));
+    goals.insert(make_pair(pair<int,int> (4, 4), 0.0));
 
-    Problem* problem = new GridWorldProblem(1, 5, 0, 0, &goals, 1.0);
+    Problem* problem = new GridWorldProblem(5, 5, 0, 0, &goals, 1.0);
     GridWorldState* gws = (GridWorldState *) problem->initialState();
     Heuristic* heuristic = new GWManhattanHeuristic((GridWorldProblem*) problem);
     problem->setHeuristic(heuristic);
@@ -44,8 +44,9 @@ int main(int argc, char* args[])
         vi.solve();
     }
 
-    for (State* s : problem->states())
-        std::cout << s << " " << s->cost() << std::endl;
+    cout << problem->initialState()->cost() << endl;
+    cout << bbcount << endl;
+
 
     delete heuristic;
     delete problem;

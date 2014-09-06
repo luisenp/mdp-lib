@@ -5,11 +5,18 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <unistd.h>
+#include <chrono>
+#include <thread>
 
 #define dprint1(x) std::cerr << x << std::endl
 #define dprint2(x,y) std::cerr << x << " "  << y << std::endl
 #define dprint3(x,y,z) std::cerr << x << " "  << y << " " << z << std::endl
 #define dprint4(x,y,w,z) std::cerr << x << " "  << y << " " << w << " " << z << std::endl
+
+inline void dsleep(int miliseconds) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(miliseconds));
+}
+
 
 struct pair_int_equal {
   bool operator() (std::pair<int,int> p1, std::pair<int,int> p2) const {

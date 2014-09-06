@@ -36,7 +36,6 @@ namespace mlsolvers
 
     bool LRTDPSolver::checkSolved(mlcore::State* s)
     {
-        bool rv = true;
         std::list<mlcore::State*> open, closed;
 
         mlcore::State* tmp = s;
@@ -45,20 +44,19 @@ namespace mlsolvers
             s->setBits(mdplib::CLOSED);
         }
 
+        bool rv = true;
         while (!open.empty()) {
             tmp = open.front();
             open.pop_front();
             closed.push_front(tmp);
 
-            if (residual(problem_, tmp) > epsilon_) {
-                rv = false;
-                continue;
-            }
-
-            mlcore::Action* a = greedyAction(problem_, tmp);
-
             if (problem_->goal(tmp) || tmp->deadEnd())
                 continue;
+
+            if (residual(problem_, tmp) > epsilon_)
+                rv = false;
+
+            mlcore::Action* a = greedyAction(problem_, tmp);
 
             for (mlcore::Successor su : problem_->transition(tmp, a)) {
                 mlcore::State* next = su.su_state;
@@ -69,7 +67,7 @@ namespace mlsolvers
             }
         }
 
-        if (rv && open.empty()) {
+        if (rv) {
             for (mlcore::State* sc : closed) {
                 sc->setBits(mdplib::SOLVED);
             }
@@ -88,8 +86,11 @@ namespace mlsolvers
     mlcore::Action* LRTDPSolver::solve(mlcore::State* s0)
     {
         int trials = 0;
-        while (!s0->checkBits(mdplib::SOLVED) && trials++ < maxTrials_)
+        while (!s0->checkBits(mdplib::SOLVED) && trials++ < maxTrials_) {
+//            checkSolved(s0);
             trial(s0);
+//            dprint1("*****************************");   dsleep(1000);
+        }
     }
 
 }

@@ -166,6 +166,9 @@ inline double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s)
  */
 inline double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s, double weight)
 {
+    if (weight == 1.0)
+        return bellmanUpdate(problem, s);
+
     double bestQ = problem->goal(s) ? 0.0 : mdplib::dead_end_cost + 1;
     double bestG = bestQ, bestH = bestQ;
     bool hasAction = false;
