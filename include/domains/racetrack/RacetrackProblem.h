@@ -93,6 +93,21 @@ public:
     std::vector<std::vector <char> > & track() { return track_; }
 
     /**
+     * Sets the track.
+     */
+    void track(std::vector<std::vector <char> > theTrack) { track_ = theTrack; }
+
+    /**
+     * Sets the start locations.
+     */
+    void starts(IntPairSet theStarts) { starts_ = theStarts; }
+
+    /**
+     * Sets the goal locations.
+     */
+    void goals(IntPairSet theGoals) { goals_ = theGoals; }
+
+    /**
      * Prints the track.
      */
     void printTrack(std::ostream& os);
