@@ -9,7 +9,6 @@
 #include "../include/solvers/LRTDPSolver.h"
 #include "../include/solvers/UCTSolver.h"
 #include "../include/solvers/LAOStarSolver.h"
-#include "../include/solvers/WeightedLAOStarSolver.h"
 #include "../include/solvers/DeterministicSolver.h"
 
 #include "../include/util/general.h"
@@ -19,6 +18,7 @@
 #include "../include/domains/racetrack/RacetrackState.h"
 #include "../include/domains/racetrack/RacetrackAction.h"
 #include "../include/domains/racetrack/RTrackDetHeuristic.h"
+#include "../include/domains/racetrack/RTrackLowResHeuristic.h"
 
 using namespace mlcore;
 using namespace mlsolvers;
@@ -33,11 +33,12 @@ int main(int argc, char* args[])
     problem->generateAll();
 
     Heuristic* heuristic = new RTrackDetHeuristic(args[1]);
+
     problem->setHeuristic(heuristic);
 
     cerr << problem->states().size() << " states" << endl;
 
-    DeterministicSolver det(problem);
+    DeterministicSolver det(problem, mlsolvers::det_most_likely, heuristic);
     clock_t startTime = clock();
     double tol = 1.0e-6;
     if (strcmp(args[2], "wlao") == 0) {
@@ -56,13 +57,19 @@ int main(int argc, char* args[])
         cerr << "Unknown algorithm: " << args[2] << endl;
         return -1;
     }
+    clock_t endTime = clock();
 
     cerr << "Estimated cost " << problem->initialState()->cost() << endl;
-    cerr << problem->initialState()->gValue() << endl;
-    cerr << problem->initialState()->hValue() << endl;
-    clock_t endTime = clock();
     double costTime = (double(endTime - startTime) / CLOCKS_PER_SEC) * 4.0;
     cerr << "Planning Time: " <<  costTime / 4.0 << endl;
+
+    if (strcmp(args[2], "vi") == 0) {
+        for (State* s : problem->states()) {
+            if (s->cost() < heuristic->cost(s)) {
+                cerr << "Error: " << s << " " << s->cost() << " " << heuristic->cost(s) << endl;
+            }
+        }
+    }
 
     int nsims = atoi(args[3]);
     int verbosity = 1;
@@ -74,7 +81,16 @@ int main(int argc, char* args[])
             cerr << tmp << " ";
         }
         while (!problem->goal(tmp)) {
-            Action* a = (strcmp(args[2], "det") == 0) ? det.solve(tmp) : tmp->bestAction();
+            Action* a;
+            if (strcmp(args[2], "det") == 0) {
+                startTime = clock();
+                a = det.solve(tmp);
+                endTime = clock();
+                costTime += (double(endTime - startTime) / CLOCKS_PER_SEC) * 4.0;
+            } else {
+                a = tmp->bestAction();
+            }
+
             expectedCost += problem->cost(tmp, a);
             tmp = randomSuccessor(problem, tmp, a);
             if (verbosity > 100) {

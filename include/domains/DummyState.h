@@ -42,10 +42,7 @@ public:
      */
     virtual bool operator==(const mlcore::State& rhs) const
     {
-        DummyState* state = (DummyState*)  & rhs;
-        if (this == state)
-            return true;
-        return false;
+        return this == &rhs;
     }
 
     /**
@@ -53,8 +50,7 @@ public:
      */
     virtual bool equals(mlcore::State* other) const
     {
-    DummyState* state = (DummyState*) other;
-    return *this ==  *state;
+        return this == other;
     }
 
     /**
@@ -62,7 +58,7 @@ public:
      */
     virtual int hashValue() const
     {
-        return 0;
+        return -1;
     }
 };
 

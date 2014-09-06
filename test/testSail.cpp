@@ -63,6 +63,11 @@ int main(int argc, char* args[])
     } else if (strcmp(args[3], "vi") == 0) {
         VISolver vi(problem, 1000000000, tol);
         vi.solve();
+        for (State* s : problem->states()) {
+            if (s->cost() > heuristic->cost(s)) {
+                cerr << "ERROR!!" << s << " " << s->cost() << " " << heuristic->cost(s) << endl;
+            }
+        }
     } else if (strcmp(args[3], "det") != 0) {
         cerr << "Unknown algorithm: " << args[3] << endl;
         return -1;
@@ -73,7 +78,7 @@ int main(int argc, char* args[])
     cerr << "Expected cost " << problem->initialState()->cost() << endl;
 
     double expectedCost = 0.0;
-    int numSims = 1000;
+    int numSims = 100;
     for (int i = 0; i < numSims; i++) {
         State* tmp = problem->initialState();
         while (!problem->goal(tmp)) {

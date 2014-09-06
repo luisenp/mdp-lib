@@ -169,7 +169,6 @@ int main(int argc, char *args[])
             clock_t time1 = clock();
             a = det.solve(cur);
             clock_t time2 = clock();
-            costExec += problem->cost(cur, a);  // action cost
             costPlan += (double(time2 - time1) / CLOCKS_PER_SEC) * 1000 / kappa;
         } else {
             a = cur->bestAction();
