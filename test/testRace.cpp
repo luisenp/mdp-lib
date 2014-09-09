@@ -72,7 +72,7 @@ int main(int argc, char* args[])
     }
 
     int nsims = atoi(args[3]);
-    int verbosity = 1;
+    int verbosity = 1000;
     double expectedCost = 0.0;
     for (int i = 0; i < nsims; i++) {
         State* tmp = problem->initialState();

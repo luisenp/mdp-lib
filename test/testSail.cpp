@@ -78,7 +78,7 @@ int main(int argc, char* args[])
     cerr << "Expected cost " << problem->initialState()->cost() << endl;
 
     double expectedCost = 0.0;
-    int numSims = 100;
+    int numSims = 250;
     for (int i = 0; i < numSims; i++) {
         State* tmp = problem->initialState();
         while (!problem->goal(tmp)) {
