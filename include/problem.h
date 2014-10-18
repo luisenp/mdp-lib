@@ -37,7 +37,7 @@ namespace mlcore
         /**
          * Discount factor.
          */
-        double gamma_ = 1.0;
+        double gamma_;
         /**
          * A list of all the possible actions in this problem.
          */
@@ -52,9 +52,14 @@ namespace mlcore
         /**
          * A heuristic that estimates the cost to reach a goal from any state.
          */
-        Heuristic* heuristic_ = nullptr;
+        Heuristic* heuristic_;
 
     public:
+
+        /**
+         * Common constructor for initializing gamma and the heuristic.
+         */
+        Problem() : gamma_(1.0), heuristic_(nullptr) {}
 
         /**
          * Common destructor. Destroys all stored states and all actions.

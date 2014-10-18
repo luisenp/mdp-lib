@@ -25,41 +25,49 @@ namespace mlcore
         /**
          * A bit mask that is helpful to speed up solvers.
          */
-        unsigned long bits_ = 0;
+        unsigned long bits_;
 
         /**
          * An estimate of the expected cost of reaching the goal from this state.
          */
-        double cost_ = mdplib::dead_end_cost + 1;
+        double cost_;
 
         /**
          * For weighted methods such as weighted-LAO*.
          */
-        double gValue_ = mdplib::dead_end_cost + 1;
+        double gValue_;
 
         /**
          * For weighted methods such as weighted-LAO*.
          */
-        double hValue_ = mdplib::dead_end_cost + 1;
+        double hValue_;
 
         /**
          * An estimate of the best action to reach a goal from this state.
          */
-        Action* bestAction_ = nullptr;
+        Action* bestAction_;
 
         /**
          * The problem to which this state belongs.
          */
-        Problem* problem_ = nullptr;
+        Problem* problem_;
 
         /**
         * Whether this state was found to be a dead-end or not.
         */
-        bool deadEnd_ = false;
+        bool deadEnd_;
 
         virtual std::ostream& print(std::ostream& os) const =0;
 
     public:
+        /**
+         * Common constructor. Used to initialize inherited variables.
+         */
+        State() : bits_(0), cost_(mdplib::dead_end_cost + 1),
+                  gValue_(mdplib::dead_end_cost + 1), hValue_(mdplib::dead_end_cost + 1),
+                  bestAction_(nullptr), problem_(nullptr), deadEnd_(false) {
+        }
+
         virtual ~State() {}
 
         virtual State& operator=(const State& rhs) =0;
