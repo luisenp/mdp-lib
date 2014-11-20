@@ -81,7 +81,6 @@ int main(int argc, char **argv)
         ntrials = atoi(argv[3]);
     }
     mlsolvers::LRTDPSolver solver(MLProblem, ntrials, 0.01);
-    solver.setMaxChecked(100);
 
     solver.solve(MLProblem->initialState());
 

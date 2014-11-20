@@ -114,7 +114,7 @@ inline
 std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem, mlcore::State* s)
 {
     bbcount++;
-    double bestQ = problem->goal(s) ? 0.0 : mdplib::dead_end_cost + 1;
+    double bestQ = problem->goal(s) ? 0.0 : mdplib::dead_end_cost;
     bool hasAction = false;
     mlcore::Action* bestAction = nullptr;
     for (mlcore::Action* a : problem->actions()) {
@@ -166,7 +166,7 @@ inline double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s)
  */
 inline double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s, double weight)
 {
-    double bestQ = problem->goal(s) ? 0.0 : mdplib::dead_end_cost + 1;
+    double bestQ = problem->goal(s) ? 0.0 : mdplib::dead_end_cost;
     double bestG = bestQ, bestH = bestQ;
     bool hasAction = false;
     mlcore::Action* bestAction = nullptr;
@@ -249,16 +249,21 @@ inline mlcore::Action* greedyAction(mlcore::Problem* problem, mlcore::State* s)
     if (s->bestAction() != nullptr)
         return s->bestAction();
     mlcore::Action* bestAction;
-    double bestQ = mdplib::dead_end_cost + 1;
+    double bestQ = mdplib::dead_end_cost;
+    bool hasAction = false;
     for (mlcore::Action* a : problem->actions()) {
         if (!problem->applicable(s, a))
             continue;
+        hasAction = true;
         double qAction = std::min(mdplib::dead_end_cost, qvalue(problem, s, a));
         if (qAction < bestQ) {
             bestQ = qAction;
             bestAction = a;
         }
     }
+    if (!hasAction)
+        s->markDeadEnd();
+
     return bestAction;
 }
 

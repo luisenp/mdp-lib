@@ -50,13 +50,14 @@ namespace mlsolvers
             open.pop_front();
             closed.push_front(tmp);
 
+            mlcore::Action* a = greedyAction(problem_, tmp);
+
             if (problem_->goal(tmp) || tmp->deadEnd())
                 continue;
 
             if (residual(problem_, tmp) > epsilon_)
                 rv = false;
 
-            mlcore::Action* a = greedyAction(problem_, tmp);
 
             for (mlcore::Successor su : problem_->transition(tmp, a)) {
                 mlcore::State* next = su.su_state;

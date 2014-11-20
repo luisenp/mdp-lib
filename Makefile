@@ -5,7 +5,7 @@
 
 # Compilation flags and variables #
 CC = g++
-CFLAGS = -std=c++11 -O3 -DATOM_STATES -pthread
+CFLAGS = -std=c++11 -g -DATOM_STATES -pthread
 
 # Variables for directories #
 ID = include
@@ -113,7 +113,12 @@ ppddl: src/ppddl/*.cpp $(I_H) include/ppddl/*.h include/ppddl/mini-gpt/*.h $(SOL
 	mv *.o test/
 	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) -o testppddl test/testPPDDL.cpp test/*.o $(LIBS)
 
-clean: test/*.o
+planner683: src/ppddl/*.cpp $(I_H) include/ppddl/*.h $(SOLV_CPP) $(SOLV_H) $(UTIL_CPP) test/planner683.cpp
+	$(CC) $(CFLAGS) -Iinclude -Iinclude/ppddl -Include/ppddl/mini-gpt -I$(ID_SOLV) -c src/ppddl/*.cpp src/*.cpp $(SOLV_CPP) $(UTIL_CPP)
+	mv *.o test/
+	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) -o planner683 test/planner683.cpp test/*.o $(LIBS)
+
+clean:
 	rm -f test/*.o
 	rm -f *.o
 

@@ -43,9 +43,12 @@ int main(int argc, char *args[])
     /* Simulation parameters */
     int initialPlanningT = atoi(args[5]);
     int noopPlanningT = 0;
-    int actionT = atoi(args[5]);
+    int actionT = initialPlanningT;
     double kappa = actionT;
     int verbosity = 1;
+
+    if (argc > 6)
+        actionT = atoi(args[6]);
 
     Problem* problem;
     Heuristic* heuristic = nullptr;
@@ -144,7 +147,8 @@ int main(int argc, char *args[])
 
         if (problem->goal(cur)) {
             if (verbosity > 0)
-                cerr << costExec << " " << costPlan << endl;
+                cerr << costExec << " " << costPlan << " "
+                     << initialPlanningT << " " << actionT << endl;
 
             solver->setKeepRunning(false);
             solverMutex.unlock();

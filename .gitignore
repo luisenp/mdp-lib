@@ -33,8 +33,9 @@ testppddl
 testconc
 testsail
 testrace
-run*.sh
+*.sh
 *.txt
 data/*
 experiments/*
 mdp-lib.layout
+683
