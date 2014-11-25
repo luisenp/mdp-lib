@@ -5,7 +5,7 @@
 
 # Compilation flags and variables #
 CC = g++
-CFLAGS = -std=c++11 -g -DATOM_STATES -pthread
+CFLAGS = -std=c++11 -O3 -DATOM_STATES -pthread
 
 # Variables for directories #
 ID = include
@@ -59,47 +59,11 @@ ALL_H = $(I_H) $(SOLV_H) $(DOM_H) $(UTIL_H)
 ALL_CPP = $(DOM_CPP) $(SOLV_CPP) $(UTIL_CPP)
 
 # Libraries
-LIBS = lib/libmdp.a lib/libminigpt.a
+LIBS = lib/libmdp.a
 
 #########################################################################
 #                                 TARGETS                               #
 #########################################################################
-
-# Compiles the concurrent planning test program #
-conc: $(ALL_CPP) $(ALL_H)
-	$(CC) $(CFLAGS) $(INCLUDE) -c $(DOM_CPP)
-	mv *.o test/
-	$(CC) $(CFLAGS) $(INCLUDE) -o testconc $(TD)/testConc.cpp $(TD)/*.o $(LIBS)
-
-# Compiles the Racetrack domain test program #
-race: $(I_H) $(RACE_H) $(RACE_CPP) $(S_CPP)
-	$(CC) $(CFLAGS) -I$(ID_RACE) -I$(ID) -c $(RACE_CPP)
-	mv *.o test/
-	$(CC) $(CFLAGS) $(INCLUDE) -o testrace $(TD)/testRace.cpp $(TD)/*.o $(LIBS)
-
-# Compiles the Sailing domain test program #
-sail: $(I_H) $(SAIL_H) $(SAIL_CPP) $(S_CPP)
-	$(CC) $(CFLAGS) -I$(ID_SAIL) -I$(ID) -c $(SAIL_CPP)
-	mv *.o test/
-	$(CC) $(CFLAGS) $(INCLUDE) -o testsail $(TD)/testSail.cpp $(TD)/*.o $(LIBS)
-
-# Compiles the Canadian Traveler Problem domain test program #
-ctp: $(CTP_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(CTP_H)
-	$(CC) $(CFLAGS) -I$(ID_CTP) $(INCLUDE_CORE) -c $(CTP_CPP)
-	mv *.o test/
-	$(CC) $(CFLAGS) -I$(ID_CTP) $(INCLUDE_CORE) -o testctp $(TD)/testCTP.cpp $(TD)/*.o $(LIBS)
-
-# Compiles the Gridworld domain test program #
-gw: $(GW_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(GW_H)
-	$(CC) $(CFLAGS) -I$(ID_GW) -I$(ID) -I$(ID_SOLV) -c $(GW_CPP)
-	mv *.o test/
-	$(CC) $(CFLAGS) -I$(ID_GW) $(INCLUDE_CORE) -o testgw $(TD)/testGridWorld.cpp $(TD)/*.o $(LIBS)
-
-# Compiles a test program for a simple binary tree domain  #
-b2t: $(BT_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(BT_H)
-	$(CC) $(CFLAGS) -I$(ID_BT) $(INCLUDE_CORE) -c $(BT_CPP)
-	mv *.o test/
-	$(CC) $(CFLAGS) -I$(ID_BT) $(INCLUDE_CORE) -o testb2t $(TD)/testB2T.cpp $(TD)/*.o $(LIBS)
 
 # Compiles the core MDP-LIB library #
 libmdp: $(S_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(UTIL_H)
@@ -107,16 +71,54 @@ libmdp: $(S_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(UTIL_H)
 	$(CC) $(CFLAGS) $(INCLUDE_CORE) -c $(UTIL_CPP) $(S_CPP) $(SOLV_CPP)
 	ar rvs libmdp.a *.o
 	mv libmdp.a lib
+	rm *.o
+
+# Compiles the concurrent planning test program #
+conc: $(ALL_CPP) $(ALL_H)
+	$(CC) $(CFLAGS) $(INCLUDE) -c $(DOM_CPP)
+	mv *.o test/
+	$(CC) $(CFLAGS) $(INCLUDE) -o testconc $(TD)/testConc.cpp $(TD)/*.o $(LIBS)
+	rm test/*.o
+
+# Compiles the Racetrack domain test program #
+race: $(I_H) $(RACE_H) $(RACE_CPP) $(S_CPP)
+	$(CC) $(CFLAGS) -I$(ID_RACE) -I$(ID) -c $(RACE_CPP)
+	mv *.o test/
+	$(CC) $(CFLAGS) $(INCLUDE) -o testrace $(TD)/testRace.cpp $(TD)/*.o $(LIBS)
+	rm test/*.o
+
+# Compiles the Sailing domain test program #
+sail: $(I_H) $(SAIL_H) $(SAIL_CPP) $(S_CPP)
+	$(CC) $(CFLAGS) -I$(ID_SAIL) -I$(ID) -c $(SAIL_CPP)
+	mv *.o test/
+	$(CC) $(CFLAGS) $(INCLUDE) -o testsail $(TD)/testSail.cpp $(TD)/*.o $(LIBS)
+	rm test/*.o
+
+# Compiles the Canadian Traveler Problem domain test program #
+ctp: $(CTP_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(CTP_H)
+	$(CC) $(CFLAGS) -I$(ID_CTP) $(INCLUDE_CORE) -c $(CTP_CPP)
+	mv *.o test/
+	$(CC) $(CFLAGS) -I$(ID_CTP) $(INCLUDE_CORE) -o testctp $(TD)/testCTP.cpp $(TD)/*.o $(LIBS)
+	rm test/*.o
+
+# Compiles the Gridworld domain test program #
+gw: $(GW_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(GW_H)
+	$(CC) $(CFLAGS) -I$(ID_GW) -I$(ID) -I$(ID_SOLV) -c $(GW_CPP)
+	mv *.o test/
+	$(CC) $(CFLAGS) -I$(ID_GW) $(INCLUDE_CORE) -o testgw $(TD)/testGridWorld.cpp $(TD)/*.o $(LIBS)
+	rm test/*.o
+
+# Compiles a test program for a simple binary tree domain  #
+b2t: $(BT_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(BT_H)
+	$(CC) $(CFLAGS) -I$(ID_BT) $(INCLUDE_CORE) -c $(BT_CPP)
+	mv *.o test/
+	$(CC) $(CFLAGS) -I$(ID_BT) $(INCLUDE_CORE) -o testb2t $(TD)/testB2T.cpp $(TD)/*.o $(LIBS)
+	rm test/*.o
 
 ppddl: src/ppddl/*.cpp $(I_H) include/ppddl/*.h include/ppddl/mini-gpt/*.h $(SOLV_CPP) $(UTIL_CPP)
 	$(CC) $(CFLAGS) -Iinclude -Iinclude/ppddl -Include/ppddl/mini-gpt -I$(ID_SOLV) -c src/ppddl/*.cpp src/*.cpp $(SOLV_CPP) $(UTIL_CPP)
 	mv *.o test/
-	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) -o testppddl test/testPPDDL.cpp test/*.o $(LIBS)
-
-planner683: src/ppddl/*.cpp $(I_H) include/ppddl/*.h $(SOLV_CPP) $(SOLV_H) $(UTIL_CPP) test/planner683.cpp
-	$(CC) $(CFLAGS) -Iinclude -Iinclude/ppddl -Include/ppddl/mini-gpt -I$(ID_SOLV) -c src/ppddl/*.cpp src/*.cpp $(SOLV_CPP) $(UTIL_CPP)
-	mv *.o test/
-	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) -o planner683 test/planner683.cpp test/*.o $(LIBS)
+	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) -o testppddl test/testPPDDL.cpp test/*.o $(LIBS) lib/libminigpt.a
 
 clean:
 	rm -f test/*.o
