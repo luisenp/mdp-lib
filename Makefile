@@ -73,6 +73,10 @@ libmdp: $(S_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(UTIL_H)
 	mv libmdp.a lib
 	rm *.o
 
+# Compiles the lexicographic SSPP library #
+lexi: $(ALL_CPP) $(ALL_H)
+	$(CC) $(CFLAGS) $(INCLUDE) -Iinclude/lexi/*.h -Iinclude/lexi/domains/*.h -c src/lexi/domains/*.cpp
+
 # Compiles the concurrent planning test program #
 conc: $(ALL_CPP) $(ALL_H)
 	$(CC) $(CFLAGS) $(INCLUDE) -c $(DOM_CPP)

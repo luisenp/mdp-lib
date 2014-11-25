@@ -1,61 +1,46 @@
-#include "../../../include/problem.h"
-#include "../../../include/domains/gridworld/GridWorldProblem.h"
-#include "../../../include/domains/gridworld/GridWorldState.h"
-#include "../../../include/domains/gridworld/GridWorldAction.h"
+#include "../../../include/lexi/domains/LexiGridWorldProblem.h"
 
-void GridWorldProblem::addAllActions()
+namespace mllexi
 {
-    mlcore::Action* up = new GridWorldAction(gridworld::UP);
-    mlcore::Action* down = new GridWorldAction(gridworld::DOWN);
-    mlcore::Action* left = new GridWorldAction(gridworld::LEFT);
-    mlcore::Action* right = new GridWorldAction(gridworld::RIGHT);
-    actions_.push_front(up);
-    actions_.push_front(down);
-    actions_.push_front(left);
-    actions_.push_front(right);
-}
 
-GridWorldProblem::GridWorldProblem() :
-                    width_(0), height_(0), x0_(0), y0_(0), goals_(0), actionCost_(0.03)
-{
-    absorbing = new GridWorldState(this, -1, -1);
-    addAllActions();
-}
-
-GridWorldProblem::GridWorldProblem(int width, int height, int x0, int y0,
-                                   PairDoubleMap* goals, double actionCost)
-                                   : width_(width), height_(height), x0_(x0), y0_(y0),
-                                     goals_(goals), actionCost_(actionCost)
+LexiGridWorldProblem::LexiGridWorldProblem(int width, int height, int x0, int y0,
+                                           std::vector<PairDoubleMap*>& goals, double actionCost)
 {
     mlcore::State* init = new GridWorldState(this, x0_, y0_);
     absorbing = new GridWorldState(this, -1, -1);
     s0 = this->addState(init);
     addAllActions();
+    numValueFunc_ = goals.size();
 }
 
-GridWorldProblem::GridWorldProblem(int width, int height,
-                                   int x0, int y0,
-                                   PairDoubleMap* goals, mlcore::Heuristic* h)
-                                   : width_(width), height_(height),
-                                      x0_(x0), y0_(y0), goals_(goals)
+std::vector<double>
+LexiGridWorldProblem::lexiCost(mlcore::State* s, mlcore::Action* a) const
 {
-    mlcore::State* init = new GridWorldState(this, x0_, y0_);
-    absorbing = new GridWorldState(this, -1, -1);
-    s0 = this->addState(init);
-    heuristic_ = h;
-    gamma_ = 1.0;
-    addAllActions();
+    if (s == absorbing)
+        return std::vector<double> (numValueFunc_, 0.0);
+
+    std::vector<double> costs;
+    for (int i = 0; i < numValueFunc_; i++) {
+        if (goal(s, i))
+            costs.push_back(0.0);
+        else
+            costs.push_back(actionCost_);
+
+    }
+    return costs;
 }
 
-bool GridWorldProblem::goal(mlcore::State* s) const
+bool LexiGridWorldProblem::goal(mlcore::State* s, int index) const
 {
     GridWorldState* gws = (GridWorldState *) s;
     std::pair<int,int> pos(gws->x(),gws->y());
-    return goals_->find(pos) != goals_->end();
+    return goals_[index]->find(pos) != goals_[index]->end();
 }
 
-std::list<mlcore::Successor> GridWorldProblem::transition(mlcore::State *s, mlcore::Action *a)
+std::list<mlcore::Successor>
+LexiGridWorldProblem::transition(mlcore::State* s, mlcore::Action* a, int index)
 {
+
     GridWorldState* state = (GridWorldState *) s;
     GridWorldAction* action = (GridWorldAction *) a;
 
@@ -66,7 +51,7 @@ std::list<mlcore::Successor> GridWorldProblem::transition(mlcore::State *s, mlco
         return successors;
     }
 
-    if (goal(s)) {
+    if (goal(s, index)) {
         successors.push_front(mlcore::Successor(absorbing, 1.0));
         return successors;
     }
@@ -111,24 +96,13 @@ std::list<mlcore::Successor> GridWorldProblem::transition(mlcore::State *s, mlco
     return successors;
 }
 
-double GridWorldProblem::cost(mlcore::State* s, mlcore::Action* a) const
-{
-    if (s == absorbing)
-        return 0.0;
-    if (goal(s)) {
-        GridWorldState* gws = (GridWorldState *) s;
-        std::pair<int,int> pos(gws->x(),gws->y());
-        return (*goals_)[pos];
-    }
-    return actionCost_;
-}
-
-bool GridWorldProblem::applicable(mlcore::State* s, mlcore::Action* a) const
+bool LexiGridWorldProblem::applicable(mlcore::State* s, mlcore::Action* a) const
 {
     return true;
 }
 
-void GridWorldProblem::addSuccessor(GridWorldState* state, std::list<mlcore::Successor>& successors,
+
+void LexiGridWorldProblem::addSuccessor(GridWorldState* state, std::list<mlcore::Successor>& successors,
                                     int val, int limit, int newx, int newy, double prob)
 {
     if (val > limit) {
@@ -137,4 +111,18 @@ void GridWorldProblem::addSuccessor(GridWorldState* state, std::list<mlcore::Suc
     } else {
         successors.push_front(mlcore::Successor(state, prob));
     }
+}
+
+void LexiGridWorldProblem::addAllActions()
+{
+    mlcore::Action* up = new GridWorldAction(gridworld::UP);
+    mlcore::Action* down = new GridWorldAction(gridworld::DOWN);
+    mlcore::Action* left = new GridWorldAction(gridworld::LEFT);
+    mlcore::Action* right = new GridWorldAction(gridworld::RIGHT);
+    actions_.push_front(up);
+    actions_.push_front(down);
+    actions_.push_front(left);
+    actions_.push_front(right);
+}
+
 }
