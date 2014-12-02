@@ -33,6 +33,7 @@ testppddl
 testconc
 testsail
 testrace
+testlexi*
 *.txt
 data/*
 experiments/*
