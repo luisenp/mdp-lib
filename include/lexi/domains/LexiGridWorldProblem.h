@@ -23,7 +23,7 @@ private:
     int y0_;
     int numValueFunc_;
     double actionCost_;
-    std::vector<PairDoubleMap*> goals_;
+    std::vector<PairDoubleMap> goals_;
     mlcore::State* absorbing;
 
     void addSuccessor(GridWorldState* state, std::list<mlcore::Successor>& successors, int val,
@@ -37,9 +37,9 @@ public:
      * initial state (x0,y0). Heuristic is initialized to all-zero heuristic.
      */
     LexiGridWorldProblem(int width, int height, int x0, int y0,
-                         std::vector<PairDoubleMap*>& goals, double actionCost);
+                         std::vector<PairDoubleMap>& goals, double actionCost);
 
-    virtual ~LexiGridWorldProblem();
+    virtual ~LexiGridWorldProblem() {}
 
     /**
      * Overrides method from LexiProblem.
@@ -55,16 +55,6 @@ public:
      * Overrides method from LexiProblem.
      */
     virtual bool goal(mlcore::State* s, int index) const;
-
-    /**
-     * Overrides method from LexiProblem.
-     */
-    virtual bool goal(mlcore::State* s) const;
-
-    /**
-     * Overrides method from LexiProblem.
-     */
-    virtual std::list<mlcore::Successor> transition(mlcore::State* s, mlcore::Action* a);
 
     /**
      * Overrides method from LexiProblem.

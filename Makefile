@@ -5,7 +5,7 @@
 
 # Compilation flags and variables #
 CC = g++
-CFLAGS = -std=c++11 -O3 -DATOM_STATES -pthread
+CFLAGS = -std=c++11 -g -DATOM_STATES -pthread
 
 # Variables for directories #
 ID = include
@@ -75,7 +75,10 @@ libmdp: $(S_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(UTIL_H)
 
 # Compiles the lexicographic SSPP library #
 lexi: $(ALL_CPP) $(ALL_H)
-	$(CC) $(CFLAGS) $(INCLUDE) -Iinclude/lexi/*.h -Iinclude/lexi/domains/*.h -c src/lexi/domains/*.cpp
+	$(CC) $(CFLAGS) $(INCLUDE) -Iinclude/lexi/*.h -Iinclude/lexi/domains/*.h -c src/lexi/domains/*.cpp $(DOM_CPP)
+	mv *.o test/
+	$(CC) $(CFLAGS) $(INCLUDE) -o testlexigw $(TD)/testLexiGW.cpp $(TD)/*.o $(LIBS)
+	rm test/*.o
 
 # Compiles the concurrent planning test program #
 conc: $(ALL_CPP) $(ALL_H)

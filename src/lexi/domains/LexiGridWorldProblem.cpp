@@ -1,13 +1,17 @@
+#include "../../../include/domains/gridworld/GridWorldState.h"
 #include "../../../include/lexi/domains/LexiGridWorldProblem.h"
 
 namespace mllexi
 {
 
 LexiGridWorldProblem::LexiGridWorldProblem(int width, int height, int x0, int y0,
-                                           std::vector<PairDoubleMap*>& goals, double actionCost)
+                                           std::vector<PairDoubleMap>& goals, double actionCost)
+                                           : width_(width), height_(height), x0_(x0), y0_(y0),
+                                             goals_(goals), actionCost_(actionCost)
 {
     mlcore::State* init = new GridWorldState(this, x0_, y0_);
     absorbing = new GridWorldState(this, -1, -1);
+    dprint1(init);
     s0 = this->addState(init);
     addAllActions();
     numValueFunc_ = goals.size();
@@ -19,12 +23,17 @@ LexiGridWorldProblem::lexiCost(mlcore::State* s, mlcore::Action* a) const
     if (s == absorbing)
         return std::vector<double> (numValueFunc_, 0.0);
 
+    GridWorldState* gws = (GridWorldState *) s;
+    std::pair<int,int> pos(gws->x(),gws->y());
     std::vector<double> costs;
     for (int i = 0; i < numValueFunc_; i++) {
-        if (goal(s, i))
-            costs.push_back(0.0);
-        else
+        if (goal(s, i)) {
+            PairDoubleMap pdm = goals_[i];
+            costs.push_back(pdm[pos]);
+        }
+        else {
             costs.push_back(actionCost_);
+        }
 
     }
     return costs;
@@ -34,7 +43,7 @@ bool LexiGridWorldProblem::goal(mlcore::State* s, int index) const
 {
     GridWorldState* gws = (GridWorldState *) s;
     std::pair<int,int> pos(gws->x(),gws->y());
-    return goals_[index]->find(pos) != goals_[index]->end();
+    return goals_[index].find(pos) != goals_[index].end();
 }
 
 std::list<mlcore::Successor>

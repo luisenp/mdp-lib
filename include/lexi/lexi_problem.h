@@ -5,6 +5,8 @@
 #include "../state.h"
 #include "../action.h"
 
+#include "../util/general.h"
+
 
 namespace mllexi
 {
@@ -24,8 +26,8 @@ class LexiProblem : public mlcore::Problem
 {
 private:
 public:
-    LexiProblem();
-    virtual ~LexiProblem();
+    LexiProblem() { }
+    virtual ~LexiProblem() {}
 
     /**
      * Lexicographical cost function for the problem.
@@ -81,7 +83,7 @@ public:
     /**
      * Overrides method from mlcore::Problem.
      */
-    virtual bool applicable(mlcore::State* s, mlcore::Action* a) const;
+    virtual bool applicable(mlcore::State* s, mlcore::Action* a) const = 0;
 
 };
 
