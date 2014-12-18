@@ -31,11 +31,14 @@ int main(int argc, char* args[])
 
     lao.solve(problem->initialState());
 
+    mdplib_debug = true;
     LexiState* s = (LexiState*) problem->initialState();
     while (true) {
-        dprint4(s, s->bestAction(), s->lexiCost()[0], s->lexiCost()[1]);
+        dprint3(s, s->lexiCost()[0], s->lexiCost()[1]);
         if (problem->goal(s, 0))
             break;
+        dprint1(s->bestAction());
+        lexiBellmanUpdate(problem, s);
         s = (LexiState* ) randomSuccessor(problem, s, s->bestAction());
     }
 

@@ -172,7 +172,7 @@ inline double lexiBellmanUpdate(mllexi::LexiProblem* problem, mllexi::LexiState*
     mlcore::Action* bestAction = nullptr;
     double residual = 0.0;
     std::list<mlcore::Action*> & filteredActions = problem->actions();
-//    dprint2("ACTIONS ", filteredActions.size());
+    dprint2("ACTIONS ", filteredActions.size());
     for (int i = 0; i < problem->size(); i++) {
         std::vector<double> qActions(filteredActions.size());
         double bestQ = problem->goal(s, 0) ? 0.0 : mdplib::dead_end_cost;
@@ -197,22 +197,21 @@ inline double lexiBellmanUpdate(mllexi::LexiProblem* problem, mllexi::LexiState*
             residual = currentResidual;
         s->setCost(bestQ, i);
 
-//        dprint3("BESTQ ", bestQ, problem->goal(s,0));
+        dprint3("BESTQ ", bestQ, problem->goal(s,0));
         std::list<mlcore::Action*> prevActions = filteredActions;
-//        dprint3("NEW ACTIONS ", prevActions.size(), filteredActions.size());
+        dprint3("NEW ACTIONS ", prevActions.size(), filteredActions.size());
         filteredActions.clear();
         actionIdx = 0;
         for (mlcore::Action* a : prevActions) {
-//            dprint2(a, qActions[actionIdx]);
+            dprint2(a, qActions[actionIdx]);
             if (qActions[actionIdx] <= bestQ + problem->slack() + 1.0e-8)
                 filteredActions.push_back(a);
             actionIdx++;
         }
-//        dprint3("NEW ACTIONS ", prevActions.size(), filteredActions.size());
+        dprint3("NEW ACTIONS ", prevActions.size(), filteredActions.size());
     }
     s->setBestAction(bestAction);
 
-//    dsleep(200);
     return residual;
 }
 

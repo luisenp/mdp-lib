@@ -9,10 +9,37 @@
 #include <vector>
 #include <thread>
 
-#define dprint1(x) std::cerr << x << std::endl
-#define dprint2(x,y) std::cerr << x << " "  << y << std::endl
-#define dprint3(x,y,z) std::cerr << x << " "  << y << " " << z << std::endl
-#define dprint4(x,y,w,z) std::cerr << x << " "  << y << " " << w << " " << z << std::endl
+static bool mdplib_debug = false;
+
+// TODO: Implement this using variadic function/templates. Current implementation quite ugly
+
+template <class T>
+inline void dprint1(T x)
+{
+    if (mdplib_debug)
+        std::cerr << x << std::endl;
+}
+
+template <class T1, class T2>
+inline void dprint2(T1 x, T2 y)
+{
+    if (mdplib_debug)
+        std::cerr << x << " " << y << std::endl;
+}
+
+template <class T1, class T2, class T3>
+inline void dprint3(T1 x, T2 y, T3 z)
+{
+    if (mdplib_debug)
+        std::cerr << x << " " << y << " " << z << std::endl;
+}
+
+template <class T1, class T2, class T3, class T4>
+inline void dprint4(T1 x, T2 y, T3 z, T4 w)
+{
+    if (mdplib_debug)
+        std::cerr << x << " " << y << " " << z << " " << w << std::endl;
+}
 
 /**
  * Sleeps the current thread for the given number of milliseconds. This is just a wrapper for
