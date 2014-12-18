@@ -24,21 +24,39 @@ namespace mllexi
  */
 class LexiProblem : public mlcore::Problem
 {
-private:
+protected:
+    int size_;
+    double slack_;
+
 public:
-    LexiProblem() { }
+    LexiProblem() : slack_(0.0) { }
     virtual ~LexiProblem() {}
+
+    /**
+     * Returns the number of value functions for this lexicographical problem.
+     *
+     * @return the number of value functions for this lexicographical problem.
+     */
+    int size() const { return size_; }
+
+    /**
+     * Returns the slack to use for this lexicographical problem.
+     *
+     * @return the slack of the problem.
+     */
+    int slack() const { return slack_; }
 
     /**
      * Lexicographical cost function for the problem.
      *
-     * Returns a vector with the cost of applying the given action to the given state
-     * under each of the value functions, ordered by decreasing order of preference.
+     * Returns the cost of applying the given action to the given state
+     * according to the i-th value function in the lexicographical
+     * order of the problem.
      *
-     * @return The vector with the costs of applying action the given action to
-     * the given state.
+     * @return the cost of applying action the given action to the given state according
+     *        to the specified value function.
      */
-    virtual std::vector<double> lexiCost(mlcore::State* s, mlcore::Action* a) const = 0;
+    virtual double cost(mlcore::State* s, mlcore::Action* a, int i) const = 0;
 
     /**
      * Lexicographical goal check.
@@ -68,22 +86,32 @@ public:
     /**
      * Overrides method from mlcore::Problem.
      */
-    virtual bool goal(mlcore::State* s) const {}
-
-    /**
-     * Overrides method from mlcore::Problem.
-     */
-    virtual std::list<mlcore::Successor> transition(mlcore::State* s, mlcore::Action* a) {}
-
-    /**
-     * Overrides method from mlcore::Problem.
-     */
-    virtual double cost(mlcore::State* s, mlcore::Action* a) const {}
-
-    /**
-     * Overrides method from mlcore::Problem.
-     */
     virtual bool applicable(mlcore::State* s, mlcore::Action* a) const = 0;
+
+    /**
+     * Overrides method from mlcore::Problem.
+     */
+    virtual bool goal(mlcore::State* s) const
+    {
+        return goal(s, 0);
+    }
+
+    /**
+     * Overrides method from mlcore::Problem.
+     */
+    virtual std::list<mlcore::Successor> transition(mlcore::State* s, mlcore::Action* a)
+    {
+        return transition(s, a, 0);
+    }
+
+    /**
+     * Overrides method from mlcore::Problem.
+     */
+    virtual double cost(mlcore::State* s, mlcore::Action* a) const
+    {
+        return cost(s, a, 0);
+    }
+
 
 };
 

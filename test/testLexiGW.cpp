@@ -2,9 +2,7 @@
 #include <vector>
 
 #include "../include/solvers/solver.h"
-#include "../include/solvers/VISolver.h"
-#include "../include/solvers/LRTDPSolver.h"
-#include "../include/solvers/LAOStarSolver.h"
+#include "../include/solvers/LexiLAOStarSolver.h"
 
 #include "../include/util/general.h"
 
@@ -22,31 +20,25 @@ using namespace mlsolvers;
 int main(int argc, char* args[])
 {
     int n = 10;
-    vector<PairDoubleMap> goals(2);
-    goals[0].insert(make_pair(pair<int,int> (n - 1, n - 1), 0.0));
-    goals[1].insert(make_pair(pair<int,int> (0, n - 1), 0.0));
+    vector<PairDoubleMap> goals(1);
+    goals[0].insert(make_pair(pair<int,int> (0, n - 1), 0.0));
+    goals[0].insert(make_pair(pair<int,int> (n - 1, 0), 0.0));
 
-    LexiProblem* problem = new LexiGridWorldProblem(n, n, 0, 0, goals, 1.0);
+    LexiProblem* problem = new LexiGridWorldProblem(n, n, n-1, n-1, goals, 2, 1.0);
     GridWorldState* gws = (GridWorldState *) problem->initialState();
 
-    list<State *> queue;
-    queue.push_front(problem->initialState());
-    while (!queue.empty()) {
-        State* cur = queue.front();
-        queue.pop_front();
-        if (cur->checkBits(mdplib::VISITED))
-            continue;
-        cur->setBits(mdplib::VISITED);
-        dprint1(cur);
-        for (Action* a : problem->actions()) {
-            if (!problem->applicable(cur, a))
-                continue;
-            std::list<Successor> successors = problem->transition(cur, a, 0);
-            for (Successor sccr : successors) {
-                queue.push_front(sccr.first);
-            }
-        }
+    LexiLAOStarSolver lao(problem, 0.0001, 10000000L);
+
+    lao.solve(problem->initialState());
+
+    LexiState* s = (LexiState*) problem->initialState();
+    while (true) {
+        dprint4(s, s->bestAction(), s->lexiCost()[0], s->lexiCost()[1]);
+        if (problem->goal(s, 0))
+            break;
+        s = (LexiState* ) randomSuccessor(problem, s, s->bestAction());
     }
+
 
     delete problem;
 }

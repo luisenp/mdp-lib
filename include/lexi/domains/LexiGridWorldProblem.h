@@ -7,9 +7,9 @@
 #include "../../action.h"
 #include "../../state.h"
 #include "../../domains/gridworld/GridWorldProblem.h"
-#include "../../domains/gridworld/GridWorldState.h"
 #include "../../domains/gridworld/GridWorldAction.h"
 #include "../../lexi/lexi_problem.h"
+#include "../../lexi/domains/LexiGridWorldState.h"
 
 namespace mllexi
 {
@@ -21,12 +21,11 @@ private:
     int height_;
     int x0_;
     int y0_;
-    int numValueFunc_;
     double actionCost_;
     std::vector<PairDoubleMap> goals_;
     mlcore::State* absorbing;
 
-    void addSuccessor(GridWorldState* state, std::list<mlcore::Successor>& successors, int val,
+    void addSuccessor(LexiGridWorldState* state, std::list<mlcore::Successor>& successors, int val,
                       int limit, int newx, int newy, double prob);
 
     void addAllActions();
@@ -37,14 +36,14 @@ public:
      * initial state (x0,y0). Heuristic is initialized to all-zero heuristic.
      */
     LexiGridWorldProblem(int width, int height, int x0, int y0,
-                         std::vector<PairDoubleMap>& goals, double actionCost);
+                         std::vector<PairDoubleMap>& goals, int size, double actionCost);
 
     virtual ~LexiGridWorldProblem() {}
 
     /**
      * Overrides method from LexiProblem.
      */
-    virtual std::vector<double> lexiCost(mlcore::State* s, mlcore::Action* a) const;
+    virtual double cost(mlcore::State* s, mlcore::Action* a, int i) const;
 
     /**
      * Overrides method from LexiProblem.

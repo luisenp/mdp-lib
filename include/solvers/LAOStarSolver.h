@@ -37,7 +37,7 @@ public:
      * @param problem The problem to be solved.
      * @param epsilon The error tolerance wanted for the solution.
      * @param timeLimit The maximum time allowed for running the algorithm.
-     * @param timeLimit The weight for the Bellman backup.
+     * @param weight The weight for the Bellman backup.
      */
     LAOStarSolver(mlcore::Problem* problem, double epsilon, int timeLimit, double weight = 1.0)
         : problem_(problem), epsilon_(epsilon), timeLimit_(timeLimit), weight_(weight) { }
