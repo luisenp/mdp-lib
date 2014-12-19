@@ -14,6 +14,8 @@
 namespace mllexi
 {
 
+#define COST_DOWN_2 1.5
+
 class LexiGridWorldProblem : public LexiProblem
 {
 private:
@@ -39,6 +41,20 @@ public:
                          std::vector<PairDoubleMap>& goals, int size, double actionCost);
 
     virtual ~LexiGridWorldProblem() {}
+
+    /**
+     * Returns the cost of actions on this grid world.
+     *
+     * @return the cost of actions.
+     */
+    double actionCost() { return actionCost_; }
+
+    /**
+     * Returns the goals associated with this problem.
+     *
+     * @return the goals of the problem.
+     */
+    std::vector<PairDoubleMap> & goals() { return goals_; }
 
     /**
      * Overrides method from LexiProblem.

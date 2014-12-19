@@ -25,6 +25,11 @@ private:
     int timeLimit_;
 
 public:
+
+
+                                    mlcore::StateSet explicitGraph_;
+
+
     LexiLAOStarSolver();
 
     virtual ~LexiLAOStarSolver() {}

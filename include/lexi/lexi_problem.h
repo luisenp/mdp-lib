@@ -28,9 +28,25 @@ protected:
     int size_;
     double slack_;
 
+    /**
+     * A vector of heuristics for all value functions on this problem (ordered in the
+     * same lexicographical order).
+     */
+    std::vector<mlcore::Heuristic*> heuristics_;
+
 public:
     LexiProblem() : slack_(0.0) { }
     virtual ~LexiProblem() {}
+
+    /**
+     * Returns the heuristics vector used for this problem.
+     */
+    std::vector<mlcore::Heuristic*> & heuristics() { return heuristics_; }
+
+    /**
+     * Sets the heuristics vector to be used for this problem.
+     */
+    void heuristics(std::vector<mlcore::Heuristic*> & h) { heuristics_ = h; }
 
     /**
      * Returns the number of value functions for this lexicographical problem.
@@ -44,7 +60,14 @@ public:
      *
      * @return the slack of the problem.
      */
-    int slack() const { return slack_; }
+    double slack() const { return slack_; }
+
+    /**
+     * Sets the slack to use for this lexicographical problem.
+     *
+     * @param slack the slack of the problem.
+     */
+    void slack(double slack) { slack_ = slack; }
 
     /**
      * Lexicographical cost function for the problem.

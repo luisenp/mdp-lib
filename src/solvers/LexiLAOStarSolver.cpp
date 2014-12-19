@@ -55,6 +55,8 @@ mlcore::Action* LexiLAOStarSolver::solve(mlcore::State* s)
 
 int LexiLAOStarSolver::expand(mllexi::LexiState* s)
 {
+    explicitGraph_.insert(s);
+
     dprint3("EXPAND ", s, ((void *) s->bestAction()));
     if (!visited.insert(s).second)  // state was already visited
         return 0;

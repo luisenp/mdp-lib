@@ -6,7 +6,14 @@ namespace mllexi
 LexiGridWorldState::LexiGridWorldState(mlcore::Problem* problem, int x, int y) : x_(x), y_(y)
 {
     problem_ = problem;
-    lexiCost_ = std::vector<double> (((LexiProblem *) problem_)->size(), 0.0);
+    lexiCost_ = std::vector<double> (((LexiProblem *) problem_)->size());
+    LexiProblem* aux = (LexiProblem *) problem_;
+    for (int i = 0; i < aux->size(); i++) {
+        if (!aux->heuristics().empty())
+            lexiCost_[i] = aux->heuristics()[i]->cost(this);
+        else
+            lexiCost_[i] = 0.0;
+    }
 }
 
 std::ostream& LexiGridWorldState::print(std::ostream& os) const

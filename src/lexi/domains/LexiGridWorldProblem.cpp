@@ -38,7 +38,7 @@ double LexiGridWorldProblem::cost(mlcore::State* s, mlcore::Action* a, int i) co
         else {
             /* Assigning a higher cost of going down for all value functions except the first */
             if (i > 0 && gwa->dir() == gridworld::DOWN)
-                costs.push_back(1.5 * actionCost_);
+                costs.push_back(COST_DOWN_2 * actionCost_);
             else
                 costs.push_back(actionCost_);
         }

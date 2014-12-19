@@ -171,7 +171,7 @@ inline double lexiBellmanUpdate(mllexi::LexiProblem* problem, mllexi::LexiState*
     bool hasAction = false;
     mlcore::Action* bestAction = nullptr;
     double residual = 0.0;
-    std::list<mlcore::Action*> & filteredActions = problem->actions();
+    std::list<mlcore::Action*> filteredActions = problem->actions();
     dprint2("ACTIONS ", filteredActions.size());
     for (int i = 0; i < problem->size(); i++) {
         std::vector<double> qActions(filteredActions.size());
