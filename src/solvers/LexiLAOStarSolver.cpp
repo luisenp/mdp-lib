@@ -1,7 +1,6 @@
+#include "../../include/util/general.h"
 #include "../../include/solvers/solver.h"
 #include "../../include/solvers/LexiLAOStarSolver.h"
-
-#include "../../include/util/general.h"
 
 #include <ctime>
 
@@ -55,9 +54,8 @@ mlcore::Action* LexiLAOStarSolver::solve(mlcore::State* s)
 
 int LexiLAOStarSolver::expand(mllexi::LexiState* s)
 {
-    explicitGraph_.insert(s);
-
-    dprint3("EXPAND ", s, ((void *) s->bestAction()));
+    if (s->bestAction() != nullptr)
+        dprint4("EXPAND ", s, s->bestAction(), s->lexiCost()[0]);
     if (!visited.insert(s).second)  // state was already visited
         return 0;
 
@@ -73,9 +71,7 @@ int LexiLAOStarSolver::expand(mllexi::LexiState* s)
         for (mlcore::Successor sccr : problem_->transition(s, a, 0))
             cnt += expand((mllexi::LexiState *) sccr.su_state);
     }
-    dprint2("UPDATING", s);
     lexiBellmanUpdate(problem_, s);
-    dprint2("DONE!", s);
     return cnt;
 }
 

@@ -26,10 +26,6 @@ private:
 
 public:
 
-
-                                    mlcore::StateSet explicitGraph_;
-
-
     LexiLAOStarSolver();
 
     virtual ~LexiLAOStarSolver() {}

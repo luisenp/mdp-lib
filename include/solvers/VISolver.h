@@ -29,7 +29,7 @@ namespace mlsolvers
          * @param tol The tolerance for the Bellman residual. If the residual is less
          *           than the tolerance the method stops.
          */
-        VISolver(mlcore::Problem* problem, int maxIter, double tol);
+        VISolver(mlcore::Problem* problem, int maxIter = 100000, double tol = 1.0e-6);
 
         /**
          * Solves the associated problem using Value Iteration.
