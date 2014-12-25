@@ -39,7 +39,6 @@ tag current version and then change Rational for double in master branch]]>
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
-		<Unit filename="683/planner683.cpp" />
 		<Unit filename="Makefile" />
 		<Unit filename="data/ctps/AAAI-graphs/test00_100_T.graph" />
 		<Unit filename="data/ctps/AAAI-graphs/test00_20_T.graph" />
@@ -407,7 +406,12 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/domains/sailing/SailingProblem.h" />
 		<Unit filename="include/domains/sailing/SailingState.h" />
 		<Unit filename="include/heuristic.h" />
+		<Unit filename="include/lexi/domains/LexiGWManhattanHeuristic.h" />
 		<Unit filename="include/lexi/domains/LexiGridWorldProblem.h" />
+		<Unit filename="include/lexi/domains/LexiGridWorldState.h" />
+		<Unit filename="include/lexi/domains/LexiRTrackDetHeuristic.h" />
+		<Unit filename="include/lexi/domains/LexiRacetrackProblem.h" />
+		<Unit filename="include/lexi/domains/LexiRacetrackState.h" />
 		<Unit filename="include/lexi/lexi_problem.h" />
 		<Unit filename="include/lexi/lexi_state.h" />
 		<Unit filename="include/mdplib.h" />
@@ -468,6 +472,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/solvers/LAOStarSolver.h" />
 		<Unit filename="include/solvers/LRTDPSolver.h" />
 		<Unit filename="include/solvers/LexiLAOStarSolver.h" />
+		<Unit filename="include/solvers/LexiVISolver.h" />
 		<Unit filename="include/solvers/UCTSolver.h" />
 		<Unit filename="include/solvers/VISolver.h" />
 		<Unit filename="include/solvers/solver.h" />
@@ -725,6 +730,10 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="src/domains/sailing/SailingNoWindHeuristic.cpp" />
 		<Unit filename="src/domains/sailing/SailingProblem.cpp" />
 		<Unit filename="src/lexi/domains/LexiGridWorldProblem.cpp" />
+		<Unit filename="src/lexi/domains/LexiGridWorldState.cpp" />
+		<Unit filename="src/lexi/domains/LexiRTrackDetHeuristic.cpp" />
+		<Unit filename="src/lexi/domains/LexiRacetrackProblem.cpp" />
+		<Unit filename="src/lexi/domains/LexiRacetrackState.cpp" />
 		<Unit filename="src/lexi/lexi_problem.cpp" />
 		<Unit filename="src/ppddl/ppddl_action.cpp" />
 		<Unit filename="src/ppddl/ppddl_problem.cpp" />
@@ -734,16 +743,19 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="src/solvers/LAOStarSolver.cpp" />
 		<Unit filename="src/solvers/LRTDPSolver.cpp" />
 		<Unit filename="src/solvers/LexiLAOStarSolver.cpp" />
+		<Unit filename="src/solvers/LexiVISolver.cpp" />
 		<Unit filename="src/solvers/UCTSolver.cpp" />
 		<Unit filename="src/solvers/VISolver.cpp" />
 		<Unit filename="src/solvers/solver.cpp" />
 		<Unit filename="src/state.cpp" />
+		<Unit filename="src/util/general.cpp" />
 		<Unit filename="src/util/graph.cpp" />
 		<Unit filename="test/testB2T.cpp" />
 		<Unit filename="test/testCTP.cpp" />
 		<Unit filename="test/testConc.cpp" />
 		<Unit filename="test/testGridWorld.cpp" />
 		<Unit filename="test/testLexiGW.cpp" />
+		<Unit filename="test/testLexiRace.cpp" />
 		<Unit filename="test/testPPDDL.cpp" />
 		<Unit filename="test/testRace.cpp" />
 		<Unit filename="test/testSail.cpp" />

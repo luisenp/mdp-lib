@@ -177,9 +177,9 @@ double LexiRacetrackProblem::cost(mlcore::State* s, mlcore::Action* a, int index
     } else {
         RacetrackAction* rta = (RacetrackAction*) a;
         if (abs(rta->ax()) + abs(rta->ay()) > 0)
-            return 1.0;
+            return 10.0;
         else
-            return 0.0;
+            return 1.0;
     }
 }
 

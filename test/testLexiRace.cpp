@@ -23,10 +23,13 @@ using namespace std;
 
 int main(int argc, char* args[])
 {
+    double slack = atof(args[4]);
+
     LexiProblem* problem = new LexiRacetrackProblem(args[1], 2);
     ((LexiRacetrackProblem*) problem)->setPError(0.10);
     ((LexiRacetrackProblem*) problem)->setPSlip(0.20);
     ((LexiRacetrackProblem*) problem)->setMDS(-1);
+    problem->slack(slack);
     problem->generateAll();
 
     vector<Heuristic*> heuristics;
@@ -49,8 +52,8 @@ int main(int argc, char* args[])
     clock_t endTime = clock();
 
     int nsims = atoi(args[3]);
-    int verbosity = 1000;
-    double expectedCost = 0.0;
+    int verbosity = 1;
+    vector <double> expectedCost(2, 0.0);
     for (int i = 0; i < nsims; i++) {
         State* tmp = problem->initialState();
         if (verbosity > 100) {
@@ -61,7 +64,8 @@ int main(int argc, char* args[])
             Action* a;
             a = tmp->bestAction();
 
-            expectedCost += problem->cost(tmp, a);
+            expectedCost[0] += problem->cost(tmp, a, 0);
+            expectedCost[1] += problem->cost(tmp, a, 1);
             tmp = randomSuccessor(problem, tmp, a);
             if (verbosity > 100) {
                 cerr << a << " " << endl;
@@ -72,7 +76,7 @@ int main(int argc, char* args[])
             cerr << endl;
     }
 
-    cerr << "Avg. Exec cost " << expectedCost / nsims << endl;
+    cerr << "Avg. Exec cost " << expectedCost[0] / nsims << " " << expectedCost[1] / nsims << endl;
 
     delete problem;
     delete ((LexiRTrackDetHeuristic*) heuristic);

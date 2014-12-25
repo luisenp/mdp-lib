@@ -204,7 +204,7 @@ inline double lexiBellmanUpdate(mllexi::LexiProblem* problem, mllexi::LexiState*
         actionIdx = 0;
         for (mlcore::Action* a : prevActions) {
             dprint2(a, qActions[actionIdx]);
-            if (qActions[actionIdx] <= bestQ + problem->slack() + 1.0e-8)
+            if (qActions[actionIdx] <= (bestQ * (1.0 + problem->slack()) + 1.0e-8))
                 filteredActions.push_back(a);
             actionIdx++;
         }
