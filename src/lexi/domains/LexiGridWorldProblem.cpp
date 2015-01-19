@@ -13,7 +13,7 @@ LexiGridWorldProblem::LexiGridWorldProblem(int width, int height, int x0, int y0
                                              goals_(goals), actionCost_(actionCost)
 {
     size_ = size;
-    mlcore::State* init = new LexiGridWorldState(this, x0_, y0_);
+    mlcore::State* init = new LexiGridWorldState(this, -2, -2);
     absorbing = new LexiGridWorldState(this, -1, -1);
     s0 = this->addState(init);
     addAllActions();
@@ -61,6 +61,11 @@ LexiGridWorldProblem::transition(mlcore::State* s, mlcore::Action* a, int index)
     GridWorldAction* action = (GridWorldAction *) a;
 
     std::list<mlcore::Successor> successors;
+
+    if (s == s0) {
+        addSuccessor(state, successors, -1, -2, x0_, y0_, 1.0   );
+        return successors;
+    }
 
     if (s == absorbing) {
         successors.push_front(mlcore::Successor(s, 1.0));

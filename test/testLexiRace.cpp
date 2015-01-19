@@ -23,7 +23,14 @@ using namespace std;
 
 int main(int argc, char* args[])
 {
-    double slack = atof(args[4]);
+    if (argc <= 3) {
+        cerr << "Usage ./textlexirace TRACK ALGORITHM SLACK --optional [NSIMS VERBOSITY]" << endl;
+        exit(0);
+    }
+
+    mdplib_debug = false;
+
+    double slack = atof(args[3]);
 
     LexiProblem* problem = new LexiRacetrackProblem(args[1], 2);
     ((LexiRacetrackProblem*) problem)->setPError(0.10);
@@ -46,31 +53,40 @@ int main(int argc, char* args[])
         LexiLAOStarSolver lao(problem, tol, 1000000);
         lao.solve(problem->initialState());
     } else if (strcmp(args[2], "vi") == 0) {
+        dprint1("SOLVE V!!");
         LexiVISolver vi(problem, 1000000000, tol);
         vi.solve();
+        dprint1("SOLVED IT YEAH!!");
     }
+    cerr << "Estimated cost "
+         << ((LexiState *) problem->initialState())->lexiCost()[0] << " "
+         << ((LexiState *) problem->initialState())->lexiCost()[1] << endl;
     clock_t endTime = clock();
+    cerr << "Time " << ((endTime - startTime + 0.0) / CLOCKS_PER_SEC) << endl;
 
-    int nsims = atoi(args[3]);
-    int verbosity = 1;
+    int nsims = argc > 4 ? atoi(args[4]) : 1;
+    int verbosity = argc > 5 ? atoi(args[5]) : 1;
     vector <double> expectedCost(2, 0.0);
     for (int i = 0; i < nsims; i++) {
         State* tmp = problem->initialState();
         if (verbosity > 100) {
             cerr << " ********* Simulation Starts ********* " << endl;
-            cerr << tmp << " ";
         }
         while (!problem->goal(tmp)) {
             Action* a;
             a = tmp->bestAction();
 
+            if (verbosity > 100) {
+                cerr << endl << "STATE-ACTION *** " << tmp << " " << a << " " << endl;
+                lexiBellmanUpdate(problem, (LexiState *) tmp);
+                double copt = ((LexiState *) tmp)->lexiCost()[0];
+                double qval = qvalue(problem, (LexiState*) tmp, a, 0);
+                cerr << copt << " " << qval << " " << (qval / copt - 1.0) << endl;
+            }
+
             expectedCost[0] += problem->cost(tmp, a, 0);
             expectedCost[1] += problem->cost(tmp, a, 1);
             tmp = randomSuccessor(problem, tmp, a);
-            if (verbosity > 100) {
-                cerr << a << " " << endl;
-                cerr << tmp << " ";
-            }
         }
         if (verbosity > 100)
             cerr << endl;

@@ -14,7 +14,7 @@
 namespace mllexi
 {
 
-#define COST_DOWN_2 1.5
+#define COST_DOWN_2 10
 
 class LexiGridWorldProblem : public LexiProblem
 {
@@ -33,6 +33,9 @@ private:
     void addAllActions();
 
 public:
+
+    using LexiProblem::goal;
+
     /**
      * Constructs a grid world with the specified width, height, goal states,
      * initial state (x0,y0). Heuristic is initialized to all-zero heuristic.

@@ -21,11 +21,18 @@ using namespace mlsolvers;
 
 int main(int argc, char* args[])
 {
+    if (argc <= 3) {
+        cerr << "Usage ./textlexigw N SLACK ALGORITHM --optional [NSIMS VERBOSITY]" << endl;
+        exit(0);
+    }
+
+    mdplib_debug = false;
+
     int n = atoi(args[1]);
     double slack = atof(args[2]);
     vector<PairDoubleMap> goals(1);
-    goals[0].insert(make_pair(pair<int,int> (n - 5, n - 1), 0.0));
-    goals[0].insert(make_pair(pair<int,int> (n - 1, n - 4), 0.0));
+    goals[0].insert(make_pair(pair<int,int> (n - 1, n / 2), 0.0));
+    goals[0].insert(make_pair(pair<int,int> (1, n - 1), 0.0));
 
     LexiGridWorldProblem* problem = new LexiGridWorldProblem(n, n, n-1, n-1, goals, 2, 1.0);
     problem->slack(slack);
@@ -46,23 +53,40 @@ int main(int argc, char* args[])
     } else if (strcmp(args[3], "vi") == 0) {
         vi.solve();
     }
+    cerr << "Estimated cost "
+         << ((LexiState *) problem->initialState())->lexiCost()[0] << " "
+         << ((LexiState *) problem->initialState())->lexiCost()[1] << endl;
 
-    mdplib_debug = true;
-    LexiState* s = (LexiState*) problem->initialState();
-    dprint3(s, s->lexiCost()[0], s->lexiCost()[1]);
-    for (State* state : problem->states()) {
-        LexiState* s = (LexiState*) state;
-        if (heuristics[0]->cost(s) > s->lexiCost()[0])
-            dprint4("ERROR ", s, heuristics[0]->cost(s), s->lexiCost()[0]);
+
+    int nsims = argc > 4 ? atoi(args[4]) : 1;
+    int verbosity = argc > 5 ? atoi(args[5]) : 1;
+    vector <double> expectedCost(2, 0.0);
+    for (int i = 0; i < nsims; i++) {
+        State* tmp = problem->initialState();
+        if (verbosity > 100) {
+            cerr << " ********* Simulation Starts ********* " << endl;
+        }
+        while (!problem->goal(tmp)) {
+            Action* a;
+            a = tmp->bestAction();
+
+            if (verbosity > 100) {
+                cerr << endl << "STATE-ACTION *** " << tmp << " " << a << " " << endl;
+                lexiBellmanUpdate(problem, (LexiState *) tmp);
+                double copt = ((LexiState *) tmp)->lexiCost()[0];
+                double qval = qvalue(problem, (LexiState*) tmp, a, 0);
+                cerr << copt << " " << qval << " " << (qval / copt - 1.0) << endl;
+            }
+
+            expectedCost[0] += problem->cost(tmp, a, 0);
+            expectedCost[1] += problem->cost(tmp, a, 1);
+            tmp = randomSuccessor(problem, tmp, a);
+        }
+        if (verbosity > 100)
+            cerr << endl;
     }
-//    while (true) {
-//        dprint3(s, s->lexiCost()[0], s->lexiCost()[1]);
-//        dprint2(heuristics[0]->cost(s), heuristics[1]->cost(s));
-//        if (problem->goal(s, 0))
-//            break;
-//        dprint1(s->bestAction());
-//        s = (LexiState* ) randomSuccessor(problem, s, s->bestAction());
-//    }
+
+    cerr << "Avg. Exec cost " << expectedCost[0] / nsims << " " << expectedCost[1] / nsims << endl;
 
     delete problem;
 }

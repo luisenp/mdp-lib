@@ -20,8 +20,6 @@ mlcore::Action* LexiLAOStarSolver::solve(mlcore::State* s)
             countExpanded = expand(s0);
             totalExpanded += countExpanded;
 
-            dprint2("TOTAL NODES EXPANDED ", countExpanded);
-
             clock_t currentTime = clock();
             if ((0.001 * (currentTime - startTime)) / CLOCKS_PER_SEC > timeLimit_)
                 return s0->bestAction();

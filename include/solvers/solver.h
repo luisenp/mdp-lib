@@ -92,8 +92,11 @@ inline double qvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action*
 inline double qvalue(mllexi::LexiProblem* problem, mllexi::LexiState* s, mlcore::Action* a, int i)
 {
     double qAction = 0.0;
-    for (mlcore::Successor su : problem->transition(s, a, 0))
+    dprint3(" ******* ACTION-LEVEL " , a, i);
+    for (mlcore::Successor su : problem->transition(s, a, 0)) {
         qAction += su.su_prob * ((mllexi::LexiState *) su.su_state)->lexiCost()[i];
+        dprint3(su.su_state, su.su_prob, ((mllexi::LexiState *) su.su_state)->lexiCost()[i]);
+    }
     qAction = (qAction * problem->gamma()) + problem->cost(s, a, i);
     return qAction;
 }
@@ -168,19 +171,23 @@ std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem, mlcor
  */
 inline double lexiBellmanUpdate(mllexi::LexiProblem* problem, mllexi::LexiState* s)
 {
-    bool hasAction = false;
+    bool hasAction = true;
     mlcore::Action* bestAction = nullptr;
     double residual = 0.0;
+    if (problem->goal(s, 0)) {
+        s->setBestAction(nullptr);
+        for (int i = 0; i < problem->size(); i++)
+            s->setCost(0.0, i);
+        return 0.0;
+    }
     std::list<mlcore::Action*> filteredActions = problem->actions();
-    dprint2("ACTIONS ", filteredActions.size());
     for (int i = 0; i < problem->size(); i++) {
         std::vector<double> qActions(filteredActions.size());
-        double bestQ = problem->goal(s, 0) ? 0.0 : mdplib::dead_end_cost;
+        double bestQ = mdplib::dead_end_cost + 1;
         int actionIdx = 0;
         for (mlcore::Action* a : filteredActions) {
             if (!problem->applicable(s, a))
                 continue;
-            hasAction = true;
             qActions[actionIdx] = std::min(mdplib::dead_end_cost, qvalue(problem, s, a, i));
             if (qActions[actionIdx] < bestQ) {
                 bestQ = qActions[actionIdx];
@@ -188,18 +195,13 @@ inline double lexiBellmanUpdate(mllexi::LexiProblem* problem, mllexi::LexiState*
             }
             actionIdx++;
         }
-        if (!hasAction && bestQ == mdplib::dead_end_cost) {
+        if (bestQ > mdplib::dead_end_cost) {
             s->markDeadEnd();
             break;
         }
-        double currentResidual = fabs(bestQ - s->lexiCost()[i]);
-        if (currentResidual > residual)
-            residual = currentResidual;
-        s->setCost(bestQ, i);
 
-        dprint3("BESTQ ", bestQ, problem->goal(s,0));
+        dprint4("BESTQ ", bestQ,  bestAction, problem->cost(s, bestAction, i));
         std::list<mlcore::Action*> prevActions = filteredActions;
-        dprint3("NEW ACTIONS ", prevActions.size(), filteredActions.size());
         filteredActions.clear();
         actionIdx = 0;
         for (mlcore::Action* a : prevActions) {
@@ -208,9 +210,16 @@ inline double lexiBellmanUpdate(mllexi::LexiProblem* problem, mllexi::LexiState*
                 filteredActions.push_back(a);
             actionIdx++;
         }
-        dprint3("NEW ACTIONS ", prevActions.size(), filteredActions.size());
     }
+
     s->setBestAction(bestAction);
+    for (int i = 0; i < problem->size(); i++) {
+        double qChosenAction = qvalue(problem, s, bestAction, i);
+        double currentResidual = fabs(qChosenAction - s->lexiCost()[i]);
+        if (currentResidual > residual)
+            residual = currentResidual;
+        s->setCost(qChosenAction, i);
+    }
 
     return residual;
 }

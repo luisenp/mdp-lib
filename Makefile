@@ -78,6 +78,7 @@ lexi: $(ALL_CPP) $(ALL_H)
 	$(CC) $(CFLAGS) $(INCLUDE) -Iinclude/lexi/*.h -Iinclude/lexi/domains/*.h -c src/lexi/domains/*.cpp $(GW_CPP)
 	mv *.o test/
 	$(CC) $(CFLAGS) $(INCLUDE) -o testlexirace $(TD)/testLexiRace.cpp $(TD)/*.o $(LIBS)
+	$(CC) $(CFLAGS) $(INCLUDE) -o testlexigw $(TD)/testLexiGW.cpp $(TD)/*.o $(LIBS)
 	rm test/*.o
 
 # Compiles the concurrent planning test program #
