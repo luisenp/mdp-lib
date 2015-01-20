@@ -33,7 +33,7 @@ int main(int argc, char* args[])
     double slack = atof(args[3]);
 
     LexiProblem* problem = new LexiRacetrackProblem(args[1], 2);
-    ((LexiRacetrackProblem*) problem)->setPError(0.10);
+    ((LexiRacetrackProblem*) problem)->setPError(0.00);
     ((LexiRacetrackProblem*) problem)->setPSlip(0.20);
     ((LexiRacetrackProblem*) problem)->setMDS(-1);
     problem->slack(slack);

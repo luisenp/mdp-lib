@@ -33,14 +33,7 @@ mlcore::Action* LexiLAOStarSolver::solve(mlcore::State* s)
                 return s0->bestAction();
 
             visited.clear();
-
-            dprint1("******** CHECKING CONVERGENCE NOW!! ******** ");
-
             error = testConvergence(s0);
-
-            dprint3("ERROR ", error, epsilon_);
-            dprint2("VALUE ", s0->lexiCost()[0]);
-//            dsleep(250);
             if (error < epsilon_)
                 return s0->bestAction();
             if (error > mdplib::dead_end_cost) {
@@ -52,8 +45,6 @@ mlcore::Action* LexiLAOStarSolver::solve(mlcore::State* s)
 
 int LexiLAOStarSolver::expand(mllexi::LexiState* s)
 {
-    if (s->bestAction() != nullptr)
-        dprint4("EXPAND ", s, s->bestAction(), s->lexiCost()[0]);
     if (!visited.insert(s).second)  // state was already visited
         return 0;
 

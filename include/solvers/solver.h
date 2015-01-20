@@ -92,10 +92,8 @@ inline double qvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action*
 inline double qvalue(mllexi::LexiProblem* problem, mllexi::LexiState* s, mlcore::Action* a, int i)
 {
     double qAction = 0.0;
-    dprint3(" ******* ACTION-LEVEL " , a, i);
     for (mlcore::Successor su : problem->transition(s, a, 0)) {
         qAction += su.su_prob * ((mllexi::LexiState *) su.su_state)->lexiCost()[i];
-        dprint3(su.su_state, su.su_prob, ((mllexi::LexiState *) su.su_state)->lexiCost()[i]);
     }
     qAction = (qAction * problem->gamma()) + problem->cost(s, a, i);
     return qAction;
@@ -201,8 +199,6 @@ inline double lexiBellmanUpdate(mllexi::LexiProblem* problem, mllexi::LexiState*
             break;
         }
 
-        dprint4("BESTQ ", bestQ,  bestAction, problem->cost(s, bestAction, i))
-
         /* Getting actions for the next lexicographic level */;
         std::list<mlcore::Action*> prevActions = filteredActions;
         filteredActions.clear();
@@ -210,7 +206,6 @@ inline double lexiBellmanUpdate(mllexi::LexiProblem* problem, mllexi::LexiState*
         for (mlcore::Action* a : prevActions) {
             if (!problem->applicable(s, a))
                 continue;
-            dprint3(a, qActions[actionIdx], (bestQ * (1.0 + problem->slack()) + 1.0e-8));
             if (qActions[actionIdx] <= (bestQ * (1.0 + problem->slack()) + 1.0e-8))
                 filteredActions.push_back(a);
             actionIdx++;
