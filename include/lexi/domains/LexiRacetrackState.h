@@ -5,6 +5,8 @@
 
 #include "../../state.h"
 #include "../../problem.h"
+#include "../../../include/lexi/lexi_problem.h"
+#include "../../../include/lexi/lexi_state.h"
 
 #include "../../../include/domains/racetrack/RacetrackState.h"
 

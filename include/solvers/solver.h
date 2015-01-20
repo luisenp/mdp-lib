@@ -185,6 +185,7 @@ inline double lexiBellmanUpdate(mllexi::LexiProblem* problem, mllexi::LexiState*
         std::vector<double> qActions(filteredActions.size());
         double bestQ = mdplib::dead_end_cost + 1;
         int actionIdx = 0;
+        /* Computing Q-values for all actions w.r.t. the i-th cost function */
         for (mlcore::Action* a : filteredActions) {
             if (!problem->applicable(s, a))
                 continue;
@@ -200,12 +201,16 @@ inline double lexiBellmanUpdate(mllexi::LexiProblem* problem, mllexi::LexiState*
             break;
         }
 
-        dprint4("BESTQ ", bestQ,  bestAction, problem->cost(s, bestAction, i));
+        dprint4("BESTQ ", bestQ,  bestAction, problem->cost(s, bestAction, i))
+
+        /* Getting actions for the next lexicographic level */;
         std::list<mlcore::Action*> prevActions = filteredActions;
         filteredActions.clear();
         actionIdx = 0;
         for (mlcore::Action* a : prevActions) {
-            dprint2(a, qActions[actionIdx]);
+            if (!problem->applicable(s, a))
+                continue;
+            dprint3(a, qActions[actionIdx], (bestQ * (1.0 + problem->slack()) + 1.0e-8));
             if (qActions[actionIdx] <= (bestQ * (1.0 + problem->slack()) + 1.0e-8))
                 filteredActions.push_back(a);
             actionIdx++;
