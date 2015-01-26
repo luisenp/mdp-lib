@@ -22,8 +22,11 @@ LexiVISolver::LexiVISolver(mlcore::Problem* problem, int maxIter, double tol)
 
 mlcore::Action* LexiVISolver::solve(mlcore::State* s0)
 {
+    mlsolvers::set_cost_v_eta = true;   // TODO: this is very ugly, but will do for now (Jan 2015)
     for (int i = 0; i < maxIter_; i++) {
         double maxResidual = 0.0;
+        dprint2(((mllexi::LexiState *) problem_->initialState())->lexiCost()[0],
+                ((mllexi::LexiState *) problem_->initialState())->lexiCost()[1]);
         for (mlcore::State* s : problem_->states()) {
             double residual = lexiBellmanUpdate((mllexi::LexiProblem *) problem_,
                                                  (mllexi::LexiState *) s);

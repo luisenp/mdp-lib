@@ -178,16 +178,17 @@ double LexiRacetrackProblem::cost(mlcore::State* s, mlcore::Action* a, int index
         RacetrackAction* rta = (RacetrackAction*) a;
 
         /* Keeping current speed or starting up the car has normal cost */
-        if ( (abs(rta->ax()) + abs(rta->ay()) ==  0) || (abs(rts->vx()) + abs(rts->vy()) ==  0) )
+        if ( ( ( abs(rta->ax()) + abs(rta->ay()) ) ==  0) ||
+             ( ( abs(rts->vx()) + abs(rts->vy()) ) ==  0) )
             return 1.0;
 
         /* Otherwise, the cost is related how sharp is the attempted turn */
         double m1 = sqrt ( rts->vx() * rts->vx() + rts->vy() * rts->vy() );
         double m2 = sqrt ( rta->ax() * rta->ax() + rta->ay() * rta->ay() );
         double dot = (rts->vx() * rta->ax() + rts->vy() * rta->ay()) / (m1 * m2);
-        double angle = acos( dot ) - M_PI / 2;
+        double angle = acos( dot );
 
-        return 100 * fabs(angle);
+        return 100 * fabs(angle) + 1.0;
     }
 }
 

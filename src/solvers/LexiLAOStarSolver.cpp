@@ -9,6 +9,7 @@ namespace mlsolvers
 
 mlcore::Action* LexiLAOStarSolver::solve(mlcore::State* s)
 {
+    mlsolvers::set_cost_v_eta = false;  // TODO: this is very ugly, but will do for now (Jan 2015)
     mllexi::LexiState *s0 = (mllexi::LexiState *) s;
     clock_t startTime = clock();
     int totalExpanded = 0;
@@ -25,6 +26,10 @@ mlcore::Action* LexiLAOStarSolver::solve(mlcore::State* s)
                 return s0->bestAction();
 
         } while (countExpanded != 0);
+
+//        mdplib_debug = true;
+//        dprint2(s0->lexiCost()[0], totalExpanded);
+//        mdplib_debug = false;
 
         while (true) {
 

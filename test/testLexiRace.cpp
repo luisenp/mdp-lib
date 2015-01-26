@@ -31,11 +31,12 @@ int main(int argc, char* args[])
     mdplib_debug = false;
 
     double slack = atof(args[3]);
+    int verbosity = argc > 5 ? atoi(args[5]) : 1;
 
     LexiProblem* problem = new LexiRacetrackProblem(args[1], 2);
     ((LexiRacetrackProblem*) problem)->setPError(0.00);
     ((LexiRacetrackProblem*) problem)->setPSlip(0.20);
-    ((LexiRacetrackProblem*) problem)->setMDS(-1);
+    ((LexiRacetrackProblem*) problem)->setMDS(2);
     problem->slack(slack);
     problem->generateAll();
 
@@ -45,7 +46,8 @@ int main(int argc, char* args[])
     heuristics.push_back(heuristic);
     problem->heuristics(heuristics);
 
-    cerr << problem->states().size() << " states" << endl;
+    if (verbosity > 1)
+        cerr << problem->states().size() << " states" << endl;
 
     clock_t startTime = clock();
     double tol = 1.0e-6;
@@ -53,20 +55,23 @@ int main(int argc, char* args[])
         LexiLAOStarSolver lao(problem, tol, 1000000);
         lao.solve(problem->initialState());
     } else if (strcmp(args[2], "vi") == 0) {
-        dprint1("SOLVE V!!");
         LexiVISolver vi(problem, 1000000000, tol);
         vi.solve();
-        dprint1("SOLVED IT YEAH!!");
     }
-    cerr << "Estimated cost "
-         << ((LexiState *) problem->initialState())->lexiCost()[0] << " "
-         << ((LexiState *) problem->initialState())->lexiCost()[1] << endl;
     clock_t endTime = clock();
-    cerr << "Time " << ((endTime - startTime + 0.0) / CLOCKS_PER_SEC) << endl;
+    if (verbosity > 0) {
+        cerr << "Estimated cost "
+             << ((LexiState *) problem->initialState())->lexiCost()[0] << " "
+             << ((LexiState *) problem->initialState())->lexiCost()[1] << endl;
+        cerr << "Time " << ((endTime - startTime + 0.0) / CLOCKS_PER_SEC) << endl;
+    } else {
+        cerr << ((LexiState *) problem->initialState())->lexiCost()[0] << " "
+             << ((LexiState *) problem->initialState())->lexiCost()[1] << endl;
+    }
 
     int nsims = argc > 4 ? atoi(args[4]) : 1;
-    int verbosity = argc > 5 ? atoi(args[5]) : 1;
     vector <double> expectedCost(2, 0.0);
+    mdplib_debug = false;
     for (int i = 0; i < nsims; i++) {
         State* tmp = problem->initialState();
         if (verbosity > 100) {
@@ -77,11 +82,14 @@ int main(int argc, char* args[])
             a = tmp->bestAction();
 
             if (verbosity > 100) {
+                LexiState* lex = (LexiState *) tmp;
                 cerr << endl << "STATE-ACTION *** " << tmp << " " << a << " " << endl;
-                lexiBellmanUpdate(problem, (LexiState *) tmp);
-                double copt = ((LexiState *) tmp)->lexiCost()[0];
-                double qval = qvalue(problem, (LexiState*) tmp, a, 0);
-                cerr << copt << " " << qval << " " << (qval / copt - 1.0) << endl;
+                mdplib_debug = true;
+                lexiBellmanUpdate(problem, lex);
+                mdplib_debug = false;
+                double c0 = problem->cost(lex,a,0), c1 = problem->cost(lex,a,1);
+                cerr << lex->lexiCost()[0] << " " <<  lex->lexiCost()[1];
+                cerr << " - costs " << c0 << " " << c1 << endl;
             }
 
             expectedCost[0] += problem->cost(tmp, a, 0);
@@ -92,7 +100,8 @@ int main(int argc, char* args[])
             cerr << endl;
     }
 
-    cerr << "Avg. Exec cost " << expectedCost[0] / nsims << " " << expectedCost[1] / nsims << endl;
+    if (verbosity > 0)
+        cerr << "Avg. Exec cost " << expectedCost[0] / nsims << " " << expectedCost[1] / nsims << endl;
 
     delete problem;
     delete ((LexiRTrackDetHeuristic*) heuristic);

@@ -390,6 +390,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="data/tracks/huge.track" />
 		<Unit filename="data/tracks/lexi/lexi1.track" />
 		<Unit filename="data/tracks/lexi/lexi2.track" />
+		<Unit filename="data/tracks/lexi/lexi3.track" />
 		<Unit filename="data/tracks/longstreet.track" />
 		<Unit filename="data/tracks/map0.track" />
 		<Unit filename="data/tracks/map1.track" />
