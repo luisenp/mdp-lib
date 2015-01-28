@@ -105,8 +105,6 @@ int main(int argc, char* args[])
     cerr << "Avg. Exec cost " << expectedCost / nsims << endl;
     cerr << "Avg.Total cost " << expectedCost / nsims + costTime << endl;
 
-    cerr << bbcount << endl;
-
     delete problem;
     delete ((RTrackDetHeuristic*) heuristic);
 }

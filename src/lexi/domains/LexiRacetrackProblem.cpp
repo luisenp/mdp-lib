@@ -103,7 +103,7 @@ LexiRacetrackProblem::transition(mlcore::State* s, mlcore::Action* a, int index)
     RacetrackAction* rta = (RacetrackAction*) a;
 
     int idAction = rta->hashValue();
-    all_successor_t* allSuccessors = rts->allSuccessors();
+    std::vector<mlcore::SuccessorsList>* allSuccessors = rts->allSuccessors();
 
     if (!allSuccessors->at(idAction).empty()) {
         return allSuccessors->at(idAction);

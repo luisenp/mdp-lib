@@ -95,7 +95,7 @@ std::list<mlcore::Successor> RacetrackProblem::transition(mlcore::State* s, mlco
     RacetrackAction* rta = (RacetrackAction*) a;
 
     int idAction = rta->hashValue();
-    all_successor_t* allSuccessors = rts->allSuccessors();
+    std::vector<mlcore::SuccessorsList>* allSuccessors = rts->allSuccessors();
 
     if (!allSuccessors->at(idAction).empty()) {
         return allSuccessors->at(idAction);

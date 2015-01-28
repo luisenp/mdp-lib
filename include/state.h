@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <string>
+#include <list>
 #include <unordered_set>
 #include <unordered_map>
 
@@ -276,6 +277,11 @@ typedef std::unordered_map<State*, double, StateHash, StateEqual> StateDoubleMap
  * A map of states to actions.
  */
 typedef std::unordered_map<State*, Action*, StateHash, StateEqual> StateActionMap;
+
+/**
+ * A list of successors.
+ */
+typedef std::list<mlcore::Successor> SuccessorsList;
 
 }
 
