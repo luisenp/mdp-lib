@@ -22,7 +22,7 @@ private:
     int vy_;
 
     /* A cache of all successors (for all actions) of this state */
-    all_successor_t allSuccessors_;
+    std::vector<mlcore::SuccessorsList> allSuccessors_;
 
     virtual std::ostream& print(std::ostream& os) const;
 
@@ -48,7 +48,7 @@ public:
     /**
      * Returns a pointer to the successor cache of this state.
      */
-    all_successor_t* allSuccessors() { return &allSuccessors_; }
+    std::vector<mlcore::SuccessorsList>* allSuccessors() { return &allSuccessors_; }
 
     /**
      * Overrides method from State.
