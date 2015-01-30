@@ -280,8 +280,9 @@ typedef std::unordered_map<State*, Action*, StateHash, StateEqual> StateActionMa
 
 /**
  * A list of successors.
+ * TODO change every instance of std::list<mlcore::Successor> to SuccessorsList.
  */
-typedef std::list<mlcore::Successor> SuccessorsList;
+typedef std::list<Successor> SuccessorsList;
 
 }
 

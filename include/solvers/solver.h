@@ -184,6 +184,7 @@ inline double lexiBellmanUpdate(mllexi::LexiProblem* problem, mllexi::LexiState*
             s->setCost(0.0, i);
         return 0.0;
     }
+
     std::list<mlcore::Action*> filteredActions = problem->actions();
     for (int i = 0; i < problem->size(); i++) {
         std::vector<double> qActions(filteredActions.size());
@@ -226,7 +227,7 @@ inline double lexiBellmanUpdate(mllexi::LexiProblem* problem, mllexi::LexiState*
             if (!problem->applicable(s, a))
                 continue;
             if (qActions[actionIdx] <= (bestQ * (1.0 + problem->slack()) + 1.0e-8))
-//            if (qActions[actionIdx] <= (bestQ + (minCost * problem->slack()) + 1.0e-8))
+            if (qActions[actionIdx] <= (bestQ + (minCost * problem->slack()) + 1.0e-8))
                 filteredActions.push_back(a);
 
 //            dprint4("FILTER ", actionIdx, a, qActions[actionIdx]);

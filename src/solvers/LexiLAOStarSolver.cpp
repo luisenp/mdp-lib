@@ -27,10 +27,6 @@ mlcore::Action* LexiLAOStarSolver::solve(mlcore::State* s)
 
         } while (countExpanded != 0);
 
-//        mdplib_debug = true;
-//        dprint2(s0->lexiCost()[0], totalExpanded);
-//        mdplib_debug = false;
-
         while (true) {
 
             clock_t currentTime = clock();
