@@ -11,18 +11,28 @@ class LexiLAOStarSolver : public Solver
 private:
     mllexi::LexiProblem* problem_;
     mlcore::StateSet visited;
+    mlcore::StateSet solved;
 
     /* Error tolerance */
     double epsilon_;
 
-    /* Expands the BPSG rooted at state s and returns the number of states expanded */
-    int expand(mllexi::LexiState* s);
+    /* Expands the BPSG rooted at state s and returns the number of states
+     * The choice of action is done according to the specified lexicographic level
+     * If a state is found that wasn't solve at the previous level, the state is returned */
+    int expand(mllexi::LexiState* s, int level, mllexi::LexiState*& unsolved);
 
-    /* Test if the BPSG rooted at state s has converged */
-    double testConvergence(mllexi::LexiState* s);
+    /* Test if the BPSG rooted at state s has converged at the given lexicographic level*/
+    double testConvergence(mllexi::LexiState* s, int level);
+
+    /* Adds all states for which the optimal policy starting in state s has been found */
+    void addSolved(mlcore::State* s);
 
     /* Time limit for LAO* in milliseconds */
     int timeLimit_;
+
+    /* Solves the specified lexicographic level. The stores a pointer to a state
+    /* only if this state was unsolved at the previous level. */
+    virtual void solveLevel(mlcore::State* s0, int level, mllexi::LexiState*& unsolved);
 
 public:
 

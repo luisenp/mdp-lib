@@ -138,18 +138,13 @@ public:
             queue.pop_front();
             if (cur->checkBits(mdplib::VISITED))
                 continue;
-
-//                dprint2(cur, " xx");
             cur->setBits(mdplib::VISITED);
             for (Action* a : actions_) {
                 if (!applicable(cur, a))
                     continue;
-//                    dprint4("    ", a, cost(cur,a), transition(cur, a).size());
                 std::list<Successor> successors = transition(cur, a);
                 for (Successor sccr : successors) {
                     queue.push_front(sccr.first);
-
-//                    dprint3("         ", sccr.first, sccr.second);
                 }
             }
         }

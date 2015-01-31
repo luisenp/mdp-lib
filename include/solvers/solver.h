@@ -165,6 +165,76 @@ std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem, mlcor
 
 
 /**
+ * Performs a Lexicographic Bellman update of a state according to the level-th cost
+ * function. The operator assumes that all values from 1 to (level - 1) are correct.
+ *
+ * This backup uses fSSPUDE - see http://arxiv.org/pdf/1210.4875.pdf
+ *
+ * @param problem The problem that contains the given state.
+ * @param s The state on which the Bellman backup will be performed.
+ * @param level The level of the cost function to be miminized.
+ * @return The maximum residual among all value functions.
+ */
+inline double lexiBellmanUpdate(mllexi::LexiProblem* problem, mllexi::LexiState* s, int level)
+{
+    bool hasAction = true;
+    mlcore::Action* bestAction = nullptr;
+    double residual = 0.0;
+    if (problem->goal(s, 0)) {
+        s->setBestAction(nullptr);
+        for (int i = 0; i < problem->size(); i++)
+            s->setCost(0.0, i);
+        return 0.0;
+    }
+
+    std::list<mlcore::Action*> filteredActions = problem->actions();
+    for (int i = 0; i <= level; i++) {
+        std::vector<double> qActions(filteredActions.size());
+        double bestQ = mdplib::dead_end_cost + 1;
+        int actionIdx = 0;
+
+        /* Computing Q-values for all actions w.r.t. the i-th cost function */
+        for (mlcore::Action* a : filteredActions) {
+            if (!problem->applicable(s, a))
+                continue;
+            qActions[actionIdx] = std::min(mdplib::dead_end_cost, qvalue(problem, s, a, i));
+            if (qActions[actionIdx] < bestQ) {
+                bestQ = qActions[actionIdx];
+                bestAction = a;
+            }
+            actionIdx++;
+        }
+
+        /* Updating cost, best action and residual */
+        double currentResidual = fabs(bestQ - s->lexiCost()[i]);
+        if (currentResidual > residual)
+            residual = currentResidual;
+        s->setCost(bestQ, i);
+        s->setBestAction(bestAction);
+        if (bestQ > mdplib::dead_end_cost) {
+            s->markDeadEnd();
+            break;
+        }
+
+        /* Getting actions for the next lexicographic level */;
+        if (i < level) {
+            std::list<mlcore::Action*> prevActions = filteredActions;
+            filteredActions.clear();
+            actionIdx = 0;
+            for (mlcore::Action* a : prevActions) {
+                if (!problem->applicable(s, a))
+                    continue;
+                if (qActions[actionIdx] <= (bestQ + problem->slack() + 1.0e-8))
+                    filteredActions.push_back(a);
+                actionIdx++;
+            }
+        }
+    }
+    return residual;
+}
+
+
+/**
  * Performs a Lexicographical Bellman update of a state.
  *
  * This backup uses fSSPUDE - see http://arxiv.org/pdf/1210.4875.pdf

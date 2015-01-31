@@ -63,6 +63,7 @@ int main(int argc, char* args[])
         cerr << "Estimated cost "
              << ((LexiState *) problem->initialState())->lexiCost()[0] << " "
              << ((LexiState *) problem->initialState())->lexiCost()[1] << endl;
+        cerr << startTime << " " << endTime << endl;
         cerr << "Time " << ((endTime - startTime + 0.0) / CLOCKS_PER_SEC) << endl;
     } else {
         cerr << ((LexiState *) problem->initialState())->lexiCost()[0] << " "
