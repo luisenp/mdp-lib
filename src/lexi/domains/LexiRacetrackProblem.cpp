@@ -38,8 +38,6 @@ LexiRacetrackProblem::LexiRacetrackProblem(char* filename, int size)
         while ( std::getline (myfile, line) ) {
             y--;
             for (int i = 0; i < line.size(); i++) {
-                if (!rtrack::checkValid(line.at(i)))
-                    continue;
                 track_[i][y] = line.at(i);
                 if (line.at(i) == rtrack::start) {
                     starts_.insert(std::pair<int,int> (i, y));
@@ -233,7 +231,7 @@ LexiRacetrackState* LexiRacetrackProblem::resultingState(LexiRacetrackState* rts
 
 bool LexiRacetrackProblem::isSafeLocation(int x, int y)
 {
-    return (track_[x][y] != rtrack::wall && track_[x][y] != unsafeChar_);
+    return (track_[x][y] != unsafeChar_);
 }
 
 

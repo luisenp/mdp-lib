@@ -45,19 +45,21 @@ void LexiLAOStarSolver::solveLevel(mlcore::State* s, int level, mllexi::LexiStat
 mlcore::Action* LexiLAOStarSolver::solve(mlcore::State* s)
 {
     mdplib_debug = true;
-    for (int i = 0; i < problem_->size(); i++) {
-        dprint2("SOLVING LEVEL: ", i);
-        mllexi::LexiState* unsolved = nullptr;
-        solveLevel(s, i, unsolved);
-        if (unsolved != nullptr) {
-            dprint2("ERROR!!!!! NEED TO SOLVE ", unsolved);
-            mllexi::LexiState* aux = nullptr;
-            solveLevel(unsolved, 0, aux);
-            i--;
-        }
-        dprint3("SOLVED LEVEL ", i, solved.size());
-        dsleep(1000);
-    }
+    mllexi::LexiState* unsolved = nullptr;
+    solveLevel(s, problem_->size() - 1, unsolved);
+//    for (int i = 0; i < problem_->size(); i++) {
+//        dprint2("SOLVING LEVEL: ", i);
+//        mllexi::LexiState* unsolved = nullptr;
+//        solveLevel(s, i, unsolved);
+//        if (unsolved != nullptr) {
+//            dprint2("ERROR!!!!! NEED TO SOLVE ", unsolved);
+//            mllexi::LexiState* aux = nullptr;
+//            solveLevel(unsolved, 0, aux);
+//            i--;
+//        }
+//        dprint3("SOLVED LEVEL ", i, solved.size());
+//        dsleep(1000);
+//    }
     return s->bestAction();
 }
 
