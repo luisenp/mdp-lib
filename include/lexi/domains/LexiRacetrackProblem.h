@@ -44,6 +44,9 @@ private:
     /* Maximum deterministic speed */
     int mds_ = 2;
 
+    /* Use the safety cost function for the second level */
+    bool useSafety_ = false;
+
     /* Probability of slipping as in the original racetrack */
     double pSlip_ = 0.10;
 
@@ -59,8 +62,19 @@ private:
     /* All the goal locations */
     IntPairSet goals_;
 
+    static const char unsafeChar_ = '.';
+
     /* Returns the resulting state of applying the given acceleration to the given state */
     LexiRacetrackState* resultingState(LexiRacetrackState* rts, int ax, int ay);
+
+    /* Checks if the given location is safe (not a wall or unsafe street) */
+    bool isSafeLocation(int x, int y);
+
+    /* Adds successors for (source, idAction), according to the transition function for
+     * the safety variable.  The method assumes that dest->safe() reflects the safety
+     * of its location. */
+    void addSuccessors(int idAction, LexiRacetrackState* source,
+                        LexiRacetrackState* dest, double prob);
 
 public:
 
@@ -72,6 +86,8 @@ public:
     LexiRacetrackProblem(char* filename, int size);
 
     virtual ~LexiRacetrackProblem() {}
+
+    void useSafety(bool value) { useSafety_ = value; }
 
     /**
      * Returns the track.

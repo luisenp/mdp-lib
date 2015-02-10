@@ -9,12 +9,15 @@
 namespace mllexi
 {
 
-LexiRacetrackState::LexiRacetrackState(int x, int y, int vx, int vy, LexiProblem* problem)
+LexiRacetrackState::LexiRacetrackState(int x, int y,
+                                       int vx, int vy,
+                                       bool safe, LexiProblem* problem)
 {
     x_ = x;
     y_ = y;
     vx_ = vx;
     vy_ = vy;
+    safe_ = safe;
     problem_ = problem;
 
     /* Adding a successor entry for each action */
@@ -42,7 +45,7 @@ std::ostream& LexiRacetrackState::print(std::ostream& os) const
         else
             os << "0";
     }
-    os << ")";
+    os << ", s" << safe_ << ")";
     return os;
 }
 
@@ -56,6 +59,7 @@ mlcore::State& LexiRacetrackState::operator=(const mlcore::State& rhs)
     y_ = state->y_;
     vx_ = state->vx_;
     vy_ = state->vy_;
+    safe_ = state->safe_;
     problem_ = state->problem_;
     return *this;
 }
@@ -66,7 +70,8 @@ bool LexiRacetrackState::operator==(const mlcore::State& rhs) const
     return x_ == state->x_
             && y_ == state->y_
             && vx_ == state->vx_
-            && vy_ == state->vy_;
+            && vy_ == state->vy_
+            && safe_ == state->safe_;
 }
 bool LexiRacetrackState::equals(mlcore::State* other) const
 {
@@ -76,7 +81,7 @@ bool LexiRacetrackState::equals(mlcore::State* other) const
 
 int LexiRacetrackState::hashValue() const
 {
-    return x_ + 31*(y_ + 31*(vx_ + 31*vy_));
+    return x_ + 31*(y_ + 31*(vx_ + 31*(vy_ + 31*safe_)));
 }
 
 }

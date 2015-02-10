@@ -25,7 +25,7 @@ double LexiRTrackDetHeuristic::cost(const mlcore::State* s) const
 {
     LexiRacetrackState* rts = (LexiRacetrackState*) s;
     LexiRacetrackState* tmp =
-        new LexiRacetrackState(rts->x(), rts->y(), rts->vx(), rts->vy(), detProblem_);
+        new LexiRacetrackState(rts->x(), rts->y(), rts->vx(), rts->vy(), rts->safe(), detProblem_);
     mlcore::StateSet::const_iterator it = detProblem_->states().find((mlcore::State *) tmp);
     assert(it != detProblem_->states().end());
     delete tmp;

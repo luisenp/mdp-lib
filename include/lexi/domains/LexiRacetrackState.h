@@ -20,6 +20,7 @@ private:
     int y_;
     int vx_;
     int vy_;
+    bool safe_;
 
     /* A cache of all successors (for all actions) of this state */
     std::vector<mlcore::SuccessorsList> allSuccessors_;
@@ -28,12 +29,10 @@ private:
 
 public:
     /**
-     * Creates a state for the racetrack problem with the given (x,y) position
-     * and (vx,vy) velocity, and assigned to the given index.
-     *
-     * Every tuple (x, y, vx, vy) should be assigned to a unique index.
+     * Creates a state for the given racetrack problem with the given (x,y) position
+     * and (vx,vy) velocity, safety indicator.
      */
-    LexiRacetrackState(int x, int y, int vx, int vy, LexiProblem* problem);
+    LexiRacetrackState(int x, int y, int vx, int vy, bool safe, LexiProblem* problem);
 
     virtual ~LexiRacetrackState() {}
 
@@ -44,6 +43,10 @@ public:
     int vx() const { return vx_; }
 
     int vy() const { return vy_; }
+
+    bool safe() const { return safe_; }
+
+    void safe(bool safeValue) { safe_ = safeValue; }
 
     /**
      * Returns a pointer to the successor cache of this state.

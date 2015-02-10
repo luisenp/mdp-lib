@@ -24,19 +24,20 @@ using namespace std;
 int main(int argc, char* args[])
 {
     if (argc <= 3) {
-        cerr << "Usage ./textlexirace TRACK ALGORITHM SLACK --optional [NSIMS VERBOSITY]" << endl;
+        cerr << "Usage ./textlexirace TRACK ALGORITHM SLACK SAFETY --optional [NSIMS VERBOSITY]" << endl;
         exit(0);
     }
 
     mdplib_debug = false;
 
     double slack = atof(args[3]);
-    int verbosity = argc > 5 ? atoi(args[5]) : 1;
+    int verbosity = argc > 6 ? atoi(args[6]) : 1;
 
     LexiProblem* problem = new LexiRacetrackProblem(args[1], 2);
     ((LexiRacetrackProblem*) problem)->setPError(0.00);
     ((LexiRacetrackProblem*) problem)->setPSlip(0.20);
-    ((LexiRacetrackProblem*) problem)->setMDS(2);
+    ((LexiRacetrackProblem*) problem)->setMDS(0);
+    ((LexiRacetrackProblem*) problem)->useSafety((bool) atoi(args[4]));
     problem->slack(slack);
     problem->generateAll();
 
@@ -70,7 +71,7 @@ int main(int argc, char* args[])
              << ((LexiState *) problem->initialState())->lexiCost()[1] << endl;
     }
 
-    int nsims = argc > 4 ? atoi(args[4]) : 1;
+    int nsims = argc > 5 ? atoi(args[5]) : 1;
     vector <double> expectedCost(2, 0.0);
     mdplib_debug = false;
     for (int i = 0; i < nsims; i++) {
