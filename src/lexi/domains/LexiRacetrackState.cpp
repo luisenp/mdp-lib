@@ -25,11 +25,10 @@ LexiRacetrackState::LexiRacetrackState(int x, int y,
         allSuccessors_.push_back(std::list<mlcore::Successor> ());
     }
 
-    LexiProblem* aux = (LexiProblem *) problem_;
-    lexiCost_ = std::vector<double> (aux->size());
-    for (int i = 0; i < aux->size(); i++) {
-        if (!aux->heuristics().empty())
-            lexiCost_[i] = aux->heuristics()[i]->cost(this);
+    lexiCost_ = std::vector<double> (problem->size());
+    for (int i = 0; i < problem->size(); i++) {
+        if (problem->heuristics().size() > i && problem->heuristics()[i] != nullptr)
+            lexiCost_[i] = problem->heuristics()[i]->cost(this);
         else
             lexiCost_[i] = 0.0;
     }

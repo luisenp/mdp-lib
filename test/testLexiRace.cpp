@@ -42,7 +42,8 @@ int main(int argc, char* args[])
     problem->generateAll();
 
     vector<Heuristic*> heuristics;
-    Heuristic* heuristic = new LexiRTrackDetHeuristic(args[1]);
+    Heuristic* heuristic =
+        (strcmp(args[2], "vi") == 0) ? nullptr : new LexiRTrackDetHeuristic(args[1]);
     heuristics.push_back(heuristic);
     heuristics.push_back(heuristic);
     problem->heuristics(heuristics);
