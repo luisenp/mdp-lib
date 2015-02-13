@@ -40,12 +40,6 @@ extern std::mt19937 gen;
 extern std::uniform_real_distribution<> dis;
 
 /**
- * Specifies whether the costs of lexiBellmanBackup should be updated according to
- * each cost function separatedly (true), or according to the chosen action (false).
- */
-extern bool set_cost_v_eta;
-
-/**
  * An interface for states to have some polymorphism on methods that want to call
  * different planners.
  */
@@ -230,93 +224,6 @@ inline double lexiBellmanUpdate(mllexi::LexiProblem* problem, mllexi::LexiState*
             }
         }
     }
-    return residual;
-}
-
-
-/**
- * Performs a Lexicographical Bellman update of a state.
- *
- * This backup uses fSSPUDE - see http://arxiv.org/pdf/1210.4875.pdf
- *
- * @param problem The problem that contains the given state.
- * @param s The state on which the Bellman backup will be performed.
- * @return The maximum residual among all value functions.
- */
-inline double lexiBellmanUpdate(mllexi::LexiProblem* problem, mllexi::LexiState* s)
-{
-    bool hasAction = true;
-    mlcore::Action* bestAction = nullptr;
-    double residual = 0.0;
-    if (problem->goal(s, 0)) {
-        s->setBestAction(nullptr);
-        for (int i = 0; i < problem->size(); i++)
-            s->setCost(0.0, i);
-        return 0.0;
-    }
-
-    std::list<mlcore::Action*> filteredActions = problem->actions();
-    for (int i = 0; i < problem->size(); i++) {
-        std::vector<double> qActions(filteredActions.size());
-        double bestQ = mdplib::dead_end_cost + 1;
-        int actionIdx = 0;
-        double minCost = mdplib::dead_end_cost + 1;
-        /* Computing Q-values for all actions w.r.t. the i-th cost function */
-        for (mlcore::Action* a : filteredActions) {
-            if (!problem->applicable(s, a))
-                continue;
-            qActions[actionIdx] = std::min(mdplib::dead_end_cost, qvalue(problem, s, a, i));
-            if (qActions[actionIdx] < bestQ) {
-                bestQ = qActions[actionIdx];
-                bestAction = a;
-            }
-            if (problem->cost(s, a, i) < minCost) {
-                minCost = problem->cost(s, a, i);
-            }
-//            dprint4("CHOOSE ", actionIdx, a, qActions[actionIdx]);
-            actionIdx++;
-        }
-        if (bestQ > mdplib::dead_end_cost) {
-            s->markDeadEnd();
-            break;
-        }
-
-        // TODO: this is very ugly, but will do for now (Jan 2015)
-        if (set_cost_v_eta) {
-            double currentResidual = fabs(bestQ - s->lexiCost()[i]);
-            if (currentResidual > residual)
-                residual = currentResidual;
-            s->setCost(bestQ, i);
-        }
-
-        /* Getting actions for the next lexicographic level */;
-        std::list<mlcore::Action*> prevActions = filteredActions;
-        filteredActions.clear();
-        actionIdx = 0;
-        for (mlcore::Action* a : prevActions) {
-            if (!problem->applicable(s, a))
-                continue;
-            if (qActions[actionIdx] <= (bestQ * (1.0 + problem->slack()) + 1.0e-8))
-            if (qActions[actionIdx] <= (bestQ + (minCost * problem->slack()) + 1.0e-8))
-                filteredActions.push_back(a);
-
-//            dprint4("FILTER ", actionIdx, a, qActions[actionIdx]);
-            actionIdx++;
-        }
-    }
-
-    s->setBestAction(bestAction);
-    // TODO: this is very ugly, but will do for now (Jan 2015)
-    if (!set_cost_v_eta) {
-        for (int i = 0; i < problem->size(); i++) {
-            double qChosenAction = qvalue(problem, s, bestAction, i);
-            double currentResidual = fabs(qChosenAction - s->lexiCost()[i]);
-            if (currentResidual > residual)
-                residual = currentResidual;
-            s->setCost(qChosenAction, i);
-        }
-    }
-
     return residual;
 }
 

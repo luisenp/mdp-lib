@@ -9,7 +9,6 @@ namespace mlsolvers
 
 void LexiLAOStarSolver::solveLevel(mlcore::State* s, int level, mllexi::LexiState*& unsolved)
 {
-    mlsolvers::set_cost_v_eta = false;  // TODO: this is very ugly, but will do for now (Jan 2015)
     mllexi::LexiState* s0 = (mllexi::LexiState *) s;
     clock_t startTime = clock();
     int totalExpanded = 0;
