@@ -53,7 +53,6 @@ int LexiLAOStarSolver::expand(mllexi::LexiState* s, int level, mllexi::LexiState
 {
     if (level > 0 && solved.find(s) == solved.end()) {
         mllexi::LexiState* aux = nullptr;
-        dprint2("please solve ", s);
         solveLevel(s, 0, aux);
     }
 
@@ -76,6 +75,7 @@ int LexiLAOStarSolver::expand(mllexi::LexiState* s, int level, mllexi::LexiState
             }
         }
     }
+
     lexiBellmanUpdate(problem_, s, level);
     return cnt;
 }

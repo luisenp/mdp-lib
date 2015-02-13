@@ -142,8 +142,7 @@ public:
     /**
      * Overrides method from LexiProblem.
      */
-    virtual std::list<mlcore::Successor>
-    transition(mlcore::State* s, mlcore::Action* a, int index);
+    virtual mlcore::SuccessorsList transition(mlcore::State* s, mlcore::Action* a, int index);
 
     /**
      * Overrides method from LexiProblem.

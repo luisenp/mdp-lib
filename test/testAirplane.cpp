@@ -11,10 +11,10 @@
 #include "../include/util/general.h"
 #include "../include/util/graph.h"
 
-#include "../include/lexi/domains/LexiRacetrackProblem.h"
-#include "../include/lexi/domains/LexiRacetrackState.h"
-#include "../include/lexi/domains/LexiRTrackDetHeuristic.h"
-#include "../include/domains/racetrack/RacetrackAction.h"
+#include "../include/lexi/domains/airplane/AirplaneProblem.h"
+#include "../include/lexi/domains/airplane/AirplaneState.h"
+#include "../include/lexi/domains/airplane/AirplaneAction.h"
+#include "../include/lexi/domains/airplane/AirplaneHeuristic.h"
 
 using namespace mlcore;
 using namespace mlsolvers;
@@ -23,30 +23,47 @@ using namespace std;
 
 int main(int argc, char* args[])
 {
-    if (argc < 5) {
-        cerr << "Usage ./textlexirace TRACK ALGORITHM SLACK SAFETY --optional [NSIMS VERBOSITY]" << endl;
+    if (argc < 3) {
+        cerr << "Usage ./testairplane FILE ALGORITHM --optional [NSIMS VERBOSITY]" << endl;
         exit(0);
     }
 
     mdplib_debug = false;
 
-    double slack = atof(args[3]);
-    int verbosity = argc > 6 ? atoi(args[6]) : 1;
+    int verbosity = argc > 4 ? atoi(args[4]) : 1;
 
-    LexiProblem* problem = new LexiRacetrackProblem(args[1], 2);
-    ((LexiRacetrackProblem*) problem)->setPError(0.00);
-    ((LexiRacetrackProblem*) problem)->setPSlip(0.20);
-    ((LexiRacetrackProblem*) problem)->setMDS(0);
-    ((LexiRacetrackProblem*) problem)->useSafety((bool) atoi(args[4]));
-    problem->slack(slack);
-    problem->generateAll();
+    double points[5][2] = {{0,0},{-1,0},{1,0},{0,-1},{0,1}};
+//    double points[4][2] = {{0,0},{1,0},{-1,0},{0,1}};
+//    double points[4][2] = {{0,0},{0,2},{-1,2},{1,2}};
+    int n = 5;
+    vector< vector< double> > distances;
+    for (int i = 0; i < n; i++) {
+        distances.push_back(vector<double> (n));
+        for (int j = 0; j < n; j++) {
+            double dx = points[i][0] - points[j][0];
+            double dy = points[i][1] - points[j][1];
+            distances[i][j] = sqrt(dx*dx + dy*dy);
+        }
+    }
+    vector<double> probs;
+    probs.push_back(0.0);
+    probs.push_back(0.2);
+    probs.push_back(0.4);
+    probs.push_back(0.6);
+    probs.push_back(0.8);
+
+    int np = 3;
+    vector<int> initLoc(np);
+    for (int i = 0; i < np; i++)
+        initLoc[i] = i + 1;
+
+    LexiProblem* problem = new AirplaneProblem(1, distances, probs, initLoc);
 
     vector<Heuristic*> heuristics;
-    Heuristic* heuristic =
-        (strcmp(args[2], "vi") == 0) ? nullptr : new LexiRTrackDetHeuristic(args[1]);
-    heuristics.push_back(heuristic);
-    heuristics.push_back(heuristic);
+    heuristics.push_back(new AirplaneHeuristic((AirplaneProblem *) problem, 0));
+    heuristics.push_back(new AirplaneHeuristic((AirplaneProblem *) problem, 1));
     problem->heuristics(heuristics);
+    problem->generateAll();
 
     if (verbosity > 1)
         cerr << problem->states().size() << " states" << endl;
@@ -59,6 +76,16 @@ int main(int argc, char* args[])
     } else if (strcmp(args[2], "vi") == 0) {
         LexiVISolver vi(problem, 1000000000, tol);
         vi.solve();
+
+        if (mdplib_debug) {
+            for (State* s : problem->states()) {
+                LexiState* ls = (LexiState*) s;
+                if (ls->lexiCost()[0] < heuristics[0]->cost(s))
+                    dprint4(ls, " ",heuristics[0]->cost(s), " AT LEVEL 0");
+                if (ls->lexiCost()[1] < heuristics[1]->cost(s))
+                    dprint4(ls, " ",heuristics[1]->cost(s), " AT LEVEL 1");
+            }
+        }
     }
     clock_t endTime = clock();
     if (verbosity > 0) {
@@ -72,7 +99,7 @@ int main(int argc, char* args[])
              << ((LexiState *) problem->initialState())->lexiCost()[1] << endl;
     }
 
-    int nsims = argc > 5 ? atoi(args[5]) : 1;
+    int nsims = argc > 5 ? atoi(args[3]) : 1;
     vector <double> expectedCost(2, 0.0);
     mdplib_debug = false;
     for (int i = 0; i < nsims; i++) {
@@ -98,6 +125,9 @@ int main(int argc, char* args[])
             expectedCost[0] += problem->cost(tmp, a, 0);
             expectedCost[1] += problem->cost(tmp, a, 1);
             tmp = randomSuccessor(problem, tmp, a);
+
+            if (verbosity > 100)
+                cerr << endl << "     NEXT *** " << tmp << endl;
         }
         if (verbosity > 100)
             cerr << endl;
@@ -107,6 +137,6 @@ int main(int argc, char* args[])
         cerr << "Avg. Exec cost " << expectedCost[0] / nsims << " " << expectedCost[1] / nsims << endl;
 
     delete problem;
-    delete ((LexiRTrackDetHeuristic*) heuristic);
 }
+
 

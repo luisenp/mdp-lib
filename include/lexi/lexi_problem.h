@@ -103,8 +103,7 @@ public:
      * @return A list of succcessors of the given state after applying the
      *        given action.
      */
-    virtual
-    std::list<mlcore::Successor> transition(mlcore::State* s, mlcore::Action* a, int index) = 0;
+    virtual mlcore::SuccessorsList transition(mlcore::State* s, mlcore::Action* a, int index) = 0;
 
     /**
      * Overrides method from mlcore::Problem.
@@ -122,7 +121,7 @@ public:
     /**
      * Overrides method from mlcore::Problem.
      */
-    virtual std::list<mlcore::Successor> transition(mlcore::State* s, mlcore::Action* a)
+    virtual mlcore::SuccessorsList transition(mlcore::State* s, mlcore::Action* a)
     {
         return transition(s, a, 0);
     }
