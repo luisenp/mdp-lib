@@ -44,7 +44,7 @@ public:
     /**
      * Default constructor.
      *
-     * Creates a grid world with a single goal state (0,0) an all-zero heuristic.
+     * Creates a grid world with a single goal state (0,0) and all-zero heuristic.
      */
     GridWorldProblem();
 

@@ -2,6 +2,7 @@
 #define MDPLIB_GENERAL_H
 
 #include <cstring>
+#include <iostream>
 #include <unordered_set>
 #include <unordered_map>
 #include <unistd.h>
@@ -9,18 +10,43 @@
 #include <vector>
 #include <thread>
 
-#define dprint1(x) std::cerr << x << std::endl
-#define dprint2(x,y) std::cerr << x << " "  << y << std::endl
-#define dprint3(x,y,z) std::cerr << x << " "  << y << " " << z << std::endl
-#define dprint4(x,y,w,z) std::cerr << x << " "  << y << " " << w << " " << z << std::endl
+extern bool mdplib_debug;
+
+// TODO: Implement this using variadic function/templates. Current implementation quite ugly
+
+template <class T>
+void dprint1(T x)
+{
+    if (mdplib_debug)
+        std::cerr << x << std::endl;
+}
+
+template <class T1, class T2>
+void dprint2(T1 x, T2 y)
+{
+    if (mdplib_debug)
+        std::cerr << x << " " << y << std::endl;
+}
+
+template <class T1, class T2, class T3>
+void dprint3(T1 x, T2 y, T3 z)
+{
+    if (mdplib_debug)
+        std::cerr << x << " " << y << " " << z << std::endl;
+}
+
+template <class T1, class T2, class T3, class T4>
+void dprint4(T1 x, T2 y, T3 z, T4 w)
+{
+    if (mdplib_debug)
+        std::cerr << x << " " << y << " " << z << " " << w << std::endl;
+}
 
 /**
  * Sleeps the current thread for the given number of milliseconds. This is just a wrapper for
  * function std::this_thread::sleep_for(std::chrono milliseconds).
  */
-inline void dsleep(int miliseconds) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(miliseconds));
-}
+void dsleep(int miliseconds);
 
 /**
  * Computes the next combination (no repetitions) of numbers from 0 to (n-1) chosen k at a time.
@@ -31,23 +57,7 @@ inline void dsleep(int miliseconds) {
  * For instance, calling nextComb(<0,2>, 3, 2) stores the vector <1,0> and returns true,
  * while calling nextComb(<1,2>, 3, 2) returns false.
  */
-inline bool nextComb(std::vector<int>& comb, int n, int k)
-{
-    int i = k - 1;
-    while (i >= 0) {
-        if (comb[i] == n - k + i)
-            i--;
-        else
-            break;
-    }
-    if (i == -1)
-        return false;
-    comb[i]++;
-    for (int j = i + 1; j < k; j++)
-        comb[j] = comb[j - 1] + 1;
-    return true;
-}
-
+bool nextComb(std::vector<int>& comb, int n, int k);
 
 /**
  * Computes the next combination (with repetitions) of n elements with k options for each.
@@ -58,24 +68,7 @@ inline bool nextComb(std::vector<int>& comb, int n, int k)
  * For instance, calling nextComb(<1,0>, 2) stores the vector <1,1> and returns true,
  * while calling nextComb(<1,1>, 2) returns false.
  */
-inline bool nextCombRep(std::vector<int>& comb, int k)
-{
-    int j = comb.size() - 1;
-    while (j >= 0) {
-        comb[j]++;
-        if (comb[j] == k) {
-            comb[j] = 0;
-            j--;
-        } else {
-            break;
-        }
-    }
-    if (j == -1)
-        return false;
-    return true;
-}
-
-
+bool nextCombRep(std::vector<int>& comb, int k);
 
 struct pair_int_equal {
   bool operator() (std::pair<int,int> p1, std::pair<int,int> p2) const {
@@ -84,7 +77,7 @@ struct pair_int_equal {
 };
 
 struct pair_int_hash {
-    inline std::size_t operator()(const std::pair<int,int> & v) const {
+    std::size_t operator()(const std::pair<int,int> & v) const {
         return v.first*31+v.second;
     }
 };

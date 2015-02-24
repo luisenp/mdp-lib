@@ -7,6 +7,8 @@
 #include <mutex>
 
 #include "../../include/problem.h"
+#include "../../include/lexi/lexi_problem.h"
+#include "../../include/lexi/lexi_state.h"
 #include "../../include/heuristic.h"
 #include "../../include/state.h"
 #include "../../include/util/general.h"
@@ -36,8 +38,6 @@ extern std::mt19937 gen;
  * Uniform distribution [0,1] generator.
  */
 extern std::uniform_real_distribution<> dis;
-
-extern int bbcount;
 
 /**
  * An interface for states to have some polymorphism on methods that want to call
@@ -75,6 +75,30 @@ inline double qvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action*
     return qAction;
 }
 
+
+/**
+ * Computes the Q-value of a state-action pair for the given lexicographical MDP.
+ * The method receives the index of the value function according to which the Q-value
+ * will be computed.
+ *
+ * This method assumes that the given action is applicable on the state.
+ *
+ * @param problem The problem that contains the given state.
+ * @param s The state for which the Q-value will be computed.
+ * @param a The action for which the Q-value will be computed.
+ * @param i The index of the value function to use.
+ * @return The Q-value of the state-action pair.
+ */
+inline double qvalue(mllexi::LexiProblem* problem, mllexi::LexiState* s, mlcore::Action* a, int i)
+{
+    double qAction = 0.0;
+    for (mlcore::Successor su : problem->transition(s, a, 0)) {
+        qAction += su.su_prob * ((mllexi::LexiState *) su.su_state)->lexiCost()[i];
+    }
+    qAction = (qAction * problem->gamma()) + problem->cost(s, a, i);
+    return qAction;
+}
+
 /**
  * Computes the weighted-Q-value of a state-action pair.
  * This method assumes that the given action is applicable on the state.
@@ -101,7 +125,7 @@ weightedQvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
 
 
 /**
- * Performs a Bellman backup a state.
+ * Performs a Bellman backup of a state.
  *
  * This backup uses fSSPUDE - see http://arxiv.org/pdf/1210.4875.pdf
  *
@@ -113,7 +137,6 @@ weightedQvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
 inline
 std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem, mlcore::State* s)
 {
-    bbcount++;
     double bestQ = problem->goal(s) ? 0.0 : mdplib::dead_end_cost;
     bool hasAction = false;
     mlcore::Action* bestAction = nullptr;
@@ -133,6 +156,77 @@ std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem, mlcor
 
     return std::make_pair(bestQ, bestAction);
 }
+
+
+/**
+ * Performs a Lexicographic Bellman update of a state according to the level-th cost
+ * function. The operator assumes that all values from 1 to (level - 1) are correct.
+ *
+ * This backup uses fSSPUDE - see http://arxiv.org/pdf/1210.4875.pdf
+ *
+ * @param problem The problem that contains the given state.
+ * @param s The state on which the Bellman backup will be performed.
+ * @param level The level of the cost function to be miminized.
+ * @return The maximum residual among all value functions.
+ */
+inline double lexiBellmanUpdate(mllexi::LexiProblem* problem, mllexi::LexiState* s, int level)
+{
+    bool hasAction = true;
+    mlcore::Action* bestAction = nullptr;
+    double residual = 0.0;
+    if (problem->goal(s, 0)) {
+        s->setBestAction(nullptr);
+        for (int i = 0; i < problem->size(); i++)
+            s->setCost(0.0, i);
+        return 0.0;
+    }
+
+    std::list<mlcore::Action*> filteredActions = problem->actions();
+    for (int i = 0; i <= level; i++) {
+        std::vector<double> qActions(filteredActions.size());
+        double bestQ = mdplib::dead_end_cost + 1;
+        int actionIdx = 0;
+
+        /* Computing Q-values for all actions w.r.t. the i-th cost function */
+        for (mlcore::Action* a : filteredActions) {
+            if (!problem->applicable(s, a))
+                continue;
+            qActions[actionIdx] = std::min(mdplib::dead_end_cost, qvalue(problem, s, a, i));
+            if (qActions[actionIdx] < bestQ) {
+                bestQ = qActions[actionIdx];
+                bestAction = a;
+            }
+            actionIdx++;
+        }
+
+        /* Updating cost, best action and residual */
+        double currentResidual = fabs(bestQ - s->lexiCost()[i]);
+        if (currentResidual > residual)
+            residual = currentResidual;
+        s->setCost(bestQ, i);
+        s->setBestAction(bestAction);
+        if (bestQ > mdplib::dead_end_cost) {
+            s->markDeadEnd();
+            break;
+        }
+
+        /* Getting actions for the next lexicographic level */;
+        if (i < level) {
+            std::list<mlcore::Action*> prevActions = filteredActions;
+            filteredActions.clear();
+            actionIdx = 0;
+            for (mlcore::Action* a : prevActions) {
+                if (!problem->applicable(s, a))
+                    continue;
+                if (qActions[actionIdx] <= (bestQ + problem->slack() + 1.0e-8))
+                    filteredActions.push_back(a);
+                actionIdx++;
+            }
+        }
+    }
+    return residual;
+}
+
 
 /**
  * Performs a Bellman backup of a state, and then updates the state with

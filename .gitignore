@@ -34,8 +34,10 @@ testconc
 testsail
 testrace
 testlexi*
+testairplane
 *.txt
 data/*
 experiments/*
+scripts/*.track
 mdp-lib.layout
 *683*

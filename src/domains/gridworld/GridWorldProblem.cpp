@@ -19,7 +19,6 @@ GridWorldProblem::GridWorldProblem() :
                     width_(0), height_(0), x0_(0), y0_(0), goals_(0), actionCost_(0.03)
 {
     absorbing = new GridWorldState(this, -1, -1);
-    gamma_ = 1.0;
     addAllActions();
 }
 
@@ -31,7 +30,6 @@ GridWorldProblem::GridWorldProblem(int width, int height, int x0, int y0,
     mlcore::State* init = new GridWorldState(this, x0_, y0_);
     absorbing = new GridWorldState(this, -1, -1);
     s0 = this->addState(init);
-    gamma_ = 1.0;
     addAllActions();
 }
 
