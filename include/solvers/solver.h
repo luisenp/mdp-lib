@@ -99,6 +99,41 @@ inline double qvalue(mllexi::LexiProblem* problem, mllexi::LexiState* s, mlcore:
     return qAction;
 }
 
+
+/**
+ * Computes the Q-value of a state-action pair for the given MOMDP using a linear
+ * combination of the cost functions.
+ * The method receives a vector of weights for combining the cost functions.
+ *
+ * This method assumes that the given action is applicable on the state.
+ *
+ * @param problem The problem that contains the given state.
+ * @param s The state for which the Q-value will be computed.
+ * @param a The action for which the Q-value will be computed.
+ * @param weights The weights to use for the linear combination.
+ * @return The Q-value of the state-action pair.
+ */
+inline double
+qvalue(mllexi::LexiProblem* problem, mllexi::LexiState* s,
+       mlcore::Action* a, std::vector<double>& weights)
+{
+    double qAction = 0.0;
+    for (mlcore::Successor su : problem->transition(s, a, 0))
+        qAction += su.su_prob * ((mllexi::LexiState *) su.su_state)->lexiCost()[0];
+
+    double actionCost = 0;
+    for (int i = 0; i < problem->size(); i++)
+        actionCost += weights[i] * problem->cost(s, a, i);
+    qAction = (qAction * problem->gamma()) + actionCost;
+
+//    dprint3(problem->cost(s, a, 0), " ", problem->cost(s, a, 1));
+//    dprint1(actionCost);
+//    dsleep(500);
+
+    return qAction;
+}
+
+
 /**
  * Computes the weighted-Q-value of a state-action pair.
  * This method assumes that the given action is applicable on the state.
@@ -224,6 +259,51 @@ inline double lexiBellmanUpdate(mllexi::LexiProblem* problem, mllexi::LexiState*
             }
         }
     }
+    return residual;
+}
+
+
+/**
+ * Performs a Bellman update for a state on a MOMPD, using a cost function that is a
+ * linear combination of the cost functions in the problem.
+ *
+ * This backup uses fSSPUDE - see http://arxiv.org/pdf/1210.4875.pdf
+ *
+ * @param problem The problem that contains the given state.
+ * @param s The state on which the Bellman backup will be performed.
+ * @param weights The weights for the linear combination.
+ * @return The maximum residual among all value functions.
+ */
+inline double
+bellmanUpdate(mllexi::LexiProblem* problem, mllexi::LexiState* s, std::vector<double>& weights)
+{
+    if (problem->goal(s, 0)) {
+        s->setBestAction(nullptr);
+        s->setCost(0.0, 0);
+        return 0.0;
+    }
+
+    /* Computing Q-values for all actions w.r.t. the i-th cost function */
+    mlcore::Action* bestAction = nullptr;
+    double bestQ = mdplib::dead_end_cost + 1;
+    for (mlcore::Action* a : problem->actions()) {
+        if (!problem->applicable(s, a))
+            continue;
+        double qAction = std::min(mdplib::dead_end_cost, qvalue(problem, s, a, weights));
+        if (qAction < bestQ) {
+            bestQ = qAction;
+            bestAction = a;
+        }
+    }
+
+    /* Updating cost, best action and residual */
+    double residual = fabs(bestQ - s->lexiCost()[0]);
+    s->setCost(bestQ, 0);
+    s->setBestAction(bestAction);
+
+    if (bestQ > mdplib::dead_end_cost)
+        s->markDeadEnd();
+
     return residual;
 }
 

@@ -16,7 +16,7 @@ void LexiLAOStarSolver::solveLevel(mlcore::State* s, int level, mllexi::LexiStat
     double error = mdplib::dead_end_cost;
     while (true) {
         do {
-            visited.clear();
+            visited_.clear();
             unsolved = nullptr;
             countExpanded = expand(s0, level, unsolved);
             if (level > 0 && unsolved != nullptr) {
@@ -27,7 +27,7 @@ void LexiLAOStarSolver::solveLevel(mlcore::State* s, int level, mllexi::LexiStat
         } while (countExpanded != 0);
 
         while (true) {
-            visited.clear();
+            visited_.clear();
             error = testConvergence(s0, level);
             if (error < epsilon_) {
                 addSolved(s0);
@@ -44,18 +44,19 @@ void LexiLAOStarSolver::solveLevel(mlcore::State* s, int level, mllexi::LexiStat
 mlcore::Action* LexiLAOStarSolver::solve(mlcore::State* s)
 {
     mllexi::LexiState* unsolved = nullptr;
-    solveLevel(s, problem_->size() - 1, unsolved);
+//    solveLevel(s, problem_->size() - 1, unsolved);
+    solveLevel(s, 0, unsolved);
     return s->bestAction();
 }
 
 int LexiLAOStarSolver::expand(mllexi::LexiState* s, int level, mllexi::LexiState*& unsolved)
 {
-    if (level > 0 && solved.find(s) == solved.end()) {
+    if (level > 0 && solved_.find(s) == solved_.end()) {
         mllexi::LexiState* aux = nullptr;
         solveLevel(s, 0, aux);
     }
 
-    if (!visited.insert(s).second)  // state was already visited
+    if (!visited_.insert(s).second)  // state was already visited_
         return 0;
 
     if (s->deadEnd() || problem_->goal(s, 0))
@@ -63,7 +64,8 @@ int LexiLAOStarSolver::expand(mllexi::LexiState* s, int level, mllexi::LexiState
 
     int cnt = 0;
     if (s->bestAction() == nullptr) {   // this means state has not been expanded
-        lexiBellmanUpdate(problem_, s, level);
+//        lexiBellmanUpdate(problem_, s, level);
+        bellmanUpdate(problem_, s, weights_);
         return 1;
     } else {
         mlcore::Action* a = s->bestAction();
@@ -75,7 +77,8 @@ int LexiLAOStarSolver::expand(mllexi::LexiState* s, int level, mllexi::LexiState
         }
     }
 
-    lexiBellmanUpdate(problem_, s, level);
+//    lexiBellmanUpdate(problem_, s, level);
+    bellmanUpdate(problem_, s, weights_);
     return cnt;
 }
 
@@ -86,7 +89,7 @@ double LexiLAOStarSolver::testConvergence(mllexi::LexiState* s, int level)
     if (s->deadEnd() || problem_->goal(s, 0))
         return 0.0;
 
-    if (!visited.insert(s).second)
+    if (!visited_.insert(s).second)
         return 0.0;
 
     mlcore::Action* prevAction = s->bestAction();
@@ -98,7 +101,8 @@ double LexiLAOStarSolver::testConvergence(mllexi::LexiState* s, int level)
             error =  std::max(error, testConvergence((mllexi::LexiState *) sccr.su_state, level));
     }
 
-    error = std::max(error, lexiBellmanUpdate(problem_, s, level));
+//    error = std::max(error, lexiBellmanUpdate(problem_, s, level));
+    error = std::max(error, bellmanUpdate(problem_, s, weights_));
     if (prevAction == s->bestAction())
         return error;
     return mdplib::dead_end_cost + 2; // hasn't converged because the best action changed
@@ -108,11 +112,11 @@ void LexiLAOStarSolver::addSolved(mlcore::State* s)
 {
     std::list<mlcore::State *> queue;
     queue.push_front(s);
-    visited.clear();
+    visited_.clear();
     while (!queue.empty()) {
         mlcore::State* cur = queue.front(); queue.pop_front();
-        solved.insert(cur);
-        if (!visited.insert(cur).second || problem_->goal(cur, 0))
+        solved_.insert(cur);
+        if (!visited_.insert(cur).second || problem_->goal(cur, 0))
             continue;
         mlcore::Action* a = cur->bestAction();
         mlcore::SuccessorsList sccrs = problem_->transition(cur, a, 0);

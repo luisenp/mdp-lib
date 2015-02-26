@@ -24,11 +24,12 @@ using namespace std;
 int main(int argc, char* args[])
 {
     if (argc < 5) {
-        cerr << "Usage ./textlexirace TRACK ALGORITHM SLACK SAFETY --optional [NSIMS VERBOSITY]" << endl;
+        cerr << "Usage ./textlexirace TRACK ALGORITHM SLACK SAFETY";
+        cerr << " --optional [NSIMS VERBOSITY WEIGHT]" << endl;
         exit(0);
     }
 
-    mdplib_debug = false;
+    mdplib_debug = true;
 
     double slack = atof(args[3]);
     int verbosity = argc > 6 ? atoi(args[6]) : 1;
@@ -55,19 +56,22 @@ int main(int argc, char* args[])
     double tol = 1.0e-6;
     if (strcmp(args[2], "lao") == 0) {
         LexiLAOStarSolver lao(problem, tol, 1000000);
+        double w = argc > 7 ? atof(args[7]) : 1.0;
+        vector<double> weights(2, w); weights[1] = 1.0 - weights[0];
+        lao.weights(weights);
         lao.solve(problem->initialState());
     } else if (strcmp(args[2], "vi") == 0) {
         LexiVISolver vi(problem, 1000000000, tol);
         vi.solve();
     }
     clock_t endTime = clock();
-    if (verbosity > 0) {
+    if (verbosity > 10) {
         cerr << "Estimated cost "
              << ((LexiState *) problem->initialState())->lexiCost()[0] << " "
              << ((LexiState *) problem->initialState())->lexiCost()[1] << endl;
         cerr << startTime << " " << endTime << endl;
         cerr << "Time " << ((endTime - startTime + 0.0) / CLOCKS_PER_SEC) << endl;
-    } else {
+    } else if (verbosity > 1) {
         cerr << ((LexiState *) problem->initialState())->lexiCost()[0] << " "
              << ((LexiState *) problem->initialState())->lexiCost()[1] << endl;
     }
@@ -87,9 +91,6 @@ int main(int argc, char* args[])
             if (verbosity > 100) {
                 LexiState* lex = (LexiState *) tmp;
                 cerr << endl << "STATE-ACTION *** " << tmp << " " << a << " " << endl;
-                mdplib_debug = true;
-                lexiBellmanUpdate(problem, lex);
-                mdplib_debug = false;
                 double c0 = problem->cost(lex,a,0), c1 = problem->cost(lex,a,1);
                 cerr << lex->lexiCost()[0] << " " <<  lex->lexiCost()[1];
                 cerr << " - costs " << c0 << " " << c1 << endl;

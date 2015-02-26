@@ -10,8 +10,9 @@ class LexiLAOStarSolver : public Solver
 {
 private:
     mllexi::LexiProblem* problem_;
-    mlcore::StateSet visited;
-    mlcore::StateSet solved;
+    mlcore::StateSet visited_;
+    mlcore::StateSet solved_;
+    mlcore::StateSet initialized_;
 
     /* Error tolerance */
     double epsilon_;
@@ -29,6 +30,9 @@ private:
 
     /* Time limit for LAO* in milliseconds */
     int timeLimit_;
+
+    /* Weights for combining the cost functions */
+    std::vector<double> weights_;
 
     /* Solves the specified lexicographic level. The stores a pointer to a state
     /* only if this state was unsolved at the previous level. */
@@ -48,7 +52,11 @@ public:
      * @param timeLimit The maximum time allowed for running the algorithm.
      */
     LexiLAOStarSolver(mllexi::LexiProblem* problem, double epsilon, int timeLimit)
-        : problem_(problem), epsilon_(epsilon), timeLimit_(timeLimit) { }
+        : problem_(problem), epsilon_(epsilon), timeLimit_(timeLimit)
+    {
+        weights_ = std::vector<double> (problem->size(), 0.0);
+        weights_[0] = 1.0;
+    }
 
     /**
      * Solves the associated problem using the Lexicographic LAO* algorithm.
@@ -56,6 +64,8 @@ public:
      * @param s0 The state to start the search at.
      */
     virtual mlcore::Action* solve(mlcore::State* s0);
+
+    void weights(std::vector<double> weights)  { weights_ = weights; }
 };
 
 

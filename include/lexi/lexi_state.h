@@ -42,6 +42,29 @@ public:
     std::vector<double> & lexiCost() { return lexiCost_; }
 
     /**
+     * Resets the costs of the state to use the heuristics.
+     * Each value in lexiCost_ is update according to the corresponding heuristic,
+     * while cost_ is updated to be a linear combination of the heuristics
+     * functions, using the weights passed as parameters.
+     */
+    void resetCost(std::vector<double> weights)
+    {
+        cost_ = 0;
+        LexiProblem* lp_ = (LexiProblem*) problem_;
+        lexiCost_ = std::vector<double> (lp_->size());
+        for (int i = 0; i < lp_->size(); i++) {
+            if (lp_->heuristics().size() > i && lp_->heuristics()[i] != nullptr) {
+                lexiCost_[i] = lp_->heuristics()[i]->cost(this);
+                cost_ += lp_->heuristics()[i]->cost(this) * weights[i];
+            }
+            else {
+                cost_ += 0.0;
+                lexiCost_[i] = 0.0;
+            }
+        }
+    }
+
+    /**
      * Overrides method from State.
      */
     virtual mlcore::State& operator=(const mlcore::State& rhs) =0;

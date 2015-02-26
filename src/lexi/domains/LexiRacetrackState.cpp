@@ -25,14 +25,17 @@ LexiRacetrackState::LexiRacetrackState(int x, int y,
         allSuccessors_.push_back(std::list<mlcore::Successor> ());
     }
 
-    lexiCost_ = std::vector<double> (problem->size());
-    for (int i = 0; i < problem->size(); i++) {
-        if (problem->heuristics().size() > i && problem->heuristics()[i] != nullptr)
-            lexiCost_[i] = problem->heuristics()[i]->cost(this);
-        else
-            lexiCost_[i] = 0.0;
-    }
+    std::vector<double> weights(problem->size(), 0.0);
+    resetCost(weights);
+//    lexiCost_ = std::vector<double> (problem->size());
+//    for (int i = 0; i < problem->size(); i++) {
+//        if (problem->heuristics().size() > i && problem->heuristics()[i] != nullptr)
+//            lexiCost_[i] = problem->heuristics()[i]->cost(this);
+//        else
+//            lexiCost_[i] = 0.0;
+//    }
 }
+
 
 std::ostream& LexiRacetrackState::print(std::ostream& os) const
 {
@@ -47,6 +50,7 @@ std::ostream& LexiRacetrackState::print(std::ostream& os) const
     os << ", s" << safe_ << ")";
     return os;
 }
+
 
 mlcore::State& LexiRacetrackState::operator=(const mlcore::State& rhs)
 {
@@ -63,6 +67,7 @@ mlcore::State& LexiRacetrackState::operator=(const mlcore::State& rhs)
     return *this;
 }
 
+
 bool LexiRacetrackState::operator==(const mlcore::State& rhs) const
 {
     LexiRacetrackState* state = (LexiRacetrackState*)  & rhs;
@@ -72,11 +77,14 @@ bool LexiRacetrackState::operator==(const mlcore::State& rhs) const
             && vy_ == state->vy_
             && safe_ == state->safe_;
 }
+
+
 bool LexiRacetrackState::equals(mlcore::State* other) const
 {
     LexiRacetrackState* state = (LexiRacetrackState*) other;
     return *this ==  *state;
 }
+
 
 int LexiRacetrackState::hashValue() const
 {

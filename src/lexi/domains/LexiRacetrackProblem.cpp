@@ -23,18 +23,16 @@ LexiRacetrackProblem::LexiRacetrackProblem(char* filename, int size)
     int width, height;
     if (myfile.is_open()) {
         std::string line;
-        int x = 0, y;
-
+        int x = -1, y = -1;
 
         std::getline(myfile, line);
         std::istringstream iss(line);
         iss >> x;
         std::getline(myfile, line);
-        iss.str(line); iss.clear();
+        iss.clear(); iss.str(line);
         iss >> y;
 
         track_ = std::vector <std::vector<char> > (x, std::vector<char> (y));
-
         while ( std::getline (myfile, line) ) {
             y--;
             for (int i = 0; i < line.size(); i++) {

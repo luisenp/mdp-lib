@@ -115,7 +115,7 @@ int main(int argc, char* args[])
                 LexiState* lex = (LexiState *) tmp;
                 cerr << endl << "STATE-ACTION *** " << tmp << " " << a << " " << endl;
                 mdplib_debug = true;
-                lexiBellmanUpdate(problem, lex);
+                lexiBellmanUpdate(problem, lex, 0);
                 mdplib_debug = false;
                 double c0 = problem->cost(lex,a,0), c1 = problem->cost(lex,a,1);
                 cerr << lex->lexiCost()[0] << " " <<  lex->lexiCost()[1];

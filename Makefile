@@ -79,7 +79,7 @@ lexi: $(ALL_CPP) $(ALL_H)
 	-Iinclude/lexi/domains/airplane/*.h -c src/lexi/domains/*.cpp $(GW_CPP) \
 	src/lexi/domains/airplane/*.cpp
 	mv *.o test/
-	#$(CC) $(CFLAGS) $(INCLUDE) -o testlexirace $(TD)/testLexiRace.cpp $(TD)/*.o $(LIBS)
+	$(CC) $(CFLAGS) $(INCLUDE) -o testlexirace $(TD)/testLexiRace.cpp $(TD)/*.o $(LIBS)
 	#$(CC) $(CFLAGS) $(INCLUDE) -o testlexigw $(TD)/testLexiGW.cpp $(TD)/*.o $(LIBS)
 	#$(CC) $(CFLAGS) $(INCLUDE) -o testlexiraw $(TD)/testLexiRaw.cpp $(TD)/*.o $(LIBS)
 	$(CC) $(CFLAGS) $(INCLUDE) -o testairplane $(TD)/testAirplane.cpp $(TD)/*.o $(LIBS)
