@@ -26,14 +26,7 @@ LexiRacetrackState::LexiRacetrackState(int x, int y,
     }
 
     std::vector<double> weights(problem->size(), 0.0);
-    resetCost(weights);
-//    lexiCost_ = std::vector<double> (problem->size());
-//    for (int i = 0; i < problem->size(); i++) {
-//        if (problem->heuristics().size() > i && problem->heuristics()[i] != nullptr)
-//            lexiCost_[i] = problem->heuristics()[i]->cost(this);
-//        else
-//            lexiCost_[i] = 0.0;
-//    }
+    resetCost(weights, -1);
 }
 
 

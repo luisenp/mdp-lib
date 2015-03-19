@@ -10,6 +10,7 @@ namespace mllexi {
 
 class LexiState : public mlcore::State
 {
+
 private:
 
     virtual std::ostream& print(std::ostream& os) const =0;
@@ -19,6 +20,10 @@ protected:
     std::vector<double> lexiCost_;
 
 public:
+
+    using mlcore::State::cost;
+
+    using mlcore::State::setCost;
 
     LexiState() { }
 
@@ -47,12 +52,17 @@ public:
      * while cost_ is updated to be a linear combination of the heuristics
      * functions, using the weights passed as parameters.
      */
-    void resetCost(std::vector<double> weights)
+    void resetCost(std::vector<double>& weights, int keepIdx)
     {
         cost_ = 0;
         LexiProblem* lp_ = (LexiProblem*) problem_;
         lexiCost_ = std::vector<double> (lp_->size());
         for (int i = 0; i < lp_->size(); i++) {
+            if (i == keepIdx) {
+                cost_ += lexiCost_[i] * weights[i];
+                continue;
+            }
+
             if (lp_->heuristics().size() > i && lp_->heuristics()[i] != nullptr) {
                 lexiCost_[i] = lp_->heuristics()[i]->cost(this);
                 cost_ += lp_->heuristics()[i]->cost(this) * weights[i];

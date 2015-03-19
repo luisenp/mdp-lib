@@ -25,13 +25,14 @@ int main(int argc, char* args[])
 {
     if (argc < 5) {
         cerr << "Usage ./textlexirace TRACK ALGORITHM SLACK SAFETY";
-        cerr << " --optional [NSIMS VERBOSITY WEIGHT]" << endl;
+        cerr << " --optional [NSIMS VERBOSITY GAMMA]" << endl;
         exit(0);
     }
 
     mdplib_debug = true;
 
     double slack = atof(args[3]);
+    double gamma = argc > 7? atof(args[7]) : 0.95;
     int verbosity = argc > 6 ? atoi(args[6]) : 1;
 
     LexiProblem* problem = new LexiRacetrackProblem(args[1], 2);
@@ -56,11 +57,10 @@ int main(int argc, char* args[])
     double tol = 1.0e-6;
     if (strcmp(args[2], "lao") == 0) {
         LexiLAOStarSolver lao(problem, tol, 1000000);
-        double w = argc > 7 ? atof(args[7]) : 1.0;
-        vector<double> weights(2, w); weights[1] = 1.0 - weights[0];
-        lao.weights(weights);
         lao.solve(problem->initialState());
     } else if (strcmp(args[2], "vi") == 0) {
+        problem->gamma(gamma);
+        problem->slack(slack * (1 - gamma));
         LexiVISolver vi(problem, 1000000000, tol);
         vi.solve();
     }

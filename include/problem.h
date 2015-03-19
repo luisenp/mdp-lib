@@ -197,6 +197,11 @@ public:
     }
 
     /**
+     * Sets the discount factor.
+     */
+    void gamma(double g) { gamma_ = g; }
+
+    /**
      * Returns the heuristic used for this problem.
      */
     Heuristic* heuristic()

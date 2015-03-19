@@ -119,16 +119,12 @@ qvalue(mllexi::LexiProblem* problem, mllexi::LexiState* s,
 {
     double qAction = 0.0;
     for (mlcore::Successor su : problem->transition(s, a, 0))
-        qAction += su.su_prob * ((mllexi::LexiState *) su.su_state)->lexiCost()[0];
+        qAction += su.su_prob * su.su_state->cost();
 
     double actionCost = 0;
     for (int i = 0; i < problem->size(); i++)
         actionCost += weights[i] * problem->cost(s, a, i);
     qAction = (qAction * problem->gamma()) + actionCost;
-
-//    dprint3(problem->cost(s, a, 0), " ", problem->cost(s, a, 1));
-//    dprint1(actionCost);
-//    dsleep(500);
 
     return qAction;
 }
@@ -279,7 +275,7 @@ bellmanUpdate(mllexi::LexiProblem* problem, mllexi::LexiState* s, std::vector<do
 {
     if (problem->goal(s, 0)) {
         s->setBestAction(nullptr);
-        s->setCost(0.0, 0);
+        s->setCost(0.0);
         return 0.0;
     }
 
@@ -297,10 +293,11 @@ bellmanUpdate(mllexi::LexiProblem* problem, mllexi::LexiState* s, std::vector<do
     }
 
     /* Updating cost, best action and residual */
-    double residual = fabs(bestQ - s->lexiCost()[0]);
-    s->setCost(bestQ, 0);
+    double residual = fabs(bestQ - s->cost());
+    s->setCost(bestQ);
     s->setBestAction(bestAction);
-
+    for (int i = 0; i < problem->size(); i++)
+        s->setCost(qvalue(problem, s, bestAction, i), i);
     if (bestQ > mdplib::dead_end_cost)
         s->markDeadEnd();
 
