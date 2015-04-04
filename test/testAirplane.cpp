@@ -110,18 +110,6 @@ int main(int argc, char* args[])
         while (!problem->goal(tmp)) {
             Action* a;
             a = tmp->bestAction();
-
-            if (verbosity > 100) {
-                LexiState* lex = (LexiState *) tmp;
-                cerr << endl << "STATE-ACTION *** " << tmp << " " << a << " " << endl;
-                mdplib_debug = true;
-                lexiBellmanUpdate(problem, lex);
-                mdplib_debug = false;
-                double c0 = problem->cost(lex,a,0), c1 = problem->cost(lex,a,1);
-                cerr << lex->lexiCost()[0] << " " <<  lex->lexiCost()[1];
-                cerr << " - costs " << c0 << " " << c1 << endl;
-            }
-
             expectedCost[0] += problem->cost(tmp, a, 0);
             expectedCost[1] += problem->cost(tmp, a, 1);
             tmp = randomSuccessor(problem, tmp, a);

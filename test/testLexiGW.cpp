@@ -69,15 +69,6 @@ int main(int argc, char* args[])
         while (!problem->goal(tmp)) {
             Action* a;
             a = tmp->bestAction();
-
-            if (verbosity > 100) {
-                cerr << endl << "STATE-ACTION *** " << tmp << " " << a << " " << endl;
-                lexiBellmanUpdate(problem, (LexiState *) tmp);
-                double copt = ((LexiState *) tmp)->lexiCost()[0];
-                double qval = qvalue(problem, (LexiState*) tmp, a, 0);
-                cerr << copt << " " << qval << " " << (qval / copt - 1.0) << endl;
-            }
-
             expectedCost[0] += problem->cost(tmp, a, 0);
             expectedCost[1] += problem->cost(tmp, a, 1);
             tmp = randomSuccessor(problem, tmp, a);
