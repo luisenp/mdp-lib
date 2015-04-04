@@ -34,9 +34,6 @@ private:
     /* Weights for combining the cost functions */
     std::vector<double> weights_;
 
-    /* A threshold on the cost for the first lexicographic value function */
-    double thresholdCost0_ = mdplib::dead_end_cost + 1;
-
     /* Solves the specified lexicographic level. The stores a pointer to a state
     /* only if this state was unsolved at the previous level. */
     virtual void solveLevel(mlcore::State* s0, int level, mllexi::LexiState*& unsolved);
