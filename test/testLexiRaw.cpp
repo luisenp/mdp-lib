@@ -5,15 +5,15 @@
 #include <unistd.h>
 
 #include "../include/solvers/solver.h"
-#include "../include/solvers/LexiVISolver.h"
-#include "../include/solvers/LexiLAOStarSolver.h"
+#include "../include/solvers/MOVISolver.h"
+#include "../include/solvers/MOLAOStarSolver.h"
 
 #include "../include/util/general.h"
 #include "../include/util/graph.h"
 
-#include "../include/lexi/domains/RawFileLexiProblem.h"
-#include "../include/lexi/domains/RawFileLexiState.h"
-#include "../include/lexi/domains/RawFileLexiAction.h"
+#include "../include/lexi/domains/RawFileMOProblem.h"
+#include "../include/lexi/domains/RawFileMOState.h"
+#include "../include/lexi/domains/RawFileMOAction.h"
 
 using namespace mlcore;
 using namespace mlsolvers;
@@ -32,7 +32,7 @@ int main(int argc, char* args[])
     double slack = atof(args[3]);
     int verbosity = argc > 5 ? atoi(args[5]) : 1;
 
-    RawFileLexiProblem* problem = new RawFileLexiProblem(args[1]);
+    RawFileMOProblem* problem = new RawFileMOProblem(args[1]);
     problem->slack(slack);
     problem->generateAll();
 
@@ -55,12 +55,12 @@ int main(int argc, char* args[])
     clock_t endTime = clock();
     if (verbosity > 0) {
         cerr << "Estimated cost "
-             << ((LexiState *) problem->initialState())->lexiCost()[0] << " "
-             << ((LexiState *) problem->initialState())->lexiCost()[1] << endl;
+             << ((MOState *) problem->initialState())->lexiCost()[0] << " "
+             << ((MOState *) problem->initialState())->lexiCost()[1] << endl;
         cerr << "Time " << ((endTime - startTime + 0.0) / CLOCKS_PER_SEC) << endl;
     } else {
-        cerr << ((LexiState *) problem->initialState())->lexiCost()[0] << " "
-             << ((LexiState *) problem->initialState())->lexiCost()[1] << endl;
+        cerr << ((MOState *) problem->initialState())->lexiCost()[0] << " "
+             << ((MOState *) problem->initialState())->lexiCost()[1] << endl;
     }
 
     int nsims = argc > 4 ? atoi(args[4]) : 1;

@@ -12,7 +12,7 @@ AirplaneState::AirplaneState(AirplaneState* state)
     problem_ = state->problem_;
 
     lexiCost_ = std::vector<double> (2);
-    LexiProblem* aux = (LexiProblem*) problem_;
+    MOProblem* aux = (MOProblem*) problem_;
     for (int i = 0; i < 2; i++) {
         if (aux->heuristics().size() > i && aux->heuristics()[i] != nullptr)
             lexiCost_[i] = aux->heuristics()[i]->cost(this);
@@ -31,7 +31,7 @@ AirplaneState::AirplaneState(AirplaneState* state)
 AirplaneState::AirplaneState(int airplaneLocation,
                              std::vector<int> personLocations,
                              std::vector<int> windConditions,
-                             LexiProblem* problem)
+                             MOProblem* problem)
 {
     airplaneLocation_ = airplaneLocation;
     personLocations_ = personLocations;

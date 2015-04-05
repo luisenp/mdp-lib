@@ -4,12 +4,12 @@
 #include <vector>
 
 #include "../state.h"
-#include "../../lexi_state.h"
+#include "../../mobj_state.h"
 
 namespace mllexi
 {
 
-class AirplaneState : public LexiState
+class AirplaneState : public MOState
 {
 
 friend class AirplaneProblem;
@@ -31,7 +31,7 @@ public:
     AirplaneState(int airplaneLocation,
                   std::vector<int> personLocations_,
                   std::vector<int> windConditions_,
-                  LexiProblem* problem_);
+                  MOProblem* problem_);
 
     virtual ~AirplaneState() {}
 

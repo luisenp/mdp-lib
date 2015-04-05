@@ -7,8 +7,8 @@
 #include <mutex>
 
 #include "../../include/problem.h"
-#include "../../include/lexi/lexi_problem.h"
-#include "../../include/lexi/lexi_state.h"
+#include "../../include/lexi/mobj_problem.h"
+#include "../../include/lexi/mobj_state.h"
 #include "../../include/heuristic.h"
 #include "../../include/state.h"
 #include "../../include/util/general.h"
@@ -65,15 +65,7 @@ public:
  * @param a The action for which the Q-value will be computed.
  * @return The Q-value of the state-action pair.
  */
-inline double qvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
-{
-    double qAction = 0.0;
-    for (mlcore::Successor su : problem->transition(s, a)) {
-        qAction += su.su_prob * su.su_state->cost();
-    }
-    qAction = (qAction * problem->gamma()) + problem->cost(s, a);
-    return qAction;
-}
+double qvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a);
 
 
 /**
@@ -89,45 +81,7 @@ inline double qvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action*
  * @param i The index of the value function to use.
  * @return The Q-value of the state-action pair.
  */
-inline double qvalue(mllexi::LexiProblem* problem, mllexi::LexiState* s, mlcore::Action* a, int i)
-{
-    double qAction = 0.0;
-    for (mlcore::Successor su : problem->transition(s, a, 0)) {
-        qAction += su.su_prob * ((mllexi::LexiState *) su.su_state)->lexiCost()[i];
-    }
-    qAction = (qAction * problem->gamma()) + problem->cost(s, a, i);
-    return qAction;
-}
-
-
-/**
- * Computes the Q-value of a state-action pair for the given MOMDP using a linear
- * combination of the cost functions.
- * The method receives a vector of weights for combining the cost functions.
- *
- * This method assumes that the given action is applicable on the state.
- *
- * @param problem The problem that contains the given state.
- * @param s The state for which the Q-value will be computed.
- * @param a The action for which the Q-value will be computed.
- * @param weights The weights to use for the linear combination.
- * @return The Q-value of the state-action pair.
- */
-inline double
-qvalue(mllexi::LexiProblem* problem, mllexi::LexiState* s,
-       mlcore::Action* a, std::vector<double>& weights)
-{
-    double qAction = 0.0;
-    for (mlcore::Successor su : problem->transition(s, a, 0))
-        qAction += su.su_prob * su.su_state->cost();
-
-    double actionCost = 0;
-    for (int i = 0; i < problem->size(); i++)
-        actionCost += weights[i] * problem->cost(s, a, i);
-    qAction = (qAction * problem->gamma()) + actionCost;
-
-    return qAction;
-}
+double qvalue(mllexi::MOProblem* problem, mllexi::MOState* s, mlcore::Action* a, int i);
 
 
 /**
@@ -141,18 +95,8 @@ qvalue(mllexi::LexiProblem* problem, mllexi::LexiState* s,
  * @return A pair of doubles representing the g-value and h-value of the state-action
  *        pair. The weighted-Q-value can be recovered as g + weight * h.
  */
-inline std::pair<double, double>
-weightedQvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
-{
-    double g = 0.0, h = 0.0;
-    for (mlcore::Successor su : problem->transition(s, a)) {
-        g += su.su_prob * su.su_state->gValue();
-        h += su.su_prob * su.su_state->hValue();
-    }
-    g = (g * problem->gamma()) + problem->cost(s, a);
-    h *= problem->gamma();
-    return std::make_pair(g, h);
-}
+std::pair<double, double>
+weightedQvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a);
 
 
 /**
@@ -165,28 +109,7 @@ weightedQvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
  * @return A pair containing the estimated cost and estimated best action according
  *        to this Bellman backup.
  */
-inline
-std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem, mlcore::State* s)
-{
-    double bestQ = problem->goal(s) ? 0.0 : mdplib::dead_end_cost;
-    bool hasAction = false;
-    mlcore::Action* bestAction = nullptr;
-    for (mlcore::Action* a : problem->actions()) {
-        if (!problem->applicable(s, a))
-            continue;
-        hasAction = true;
-        double qAction = std::min(mdplib::dead_end_cost, qvalue(problem, s, a));
-        if (qAction < bestQ) {
-            bestQ = qAction;
-            bestAction = a;
-        }
-    }
-
-    if (!hasAction && bestQ == mdplib::dead_end_cost)
-        s->markDeadEnd();
-
-    return std::make_pair(bestQ, bestAction);
-}
+std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem, mlcore::State* s);
 
 
 /**
@@ -200,109 +123,7 @@ std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem, mlcor
  * @param level The level of the cost function to be miminized.
  * @return The maximum residual among all value functions.
  */
-inline double lexiBellmanUpdate(mllexi::LexiProblem* problem, mllexi::LexiState* s, int level)
-{
-    bool hasAction = true;
-    mlcore::Action* bestAction = nullptr;
-    double residual = 0.0;
-    if (problem->goal(s, 0)) {
-        s->setBestAction(nullptr);
-        for (int i = 0; i < problem->size(); i++)
-            s->setCost(0.0, i);
-        return 0.0;
-    }
-
-    std::list<mlcore::Action*> filteredActions = problem->actions();
-    for (int i = 0; i <= level; i++) {
-        std::vector<double> qActions(filteredActions.size());
-        double bestQ = mdplib::dead_end_cost + 1;
-        int actionIdx = 0;
-
-        /* Computing Q-values for all actions w.r.t. the i-th cost function */
-        for (mlcore::Action* a : filteredActions) {
-            if (!problem->applicable(s, a))
-                continue;
-            qActions[actionIdx] = std::min(mdplib::dead_end_cost, qvalue(problem, s, a, i));
-            if (qActions[actionIdx] < bestQ) {
-                bestQ = qActions[actionIdx];
-                bestAction = a;
-            }
-            actionIdx++;
-        }
-
-        /* Updating cost, best action and residual */
-        double currentResidual = fabs(bestQ - s->lexiCost()[i]);
-        if (currentResidual > residual)
-            residual = currentResidual;
-        s->setCost(bestQ, i);
-        s->setBestAction(bestAction);
-        if (bestQ > mdplib::dead_end_cost) {
-            s->markDeadEnd();
-            break;
-        }
-
-        /* Getting actions for the next lexicographic level */;
-        if (i < level) {
-            std::list<mlcore::Action*> prevActions = filteredActions;
-            filteredActions.clear();
-            actionIdx = 0;
-            for (mlcore::Action* a : prevActions) {
-                if (!problem->applicable(s, a))
-                    continue;
-                if (qActions[actionIdx] <= (bestQ + problem->slack() + 1.0e-8))
-                    filteredActions.push_back(a);
-                actionIdx++;
-            }
-        }
-    }
-    return residual;
-}
-
-
-/**
- * Performs a Bellman update for a state on a MOMPD, using a cost function that is a
- * linear combination of the cost functions in the problem.
- *
- * This backup uses fSSPUDE - see http://arxiv.org/pdf/1210.4875.pdf
- *
- * @param problem The problem that contains the given state.
- * @param s The state on which the Bellman backup will be performed.
- * @param weights The weights for the linear combination.
- * @return The maximum residual among all value functions.
- */
-inline double
-bellmanUpdate(mllexi::LexiProblem* problem, mllexi::LexiState* s, std::vector<double>& weights)
-{
-    if (problem->goal(s, 0)) {
-        s->setBestAction(nullptr);
-        s->setCost(0.0);
-        return 0.0;
-    }
-
-    /* Computing Q-values for all actions w.r.t. the i-th cost function */
-    mlcore::Action* bestAction = nullptr;
-    double bestQ = mdplib::dead_end_cost + 1;
-    for (mlcore::Action* a : problem->actions()) {
-        if (!problem->applicable(s, a))
-            continue;
-        double qAction = std::min(mdplib::dead_end_cost, qvalue(problem, s, a, weights));
-        if (qAction < bestQ) {
-            bestQ = qAction;
-            bestAction = a;
-        }
-    }
-
-    /* Updating cost, best action and residual */
-    double residual = fabs(bestQ - s->cost());
-    s->setCost(bestQ);
-    s->setBestAction(bestAction);
-    for (int i = 0; i < problem->size(); i++)
-        s->setCost(qvalue(problem, s, bestAction, i), i);
-    if (bestQ > mdplib::dead_end_cost)
-        s->markDeadEnd();
-
-    return residual;
-}
+double lexiBellmanUpdate(mllexi::MOProblem* problem, mllexi::MOState* s, int level);
 
 
 /**
@@ -313,16 +134,8 @@ bellmanUpdate(mllexi::LexiProblem* problem, mllexi::LexiState* s, std::vector<do
  * @param s The state on which the Bellman backup will be performed.
  * @return The residual of the state.
  */
-inline double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s)
-{
-    std::pair<double, mlcore::Action*> best = bellmanBackup(problem, s);
-    double residual = s->cost() - best.bb_cost;
-    bellman_mutex.lock();
-    s->setCost(best.bb_cost);
-    s->setBestAction(best.bb_action);
-    bellman_mutex.unlock();
-    return fabs(residual);
-}
+double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s);
+
 
 /**
  * Performs a weighted-Bellman backup a state, and then updates the state with
@@ -335,39 +148,8 @@ inline double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s)
  * @param weight The weight to use.
  * @return The residual of the state.
  */
-inline double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s, double weight)
-{
-    double bestQ = problem->goal(s) ? 0.0 : mdplib::dead_end_cost;
-    double bestG = bestQ, bestH = bestQ;
-    bool hasAction = false;
-    mlcore::Action* bestAction = nullptr;
-    double prevCost = s->cost();
-    for (mlcore::Action* a : problem->actions()) {
-        if (!problem->applicable(s, a))
-            continue;
-        hasAction = true;
-        std::pair<double, double> gh = weightedQvalue(problem, s, a);
-        double qAction = std::min(mdplib::dead_end_cost, gh.first + weight * gh.second);
-        if (qAction < bestQ) {
-            bestQ = qAction;
-            bestG = gh.first;
-            bestH = gh.second;
-            bestAction = a;
-        }
-    }
+double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s, double weight);
 
-    if (!hasAction && bestQ == mdplib::dead_end_cost)
-        s->markDeadEnd();
-
-    bellman_mutex.lock();
-    s->setCost(bestQ);
-    s->gValue(bestG);
-    s->hValue(bestH);
-    s->setBestAction(bestAction);
-    bellman_mutex.unlock();
-
-    return fabs(bestQ - prevCost);
-}
 
 /**
  * Samples a successor state of a state and action using the probabilities
@@ -383,28 +165,13 @@ inline double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s, double w
  * @return A successor sampled from the transition function corresponding to the
  *        state and action pair.
  */
-inline mlcore::State*
-            randomSuccessor(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
-{
-    double pick = dis(gen);
+mlcore::State* randomSuccessor(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a);
 
-    if (a == nullptr)
-        return s;
-
-    double acc = 0.0;
-    for (mlcore::Successor sccr : problem->transition(s, a)) {
-        acc += sccr.su_prob;
-        if (acc >= pick)
-            return sccr.su_state;
-    }
-
-    return s;
-}
 
 /**
  * Returns the action with minimum Q-value for a state.
  *
- * This method assumes that any action stored state.bestAction() is consistent with
+ * This method assumes that any action stored in state.bestAction() is consistent with
  * the latest expected costs in the problem. This is guaranteed by any solver that
  * performs backup operations through calls to bellmanUpdate(problem, state).
 
@@ -415,28 +182,8 @@ inline mlcore::State*
  * @param s The state for which the action will be computed.
  * @return The action with minimum Q-value.
  */
-inline mlcore::Action* greedyAction(mlcore::Problem* problem, mlcore::State* s)
-{
-    if (s->bestAction() != nullptr)
-        return s->bestAction();
-    mlcore::Action* bestAction;
-    double bestQ = mdplib::dead_end_cost;
-    bool hasAction = false;
-    for (mlcore::Action* a : problem->actions()) {
-        if (!problem->applicable(s, a))
-            continue;
-        hasAction = true;
-        double qAction = std::min(mdplib::dead_end_cost, qvalue(problem, s, a));
-        if (qAction < bestQ) {
-            bestQ = qAction;
-            bestAction = a;
-        }
-    }
-    if (!hasAction)
-        s->markDeadEnd();
+mlcore::Action* greedyAction(mlcore::Problem* problem, mlcore::State* s);
 
-    return bestAction;
-}
 
 /**
  * Computes the residual of a state.
@@ -445,41 +192,19 @@ inline mlcore::Action* greedyAction(mlcore::Problem* problem, mlcore::State* s)
  * @param s The state for which the residual will be computed.
  * @return The residual of the given state.
  */
-inline double residual(mlcore::Problem* problem, mlcore::State* s)
-{
-    mlcore::Action* bestAction = greedyAction(problem, s);
-    if (bestAction == nullptr)
-        return 0.0; // state is a dead-end, nothing to do here
-    double res = qvalue(problem, s, bestAction) - s->cost();
-    return fabs(res);
-}
+double residual(mlcore::Problem* problem, mlcore::State* s);
+
 
 /**
  * Returns the most likely outcome after executing the given action on the given
- * state, according to the transition function of the given problem.
+ * state.
  *
  * @param problem The problem that defines the transition function.
  * @param s The state for which the most likely outcome will be obtained.
  * @param a The action executed in the given state.
  * @return The most likely outcome of the state and action pair.
  */
-inline mlcore::State* mostLikelyOutcome(mlcore::Problem* problem,
-                                         mlcore::State* s, mlcore::Action* a)
-{
-    double prob = -1.0;
-    double eps = 1.0e-6;
-    std::vector<mlcore::State*> outcomes;
-    for (mlcore::Successor sccr : problem->transition(s, a)) {
-        if (sccr.su_prob > prob + eps) {
-            prob = sccr.su_prob;
-            outcomes.clear();
-            outcomes.push_back(sccr.su_state);
-        } else if (sccr.su_prob > prob - eps) {
-            outcomes.push_back(sccr.su_state);
-        }
-    }
-    return outcomes[rand() % outcomes.size()];
-}
+mlcore::State* mostLikelyOutcome(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a);
 
 }
 

@@ -6,7 +6,7 @@
 #include "../state.h"
 #include "../action.h"
 
-#include "../../lexi_problem.h"
+#include "../../mobj_problem.h"
 
 namespace mllexi
 {
@@ -16,7 +16,7 @@ namespace mllexi
 
 #define INSIDE_AIRPLANE -1
 
-class AirplaneProblem : public LexiProblem
+class AirplaneProblem : public MOProblem
 {
 
 friend class AirplaneHeuristic;
@@ -37,7 +37,7 @@ private:
 
 public:
 
-    using LexiProblem::goal;
+    using MOProblem::goal;
 
     AirplaneProblem(int travelGoal,
                     std::vector< std::vector<double> > distances,
@@ -47,22 +47,22 @@ public:
     virtual ~AirplaneProblem() {}
 
     /**
-     * Overrides method from LexiProblem.
+     * Overrides method from MOProblem.
      */
     virtual bool applicable(mlcore::State* s, mlcore::Action* a) const;
 
     /**
-     * Overrides method from LexiProblem.
+     * Overrides method from MOProblem.
      */
     virtual double cost(mlcore::State* s, mlcore::Action* a, int i) const;
 
     /**
-     * Overrides method from LexiProblem.
+     * Overrides method from MOProblem.
      */
     virtual mlcore::SuccessorsList transition(mlcore::State* s, mlcore::Action* a, int index);
 
     /**
-     * Overrides method from LexiProblem.
+     * Overrides method from MOProblem.
      */
     virtual bool goal(mlcore::State* s, int index) const;
 };

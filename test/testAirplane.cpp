@@ -57,7 +57,7 @@ int main(int argc, char* args[])
     for (int i = 0; i < np; i++)
         initLoc[i] = i + 1;
 
-    LexiProblem* problem = new AirplaneProblem(1, distances, probs, initLoc);
+    MOProblem* problem = new AirplaneProblem(1, distances, probs, initLoc);
 
     vector<Heuristic*> heuristics;
     heuristics.push_back(new AirplaneHeuristic((AirplaneProblem *) problem, 0));
@@ -79,7 +79,7 @@ int main(int argc, char* args[])
 
         if (mdplib_debug) {
             for (State* s : problem->states()) {
-                LexiState* ls = (LexiState*) s;
+                MOState* ls = (MOState*) s;
                 if (ls->lexiCost()[0] < heuristics[0]->cost(s))
                     dprint4(ls, " ",heuristics[0]->cost(s), " AT LEVEL 0");
                 if (ls->lexiCost()[1] < heuristics[1]->cost(s))
@@ -90,13 +90,13 @@ int main(int argc, char* args[])
     clock_t endTime = clock();
     if (verbosity > 0) {
         cerr << "Estimated cost "
-             << ((LexiState *) problem->initialState())->lexiCost()[0] << " "
-             << ((LexiState *) problem->initialState())->lexiCost()[1] << endl;
+             << ((MOState *) problem->initialState())->lexiCost()[0] << " "
+             << ((MOState *) problem->initialState())->lexiCost()[1] << endl;
         cerr << startTime << " " << endTime << endl;
         cerr << "Time " << ((endTime - startTime + 0.0) / CLOCKS_PER_SEC) << endl;
     } else {
-        cerr << ((LexiState *) problem->initialState())->lexiCost()[0] << " "
-             << ((LexiState *) problem->initialState())->lexiCost()[1] << endl;
+        cerr << ((MOState *) problem->initialState())->lexiCost()[0] << " "
+             << ((MOState *) problem->initialState())->lexiCost()[1] << endl;
     }
 
     int nsims = argc > 5 ? atoi(args[3]) : 1;
@@ -112,7 +112,7 @@ int main(int argc, char* args[])
             a = tmp->bestAction();
 
             if (verbosity > 100) {
-                LexiState* lex = (LexiState *) tmp;
+                MOState* lex = (MOState *) tmp;
                 cerr << endl << "STATE-ACTION *** " << tmp << " " << a << " " << endl;
                 mdplib_debug = true;
                 lexiBellmanUpdate(problem, lex, 0);

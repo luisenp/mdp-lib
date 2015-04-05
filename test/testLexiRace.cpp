@@ -11,9 +11,9 @@
 #include "../include/util/general.h"
 #include "../include/util/graph.h"
 
-#include "../include/lexi/domains/LexiRacetrackProblem.h"
-#include "../include/lexi/domains/LexiRacetrackState.h"
-#include "../include/lexi/domains/LexiRTrackDetHeuristic.h"
+#include "../include/lexi/domains/MORacetrackProblem.h"
+#include "../include/lexi/domains/MORacetrackState.h"
+#include "../include/lexi/domains/MORTrackDetHeuristic.h"
 #include "../include/domains/racetrack/RacetrackAction.h"
 
 using namespace mlcore;
@@ -35,17 +35,17 @@ int main(int argc, char* args[])
     double gamma = argc > 7? atof(args[7]) : 0.95;
     int verbosity = argc > 6 ? atoi(args[6]) : 1;
 
-    LexiProblem* problem = new LexiRacetrackProblem(args[1], 2);
-    ((LexiRacetrackProblem*) problem)->setPError(0.00);
-    ((LexiRacetrackProblem*) problem)->setPSlip(0.20);
-    ((LexiRacetrackProblem*) problem)->setMDS(0);
-    ((LexiRacetrackProblem*) problem)->useSafety((bool) atoi(args[4]));
+    MOProblem* problem = new MORacetrackProblem(args[1], 2);
+    ((MORacetrackProblem*) problem)->setPError(0.00);
+    ((MORacetrackProblem*) problem)->setPSlip(0.20);
+    ((MORacetrackProblem*) problem)->setMDS(0);
+    ((MORacetrackProblem*) problem)->useSafety((bool) atoi(args[4]));
     problem->slack(slack);
     problem->generateAll();
 
     vector<Heuristic*> heuristics;
     Heuristic* heuristic =
-        (strcmp(args[2], "vi") == 0) ? nullptr : new LexiRTrackDetHeuristic(args[1]);
+        (strcmp(args[2], "vi") == 0) ? nullptr : new MORTrackDetHeuristic(args[1]);
     heuristics.push_back(heuristic);
     heuristics.push_back(heuristic);
     problem->heuristics(heuristics);
@@ -67,13 +67,13 @@ int main(int argc, char* args[])
     clock_t endTime = clock();
     if (verbosity > 10) {
         cerr << "Estimated cost "
-             << ((LexiState *) problem->initialState())->lexiCost()[0] << " "
-             << ((LexiState *) problem->initialState())->lexiCost()[1] << endl;
+             << ((MOState *) problem->initialState())->lexiCost()[0] << " "
+             << ((MOState *) problem->initialState())->lexiCost()[1] << endl;
         cerr << startTime << " " << endTime << endl;
         cerr << "Time " << ((endTime - startTime + 0.0) / CLOCKS_PER_SEC) << endl;
     } else if (verbosity > 1) {
-        cerr << ((LexiState *) problem->initialState())->lexiCost()[0] << " "
-             << ((LexiState *) problem->initialState())->lexiCost()[1] << endl;
+        cerr << ((MOState *) problem->initialState())->lexiCost()[0] << " "
+             << ((MOState *) problem->initialState())->lexiCost()[1] << endl;
     }
 
     int nsims = argc > 5 ? atoi(args[5]) : 1;
@@ -89,7 +89,7 @@ int main(int argc, char* args[])
             a = tmp->bestAction();
 
             if (verbosity > 100) {
-                LexiState* lex = (LexiState *) tmp;
+                MOState* lex = (MOState *) tmp;
                 cerr << endl << "STATE-ACTION *** " << tmp << " " << a << " " << endl;
                 double c0 = problem->cost(lex,a,0), c1 = problem->cost(lex,a,1);
                 cerr << lex->lexiCost()[0] << " " <<  lex->lexiCost()[1];
@@ -108,6 +108,6 @@ int main(int argc, char* args[])
         cerr << "Avg. Exec cost " << expectedCost[0] / nsims << " " << expectedCost[1] / nsims << endl;
 
     delete problem;
-    delete ((LexiRTrackDetHeuristic*) heuristic);
+    delete ((MORTrackDetHeuristic*) heuristic);
 }
 

@@ -8,7 +8,7 @@ class GlobalSlackSolver : public Solver
 {
 private:
 
-    mllexi::LexiProblem* problem_;
+    mllexi::MOProblem* problem_;
 
     /* The solver to use for each obj. func. evaluation */
     Solver* internalSolver_;
@@ -28,7 +28,7 @@ public:
      * @param epsilon The error tolerance wanted for the solution.
      * @param timeLimit The maximum time allowed for running the algorithm.
      */
-    GlobalSlackSolver(mllexi::LexiProblem* problem, double epsilon, int timeLimit)
+    GlobalSlackSolver(mllexi::MOProblem* problem, double epsilon, int timeLimit)
         : problem_(problem), epsilon_(epsilon), timeLimit_(timeLimit) { }
 
     virtual ~GlobalSlackSolver();

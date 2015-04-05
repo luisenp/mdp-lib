@@ -1,0 +1,32 @@
+#ifndef MDPLIB_MORTRACKDETHEURISTIC_H
+#define MDPLIB_MORTRACKDETHEURISTIC_H
+
+#include "../../heuristic.h"
+
+#include "RacetrackProblem.h"
+
+namespace mllexi
+{
+
+/**
+ * A deterministic heuristic for the Racetrack domain. The heuristic assumes that
+ * for any action, the intended outcome will occur with probability 1.0; this
+ * results in an admissible heuristic.
+ */
+class MORTrackDetHeuristic : public mlcore::Heuristic
+{
+private:
+    MORacetrackProblem* detProblem_;
+public:
+    MORTrackDetHeuristic(char* filename);
+    virtual ~MORTrackDetHeuristic()
+    {
+        delete detProblem_;
+    }
+
+    virtual double cost(const mlcore::State* s) const;
+};
+
+}
+
+#endif // MDPLIB_MORTRACKDETHEURISTIC_H

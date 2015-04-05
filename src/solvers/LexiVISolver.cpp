@@ -2,12 +2,12 @@
 #include <climits>
 #include <cmath>
 
-#include "../../include/lexi/domains/LexiRacetrackState.h"
+#include "../../include/lexi/domains/MORacetrackState.h"
 
 #include "../../include/solvers/solver.h"
 #include "../../include/solvers/LexiVISolver.h"
-#include "../../include/lexi/lexi_problem.h"
-#include "../../include/lexi/lexi_state.h"
+#include "../../include/lexi/mobj_problem.h"
+#include "../../include/lexi/mobj_state.h"
 #include "../../include/util/general.h"
 
 namespace mlsolvers
@@ -25,9 +25,9 @@ mlcore::Action* LexiVISolver::solve(mlcore::State* s0)
     for (int i = 0; i < maxIter_; i++) {
         double maxResidual = 0.0;
         for (mlcore::State* s : problem_->states()) {
-            double residual = lexiBellmanUpdate((mllexi::LexiProblem *) problem_,
-                                                 (mllexi::LexiState *) s,
-                                                 ((mllexi::LexiProblem *) problem_)->size());
+            double residual = lexiBellmanUpdate((mllexi::MOProblem *) problem_,
+                                                 (mllexi::MOState *) s,
+                                                 ((mllexi::MOProblem *) problem_)->size());
             if (residual > maxResidual)
                 maxResidual = residual;
         }

@@ -7,9 +7,9 @@
 namespace mlsolvers
 {
 
-void LexiLAOStarSolver::solveLevel(mlcore::State* s, int level, mllexi::LexiState*& unsolved)
+void LexiLAOStarSolver::solveLevel(mlcore::State* s, int level, mllexi::MOState*& unsolved)
 {
-    mllexi::LexiState* s0 = (mllexi::LexiState *) s;
+    mllexi::MOState* s0 = (mllexi::MOState *) s;
     clock_t startTime = clock();
     int totalExpanded = 0;
     int countExpanded = 0;
@@ -43,23 +43,17 @@ void LexiLAOStarSolver::solveLevel(mlcore::State* s, int level, mllexi::LexiStat
 
 mlcore::Action* LexiLAOStarSolver::solve(mlcore::State* s)
 {
-    mllexi::LexiState* unsolved = nullptr;
+    mllexi::MOState* unsolved = nullptr;
     solveLevel(s, problem_->size() - 1, unsolved);
     return s->bestAction();
 }
 
-int LexiLAOStarSolver::expand(mllexi::LexiState* s, int level, mllexi::LexiState*& unsolved)
+int LexiLAOStarSolver::expand(mllexi::MOState* s, int level, mllexi::MOState*& unsolved)
 {
     if (level > 0 && solved_.find(s) == solved_.end()) {
-        mllexi::LexiState* aux = nullptr;
+        mllexi::MOState* aux = nullptr;
         solveLevel(s, 0, aux);
     }
-
-    /* making sure we are not using values from previous searches */
-//    if (initialized_.insert(s).second) {
-//        s->resetCost(weights_);
-//        s->setBestAction(nullptr);
-//    }
 
     if (!visited_.insert(s).second)  // state was already visited_
         return 0;
@@ -69,25 +63,23 @@ int LexiLAOStarSolver::expand(mllexi::LexiState* s, int level, mllexi::LexiState
 
     int cnt = 0;
     if (s->bestAction() == nullptr) {   // this means state has not been expanded
-//        lexiBellmanUpdate(problem_, s, level);
-        bellmanUpdate(problem_, s, weights_);
+        lexiBellmanUpdate(problem_, s, level);
         return 1;
     } else {
         mlcore::Action* a = s->bestAction();
         for (mlcore::Successor sccr : problem_->transition(s, a, 0)) {
-            cnt += expand((mllexi::LexiState *) sccr.su_state, level, unsolved);
+            cnt += expand((mllexi::MOState *) sccr.su_state, level, unsolved);
             if (unsolved != nullptr) {
                 return cnt;
             }
         }
     }
 
-//    lexiBellmanUpdate(problem_, s, level);
-    bellmanUpdate(problem_, s, weights_);
+    lexiBellmanUpdate(problem_, s, level);
     return cnt;
 }
 
-double LexiLAOStarSolver::testConvergence(mllexi::LexiState* s, int level)
+double LexiLAOStarSolver::testConvergence(mllexi::MOState* s, int level)
 {
     double error = 0.0;
 
@@ -103,11 +95,10 @@ double LexiLAOStarSolver::testConvergence(mllexi::LexiState* s, int level)
         return mdplib::dead_end_cost + 1;
     } else {
         for (mlcore::Successor sccr : problem_->transition(s, prevAction, 0))
-            error =  std::max(error, testConvergence((mllexi::LexiState *) sccr.su_state, level));
+            error =  std::max(error, testConvergence((mllexi::MOState *) sccr.su_state, level));
     }
 
-//    error = std::max(error, lexiBellmanUpdate(problem_, s, level));
-    error = std::max(error, bellmanUpdate(problem_, s, weights_));
+    error = std::max(error, lexiBellmanUpdate(problem_, s, level));
     if (prevAction == s->bestAction())
         return error;
     return mdplib::dead_end_cost + 2; // hasn't converged because the best action changed

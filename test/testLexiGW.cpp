@@ -2,17 +2,17 @@
 #include <vector>
 
 #include "../include/solvers/solver.h"
-#include "../include/solvers/LexiVISolver.h"
-#include "../include/solvers/LexiLAOStarSolver.h"
+#include "../include/solvers/MOVISolver.h"
+#include "../include/solvers/MOLAOStarSolver.h"
 
 #include "../include/util/general.h"
 
 #include "../include/domains/gridworld/GridWorldState.h"
 #include "../include/domains/gridworld/GridWorldAction.h"
 
-#include "../include/lexi/lexi_problem.h"
-#include "../include/lexi/domains/LexiGridWorldProblem.h"
-#include "../include/lexi/domains/LexiGWManhattanHeuristic.h"
+#include "../include/lexi/mobj_problem.h"
+#include "../include/lexi/domains/MOGridWorldProblem.h"
+#include "../include/lexi/domains/MOGWManhattanHeuristic.h"
 
 using namespace std;
 using namespace mlcore;
@@ -34,12 +34,12 @@ int main(int argc, char* args[])
     goals[0].insert(make_pair(pair<int,int> (n - 1, n / 2), 0.0));
     goals[0].insert(make_pair(pair<int,int> (1, n - 1), 0.0));
 
-    LexiGridWorldProblem* problem = new LexiGridWorldProblem(n, n, n-1, n-1, goals, 2, 1.0);
+    MOGridWorldProblem* problem = new MOGridWorldProblem(n, n, n-1, n-1, goals, 2, 1.0);
     problem->slack(slack);
 
     vector<Heuristic*> heuristics;
-    heuristics.push_back(new LexiGWManhattanHeuristic(problem, 1.0));
-    heuristics.push_back(new LexiGWManhattanHeuristic(problem, COST_DOWN_2));
+    heuristics.push_back(new MOGWManhattanHeuristic(problem, 1.0));
+    heuristics.push_back(new MOGWManhattanHeuristic(problem, COST_DOWN_2));
     problem->heuristics(heuristics);
     GridWorldState* gws = (GridWorldState *) problem->initialState();
 
@@ -54,8 +54,8 @@ int main(int argc, char* args[])
         vi.solve();
     }
     cerr << "Estimated cost "
-         << ((LexiState *) problem->initialState())->lexiCost()[0] << " "
-         << ((LexiState *) problem->initialState())->lexiCost()[1] << endl;
+         << ((MOState *) problem->initialState())->lexiCost()[0] << " "
+         << ((MOState *) problem->initialState())->lexiCost()[1] << endl;
 
 
     int nsims = argc > 4 ? atoi(args[4]) : 1;
@@ -72,9 +72,9 @@ int main(int argc, char* args[])
 
             if (verbosity > 100) {
                 cerr << endl << "STATE-ACTION *** " << tmp << " " << a << " " << endl;
-                lexiBellmanUpdate(problem, (LexiState *) tmp);
-                double copt = ((LexiState *) tmp)->lexiCost()[0];
-                double qval = qvalue(problem, (LexiState*) tmp, a, 0);
+                lexiBellmanUpdate(problem, (MOState *) tmp);
+                double copt = ((MOState *) tmp)->lexiCost()[0];
+                double qval = qvalue(problem, (MOState*) tmp, a, 0);
                 cerr << copt << " " << qval << " " << (qval / copt - 1.0) << endl;
             }
 
