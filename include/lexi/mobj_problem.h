@@ -12,8 +12,7 @@ namespace mllexi
 {
 
 /**
- * An abstract class for Stochastic Shortest Path Problems with lexicographical
- * preferences.
+ * An abstract class for Stochastic Shortest Path Problems with multiple objectives.
  *
  * This class inherits the core methods from mlcore::Problem and provides three
  * additional methods. One method, lexiCost, provides a cost function that
@@ -26,7 +25,11 @@ class MOProblem : public mlcore::Problem
 {
 protected:
     int size_;
+
+    /* A term that relaxes any lexicographical preferences */
     double slack_;
+
+    vector<double> weights_;
 
     /**
      * A vector of heuristics for all value functions on this problem (ordered in the
