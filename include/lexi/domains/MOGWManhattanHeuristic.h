@@ -1,5 +1,5 @@
-#ifndef MDPLIB_LEXIGWSECONDHEUR_H
-#define MDPLIB_LEXIGWSECONDHEUR_H
+#ifndef MDPLIB_MOGWSECONDHEUR_H
+#define MDPLIB_MOGWSECONDHEUR_H
 
 #include "../../util/general.h"
 #include "../../heuristic.h"
@@ -49,5 +49,5 @@ public:
 
 }
 
-#endif // MDPLIB_LEXIGWSECONDHEUR_H
+#endif // MDPLIB_MOGWSECONDHEUR_H
 

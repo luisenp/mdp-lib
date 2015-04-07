@@ -141,6 +141,18 @@ double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s)
 }
 
 
+double bellmanUpdate(mlmobj::MOProblem* problem, mlmobj::MOState* s)
+{
+    std::pair<double, mlcore::Action*> best = bellmanBackup(problem, s);
+    double residual = s->cost() - best.bb_cost;
+    s->setCost(best.bb_cost);
+    s->setBestAction(best.bb_action);
+    for (int i = 0; i < problem->size(); i++)
+        s->setCost(qvalue(problem, s, best.bb_action, i), i);
+    return fabs(residual);
+}
+
+
 double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s, double weight)
 {
     double bestQ = problem->goal(s) ? 0.0 : mdplib::dead_end_cost;

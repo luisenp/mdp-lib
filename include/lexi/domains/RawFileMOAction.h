@@ -1,5 +1,5 @@
-#ifndef MDPLIB_RAWFILELEXIACTION_H
-#define MDPLIB_RAWFILELEXIACTION_H
+#ifndef MDPLIB_RAWFILEMOACTION_H
+#define MDPLIB_RAWFILEMOACTION_H
 
 #include "../../action.h"
 
@@ -43,4 +43,4 @@ public:
     }
 };
 
-#endif // MDPLIB_RAWFILELEXIACTION_H
+#endif // MDPLIB_RAWFILEMOACTION_H

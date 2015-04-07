@@ -1,5 +1,5 @@
-#ifndef MDPLIB_LEXILAOSTARSOLVER_H
-#define MDPLIB_LEXILAOSTARSOLVER_H
+#ifndef MDPLIB_MOLAOSTARSOLVER_H
+#define MDPLIB_MOLAOSTARSOLVER_H
 
 #include "../lexi/mobj_problem.h"
 
@@ -34,6 +34,9 @@ private:
     /* Weights for combining the cost functions */
     std::vector<double> weights_;
 
+    /* If set to true, it uses a linear combination of the cost functions for search */
+    bool useLC_;
+
     /* Solves the specified lexicographic level. The stores a pointer to a state
     /* only if this state was unsolved at the previous level. */
     virtual void solveLevel(mlcore::State* s0, int level, mlmobj::MOState*& unsolved);
@@ -50,9 +53,11 @@ public:
      * @param problem The problem to be solved.
      * @param epsilon The error tolerance wanted for the solution.
      * @param timeLimit The maximum time allowed for running the algorithm.
+     * @param useLC true if the cost functions should be combined linearly.
      */
-    MOLAOStarSolver(mlmobj::MOProblem* problem, double epsilon, int timeLimit)
-        : problem_(problem), epsilon_(epsilon), timeLimit_(timeLimit)
+    MOLAOStarSolver(mlmobj::MOProblem* problem, double epsilon = 1.0e-6,
+                    int timeLimit = 1000000, bool useLC = false)
+        : problem_(problem), epsilon_(epsilon), timeLimit_(timeLimit), useLC_(useLC)
     {
         weights_ = std::vector<double> (problem->size(), 0.0);
         weights_[0] = 1.0;
@@ -71,4 +76,4 @@ public:
 
 }
 
-#endif // MDPLIB_LEXILAOSTARSOLVER_H
+#endif // MDPLIB_MOLAOSTARSOLVER_H

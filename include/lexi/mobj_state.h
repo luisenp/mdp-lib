@@ -1,5 +1,5 @@
-#ifndef MDPLIB_LEXISTATE_H
-#define MDPLIB_LEXISTATE_H
+#ifndef MDPLIB_MOSTATE_H
+#define MDPLIB_MOSTATE_H
 
 #include <vector>
 
@@ -97,4 +97,4 @@ public:
 
 }
 
-#endif // MDPLIB_LEXISTATE_H
+#endif // MDPLIB_MOSTATE_H

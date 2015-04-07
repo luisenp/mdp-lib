@@ -44,7 +44,11 @@ void MOLAOStarSolver::solveLevel(mlcore::State* s, int level, mlmobj::MOState*& 
 mlcore::Action* MOLAOStarSolver::solve(mlcore::State* s)
 {
     mlmobj::MOState* unsolved = nullptr;
-    solveLevel(s, problem_->size() - 1, unsolved);
+    if (useLC_) {
+        solveLevel(s, 0, unsolved);
+    } else {
+        solveLevel(s, problem_->size() - 1, unsolved);
+    }
     return s->bestAction();
 }
 
@@ -63,7 +67,10 @@ int MOLAOStarSolver::expand(mlmobj::MOState* s, int level, mlmobj::MOState*& uns
 
     int cnt = 0;
     if (s->bestAction() == nullptr) {   // this means state has not been expanded
-        lexiBellmanUpdate(problem_, s, level);
+        if (useLC_)
+            bellmanUpdate(problem_, s);
+        else
+            lexiBellmanUpdate(problem_, s, level);
         return 1;
     } else {
         mlcore::Action* a = s->bestAction();
@@ -75,7 +82,11 @@ int MOLAOStarSolver::expand(mlmobj::MOState* s, int level, mlmobj::MOState*& uns
         }
     }
 
-    lexiBellmanUpdate(problem_, s, level);
+
+    if (useLC_)
+        bellmanUpdate(problem_, s);
+    else
+        lexiBellmanUpdate(problem_, s, level);
     return cnt;
 }
 
@@ -98,7 +109,9 @@ double MOLAOStarSolver::testConvergence(mlmobj::MOState* s, int level)
             error =  std::max(error, testConvergence((mlmobj::MOState *) sccr.su_state, level));
     }
 
-    error = std::max(error, lexiBellmanUpdate(problem_, s, level));
+    double backupError =
+        useLC_ ? bellmanUpdate(problem_, s) : lexiBellmanUpdate(problem_, s, level);
+    error = std::max(error, backupError);
     if (prevAction == s->bestAction())
         return error;
     return mdplib::dead_end_cost + 2; // hasn't converged because the best action changed

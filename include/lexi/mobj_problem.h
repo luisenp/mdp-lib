@@ -1,5 +1,5 @@
-#ifndef MDPLIB_LEXIPROBLEM_H
-#define MDPLIB_LEXIPROBLEM_H
+#ifndef MDPLIB_MOPROBLEM_H
+#define MDPLIB_MOPROBLEM_H
 
 #include "../problem.h"
 #include "../state.h"
@@ -174,4 +174,4 @@ public:
 
 }
 
-#endif // MDPLIB_LEXIPROBLEM_H
+#endif // MDPLIB_MOPROBLEM_H

@@ -1,7 +1,7 @@
 #ifndef MDPLIB_GLOBALSLACKSOLVER_H
 #define MDPLIB_GLOBALSLACKSOLVER_H
 
-#include "LAOStarSolver.h"
+#include "MOLAOStarSolver.h"
 
 namespace mlsolvers
 {
@@ -33,7 +33,7 @@ public:
     GlobalSlackSolver(mlmobj::MOProblem* problem, double epsilon, int timeLimit)
         : problem_(problem), epsilon_(epsilon), timeLimit_(timeLimit)
     {
-        internalSolver_ = new LAOStarSolver(problem);
+        internalSolver_ = new MOLAOStarSolver(problem);
     }
 
     virtual ~GlobalSlackSolver()
