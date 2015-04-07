@@ -8,7 +8,7 @@
 
 #include "../../mobj_problem.h"
 
-namespace mllexi
+namespace mlmobj
 {
 
 #define AIRPLANE_WINDY 1

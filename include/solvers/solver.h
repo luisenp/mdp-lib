@@ -81,7 +81,7 @@ double qvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a);
  * @param i The index of the value function to use.
  * @return The Q-value of the state-action pair.
  */
-double qvalue(mllexi::MOProblem* problem, mllexi::MOState* s, mlcore::Action* a, int i);
+double qvalue(mlmobj::MOProblem* problem, mlmobj::MOState* s, mlcore::Action* a, int i);
 
 
 /**
@@ -123,7 +123,7 @@ std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem, mlcor
  * @param level The level of the cost function to be miminized.
  * @return The maximum residual among all value functions.
  */
-double lexiBellmanUpdate(mllexi::MOProblem* problem, mllexi::MOState* s, int level);
+double lexiBellmanUpdate(mlmobj::MOProblem* problem, mlmobj::MOState* s, int level);
 
 
 /**

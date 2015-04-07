@@ -17,7 +17,7 @@
 
 using namespace mlcore;
 using namespace mlsolvers;
-using namespace mllexi;
+using namespace mlmobj;
 using namespace std;
 
 int main(int argc, char* args[])
@@ -46,7 +46,7 @@ int main(int argc, char* args[])
     clock_t startTime = clock();
     double tol = 1.0e-6;
     if (strcmp(args[2], "lao") == 0) {
-        LexiLAOStarSolver lao(problem, tol, 1000000);
+        MOLAOStarSolver lao(problem, tol, 1000000);
         lao.solve(problem->initialState());
     } else if (strcmp(args[2], "vi") == 0) {
         LexiVISolver vi(problem, 1000000000, tol);

@@ -5,7 +5,7 @@
 #include "../../../../include/lexi/domains/airplane/AirplaneState.h"
 #include "../../../../include/lexi/domains/airplane/AirplaneAction.h"
 
-namespace mllexi
+namespace mlmobj
 {
 
 AirplaneProblem::AirplaneProblem(int travelGoal,

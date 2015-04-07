@@ -8,7 +8,7 @@
 #include "../../../include/lexi/domains/RawFileMOState.h"
 #include "../../../include/lexi/domains/RawFileMOAction.h"
 
-namespace mllexi
+namespace mlmobj
 {
 
 RawFileMOProblem::RawFileMOProblem(char* filename)

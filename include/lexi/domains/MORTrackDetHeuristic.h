@@ -5,7 +5,7 @@
 
 #include "RacetrackProblem.h"
 
-namespace mllexi
+namespace mlmobj
 {
 
 /**

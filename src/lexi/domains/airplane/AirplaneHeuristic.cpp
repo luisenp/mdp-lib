@@ -6,7 +6,7 @@
 #include "../../../../include/lexi/domains/airplane/AirplaneProblem.h"
 #include "../../../../include/lexi/domains/airplane/AirplaneState.h"
 
-namespace mllexi
+namespace mlmobj
 {
 
 double AirplaneHeuristic::cost(const mlcore::State* s) const

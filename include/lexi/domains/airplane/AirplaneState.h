@@ -6,7 +6,7 @@
 #include "../state.h"
 #include "../../mobj_state.h"
 
-namespace mllexi
+namespace mlmobj
 {
 
 class AirplaneState : public MOState

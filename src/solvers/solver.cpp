@@ -22,11 +22,11 @@ double qvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
 }
 
 
-double qvalue(mllexi::MOProblem* problem, mllexi::MOState* s, mlcore::Action* a, int i)
+double qvalue(mlmobj::MOProblem* problem, mlmobj::MOState* s, mlcore::Action* a, int i)
 {
     double qAction = 0.0;
     for (mlcore::Successor su : problem->transition(s, a, 0)) {
-        qAction += su.su_prob * ((mllexi::MOState *) su.su_state)->lexiCost()[i];
+        qAction += su.su_prob * ((mlmobj::MOState *) su.su_state)->mobjCost()[i];
     }
     qAction = (qAction * problem->gamma()) + problem->cost(s, a, i);
     return qAction;
@@ -70,7 +70,7 @@ std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem, mlcor
 }
 
 
-double lexiBellmanUpdate(mllexi::MOProblem* problem, mllexi::MOState* s, int level)
+double lexiBellmanUpdate(mlmobj::MOProblem* problem, mlmobj::MOState* s, int level)
 {
     bool hasAction = true;
     mlcore::Action* bestAction = nullptr;
@@ -101,7 +101,7 @@ double lexiBellmanUpdate(mllexi::MOProblem* problem, mllexi::MOState* s, int lev
         }
 
         /* Updating cost, best action and residual */
-        double currentResidual = fabs(bestQ - s->lexiCost()[i]);
+        double currentResidual = fabs(bestQ - s->mobjCost()[i]);
         if (currentResidual > residual)
             residual = currentResidual;
         s->setCost(bestQ, i);

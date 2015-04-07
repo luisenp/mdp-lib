@@ -6,7 +6,7 @@
 #include "../../../include/domains/racetrack/RacetrackAction.h"
 
 
-namespace mllexi
+namespace mlmobj
 {
 
 MORacetrackState::MORacetrackState(int x, int y,

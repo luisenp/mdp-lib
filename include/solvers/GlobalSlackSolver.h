@@ -1,6 +1,8 @@
 #ifndef MDPLIB_GLOBALSLACKSOLVER_H
 #define MDPLIB_GLOBALSLACKSOLVER_H
 
+#include "LAOStarSolver.h"
+
 namespace mlsolvers
 {
 
@@ -8,7 +10,7 @@ class GlobalSlackSolver : public Solver
 {
 private:
 
-    mllexi::MOProblem* problem_;
+    mlmobj::MOProblem* problem_;
 
     /* The solver to use for each obj. func. evaluation */
     Solver* internalSolver_;
@@ -28,10 +30,16 @@ public:
      * @param epsilon The error tolerance wanted for the solution.
      * @param timeLimit The maximum time allowed for running the algorithm.
      */
-    GlobalSlackSolver(mllexi::MOProblem* problem, double epsilon, int timeLimit)
-        : problem_(problem), epsilon_(epsilon), timeLimit_(timeLimit) { }
+    GlobalSlackSolver(mlmobj::MOProblem* problem, double epsilon, int timeLimit)
+        : problem_(problem), epsilon_(epsilon), timeLimit_(timeLimit)
+    {
+        internalSolver_ = new LAOStarSolver(problem);
+    }
 
-    virtual ~GlobalSlackSolver();
+    virtual ~GlobalSlackSolver()
+    {
+        delete internalSolver_;
+    }
 
     /**
      * Solves the associated problem using the GlobalSlackSolver algorithm.

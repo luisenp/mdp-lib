@@ -11,7 +11,7 @@
 #include "../../lexi/mobj_problem.h"
 #include "../../lexi/domains/MOGridWorldState.h"
 
-namespace mllexi
+namespace mlmobj
 {
 
 #define COST_DOWN_2 10

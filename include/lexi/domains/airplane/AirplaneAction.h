@@ -1,7 +1,7 @@
 #ifndef MDPLIB_AIRPLANEACTION_H
 #define MDPLIB_AIRPLANEACTION_H
 
-namespace mllexi
+namespace mlmobj
 {
 
 #define AIRPLANE_LOAD 0

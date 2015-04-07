@@ -10,7 +10,7 @@
 
 #include "../../../include/domains/racetrack/RacetrackState.h"
 
-namespace mllexi
+namespace mlmobj
 {
 
 class MORacetrackState : public MOState

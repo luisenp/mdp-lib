@@ -1,18 +1,18 @@
 #include "../../../include/lexi/domains/MOGridWorldState.h"
 
-namespace mllexi
+namespace mlmobj
 {
 
 MOGridWorldState::MOGridWorldState(mlcore::Problem* problem, int x, int y) : x_(x), y_(y)
 {
     problem_ = problem;
-    lexiCost_ = std::vector<double> (((MOProblem *) problem_)->size());
+    mobjCost_ = std::vector<double> (((MOProblem *) problem_)->size());
     MOProblem* aux = (MOProblem *) problem_;
     for (int i = 0; i < aux->size(); i++) {
         if (!aux->heuristics().empty())
-            lexiCost_[i] = aux->heuristics()[i]->cost(this);
+            mobjCost_[i] = aux->heuristics()[i]->cost(this);
         else
-            lexiCost_[i] = 0.0;
+            mobjCost_[i] = 0.0;
     }
 }
 

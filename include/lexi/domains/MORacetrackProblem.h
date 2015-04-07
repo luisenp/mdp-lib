@@ -11,7 +11,7 @@
 
 #include "MORacetrackState.h"
 
-namespace mllexi
+namespace mlmobj
 {
 
 /**

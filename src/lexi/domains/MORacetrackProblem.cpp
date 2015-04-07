@@ -12,12 +12,14 @@
 #include "../../../include/domains/racetrack/RacetrackProblem.h"
 #include "../../../include/domains/racetrack/RacetrackAction.h"
 
-namespace mllexi
+namespace mlmobj
 {
 
 MORacetrackProblem::MORacetrackProblem(char* filename, int size)
 {
     size_ = size;
+    weights_ = std::vector<double> (size_, 0.0);
+    weights_[0] = 1.0;
 
     std::ifstream myfile (filename);
     int width, height;

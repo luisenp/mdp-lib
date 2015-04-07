@@ -8,17 +8,17 @@
 #include "../util/general.h"
 
 
-namespace mllexi
+namespace mlmobj
 {
 
 /**
  * An abstract class for Stochastic Shortest Path Problems with multiple objectives.
  *
  * This class inherits the core methods from mlcore::Problem and provides three
- * additional methods. One method, lexiCost, provides a cost function that
- * returns a vector of values ordered in decreasing order of preference. The other
- * two methods are modified versions of the goal condition and transition function
- * that receive an index indicating with respect to which value function the
+ * additional methods. One method, provides a multi-objective cost function that
+ * returns a vector of values (ordered in decreasing order of preference for LSSPs).
+ * The other two methods are modified versions of the goal condition and transition
+ * function that receive an index indicating with respect to which value function the
  * operation must be performed.
  */
 class MOProblem : public mlcore::Problem
@@ -29,7 +29,8 @@ protected:
     /* A term that relaxes any lexicographical preferences */
     double slack_;
 
-    vector<double> weights_;
+    /* Weights to to use if a linear combination of the objectives is desired */
+    std::vector<double> weights_;
 
     /**
      * A vector of heuristics for all value functions on this problem (ordered in the
@@ -38,7 +39,7 @@ protected:
     std::vector<mlcore::Heuristic*> heuristics_;
 
 public:
-    MOProblem() : slack_(0.0) { }
+    MOProblem() : slack_(0.0)  { }
     virtual ~MOProblem() {}
 
     /**
@@ -73,16 +74,46 @@ public:
     void slack(double slack) { slack_ = slack; }
 
     /**
-     * Lexicographical cost function for the problem.
+     * Returns the weights used for linearly combining the objectives.
+     *
+     * @return the weights used for linearly combining the objectives.
+     */
+    std::vector<double> weights() const { return weights_; }
+
+    /**
+     * Sets the weights used for linearly combining the objectives.
+     *
+     * @param weights_ the weights used for linearly combining the objectives.
+     */
+    void weights(std::vector<double> w) { weights_ = w; }
+
+    /**
+     * Multiobjective cost function for the problem.
      *
      * Returns the cost of applying the given action to the given state
-     * according to the i-th value function in the lexicographical
-     * order of the problem.
+     * according to the i-th cost function.
      *
      * @return the cost of applying action the given action to the given state according
      *        to the specified value function.
      */
     virtual double cost(mlcore::State* s, mlcore::Action* a, int i) const = 0;
+
+    /**
+     * Linear combination of the cost function in the problem.
+     *
+     * Returns a linear combination of the cost functions evaluated at the given state
+     * and action pair. The weights for the linear combination are passed as parameters.
+     *
+     * @return the linear combination of the cost functions.
+     */
+    double cost(mlcore::State* s, mlcore::Action* a, const std::vector<double>& weights) const
+    {
+        double lcCost = 0.0;
+        for (int i = 0; i < size_; i++) {
+            lcCost += weights.at(i) * cost(s, a, i);
+        }
+        return lcCost;
+    }
 
     /**
      * Lexicographical goal check.
@@ -134,7 +165,8 @@ public:
      */
     virtual double cost(mlcore::State* s, mlcore::Action* a) const
     {
-        return cost(s, a, 0);
+        return cost(s, a, weights_);
+        //return cost(s, a, 0);
     }
 
 

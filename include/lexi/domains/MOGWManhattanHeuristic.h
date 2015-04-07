@@ -8,7 +8,7 @@
 #include "MOGridWorldProblem.h"
 #include "MOGridWorldState.h"
 
-namespace mllexi
+namespace mlmobj
 {
 
 class MOGWManhattanHeuristic : public mlcore::Heuristic

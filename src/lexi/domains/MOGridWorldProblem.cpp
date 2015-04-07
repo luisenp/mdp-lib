@@ -3,7 +3,7 @@
 
 #include <cassert>
 
-namespace mllexi
+namespace mlmobj
 {
 
 MOGridWorldProblem::MOGridWorldProblem(int width, int height, int x0, int y0,

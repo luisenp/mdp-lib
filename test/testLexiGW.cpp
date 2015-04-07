@@ -16,7 +16,7 @@
 
 using namespace std;
 using namespace mlcore;
-using namespace mllexi;
+using namespace mlmobj;
 using namespace mlsolvers;
 
 int main(int argc, char* args[])
@@ -43,7 +43,7 @@ int main(int argc, char* args[])
     problem->heuristics(heuristics);
     GridWorldState* gws = (GridWorldState *) problem->initialState();
 
-    LexiLAOStarSolver lao(problem, 0.0001, 10000000L);
+    MOLAOStarSolver lao(problem, 0.0001, 10000000L);
     LexiVISolver vi(problem);
 
     if (strcmp(args[3], "lao") == 0) {

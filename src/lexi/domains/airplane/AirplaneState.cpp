@@ -1,6 +1,6 @@
 #include "../../../../include/lexi/domains/airplane/AirplaneState.h"
 
-namespace mllexi
+namespace mlmobj
 {
 
 
@@ -11,18 +11,18 @@ AirplaneState::AirplaneState(AirplaneState* state)
     windConditions_ = state->windConditions_;
     problem_ = state->problem_;
 
-    lexiCost_ = std::vector<double> (2);
+    mobjCost_ = std::vector<double> (2);
     MOProblem* aux = (MOProblem*) problem_;
     for (int i = 0; i < 2; i++) {
         if (aux->heuristics().size() > i && aux->heuristics()[i] != nullptr)
-            lexiCost_[i] = aux->heuristics()[i]->cost(this);
+            mobjCost_[i] = aux->heuristics()[i]->cost(this);
         else {
             dprint1(this);
             dprint4("HEURI ", i, " ", aux->heuristics().size());
             if (aux->heuristics().size() > i)
                 dprint1((void *) aux->heuristics()[i]);
             dsleep(50);
-            lexiCost_[i] = 0.0;
+            mobjCost_[i] = 0.0;
         }
     }
 }
@@ -38,12 +38,12 @@ AirplaneState::AirplaneState(int airplaneLocation,
     windConditions_ = windConditions;
     problem_ = problem;
 
-    lexiCost_ = std::vector<double> (2);
+    mobjCost_ = std::vector<double> (2);
     for (int i = 0; i < 2; i++) {
         if (problem->heuristics().size() > i && problem->heuristics()[i] != nullptr)
-            lexiCost_[i] = problem->heuristics()[i]->cost(this);
+            mobjCost_[i] = problem->heuristics()[i]->cost(this);
         else
-            lexiCost_[i] = 0.0;
+            mobjCost_[i] = 0.0;
     }
 }
 

@@ -5,7 +5,7 @@
 
 #include "AirplaneProblem.h"
 
-namespace mllexi
+namespace mlmobj
 {
 
 class AirplaneHeuristic : public mlcore::Heuristic

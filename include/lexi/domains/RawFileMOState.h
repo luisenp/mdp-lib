@@ -9,7 +9,7 @@
 #include "../mobj_state.h"
 #include "../mobj_problem.h"
 
-namespace mllexi
+namespace mlmobj
 {
 
 class RawFileMOState : public MOState
@@ -30,7 +30,7 @@ public:
         allSuccessors_ = std::vector<mlcore::SuccessorsList> (nActions);
         costs_ = std::vector< std::vector<double> > (levels, std::vector<double> (nActions));
 
-        lexiCost_ = std::vector<double> (levels, 0.0);
+        mobjCost_ = std::vector<double> (levels, 0.0);
     }
 
     virtual ~RawFileMOState() {}

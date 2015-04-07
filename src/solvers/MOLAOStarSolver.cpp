@@ -1,15 +1,15 @@
 #include "../../include/util/general.h"
 #include "../../include/solvers/solver.h"
-#include "../../include/solvers/LexiLAOStarSolver.h"
+#include "../../include/solvers/MOLAOStarSolver.h"
 
 #include <ctime>
 
 namespace mlsolvers
 {
 
-void LexiLAOStarSolver::solveLevel(mlcore::State* s, int level, mllexi::MOState*& unsolved)
+void MOLAOStarSolver::solveLevel(mlcore::State* s, int level, mlmobj::MOState*& unsolved)
 {
-    mllexi::MOState* s0 = (mllexi::MOState *) s;
+    mlmobj::MOState* s0 = (mlmobj::MOState *) s;
     clock_t startTime = clock();
     int totalExpanded = 0;
     int countExpanded = 0;
@@ -41,17 +41,17 @@ void LexiLAOStarSolver::solveLevel(mlcore::State* s, int level, mllexi::MOState*
     }
 }
 
-mlcore::Action* LexiLAOStarSolver::solve(mlcore::State* s)
+mlcore::Action* MOLAOStarSolver::solve(mlcore::State* s)
 {
-    mllexi::MOState* unsolved = nullptr;
+    mlmobj::MOState* unsolved = nullptr;
     solveLevel(s, problem_->size() - 1, unsolved);
     return s->bestAction();
 }
 
-int LexiLAOStarSolver::expand(mllexi::MOState* s, int level, mllexi::MOState*& unsolved)
+int MOLAOStarSolver::expand(mlmobj::MOState* s, int level, mlmobj::MOState*& unsolved)
 {
     if (level > 0 && solved_.find(s) == solved_.end()) {
-        mllexi::MOState* aux = nullptr;
+        mlmobj::MOState* aux = nullptr;
         solveLevel(s, 0, aux);
     }
 
@@ -68,7 +68,7 @@ int LexiLAOStarSolver::expand(mllexi::MOState* s, int level, mllexi::MOState*& u
     } else {
         mlcore::Action* a = s->bestAction();
         for (mlcore::Successor sccr : problem_->transition(s, a, 0)) {
-            cnt += expand((mllexi::MOState *) sccr.su_state, level, unsolved);
+            cnt += expand((mlmobj::MOState *) sccr.su_state, level, unsolved);
             if (unsolved != nullptr) {
                 return cnt;
             }
@@ -79,7 +79,7 @@ int LexiLAOStarSolver::expand(mllexi::MOState* s, int level, mllexi::MOState*& u
     return cnt;
 }
 
-double LexiLAOStarSolver::testConvergence(mllexi::MOState* s, int level)
+double MOLAOStarSolver::testConvergence(mlmobj::MOState* s, int level)
 {
     double error = 0.0;
 
@@ -95,7 +95,7 @@ double LexiLAOStarSolver::testConvergence(mllexi::MOState* s, int level)
         return mdplib::dead_end_cost + 1;
     } else {
         for (mlcore::Successor sccr : problem_->transition(s, prevAction, 0))
-            error =  std::max(error, testConvergence((mllexi::MOState *) sccr.su_state, level));
+            error =  std::max(error, testConvergence((mlmobj::MOState *) sccr.su_state, level));
     }
 
     error = std::max(error, lexiBellmanUpdate(problem_, s, level));
@@ -104,7 +104,7 @@ double LexiLAOStarSolver::testConvergence(mllexi::MOState* s, int level)
     return mdplib::dead_end_cost + 2; // hasn't converged because the best action changed
 }
 
-void LexiLAOStarSolver::addSolved(mlcore::State* s)
+void MOLAOStarSolver::addSolved(mlcore::State* s)
 {
     std::list<mlcore::State *> queue;
     queue.push_front(s);

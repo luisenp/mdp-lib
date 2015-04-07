@@ -6,7 +6,8 @@
 
 #include "../include/solvers/solver.h"
 #include "../include/solvers/LexiVISolver.h"
-#include "../include/solvers/LexiLAOStarSolver.h"
+#include "../include/solvers/MOLAOStarSolver.h"
+#include "../include/solvers/GlobalSlackSolver.h"
 
 #include "../include/util/general.h"
 #include "../include/util/graph.h"
@@ -18,7 +19,7 @@
 
 using namespace mlcore;
 using namespace mlsolvers;
-using namespace mllexi;
+using namespace mlmobj;
 using namespace std;
 
 int main(int argc, char* args[])
@@ -55,8 +56,11 @@ int main(int argc, char* args[])
 
     clock_t startTime = clock();
     double tol = 1.0e-6;
-    if (strcmp(args[2], "lao") == 0) {
-        LexiLAOStarSolver lao(problem, tol, 1000000);
+    if (strcmp(args[2], "global") == 0) {
+        GlobalSlackSolver gss(problem, tol, 1000000);
+        gss.solve(problem->initialState());
+    } else if (strcmp(args[2], "lao") == 0) {
+        MOLAOStarSolver lao(problem, tol, 1000000);
         lao.solve(problem->initialState());
     } else if (strcmp(args[2], "vi") == 0) {
         problem->gamma(gamma);
@@ -67,13 +71,13 @@ int main(int argc, char* args[])
     clock_t endTime = clock();
     if (verbosity > 10) {
         cerr << "Estimated cost "
-             << ((MOState *) problem->initialState())->lexiCost()[0] << " "
-             << ((MOState *) problem->initialState())->lexiCost()[1] << endl;
+             << ((MOState *) problem->initialState())->mobjCost()[0] << " "
+             << ((MOState *) problem->initialState())->mobjCost()[1] << endl;
         cerr << startTime << " " << endTime << endl;
         cerr << "Time " << ((endTime - startTime + 0.0) / CLOCKS_PER_SEC) << endl;
     } else if (verbosity > 1) {
-        cerr << ((MOState *) problem->initialState())->lexiCost()[0] << " "
-             << ((MOState *) problem->initialState())->lexiCost()[1] << endl;
+        cerr << ((MOState *) problem->initialState())->mobjCost()[0] << " "
+             << ((MOState *) problem->initialState())->mobjCost()[1] << endl;
     }
 
     int nsims = argc > 5 ? atoi(args[5]) : 1;
@@ -92,7 +96,7 @@ int main(int argc, char* args[])
                 MOState* lex = (MOState *) tmp;
                 cerr << endl << "STATE-ACTION *** " << tmp << " " << a << " " << endl;
                 double c0 = problem->cost(lex,a,0), c1 = problem->cost(lex,a,1);
-                cerr << lex->lexiCost()[0] << " " <<  lex->lexiCost()[1];
+                cerr << lex->mobjCost()[0] << " " <<  lex->mobjCost()[1];
                 cerr << " - costs " << c0 << " " << c1 << endl;
             }
 

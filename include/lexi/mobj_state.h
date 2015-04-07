@@ -6,7 +6,7 @@
 #include "../state.h"
 #include "mobj_problem.h"
 
-namespace mllexi {
+namespace mlmobj {
 
 class MOState : public mlcore::State
 {
@@ -17,7 +17,7 @@ private:
 
 protected:
 
-    std::vector<double> lexiCost_;
+    std::vector<double> mobjCost_;
 
 public:
 
@@ -37,18 +37,18 @@ public:
      * @param i The index of the value function w.r.t. which the cost is to be updated
      */
     void setCost(double c, int i) {
-        lexiCost_[i] = c;
+        mobjCost_[i] = c;
     }
 
     /**
      * An estimate of the expected cost of reaching the goal from this state w.r.t.
      * to all the value functions on the corresponding lexicographical problem.
      */
-    std::vector<double> & lexiCost() { return lexiCost_; }
+    std::vector<double> & mobjCost() { return mobjCost_; }
 
     /**
      * Resets the costs of the state to use the heuristics.
-     * Each value in lexiCost_ is update according to the corresponding heuristic,
+     * Each value in mobjCost_ is update according to the corresponding heuristic,
      * while cost_ is updated to be a linear combination of the heuristics
      * functions, using the weights passed as parameters.
      */
@@ -56,20 +56,20 @@ public:
     {
         cost_ = 0;
         MOProblem* lp_ = (MOProblem*) problem_;
-        lexiCost_ = std::vector<double> (lp_->size());
+        mobjCost_ = std::vector<double> (lp_->size());
         for (int i = 0; i < lp_->size(); i++) {
             if (i == keepIdx) {
-                cost_ += lexiCost_[i] * weights[i];
+                cost_ += mobjCost_[i] * weights[i];
                 continue;
             }
 
             if (lp_->heuristics().size() > i && lp_->heuristics()[i] != nullptr) {
-                lexiCost_[i] = lp_->heuristics()[i]->cost(this);
+                mobjCost_[i] = lp_->heuristics()[i]->cost(this);
                 cost_ += lp_->heuristics()[i]->cost(this) * weights[i];
             }
             else {
                 cost_ += 0.0;
-                lexiCost_[i] = 0.0;
+                mobjCost_[i] = 0.0;
             }
         }
     }

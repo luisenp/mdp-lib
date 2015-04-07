@@ -3,7 +3,7 @@
 
 #include "../mobj_state.h"
 
-namespace mllexi
+namespace mlmobj
 {
 
 /**

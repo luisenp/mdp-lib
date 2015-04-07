@@ -8,7 +8,7 @@
 #include "../../../include/lexi/domains/MORacetrackState.h"
 #include "../../../include/lexi/domains/MORTrackDetHeuristic.h"
 
-namespace mllexi
+namespace mlmobj
 {
 
 MORTrackDetHeuristic::MORTrackDetHeuristic(char* filename)

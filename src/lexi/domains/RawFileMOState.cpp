@@ -1,6 +1,6 @@
 #include "../../../include/lexi/domains/RawFileMOState.h"
 
-namespace mllexi
+namespace mlmobj
 {
 
 void RawFileMOState::addSuccessor(int actionId, RawFileMOState* succState, double prob)
