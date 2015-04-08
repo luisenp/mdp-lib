@@ -167,7 +167,7 @@ double MORacetrackProblem::cost(mlcore::State* s, mlcore::Action* a, int index) 
     } else {
         RacetrackAction* rta = (RacetrackAction*) a;
 
-        if (useSafety_)
+        if ( (useSafety_ && index == 1) || (!useSafety_ && index == 2) )
             return (rts->safe()) ? 1.0 : 10.0;
 
         /* Keeping current speed or starting up the car has normal cost */

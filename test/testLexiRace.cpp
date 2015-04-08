@@ -36,29 +36,21 @@ int main(int argc, char* args[])
     double gamma = argc > 7 ? atof(args[7]) : 0.95;
     bool useSafety = atoi(args[4]);
     int verbosity = argc > 6 ? atoi(args[6]) : 1;
+    int size = 3;
 
-    MOProblem* problem = new MORacetrackProblem(args[1], 2);
+    MOProblem* problem = new MORacetrackProblem(args[1], size);
     ((MORacetrackProblem*) problem)->setPError(0.00);
     ((MORacetrackProblem*) problem)->setPSlip(0.20);
     ((MORacetrackProblem*) problem)->setMDS(0);
     ((MORacetrackProblem*) problem)->useSafety(useSafety);
     problem->slack(slack);
 
-    dprint1("before heuristic");
-
     vector<Heuristic*> heuristics;
     Heuristic* heuristic =
         (strcmp(args[2], "vi") == 0) ? nullptr : new MORTrackDetHeuristic(args[1], useSafety);
-    heuristics.push_back(heuristic);
-    heuristics.push_back(heuristic);
+    for (int i = 0; i < size; i++)
+        heuristics.push_back(heuristic);
     problem->heuristics(heuristics);
-
-    dprint1("generate all");
-    problem->generateAll();
-    dprint2("size original ", problem->states().size());
-
-    if (verbosity > 1)
-        cerr << problem->states().size() << " states" << endl;
 
     clock_t startTime = clock();
     double tol = 1.0e-6;
@@ -71,6 +63,9 @@ int main(int argc, char* args[])
     } else if (strcmp(args[2], "vi") == 0) {
         problem->gamma(gamma);
         problem->slack(slack * (1 - gamma));
+        problem->generateAll();
+        if (verbosity > 1)
+            cerr << problem->states().size() << " states" << endl;
         LexiVISolver vi(problem, 1000000000, tol);
         vi.solve();
     }

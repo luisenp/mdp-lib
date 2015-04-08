@@ -14,7 +14,7 @@ mlcore::Action* GlobalSlackSolver::solve(mlcore::State* s)
 
     mlmobj::MOState* state = (mlmobj::MOState* ) s;
 
-    std::vector<double> weights(2, 0.0);
+    std::vector<double> weights(problem_->size(), 0.0);
     weights[0] = 1.0; weights[1] = 0.0;
     problem_->weights(weights);
     internalSolver_->solve(s);
