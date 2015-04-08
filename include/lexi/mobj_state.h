@@ -62,7 +62,6 @@ public:
                 cost_ += mobjCost_[i] * weights[i];
                 continue;
             }
-
             if (lp_->heuristics().size() > i && lp_->heuristics()[i] != nullptr) {
                 mobjCost_[i] = lp_->heuristics()[i]->cost(this);
                 cost_ += lp_->heuristics()[i]->cost(this) * weights[i];

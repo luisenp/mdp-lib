@@ -25,7 +25,6 @@ mlcore::Action* GlobalSlackSolver::solve(mlcore::State* s)
                 dprint2("THRESHOLD ", thrValue);
     weights[0] = 0.0; weights[1] = 1.0;
     problem_->weights(weights);
-
     for (mlcore::State* x : problem_->states()) {
         ((mlmobj::MOState * ) x)->resetCost(weights, -1);
         ((mlmobj::MOState * ) x)->setBestAction(nullptr);

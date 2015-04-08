@@ -138,6 +138,19 @@ double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s);
 
 
 /**
+ * Bellman update for MOSSPs using linear combinations of the cost functions.
+ *
+ * Performs a Bellman backup of a state, and then updates the state with
+ * the resulting expected cost and greedy action.
+ *
+ * @param problem The problem that contains the given state.
+ * @param s The state on which the Bellman backup will be performed.
+ * @return The residual of the state.
+ */
+double bellmanUpdate(mlmobj::MOProblem* problem, mlmobj::MOState* s);
+
+
+/**
  * Performs a weighted-Bellman backup a state, and then updates the state with
  * the resulting expected cost and greedy action.
  *

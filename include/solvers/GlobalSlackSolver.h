@@ -33,7 +33,7 @@ public:
     GlobalSlackSolver(mlmobj::MOProblem* problem, double epsilon, int timeLimit)
         : problem_(problem), epsilon_(epsilon), timeLimit_(timeLimit)
     {
-        internalSolver_ = new MOLAOStarSolver(problem);
+        internalSolver_ = new MOLAOStarSolver(problem, epsilon, timeLimit, true);
     }
 
     virtual ~GlobalSlackSolver()

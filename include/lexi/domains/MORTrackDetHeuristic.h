@@ -18,7 +18,7 @@ class MORTrackDetHeuristic : public mlcore::Heuristic
 private:
     MORacetrackProblem* detProblem_;
 public:
-    MORTrackDetHeuristic(char* filename);
+    MORTrackDetHeuristic(char* filename, bool useSafety);
     virtual ~MORTrackDetHeuristic()
     {
         delete detProblem_;

@@ -33,23 +33,29 @@ int main(int argc, char* args[])
     mdplib_debug = true;
 
     double slack = atof(args[3]);
-    double gamma = argc > 7? atof(args[7]) : 0.95;
+    double gamma = argc > 7 ? atof(args[7]) : 0.95;
+    bool useSafety = atoi(args[4]);
     int verbosity = argc > 6 ? atoi(args[6]) : 1;
 
     MOProblem* problem = new MORacetrackProblem(args[1], 2);
     ((MORacetrackProblem*) problem)->setPError(0.00);
     ((MORacetrackProblem*) problem)->setPSlip(0.20);
     ((MORacetrackProblem*) problem)->setMDS(0);
-    ((MORacetrackProblem*) problem)->useSafety((bool) atoi(args[4]));
+    ((MORacetrackProblem*) problem)->useSafety(useSafety);
     problem->slack(slack);
-    problem->generateAll();
+
+    dprint1("before heuristic");
 
     vector<Heuristic*> heuristics;
     Heuristic* heuristic =
-        (strcmp(args[2], "vi") == 0) ? nullptr : new MORTrackDetHeuristic(args[1]);
+        (strcmp(args[2], "vi") == 0) ? nullptr : new MORTrackDetHeuristic(args[1], useSafety);
     heuristics.push_back(heuristic);
     heuristics.push_back(heuristic);
     problem->heuristics(heuristics);
+
+    dprint1("generate all");
+    problem->generateAll();
+    dprint2("size original ", problem->states().size());
 
     if (verbosity > 1)
         cerr << problem->states().size() << " states" << endl;

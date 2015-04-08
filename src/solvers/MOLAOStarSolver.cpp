@@ -82,7 +82,6 @@ int MOLAOStarSolver::expand(mlmobj::MOState* s, int level, mlmobj::MOState*& uns
         }
     }
 
-
     if (useLC_)
         bellmanUpdate(problem_, s);
     else
