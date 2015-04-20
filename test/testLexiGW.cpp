@@ -2,8 +2,9 @@
 #include <vector>
 
 #include "../include/solvers/solver.h"
-#include "../include/solvers/MOVISolver.h"
+#include "../include/solvers/LexiVISolver.h"
 #include "../include/solvers/MOLAOStarSolver.h"
+#include "../include/solvers/CMDPLinProgSolver.h"
 
 #include "../include/util/general.h"
 
@@ -26,7 +27,7 @@ int main(int argc, char* args[])
         exit(0);
     }
 
-    mdplib_debug = false;
+    mdplib_debug = true;
 
     int n = atoi(args[1]);
     double slack = atof(args[2]);
@@ -36,6 +37,7 @@ int main(int argc, char* args[])
 
     MOGridWorldProblem* problem = new MOGridWorldProblem(n, n, n-1, n-1, goals, 2, 1.0);
     problem->slack(slack);
+    problem->gamma(0.9);
 
     vector<Heuristic*> heuristics;
     heuristics.push_back(new MOGWManhattanHeuristic(problem, 1.0));
@@ -50,12 +52,17 @@ int main(int argc, char* args[])
         dprint2("SOLVING WITH LAO", problem->initialState());
         lao.solve(problem->initialState());
         dprint1("SOLVED!");
+    } else if (strcmp(args[3], "lp") == 0) {
+        vector<double> targets(2);
+        targets[0] = 10000; targets[1] = 10000;
+        CMDPLinProgSolver lp(problem, targets);
+        lp.solve(problem->initialState());
     } else if (strcmp(args[3], "vi") == 0) {
         vi.solve();
     }
     cerr << "Estimated cost "
-         << ((MOState *) problem->initialState())->lexiCost()[0] << " "
-         << ((MOState *) problem->initialState())->lexiCost()[1] << endl;
+         << ((MOState *) problem->initialState())->mobjCost()[0] << " "
+         << ((MOState *) problem->initialState())->mobjCost()[1] << endl;
 
 
     int nsims = argc > 4 ? atoi(args[4]) : 1;
@@ -69,15 +76,6 @@ int main(int argc, char* args[])
         while (!problem->goal(tmp)) {
             Action* a;
             a = tmp->bestAction();
-
-            if (verbosity > 100) {
-                cerr << endl << "STATE-ACTION *** " << tmp << " " << a << " " << endl;
-                lexiBellmanUpdate(problem, (MOState *) tmp);
-                double copt = ((MOState *) tmp)->lexiCost()[0];
-                double qval = qvalue(problem, (MOState*) tmp, a, 0);
-                cerr << copt << " " << qval << " " << (qval / copt - 1.0) << endl;
-            }
-
             expectedCost[0] += problem->cost(tmp, a, 0);
             expectedCost[1] += problem->cost(tmp, a, 1);
             tmp = randomSuccessor(problem, tmp, a);

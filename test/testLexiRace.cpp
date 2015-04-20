@@ -8,6 +8,7 @@
 #include "../include/solvers/LexiVISolver.h"
 #include "../include/solvers/MOLAOStarSolver.h"
 #include "../include/solvers/GlobalSlackSolver.h"
+#include "../include/solvers/CMDPLinProgSolver.h"
 
 #include "../include/util/general.h"
 #include "../include/util/graph.h"
@@ -57,6 +58,11 @@ int main(int argc, char* args[])
     if (strcmp(args[2], "global") == 0) {
         GlobalSlackSolver gss(problem, tol, 1000000);
         gss.solve(problem->initialState());
+    } else if (strcmp(args[2], "lp") == 0) {
+        vector<double> targets(2);
+        targets[0] = 10000; targets[1] = 10000;
+        CMDPLinProgSolver lp(problem, targets);
+        lp.solve(problem->initialState());
     } else if (strcmp(args[2], "lao") == 0) {
         MOLAOStarSolver lao(problem, tol, 1000000);
         lao.solve(problem->initialState());

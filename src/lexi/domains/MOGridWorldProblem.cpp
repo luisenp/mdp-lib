@@ -16,6 +16,7 @@ MOGridWorldProblem::MOGridWorldProblem(int width, int height, int x0, int y0,
     mlcore::State* init = new MOGridWorldState(this, -2, -2);
     absorbing = new MOGridWorldState(this, -1, -1);
     s0 = this->addState(init);
+    absorbing = this->addState(absorbing);
     addAllActions();
 }
 
@@ -23,7 +24,7 @@ double MOGridWorldProblem::cost(mlcore::State* s, mlcore::Action* a, int i) cons
 {
     assert(i < size_);
 
-    if (s == absorbing)
+    if (s == absorbing || s == s0)
         return 0.0;
 
     MOGridWorldState* gws = (MOGridWorldState *) s;
@@ -63,7 +64,7 @@ MOGridWorldProblem::transition(mlcore::State* s, mlcore::Action* a, int index)
     std::list<mlcore::Successor> successors;
 
     if (s == s0) {
-        addSuccessor(state, successors, -1, -2, x0_, y0_, 1.0   );
+        addSuccessor(state, successors, -1, -2, x0_, y0_, 1.0);
         return successors;
     }
 

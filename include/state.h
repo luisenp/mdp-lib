@@ -286,6 +286,6 @@ typedef std::unordered_map<State*, Action*, StateHash, StateEqual> StateActionMa
  */
 typedef std::list<Successor> SuccessorsList;
 
-}
+}   // namespace mlcore
 
 #endif // MDPLIB_STATE_H

@@ -21,6 +21,18 @@ private:
     /* Time limit for LAO* in milliseconds */
     int timeLimit_;
 
+    /* Reset values for all states */
+    void resetStates(std::vector<double>& weights)
+    {
+        for (mlcore::State* x : problem_->states()) {
+            ((mlmobj::MOState * ) x)->resetCost(weights, -1);
+            ((mlmobj::MOState * ) x)->setBestAction(nullptr);
+        }
+    }
+
+    /* Temporary method (TODO: delete eventually if it doesn't work) */
+    mlcore::Action* binarySearch(mlcore::State* s);
+
 public:
 
     /**
@@ -47,7 +59,6 @@ public:
      * @param s0 The state to start the search at.
      */
     virtual mlcore::Action* solve(mlcore::State* s0);
-
 };
 
 }

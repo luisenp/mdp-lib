@@ -15,6 +15,49 @@ mlcore::Action* GlobalSlackSolver::solve(mlcore::State* s)
     mlmobj::MOState* state = (mlmobj::MOState* ) s;
 
     std::vector<double> weights(problem_->size(), 0.0);
+
+//    dprint1("Optima ");
+//    std::vector<double> optima;
+//    for (int i = 0; i < 3; i++) {
+//        for (int j = 0; j < 3; j++)
+//            weights[j] = 0.0;
+//        weights[i] = 1.0;
+//        resetStates(weights);
+//        problem_->weights(weights);
+//        internalSolver_->solve(s);
+//        for (int j = 0; j < 3; j++)
+//            std::cerr << state->mobjCost()[j] << " " << state->cost() << " - ";
+//        optima.push_back(state->cost());
+//        std::cerr << std::endl;
+//    }
+
+//    dprint1("\n Samples");
+    weights[0] = 1.0;
+    for (int i = 0; i < 100; i += 5.0)
+        for (int j = 0; j < 1000; j += 50.0) {
+            weights[1] = i; weights[2] = j;
+            problem_->weights(weights);
+            resetStates(weights);
+            internalSolver_->solve(s);
+            std::cerr << i << " " << j << " " << state->cost() << " ";
+            for (int j = 0; j < 3; j++)
+                std::cerr << state->mobjCost()[j] << " ";
+            std::cerr << std::endl;
+        }
+
+    return s->bestAction();
+}
+
+mlcore::Action* GlobalSlackSolver::binarySearch(mlcore::State* s)
+{
+    mlmobj::MOState* unsolved = nullptr;
+
+    double bestValue, worstValue, bestValue2;
+    double wBest = 1.0, wWorst = 0.0;
+
+    mlmobj::MOState* state = (mlmobj::MOState* ) s;
+
+    std::vector<double> weights(problem_->size(), 0.0);
     weights[0] = 1.0; weights[1] = 0.0;
     problem_->weights(weights);
     internalSolver_->solve(s);
@@ -77,7 +120,6 @@ mlcore::Action* GlobalSlackSolver::solve(mlcore::State* s)
 
     return s->bestAction();
 }
-
 
 }
 

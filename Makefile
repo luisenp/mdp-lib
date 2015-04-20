@@ -59,7 +59,7 @@ ALL_H = $(I_H) $(SOLV_H) $(DOM_H) $(UTIL_H)
 ALL_CPP = $(DOM_CPP) $(SOLV_CPP) $(UTIL_CPP)
 
 # Libraries
-LIBS = lib/libmdp.a
+LIBS = lib/libmdp.a -lgurobi_c++ -lgurobi60 -Llib
 
 #########################################################################
 #                                 TARGETS                               #
@@ -68,7 +68,7 @@ LIBS = lib/libmdp.a
 # Compiles the core MDP-LIB library #
 libmdp: $(S_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(UTIL_H)
 	rm -f *.o
-	$(CC) $(CFLAGS) $(INCLUDE_CORE) -c $(UTIL_CPP) $(S_CPP) $(SOLV_CPP) $(UTIL_CPP)
+	$(CC) $(CFLAGS) $(INCLUDE_CORE) -c $(UTIL_CPP) $(S_CPP) $(SOLV_CPP) $(UTIL_CPP) $(LIBS)
 	ar rvs libmdp.a *.o
 	mv libmdp.a lib
 	rm *.o
@@ -80,9 +80,9 @@ lexi: $(ALL_CPP) $(ALL_H)
 	src/lexi/domains/airplane/*.cpp
 	mv *.o test/
 	$(CC) $(CFLAGS) $(INCLUDE) -o testlexirace $(TD)/testLexiRace.cpp $(TD)/*.o $(LIBS)
-	#$(CC) $(CFLAGS) $(INCLUDE) -o testlexigw $(TD)/testLexiGW.cpp $(TD)/*.o $(LIBS)
+	$(CC) $(CFLAGS) $(INCLUDE) -o testlexigw $(TD)/testLexiGW.cpp $(TD)/*.o $(LIBS)
 	#$(CC) $(CFLAGS) $(INCLUDE) -o testlexiraw $(TD)/testLexiRaw.cpp $(TD)/*.o $(LIBS)
-	$(CC) $(CFLAGS) $(INCLUDE) -o testairplane $(TD)/testAirplane.cpp $(TD)/*.o $(LIBS)
+#	$(CC) $(CFLAGS) $(INCLUDE) -o testairplane $(TD)/testAirplane.cpp $(TD)/*.o $(LIBS)
 	rm test/*.o
 
 # Compiles the concurrent planning test program #
