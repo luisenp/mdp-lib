@@ -4,19 +4,18 @@
 #include <sstream>
 #include <unistd.h>
 
+#include "../include/domains/racetrack/RacetrackAction.h"
+#include "../include/lexi/domains/MORTrackDetHeuristic.h"
+#include "../include/lexi/domains/MORacetrackProblem.h"
+#include "../include/lexi/domains/MORacetrackState.h"
 #include "../include/solvers/solver.h"
+#include "../include/solvers/CMDPLinProgSolver.h"
+#include "../include/solvers/GlobalSlackSolver.h"
 #include "../include/solvers/LexiVISolver.h"
 #include "../include/solvers/MOLAOStarSolver.h"
-#include "../include/solvers/GlobalSlackSolver.h"
-#include "../include/solvers/CMDPLinProgSolver.h"
-
 #include "../include/util/general.h"
 #include "../include/util/graph.h"
 
-#include "../include/lexi/domains/MORacetrackProblem.h"
-#include "../include/lexi/domains/MORacetrackState.h"
-#include "../include/lexi/domains/MORTrackDetHeuristic.h"
-#include "../include/domains/racetrack/RacetrackAction.h"
 
 using namespace mlcore;
 using namespace mlsolvers;

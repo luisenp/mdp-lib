@@ -3,7 +3,7 @@
 
 #include "../../heuristic.h"
 
-#include "RacetrackProblem.h"
+#include "MORacetrackProblem.h"
 
 namespace mlmobj
 {

@@ -1,11 +1,13 @@
 #ifndef MDPLIB_CMDPLINPROGSOLVER_H
 #define MDPLIB_CMDPLINPROGSOLVER_H
 
-#include "../state.h"
-#include "../lexi/mobj_problem.h"
+#include <vector>
+
 #include "../lib/gurobi_c++.h"
 
-#include <vector>
+#include "RandomPolicy.h"
+#include "../lexi/mobj_problem.h"
+#include "../state.h"
 
 namespace mlsolvers
 {
@@ -24,6 +26,8 @@ class CMDPLinProgSolver
 private:
     mlmobj::MOProblem* problem_;
 
+    RandomPolicy* policy_;
+
     mlcore::StateIntMap stateIndex_;
 
     std::vector<double> constTargets_;
@@ -41,9 +45,13 @@ public:
     {
         problem_ = problem;
         constTargets_ = constTargets;
+        policy_ = nullptr;
     }
 
-    virtual ~CMDPLinProgSolver() {}
+    virtual ~CMDPLinProgSolver()
+    {
+        delete policy_;
+    }
 
     /**
      * Solves the associated problem using an LP-solver. The first cost function is
@@ -53,6 +61,11 @@ public:
      * @param constTargets the upper bounds for the constraints 2,3,...k.
      */
     void solve(mlcore::State* s0);
+
+    /**
+     * Returns the optimal random policy for the problem.
+     */
+    RandomPolicy* policy() { return policy_; }
 };
 
 } // namespace mlsolvers
