@@ -37,7 +37,7 @@ double MOGridWorldProblem::cost(mlcore::State* s, mlcore::Action* a, int i) cons
             costs.push_back(pdm[pos]);
         }
         else {
-            /* Assigning a higher cost of going down for all value functions except the first */
+            // Assigning a higher cost to DOWN, for all value functions except the first
             if (i > 0 && gwa->dir() == gridworld::DOWN)
                 costs.push_back(COST_DOWN_2 * actionCost_);
             else

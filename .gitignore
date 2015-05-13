@@ -36,6 +36,7 @@ testrace
 testlexi*
 testairplane
 *.txt
+*.lp.*
 data/*
 experiments/*
 scripts/*.track

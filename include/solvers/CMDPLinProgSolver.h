@@ -40,6 +40,8 @@ private:
 
     std::vector<double> CMDPConstRS_;
 
+    void solveDual(mlcore::State* s0);
+
 public:
     CMDPLinProgSolver(mlmobj::MOProblem* problem, std::vector<double>& constTargets)
     {

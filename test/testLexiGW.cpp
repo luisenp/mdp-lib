@@ -49,8 +49,7 @@ int main(int argc, char* args[])
     MOLAOStarSolver lao(problem, 0.0001, 10000000L);
     LexiVISolver vi(problem);
 
-    vector<double> targets(2);
-    targets[0] = 10000; targets[1] = 10000;
+    vector<double> targets(1, 20);
     CMDPLinProgSolver lp(problem, targets);
 
     if (strcmp(args[3], "lao") == 0) {
@@ -84,8 +83,10 @@ int main(int argc, char* args[])
             else
                 a = tmp->bestAction();
 
-            if (verbosity > 100)
+            if (verbosity > 100) {
                 cerr << endl << "STATE-ACTION *** " << tmp << " " << a << " " << endl;
+                dsleep(500);
+            }
 
             expectedCost[0] += discount * problem->cost(tmp, a, 0);
             expectedCost[1] += discount * problem->cost(tmp, a, 1);

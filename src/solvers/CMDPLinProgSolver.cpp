@@ -8,7 +8,7 @@
 namespace mlsolvers
 {
 
-void CMDPLinProgSolver::solve(mlcore::State* s0)
+void CMDPLinProgSolver::solveDual(mlcore::State* s0)
 {
     problem_->generateAll();
 
@@ -155,7 +155,7 @@ void CMDPLinProgSolver::solve(mlcore::State* s0)
                 actionProbs[idxAction] /= total;
         }
         policy_->addActionsState(s, actionProbs);
-    }   // states
+    }   // end build policy
     dprint1(totalSum);
 
     delete[] variables;
@@ -163,6 +163,118 @@ void CMDPLinProgSolver::solve(mlcore::State* s0)
     delete[] CMDPConstLHS;
 
 }   // solve
+
+void CMDPLinProgSolver::solve(mlcore::State* s0)
+{
+    problem_->generateAll();
+
+    GRBEnv env = GRBEnv();
+    GRBModel model = GRBModel(env);
+
+    int idx = 0;
+    for (mlcore::State* s : problem_->states())
+        stateIndex_[s] = idx++;
+
+    int numStates = idx;
+    int numActions = problem_->actions().size();
+    int K = constTargets_.size();
+    int numVariables = numStates + K;
+
+    // Creating the variables and setting up objective function
+    dprint1("Creating variables and objective function");
+    GRBVar* variables = new GRBVar[numVariables];
+    GRBLinExpr objFun = 0.0;
+    for (mlcore::State* s : problem_->states()) {
+        int idxState = stateIndex_[s];
+        int varIdx = idxState;
+        variables[varIdx] = model.addVar(0.0, GRB_INFINITY, 0.0, GRB_CONTINUOUS);
+        if (s == problem_->initialState())
+            objFun += variables[varIdx];
+    }
+    for (int i = 0; i < K; i++) {
+        variables[numStates + i] = model.addVar(0.0, GRB_INFINITY, 0.0, GRB_CONTINUOUS);
+        objFun -= constTargets_[i] * variables[numStates + i];
+    }
+
+    model.update();
+    model.setObjective(objFun, GRB_MAXIMIZE);
+    model.update();
+
+    // Creating LP constraints
+    int numConstraints = numStates * numActions;
+    dprint2("Creating constraints ", numConstraints);
+    GRBLinExpr* MDPConstLHS = new GRBLinExpr[numConstraints];
+    for (mlcore::State* s : problem_->states()) {
+        int idxAction = -1;
+        int idxState = stateIndex_[s];
+        for (mlcore::Action* a : problem_->actions()) {
+            idxAction++;
+            if (!problem_->applicable(s, a))
+                continue;
+
+            // setting up MDP constraints left-hand side
+            int idxConst = idxState * numActions + idxAction;
+            GRBLinExpr& aux1 = MDPConstLHS[idxConst];
+            aux1 += variables[idxState];
+            for (mlcore::Successor su : problem_->transition(s, a)) {
+                int idxSucc = stateIndex_[su.su_state];
+                aux1 -= problem_->gamma() * su.su_prob * variables[idxSucc];
+            }
+            for (int i = 0; i < K; i++)
+                aux1 -= problem_->cost(s, a, i + 1) * variables[numStates + i];
+
+            GRBLinExpr rhs = problem_->cost(s, a, 0);
+            model.addConstr(MDPConstLHS[idxConst], GRB_LESS_EQUAL, rhs);
+            model.update();
+        }
+    }
+
+    try {
+        model.write("file.lp");
+    } catch(GRBException e) {
+        std::cerr << "Error code = " << e.getErrorCode() << std::endl;
+        std::cerr << e.getMessage() << std::endl;
+    }
+
+    // solving the model
+    model.optimize();
+
+    dprint1("Extracting policy");
+
+    // Extracting the policy
+    policy_ = new RandomPolicy(problem_, numStates);
+    for (mlcore::State* s : problem_->states()) {
+        int idxState = stateIndex_[s];
+        double bestCost = -1.0e10;
+        mlcore::Action* bestAction = nullptr;
+        std::vector <double> actionProbs(problem_->actions().size());
+        int idxAction = -1;
+        for (mlcore::Action* a : problem_->actions()) {
+            idxAction++;
+            if (!problem_->applicable(s, a))
+                continue;
+            int idxConst = idxState * numActions + idxAction;
+            double qvalue = MDPConstLHS[idxConst].getValue();
+            if (qvalue > bestCost || bestAction == nullptr) {
+                bestAction = a;
+                bestCost = qvalue;
+            }
+        }
+        idxAction = -1;
+        for (mlcore::Action* a : problem_->actions()) {
+            idxAction++;
+            if (!problem_->applicable(s, a))
+                continue;
+            actionProbs[idxAction] = (a == bestAction)? 1.0 : 0.0;
+        }
+        policy_->addActionsState(s, actionProbs);
+    }   // end build policy
+
+    delete[] variables;
+    delete[] MDPConstLHS;
+
+}   // solve
+
 
 } // namespace mlsolvers
 
