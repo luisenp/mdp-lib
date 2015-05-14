@@ -11,10 +11,10 @@
 #include "../include/util/general.h"
 #include "../include/util/graph.h"
 
-#include "../include/lexi/domains/airplane/AirplaneProblem.h"
-#include "../include/lexi/domains/airplane/AirplaneState.h"
-#include "../include/lexi/domains/airplane/AirplaneAction.h"
-#include "../include/lexi/domains/airplane/AirplaneHeuristic.h"
+#include "../include/mobj/domains/airplane/AirplaneProblem.h"
+#include "../include/mobj/domains/airplane/AirplaneState.h"
+#include "../include/mobj/domains/airplane/AirplaneAction.h"
+#include "../include/mobj/domains/airplane/AirplaneHeuristic.h"
 
 using namespace mlcore;
 using namespace mlsolvers;

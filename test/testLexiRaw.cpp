@@ -5,15 +5,15 @@
 #include <unistd.h>
 
 #include "../include/solvers/solver.h"
-#include "../include/solvers/mobj/MOVISolver.h"
+#include "../include/solvers/mobj/LexiVISolver.h"
 #include "../include/solvers/mobj/MOLAOStarSolver.h"
 
 #include "../include/util/general.h"
 #include "../include/util/graph.h"
 
-#include "../include/lexi/domains/RawFileMOProblem.h"
-#include "../include/lexi/domains/RawFileMOState.h"
-#include "../include/lexi/domains/RawFileMOAction.h"
+#include "../include/mobj/domains/RawFileMOProblem.h"
+#include "../include/mobj/domains/RawFileMOState.h"
+#include "../include/mobj/domains/RawFileMOAction.h"
 
 using namespace mlcore;
 using namespace mlsolvers;
@@ -55,12 +55,12 @@ int main(int argc, char* args[])
     clock_t endTime = clock();
     if (verbosity > 0) {
         cerr << "Estimated cost "
-             << ((MOState *) problem->initialState())->lexiCost()[0] << " "
-             << ((MOState *) problem->initialState())->lexiCost()[1] << endl;
+             << ((MOState *) problem->initialState())->mobjCost()[0] << " "
+             << ((MOState *) problem->initialState())->mobjCost()[1] << endl;
         cerr << "Time " << ((endTime - startTime + 0.0) / CLOCKS_PER_SEC) << endl;
     } else {
-        cerr << ((MOState *) problem->initialState())->lexiCost()[0] << " "
-             << ((MOState *) problem->initialState())->lexiCost()[1] << endl;
+        cerr << ((MOState *) problem->initialState())->mobjCost()[0] << " "
+             << ((MOState *) problem->initialState())->mobjCost()[1] << endl;
     }
 
     int nsims = argc > 4 ? atoi(args[4]) : 1;

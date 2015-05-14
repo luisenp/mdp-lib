@@ -5,11 +5,11 @@
 #include <unistd.h>
 
 #include "../include/domains/racetrack/RacetrackAction.h"
-#include "../include/lexi/domains/MORTrackDetHeuristic.h"
-#include "../include/lexi/domains/MORacetrackProblem.h"
-#include "../include/lexi/domains/MORacetrackState.h"
+#include "../include/mobj/domains/MORTrackDetHeuristic.h"
+#include "../include/mobj/domains/MORacetrackProblem.h"
+#include "../include/mobj/domains/MORacetrackState.h"
 #include "../include/solvers/solver.h"
-#include "../include/solvers/mobj/CMDPLinProgSolver.h"
+#include "../include/solvers/mobj/CMDPSolver.h"
 #include "../include/solvers/mobj/GlobalSlackSolver.h"
 #include "../include/solvers/mobj/LexiVISolver.h"
 #include "../include/solvers/mobj/MOLAOStarSolver.h"
@@ -60,7 +60,7 @@ int main(int argc, char* args[])
     } else if (strcmp(args[2], "lp") == 0) {
         vector<double> targets(2);
         targets[0] = 10000; targets[1] = 10000;
-        CMDPLinProgSolver lp(problem, targets);
+        CMDPSolver lp(problem, targets);
         lp.solve(problem->initialState());
     } else if (strcmp(args[2], "lao") == 0) {
         MOLAOStarSolver lao(problem, tol, 1000000);

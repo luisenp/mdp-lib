@@ -3,10 +3,10 @@
 
 #include "../include/domains/gridworld/GridWorldAction.h"
 #include "../include/domains/gridworld/GridWorldState.h"
-#include "../include/lexi/domains/MOGridWorldProblem.h"
-#include "../include/lexi/domains/MOGWManhattanHeuristic.h"
-#include "../include/lexi/mobj_problem.h"
-#include "../include/solvers/mobj/CMDPLinProgSolver.h"
+#include "../include/mobj/domains/MOGridWorldProblem.h"
+#include "../include/mobj/domains/MOGWManhattanHeuristic.h"
+#include "../include/mobj/mobj_problem.h"
+#include "../include/solvers/mobj/CMDPSolver.h"
 #include "../include/solvers/mobj/LexiVISolver.h"
 #include "../include/solvers/mobj/MOLAOStarSolver.h"
 #include "../include/solvers/solver.h"
@@ -50,7 +50,7 @@ int main(int argc, char* args[])
     LexiVISolver vi(problem);
 
     vector<double> targets(1, 20);
-    CMDPLinProgSolver lp(problem, targets);
+    CMDPSolver lp(problem, targets);
 
     if (strcmp(args[3], "lao") == 0) {
         dprint2("SOLVING WITH LAO", problem->initialState());

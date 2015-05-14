@@ -9,7 +9,8 @@
 namespace mlsolvers
 {
 /**
- * A MDP solver that using Value Iteration.
+ * A LMDP solver that uses Lexicographic Value Iteration (LVI).
+ * See http://anytime.cs.umass.edu/shlomo/papers/WZMaaai15.pdf
  */
 class LexiVISolver : public Solver
 {
