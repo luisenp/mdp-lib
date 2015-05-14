@@ -49,8 +49,9 @@ int main(int argc, char* args[])
     MOLAOStarSolver lao(problem, 0.0001, 10000000L);
     LexiVISolver vi(problem);
 
+    vector<int> constIndices(1, 1);
     vector<double> targets(1, 20);
-    CMDPSolver lp(problem, targets);
+    CMDPSolver lp(problem, 0, constIndices, targets);
 
     if (strcmp(args[3], "lao") == 0) {
         dprint2("SOLVING WITH LAO", problem->initialState());

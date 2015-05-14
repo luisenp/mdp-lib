@@ -1,6 +1,7 @@
 #ifndef MDPLIB_CMDPLINPROGSOLVER_H
 #define MDPLIB_CMDPLINPROGSOLVER_H
 
+#include <cassert>
 #include <vector>
 
 #include "../../lib/gurobi_c++.h"
@@ -30,6 +31,10 @@ private:
 
     mlcore::StateIntMap stateIndex_;
 
+    int indexObjFun_;
+
+    std::vector<int> constIndices_;
+
     std::vector<double> constTargets_;
 
     std::vector< std::vector<double> > MDPConstraints_;
@@ -43,10 +48,27 @@ private:
     void solveDual(mlcore::State* s0);
 
 public:
-    CMDPSolver(mlmobj::MOProblem* problem, std::vector<double>& constTargets)
+    /**
+     * Creates a CMDPSolver for the given problem. This constructor receives the
+     * index of the objective function and a permutation of the remaining indices
+     * corresponding to the CMDP constraints.
+     *
+     * Let <C[0], C[1], ..., C[m]> be the vector of cost functions defined in the given
+     * MOProblem. Then, the constructed CMDPSolver solves:
+     *
+     * min C[indexObjFun_]
+     * s.t.
+     *      C[constIndices[i]] <= constTargets[i], for i = 1:m-1
+     */
+    CMDPSolver(mlmobj::MOProblem* problem, int indexObjFun,
+               std::vector<int>& constIndices, std::vector<double>& constTargets)
     {
+        assert(constTargets.size() == constIndices.size());
+        assert(constTargets.size() < problem->size());
         problem_ = problem;
         constTargets_ = constTargets;
+        constIndices_ = constIndices;
+        indexObjFun_ = indexObjFun;
         policy_ = nullptr;
     }
 
@@ -54,6 +76,12 @@ public:
     {
         delete policy_;
     }
+
+    /**
+     * Sets the index of the objective function in the cost function order
+     * imposed by the MOProblem. The constraints will be all other cost functions.
+     */
+    void indexObjFun(int index) { indexObjFun_ = index; }
 
     /**
      * Solves the associated problem using an LP-solver. The first cost function is

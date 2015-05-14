@@ -180,6 +180,7 @@ void CMDPSolver::solve(mlcore::State* s0)
     int K = constTargets_.size();
     int numVariables = numStates + K;
 
+    dprint1(K);
     // Creating the variables and setting up objective function
     dprint1("Creating variables and objective function");
     GRBVar* variables = new GRBVar[numVariables];
@@ -220,10 +221,12 @@ void CMDPSolver::solve(mlcore::State* s0)
                 int idxSucc = stateIndex_[su.su_state];
                 aux1 -= problem_->gamma() * su.su_prob * variables[idxSucc];
             }
-            for (int i = 0; i < K; i++)
-                aux1 -= problem_->cost(s, a, i + 1) * variables[numStates + i];
+            for (int i = 0; i < K; i++) {
+//                dprint4("test ", i, " ", constIndices_[i]);
+                aux1 -= problem_->cost(s, a, constIndices_[i]) * variables[numStates + i];
+            }
 
-            GRBLinExpr rhs = problem_->cost(s, a, 0);
+            GRBLinExpr rhs = problem_->cost(s, a, indexObjFun_);
             model.addConstr(MDPConstLHS[idxConst], GRB_LESS_EQUAL, rhs);
             model.update();
         }

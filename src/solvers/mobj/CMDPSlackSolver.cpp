@@ -1,11 +1,11 @@
 #include "../../../include/solvers/mobj/CMDPSlackSolver.h"
 
-//CMDPSlackSolver::CMDPSlackSolver()
-//{
-//    //ctor
-//}
-//
-//CMDPSlackSolver::~CMDPSlackSolver()
-//{
-//    //dtor
-//}
+namespace mlsolvers
+{
+
+mlcore::Action* CMDPSlackSolver::solve(mlcore::State* s0)
+{
+
+}
+
+} // mlsolvers

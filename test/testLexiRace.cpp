@@ -59,8 +59,10 @@ int main(int argc, char* args[])
         gss.solve(problem->initialState());
     } else if (strcmp(args[2], "lp") == 0) {
         vector<double> targets(2);
+        vector<int> constIndices(2);
+        constIndices[0] = 1; constIndices[1] = 2;
         targets[0] = 10000; targets[1] = 10000;
-        CMDPSolver lp(problem, targets);
+        CMDPSolver lp(problem, 0, constIndices, targets);
         lp.solve(problem->initialState());
     } else if (strcmp(args[2], "lao") == 0) {
         MOLAOStarSolver lao(problem, tol, 1000000);
