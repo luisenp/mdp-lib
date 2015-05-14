@@ -8,8 +8,8 @@
 #include "../../state.h"
 #include "../../domains/gridworld/GridWorldProblem.h"
 #include "../../domains/gridworld/GridWorldAction.h"
-#include "../../lexi/mobj_problem.h"
-#include "../../lexi/domains/MOGridWorldState.h"
+#include "../mobj_problem.h"
+#include "../domains/MOGridWorldState.h"
 
 namespace mlmobj
 {

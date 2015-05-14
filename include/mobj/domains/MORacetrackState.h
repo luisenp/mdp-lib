@@ -5,8 +5,8 @@
 
 #include "../../state.h"
 #include "../../problem.h"
-#include "../../../include/lexi/mobj_problem.h"
-#include "../../../include/lexi/mobj_state.h"
+#include "../mobj_problem.h"
+#include "../mobj_state.h"
 
 #include "../../../include/domains/racetrack/RacetrackState.h"
 

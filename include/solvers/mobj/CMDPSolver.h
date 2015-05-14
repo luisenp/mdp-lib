@@ -6,7 +6,7 @@
 #include "../../lib/gurobi_c++.h"
 
 #include "RandomPolicy.h"
-#include "../../lexi/mobj_problem.h"
+#include "../../mobj/mobj_problem.h"
 #include "../../state.h"
 
 namespace mlsolvers

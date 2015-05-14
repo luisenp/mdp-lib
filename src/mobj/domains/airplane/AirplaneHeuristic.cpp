@@ -2,9 +2,9 @@
 
 #include "../../../include/state.h"
 
-#include "../../../../include/lexi/domains/airplane/AirplaneHeuristic.h"
-#include "../../../../include/lexi/domains/airplane/AirplaneProblem.h"
-#include "../../../../include/lexi/domains/airplane/AirplaneState.h"
+#include "../../../../include/mobj/domains/airplane/AirplaneHeuristic.h"
+#include "../../../../include/mobj/domains/airplane/AirplaneProblem.h"
+#include "../../../../include/mobj/domains/airplane/AirplaneState.h"
 
 namespace mlmobj
 {

@@ -1,5 +1,5 @@
-#include "../../../include/lexi/domains/MORacetrackProblem.h"
-#include "../../../include/lexi/domains/MORacetrackState.h"
+#include "../../../include/mobj/domains/MORacetrackProblem.h"
+#include "../../../include/mobj/domains/MORacetrackState.h"
 
 #include "../../../include/domains/racetrack/RacetrackProblem.h"
 #include "../../../include/domains/racetrack/RacetrackState.h"

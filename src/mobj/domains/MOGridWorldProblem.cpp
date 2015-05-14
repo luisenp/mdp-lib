@@ -1,5 +1,5 @@
-#include "../../../include/lexi/domains/MOGridWorldState.h"
-#include "../../../include/lexi/domains/MOGridWorldProblem.h"
+#include "../../../include/mobj/domains/MOGridWorldState.h"
+#include "../../../include/mobj/domains/MOGridWorldProblem.h"
 
 #include <cassert>
 

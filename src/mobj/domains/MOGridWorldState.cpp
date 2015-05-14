@@ -1,4 +1,4 @@
-#include "../../../include/lexi/domains/MOGridWorldState.h"
+#include "../../../include/mobj/domains/MOGridWorldState.h"
 
 namespace mlmobj
 {

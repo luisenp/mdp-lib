@@ -4,9 +4,9 @@
 #include "../../../include/state.h"
 #include "../../../include/solvers/VISolver.h"
 
-#include "../../../include/lexi/domains/MORacetrackProblem.h"
-#include "../../../include/lexi/domains/MORacetrackState.h"
-#include "../../../include/lexi/domains/MORTrackDetHeuristic.h"
+#include "../../../include/mobj/domains/MORacetrackProblem.h"
+#include "../../../include/mobj/domains/MORacetrackState.h"
+#include "../../../include/mobj/domains/MORTrackDetHeuristic.h"
 
 namespace mlmobj
 {

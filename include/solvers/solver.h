@@ -7,8 +7,8 @@
 #include <mutex>
 
 #include "../../include/problem.h"
-#include "../../include/lexi/mobj_problem.h"
-#include "../../include/lexi/mobj_state.h"
+#include "../../include/mobj/mobj_problem.h"
+#include "../../include/mobj/mobj_state.h"
 #include "../../include/heuristic.h"
 #include "../../include/state.h"
 #include "../../include/util/general.h"

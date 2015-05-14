@@ -4,9 +4,9 @@
 
 #include "../../../include/state.h"
 
-#include "../../../include/lexi/domains/RawFileMOProblem.h"
-#include "../../../include/lexi/domains/RawFileMOState.h"
-#include "../../../include/lexi/domains/RawFileMOAction.h"
+#include "../../../include/mobj/domains/RawFileMOProblem.h"
+#include "../../../include/mobj/domains/RawFileMOState.h"
+#include "../../../include/mobj/domains/RawFileMOAction.h"
 
 namespace mlmobj
 {

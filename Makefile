@@ -78,11 +78,11 @@ libmdp: $(S_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(SOLV_MOBJ_H) $(UTIL_
 	mv libmdp.a lib
 	rm *.o
 
-# Compiles the lexicographic SSPP library #
-lexi: $(ALL_CPP) $(ALL_H)
-	$(CC) $(CFLAGS) $(INCLUDE) -Iinclude/lexi/*.h -Iinclude/lexi/domains/*.h \
-	-Iinclude/lexi/domains/airplane/*.h -c src/lexi/domains/*.cpp $(GW_CPP) \
-	src/lexi/domains/airplane/*.cpp
+# Compiles the multiobjective MDP library #
+mobj: $(ALL_CPP) $(ALL_H)
+	$(CC) $(CFLAGS) $(INCLUDE) -Iinclude/mobj/*.h -Iinclude/mobj/domains/*.h \
+	-Iinclude/mobj/domains/airplane/*.h -c src/mobj/domains/*.cpp $(GW_CPP) \
+	src/mobj/domains/airplane/*.cpp
 	mv *.o test/
 	$(CC) $(CFLAGS) $(INCLUDE) -o testlexirace $(TD)/testLexiRace.cpp $(TD)/*.o $(LIBS)
 	$(CC) $(CFLAGS) $(INCLUDE) -o testlexigw $(TD)/testLexiGW.cpp $(TD)/*.o $(LIBS)
