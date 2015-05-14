@@ -1,4 +1,4 @@
-#include "../../include/solvers/CMDPLinProgSolver.h"
+#include "../../../include/solvers/mobj/CMDPSolver.h"
 
 #include <string>
 #include <ostream>
@@ -8,7 +8,7 @@
 namespace mlsolvers
 {
 
-void CMDPLinProgSolver::solveDual(mlcore::State* s0)
+void CMDPSolver::solveDual(mlcore::State* s0)
 {
     problem_->generateAll();
 
@@ -164,7 +164,7 @@ void CMDPLinProgSolver::solveDual(mlcore::State* s0)
 
 }   // solve
 
-void CMDPLinProgSolver::solve(mlcore::State* s0)
+void CMDPSolver::solve(mlcore::State* s0)
 {
     problem_->generateAll();
 

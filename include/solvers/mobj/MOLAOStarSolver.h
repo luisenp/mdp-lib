@@ -1,7 +1,8 @@
 #ifndef MDPLIB_MOLAOSTARSOLVER_H
 #define MDPLIB_MOLAOSTARSOLVER_H
 
-#include "../lexi/mobj_problem.h"
+#include "../solver.h"
+#include "../../lexi/mobj_problem.h"
 
 namespace mlsolvers
 {

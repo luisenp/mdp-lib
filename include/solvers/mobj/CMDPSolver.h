@@ -3,11 +3,11 @@
 
 #include <vector>
 
-#include "../lib/gurobi_c++.h"
+#include "../../lib/gurobi_c++.h"
 
 #include "RandomPolicy.h"
-#include "../lexi/mobj_problem.h"
-#include "../state.h"
+#include "../../lexi/mobj_problem.h"
+#include "../../state.h"
 
 namespace mlsolvers
 {
@@ -21,7 +21,7 @@ namespace mlsolvers
  *
  * This class uses the Gurobi LP-Solver available at http://www.gurobi.com/
  */
-class CMDPLinProgSolver
+class CMDPSolver
 {
 private:
     mlmobj::MOProblem* problem_;
@@ -43,14 +43,14 @@ private:
     void solveDual(mlcore::State* s0);
 
 public:
-    CMDPLinProgSolver(mlmobj::MOProblem* problem, std::vector<double>& constTargets)
+    CMDPSolver(mlmobj::MOProblem* problem, std::vector<double>& constTargets)
     {
         problem_ = problem;
         constTargets_ = constTargets;
         policy_ = nullptr;
     }
 
-    virtual ~CMDPLinProgSolver()
+    virtual ~CMDPSolver()
     {
         delete policy_;
     }

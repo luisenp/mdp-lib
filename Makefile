@@ -15,6 +15,8 @@ ID_UTIL = $(ID)/util
 SD_UTIL = $(SD)/util
 ID_SOLV = $(ID)/solvers
 SD_SOLV = $(SD)/solvers
+ID_SOLV_MOBJ = $(ID)/solvers/mobj
+SD_SOLV_MOBJ = $(SD)/solvers/mobj
 
 ID_DOM = $(ID)/domains
 SD_DOM = $(SD)/domains
@@ -31,7 +33,7 @@ ID_RACE = $(ID_DOM)/racetrack
 
 # Variables for include directives #
 INCLUDE_DOM = -I$(ID_GW) -I$(ID_CTP) -I$(ID_SAIL) -I$(ID_DOM) -I$(ID_RACE)
-INCLUDE_CORE = -I$(ID_SOLV) -I$(ID_UTIL) -I$(ID)
+INCLUDE_CORE = -I$(ID_SOLV) -I-I$(ID_SOLV_MOBJ) -I$(ID_UTIL) -I$(ID)
 INCLUDE = $(INCLUDE_DOM) $(INCLUDE_CORE)
 
 # Variables for source/header files #
@@ -39,6 +41,8 @@ I_H = $(ID)/*.h
 S_CPP = $(SD)/*.cpp
 SOLV_CPP = $(SD_SOLV)/*.cpp
 SOLV_H = $(ID_SOLV)/*.h
+SOLV_MOBJ_CPP = $(SD_SOLV_MOBJ)/*.cpp
+SOLV_MOBJ_H = $(ID_SOLV_MOBJ)/*.h
 UTIL_CPP = $(SD_UTIL)/*.cpp
 UTIL_H = $(ID_UTIL)/*.h
 
@@ -55,8 +59,8 @@ RACE_H = $(ID_RACE)/*.h
 DOM_CPP = $(GW_CPP) $(CTP_CPP) $(SAIL_CPP) $(RACE_CPP) $(SD_DOM)/*.cpp
 DOM_H = $(GW_H) $(CTP_H) $(SAIL_H) $(RACE_H)
 
-ALL_H = $(I_H) $(SOLV_H) $(DOM_H) $(UTIL_H)
-ALL_CPP = $(DOM_CPP) $(SOLV_CPP) $(UTIL_CPP)
+ALL_H = $(I_H) $(SOLV_H) $(SOLV_MOBJ_H) $(DOM_H) $(UTIL_H)
+ALL_CPP = $(DOM_CPP) $(SOLV_CPP) $(SOLV_MOBJ_CPP) $(UTIL_CPP)
 
 # Libraries
 LIBS = lib/libmdp.a -lgurobi_c++ -lgurobi60 -Llib
@@ -66,9 +70,10 @@ LIBS = lib/libmdp.a -lgurobi_c++ -lgurobi60 -Llib
 #########################################################################
 
 # Compiles the core MDP-LIB library #
-libmdp: $(S_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(UTIL_H)
+libmdp: $(S_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(SOLV_MOBJ_H) $(UTIL_H)
 	rm -f *.o
-	$(CC) $(CFLAGS) $(INCLUDE_CORE) -c $(UTIL_CPP) $(S_CPP) $(SOLV_CPP) $(UTIL_CPP) $(LIBS)
+	$(CC) $(CFLAGS) $(INCLUDE_CORE) -c $(UTIL_CPP) $(S_CPP) $(SOLV_CPP) \
+	$(SOLV_MOBJ_CPP) $(UTIL_CPP) $(LIBS)
 	ar rvs libmdp.a *.o
 	mv libmdp.a lib
 	rm *.o

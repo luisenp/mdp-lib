@@ -6,9 +6,9 @@
 #include "../include/lexi/domains/MOGridWorldProblem.h"
 #include "../include/lexi/domains/MOGWManhattanHeuristic.h"
 #include "../include/lexi/mobj_problem.h"
-#include "../include/solvers/CMDPLinProgSolver.h"
-#include "../include/solvers/LexiVISolver.h"
-#include "../include/solvers/MOLAOStarSolver.h"
+#include "../include/solvers/mobj/CMDPLinProgSolver.h"
+#include "../include/solvers/mobj/LexiVISolver.h"
+#include "../include/solvers/mobj/MOLAOStarSolver.h"
 #include "../include/solvers/solver.h"
 #include "../include/util/general.h"
 

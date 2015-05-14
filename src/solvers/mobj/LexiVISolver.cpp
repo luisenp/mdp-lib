@@ -2,13 +2,13 @@
 #include <climits>
 #include <cmath>
 
-#include "../../include/lexi/domains/MORacetrackState.h"
+#include "../../../include/lexi/domains/MORacetrackState.h"
 
-#include "../../include/solvers/solver.h"
-#include "../../include/solvers/LexiVISolver.h"
-#include "../../include/lexi/mobj_problem.h"
-#include "../../include/lexi/mobj_state.h"
-#include "../../include/util/general.h"
+#include "../../../include/solvers/solver.h"
+#include "../../../include/solvers/mobj/LexiVISolver.h"
+#include "../../../include/lexi/mobj_problem.h"
+#include "../../../include/lexi/mobj_state.h"
+#include "../../../include/util/general.h"
 
 namespace mlsolvers
 {

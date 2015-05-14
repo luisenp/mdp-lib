@@ -1,6 +1,6 @@
-#include "../../include/util/general.h"
-#include "../../include/solvers/solver.h"
-#include "../../include/solvers/GlobalSlackSolver.h"
+#include "../../../include/util/general.h"
+#include "../../../include/solvers/solver.h"
+#include "../../../include/solvers/mobj/GlobalSlackSolver.h"
 
 namespace mlsolvers
 {

@@ -5,8 +5,8 @@
 #include <unistd.h>
 
 #include "../include/solvers/solver.h"
-#include "../include/solvers/LexiVISolver.h"
-#include "../include/solvers/MOLAOStarSolver.h"
+#include "../include/solvers/mobj/LexiVISolver.h"
+#include "../include/solvers/mobj/MOLAOStarSolver.h"
 
 #include "../include/util/general.h"
 #include "../include/util/graph.h"

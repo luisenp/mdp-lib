@@ -1,0 +1,6 @@
+#ifndef MDPLIB_CMDPSLACKSOLVER_H
+#define MDPLIB_CMDPSLACKSOLVER_H
+
+#include "MOLAOStarSolver.h"
+
+#endif // MDPLIB_CMDPSLACKSOLVER_H

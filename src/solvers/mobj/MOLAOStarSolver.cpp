@@ -1,6 +1,6 @@
-#include "../../include/util/general.h"
-#include "../../include/solvers/solver.h"
-#include "../../include/solvers/MOLAOStarSolver.h"
+#include "../../../include/util/general.h"
+#include "../../../include/solvers/solver.h"
+#include "../../../include/solvers/mobj/MOLAOStarSolver.h"
 
 #include <ctime>
 

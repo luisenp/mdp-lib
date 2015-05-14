@@ -1,10 +1,10 @@
 #ifndef MDPLIB_LEXIVISOLVER_H
 #define MDPLIB_LEXIVISOLVER_H
 
-#include "../problem.h"
-#include "../state.h"
+#include "../../problem.h"
+#include "../../state.h"
 
-#include "solver.h"
+#include "../solver.h"
 
 namespace mlsolvers
 {
