@@ -8,7 +8,12 @@
 namespace mlsolvers
 {
 
-void CMDPSolver::solveDual(mlcore::State* s0)
+double CMDPSolver::solve(mlcore::State* s0)
+{
+    return CMDPSolver::solveDual(s0);
+}
+
+double CMDPSolver::solvePrimal(mlcore::State* s0)
 {
     problem_->generateAll();
 
@@ -38,19 +43,18 @@ void CMDPSolver::solveDual(mlcore::State* s0)
             int varIdx = idxState * numActions + idxAction;
             std::ostringstream oss;
             oss << s << "_" << a;
-//            dprint5(s, " ", a, " ", varIdx);
             variables[varIdx] = model.addVar(0.0, GRB_INFINITY, 0.0, GRB_CONTINUOUS, oss.str());
-            objFun += problem_->cost(s, a, 0) * variables[varIdx];
+            objFun += problem_->cost(s, a, indexObjFun_) * variables[varIdx];
         }
     }
     model.update();
     model.setObjective(objFun, GRB_MINIMIZE);
     model.update();
-//    dprint2("Objective Function ", objFun);
 
     // Creating LP constraints
+    int K = constTargets_.size();
     GRBLinExpr* MDPConstLHS = new GRBLinExpr[numStates];
-    GRBLinExpr* CMDPConstLHS = new GRBLinExpr[problem_->size() - 1];
+    GRBLinExpr* CMDPConstLHS = new GRBLinExpr[K];
     for (mlcore::State* s : problem_->states()) {
         int idxAction = -1;
         int idxState = stateIndex_[s];
@@ -67,35 +71,31 @@ void CMDPSolver::solveDual(mlcore::State* s0)
 
             for (mlcore::Successor su : problem_->transition(s, a)) {
                 int idxSucc = stateIndex_[su.su_state];
-//                dprint3(varIdx, " ", idxSucc);
                 GRBLinExpr& aux2 = MDPConstLHS[idxSucc];
                 aux2 -= problem_->gamma() * su.su_prob * variables[varIdx];
             }
 
             // setting up CMDP constraints left-hand side
-            for (int i = 1; i < problem_->size(); i++) {
-                GRBLinExpr& aux3 = CMDPConstLHS[i - 1];
-                aux3 += problem_->cost(s, a, i) * variables[varIdx];
+            for (int i = 0; i < K; i++) {
+                GRBLinExpr& aux3 = CMDPConstLHS[i];
+                aux3 += problem_->cost(s, a, constIndices_[i]) * variables[varIdx];
             }
         }
-//        dprint1(MDPConstLHS[idxState]);
     }
 
     // adding LP constraints
-//    dprint1("\n MDP constraints");
     for (mlcore::State* s : problem_->states()) {
         int idxState = stateIndex_[s];
         double b = (s == problem_->initialState()) ? 1.0 : 0.0;
         GRBLinExpr rhs = b * (1 - problem_->gamma());
-        model.addConstr(MDPConstLHS[idxState], GRB_GREATER_EQUAL, rhs);
-        model.update();
+        model.addConstr(MDPConstLHS[idxState], GRB_EQUAL, rhs);
     }
-//    dprint1("\n CMDP constraints");
-//    for (int i = 1; i < problem_->size(); i++) {
-//        GRBLinExpr rhs = constTargets_[i - 1];
-//        model.addConstr(CMDPConstLHS[i - 1], GRB_LESS_EQUAL, rhs);
-//        model.update();
-//    }
+    for (int i = 0; i < K; i++) {
+        GRBLinExpr rhs = constTargets_[i];
+        model.addConstr(CMDPConstLHS[i], GRB_LESS_EQUAL, rhs);
+    }
+
+    model.update();
 
     try {
         model.write("file.lp");
@@ -105,6 +105,8 @@ void CMDPSolver::solveDual(mlcore::State* s0)
     }
 
     // solving the model
+    model.getEnv().set(GRB_IntParam_Method, 0);
+    model.getEnv().set(GRB_IntParam_LogToConsole, 1);
     model.optimize();
 
     // Extracting the policy
@@ -123,7 +125,6 @@ void CMDPSolver::solveDual(mlcore::State* s0)
             }
             int varIdx = idxState * numActions + idxAction;
             double varValue = variables[varIdx].get(GRB_DoubleAttr_X);
-            dprint5(s, " ", a, " ", varValue);
             actionProbs.push_back(varValue);
             total += varValue;
             totalSum += varValue;
@@ -156,15 +157,15 @@ void CMDPSolver::solveDual(mlcore::State* s0)
         }
         policy_->addActionsState(s, actionProbs);
     }   // end build policy
-    dprint1(totalSum);
 
     delete[] variables;
     delete[] MDPConstLHS;
     delete[] CMDPConstLHS;
 
+    return objFun.getValue();
 }   // solve
 
-void CMDPSolver::solve(mlcore::State* s0)
+double CMDPSolver::solveDual(mlcore::State* s0)
 {
     problem_->generateAll();
 
@@ -180,9 +181,7 @@ void CMDPSolver::solve(mlcore::State* s0)
     int K = constTargets_.size();
     int numVariables = numStates + K;
 
-    dprint1(K);
     // Creating the variables and setting up objective function
-    dprint1("Creating variables and objective function");
     GRBVar* variables = new GRBVar[numVariables];
     GRBLinExpr objFun = 0.0;
     for (mlcore::State* s : problem_->states()) {
@@ -203,7 +202,6 @@ void CMDPSolver::solve(mlcore::State* s0)
 
     // Creating LP constraints
     int numConstraints = numStates * numActions;
-    dprint2("Creating constraints ", numConstraints);
     GRBLinExpr* MDPConstLHS = new GRBLinExpr[numConstraints];
     for (mlcore::State* s : problem_->states()) {
         int idxAction = -1;
@@ -222,15 +220,14 @@ void CMDPSolver::solve(mlcore::State* s0)
                 aux1 -= problem_->gamma() * su.su_prob * variables[idxSucc];
             }
             for (int i = 0; i < K; i++) {
-//                dprint4("test ", i, " ", constIndices_[i]);
                 aux1 -= problem_->cost(s, a, constIndices_[i]) * variables[numStates + i];
             }
 
             GRBLinExpr rhs = problem_->cost(s, a, indexObjFun_);
             model.addConstr(MDPConstLHS[idxConst], GRB_LESS_EQUAL, rhs);
-            model.update();
         }
     }
+    model.update();
 
     try {
         model.write("file.lp");
@@ -240,9 +237,10 @@ void CMDPSolver::solve(mlcore::State* s0)
     }
 
     // solving the model
+    model.getEnv().set(GRB_IntParam_Method, 0);
+//    model.getEnv().set(GRB_IntParam_DisplayInterval, 100);
+//    model.getEnv().set(GRB_IntParam_LogToConsole, 0);
     model.optimize();
-
-    dprint1("Extracting policy");
 
     // Extracting the policy
     policy_ = new RandomPolicy(problem_, numStates);
@@ -276,6 +274,7 @@ void CMDPSolver::solve(mlcore::State* s0)
     delete[] variables;
     delete[] MDPConstLHS;
 
+    return objFun.getValue();
 }   // solve
 
 

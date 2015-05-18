@@ -13,7 +13,7 @@
 namespace mlsolvers
 {
 
-LexiVISolver::LexiVISolver(mlcore::Problem* problem, int maxIter, double tol)
+LexiVISolver::LexiVISolver(mlmobj::MOProblem* problem, int maxIter, double tol)
 {
     problem_ = problem;
     maxIter_ = maxIter;
@@ -25,9 +25,8 @@ mlcore::Action* LexiVISolver::solve(mlcore::State* s0)
     for (int i = 0; i < maxIter_; i++) {
         double maxResidual = 0.0;
         for (mlcore::State* s : problem_->states()) {
-            double residual = lexiBellmanUpdate((mlmobj::MOProblem *) problem_,
-                                                 (mlmobj::MOState *) s,
-                                                 ((mlmobj::MOProblem *) problem_)->size());
+            double residual =
+                lexiBellmanUpdate(problem_, (mlmobj::MOState *) s, problem_->size() - 1);
             if (residual > maxResidual)
                 maxResidual = residual;
         }

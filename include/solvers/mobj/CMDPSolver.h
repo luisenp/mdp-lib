@@ -45,7 +45,9 @@ private:
 
     std::vector<double> CMDPConstRS_;
 
-    void solveDual(mlcore::State* s0);
+    double solvePrimal(mlcore::State* s0);
+
+    double solveDual(mlcore::State* s0);
 
 public:
     /**
@@ -77,20 +79,21 @@ public:
         delete policy_;
     }
 
-    /**
-     * Sets the index of the objective function in the cost function order
-     * imposed by the MOProblem. The constraints will be all other cost functions.
-     */
-    void indexObjFun(int index) { indexObjFun_ = index; }
+    void indexObjFun(int idx) { indexObjFun_ = idx; }
+
+    void constTargets(std::vector<double>& ct) { constTargets_ = ct; }
+
+    void constIndices(std::vector<int>& ci) { constIndices_ = ci; }
 
     /**
      * Solves the associated problem using an LP-solver. The first cost function is
      * assumed to be the objective, and the rest are assumed to be constraints.
+     * The function returns the value of the optimal policy.
      *
      * @param s0 the state to start the search at.
      * @param constTargets the upper bounds for the constraints 2,3,...k.
      */
-    void solve(mlcore::State* s0);
+    double solve(mlcore::State* s0);
 
     /**
      * Returns the optimal random policy for the problem.

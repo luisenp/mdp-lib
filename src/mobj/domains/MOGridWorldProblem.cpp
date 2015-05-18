@@ -37,11 +37,13 @@ double MOGridWorldProblem::cost(mlcore::State* s, mlcore::Action* a, int i) cons
             costs.push_back(pdm[pos]);
         }
         else {
+            costs.push_back( (1.0 + 2.0*((gwa->dir() + i) % 4)) + actionCost_);
+
             // Assigning a higher cost to DOWN, for all value functions except the first
-            if (i > 0 && gwa->dir() == gridworld::DOWN)
-                costs.push_back(COST_DOWN_2 * actionCost_);
-            else
-                costs.push_back(actionCost_);
+//            if (i > 0 && gwa->dir() == gridworld::DOWN)
+//                costs.push_back(COST_DOWN_2 * actionCost_);
+//            else
+//                costs.push_back(actionCost_);
         }
     }
     return costs[i];

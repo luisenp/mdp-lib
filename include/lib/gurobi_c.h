@@ -25,7 +25,7 @@ typedef struct _GRBenv GRBenv;
 
 #define GRB_VERSION_MAJOR     6
 #define GRB_VERSION_MINOR     0
-#define GRB_VERSION_TECHNICAL 3
+#define GRB_VERSION_TECHNICAL 4
 
 /* Default and max priority for Compute Server jobs */
 

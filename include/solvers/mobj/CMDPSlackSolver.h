@@ -20,6 +20,10 @@ private:
 
     mlmobj::MOProblem* problem_;
 
+    CMDPSolver* internalSolver_;
+
+    RandomPolicy* policy_;
+
     /* Error tolerance */
     std::vector<double> slack_;
 
@@ -32,7 +36,12 @@ public:
      * @param slack The vector of global slacks.
      */
     CMDPSlackSolver(mlmobj::MOProblem* problem, std::vector<double> slack)
-        : problem_(problem), slack_(slack) { }
+        : problem_(problem), slack_(slack), internalSolver_(nullptr) { }
+
+    ~CMDPSlackSolver()
+    {
+        delete internalSolver_;
+    }
 
     /**
      * Solves the associated problem using the CMDPSlackSolver algorithm.
@@ -40,6 +49,11 @@ public:
      * @param s0 The state to start the search at.
      */
     mlcore::Action* solve(mlcore::State* s0);
+
+    /**
+     * Returns the optimal policy for the problem.
+     */
+    RandomPolicy* policy() { return policy_; }
 };
 
 }

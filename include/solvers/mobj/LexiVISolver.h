@@ -16,7 +16,7 @@ class LexiVISolver : public Solver
 {
 
 private:
-    mlcore::Problem* problem_;
+    mlmobj::MOProblem* problem_;
 
     int maxIter_;
 
@@ -31,7 +31,7 @@ public:
      * @param tol The tolerance for the Bellman residual. If the residual is less
      *           than the tolerance the method stops.
      */
-    LexiVISolver(mlcore::Problem* problem, int maxIter = 100000, double tol = 1.0e-6);
+    LexiVISolver(mlmobj::MOProblem* problem, int maxIter = 100000, double tol = 1.0e-6);
 
     /**
      * Solves the associated problem using Lexicographical Value Iteration.
