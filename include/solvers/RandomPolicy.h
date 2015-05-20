@@ -2,6 +2,7 @@
 #define MDPLIB_RANDOMPOLICY_H
 
 #include <vector>
+#include <iostream>
 
 #include "solver.h"
 #include "../action.h"
@@ -54,6 +55,11 @@ public:
      * with this state.
      */
     void addActionsState(mlcore::State* s, std::vector<double> actions);
+
+    /**
+     * Prints the policy to the given output stream.
+     */
+     void print(std::ostream& os);
 
     /**
      * Returns an action sampled from the probability distribution associated with the

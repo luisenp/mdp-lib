@@ -38,13 +38,16 @@ int main(int argc, char* args[])
 //    goals[0].insert(make_pair(pair<int,int> (n-1,n-1), 0.0));
 
 //    MOGridWorldProblem* problem = new MOGridWorldProblem(n, n, n-1, n-1, goals, 2, 1.0);
-    MOGridWorldProblem* problem = new MOGridWorldProblem(n, n, 0, 0, goals, 2, 1.0);
+    int problemSize = 2;
+    double actionCost = 1.0;
+    MOGridWorldProblem* problem =
+        new MOGridWorldProblem(n, n, 0, 0, goals, problemSize, actionCost);
     problem->slack(slack);
     problem->gamma(gamma);
 
     vector<Heuristic*> heuristics;
-    heuristics.push_back(new MOGWManhattanHeuristic(problem, 1.0));
-    heuristics.push_back(new MOGWManhattanHeuristic(problem, COST_DOWN_2));
+    Heuristic* heur = new MOGWManhattanHeuristic(problem, 1.0);
+    heuristics.push_back(heur); heuristics.push_back(heur);
     problem->heuristics(heuristics);
     GridWorldState* gws = (GridWorldState *) problem->initialState();
 
@@ -52,16 +55,10 @@ int main(int argc, char* args[])
     LexiVISolver vi(problem);
     CMDPSlackSolver css(problem, vector<double> (10, slack));
 
-    vector<int> constIndices(1, 1);
-    vector<double> targets(1, 20);
-    CMDPSolver lp(problem, 0, constIndices, targets);
-
     if (strcmp(args[3], "lao") == 0) {
         dprint2("SOLVING WITH LAO", problem->initialState());
         lao.solve(problem->initialState());
         dprint1("SOLVED!");
-    } else if (strcmp(args[3], "lp") == 0) {
-        lp.solve(problem->initialState());
     } else if (strcmp(args[3], "css") == 0) {
         css.solve(problem->initialState());
     } else if (strcmp(args[3], "vi") == 0) {
@@ -74,7 +71,7 @@ int main(int argc, char* args[])
 
     int nsims = argc > 4 ? atoi(args[4]) : 1;
     int verbosity = argc > 5 ? atoi(args[5]) : 1;
-    vector <double> expectedCost(2, 0.0);
+    vector <double> expectedCost(problem->size(), 0.0);
     for (int i = 0; i < nsims; i++) {
         State* tmp = problem->initialState();
         if (verbosity > 100) {
@@ -82,6 +79,7 @@ int main(int argc, char* args[])
         }
 
         double discount = 1.0;
+        vector <double> cost(problem->size(), 0.0);
         while (!problem->goal(tmp)) {
             Action* a;
             if (strcmp(args[3], "css") == 0)
@@ -90,20 +88,32 @@ int main(int argc, char* args[])
                 a = tmp->bestAction();
 
             if (verbosity > 100) {
-                cerr << endl << "STATE-ACTION *** " << tmp << " " << a << " " << endl;
+                cerr << endl << "STATE-ACTION *** " << tmp << " " << a << " costs: ";
+                for (int i = 0; i < problem->size(); i++)
+                    cerr << problem->cost(tmp, a, i) << " ";
+                cerr << endl;
             }
 
-            expectedCost[0] += discount * problem->cost(tmp, a, 0);
-            expectedCost[1] += discount * problem->cost(tmp, a, 1);
+            for (int i = 0; i < problem->size(); i++) {
+                cost[i] += discount * problem->cost(tmp, a, i);
+                expectedCost[i] += discount * problem->cost(tmp, a, i);
+            }
             tmp = randomSuccessor(problem, tmp, a);
             discount *= gamma;
         }
-        if (verbosity > 10)
-            cerr << endl << i << " GOAL **** " << tmp << endl;
+
+        if (verbosity > 10) {
+            cerr << endl << i << " GOAL **** " << tmp << " costs: ";
+            for (int i = 0; i < problem->size(); i++)
+                cerr << cost[i] << " ";
+            cerr << endl;
+        }
+
     }
 
     cerr << "Avg. Exec cost " << expectedCost[0] / nsims << " " << expectedCost[1] / nsims << endl;
 
     delete problem;
+    delete heur;
 }
 

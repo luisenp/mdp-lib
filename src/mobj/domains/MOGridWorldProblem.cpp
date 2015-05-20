@@ -33,11 +33,11 @@ double MOGridWorldProblem::cost(mlcore::State* s, mlcore::Action* a, int i) cons
     std::vector<double> costs;
     for (int i = 0; i < size_; i++) {
         if (goal(s, 0)) {
-            PairDoubleMap pdm = goals_[i];
+            PairDoubleMap pdm = goals_[0];
             costs.push_back(pdm[pos]);
         }
         else {
-            costs.push_back( (1.0 + 2.0*((gwa->dir() + i) % 4)) + actionCost_);
+            costs.push_back( (1.0 + 0.1*((gwa->dir() + i) % 4)) + actionCost_);
 
             // Assigning a higher cost to DOWN, for all value functions except the first
 //            if (i > 0 && gwa->dir() == gridworld::DOWN)
@@ -72,6 +72,7 @@ MOGridWorldProblem::transition(mlcore::State* s, mlcore::Action* a, int index)
 
     if (s == absorbing) {
         successors.push_front(mlcore::Successor(s, 1.0));
+//        successors.push_front(mlcore::Successor(s0, 1.0));
         return successors;
     }
 

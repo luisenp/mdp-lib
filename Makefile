@@ -5,7 +5,7 @@
 
 # Compilation flags and variables
 CC = g++
-CFLAGS = -std=c++11 -O3 -DATOM_STATES -pthread
+CFLAGS = -std=c++11 -g -DATOM_STATES -pthread
 
 # Variables for directories
 ID = include
@@ -77,7 +77,8 @@ LIBS = lib/libmdp.a -lgurobi_c++ -lgurobi60 -Llib
 #########################################################################
 
 # Compiles the core MDP-LIB library #
-libmdp: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_CPP) $(SOLV_H) $(MOSOLV_H) $(MOSOLV_CPP)
+.PHONY: libmdp
+libmdp:
 	make $(OD)/core.a
 	make $(OD)/solvers.a
 	make $(OD)/mo-solvers.a
@@ -133,7 +134,7 @@ $(OD_MODOM)/mo-racetrack.a: $(RACE_CPP) $(RACE_H) $(ID_MODOM)/*rack*.h $(SD_MODO
 	mv *.o $(OD_MODOM)
 
 # Compiles the MO-Gridworld domain #
-$(OD_MODOM)/mo-gw.a: $(ID_MODOM)/*.h $(GW_CPP) $(GW_H)
+$(OD_MODOM)/mo-gw.a: $(ID_MODOM)/*.h $(SD_MODOM)/*.cpp $(GW_CPP) $(GW_H) Makefile
 	rm -f *.o
 	$(CC) $(CFLAGS) $(INCLUDE) -Iinclude/mobj/*.h -I$(ID_MODOM)/*.h \
 	-I$(ID_MODOM)/*GridWorld*/*.h -c $(SD_MODOM)/*GridWorld*.cpp $(GW_CPP)
@@ -196,7 +197,9 @@ ppddl: src/ppddl/*.cpp $(I_H) include/ppddl/*.h include/ppddl/mini-gpt/*.h $(SOL
 	mv *.o test/
 	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) -o testppddl test/testPPDDL.cpp test/*.o $(LIBS) lib/libminigpt.a
 
+.PHONY: clean
 clean:
 	rm -f test/*.o
 	rm -f *.o
+	rm -f obj/*.a
 
