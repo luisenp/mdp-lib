@@ -10,9 +10,9 @@
 #include "../include/mobj/domains/MORacetrackState.h"
 #include "../include/solvers/solver.h"
 #include "../include/solvers/mobj/CMDPSolver.h"
-#include "../include/solvers/mobj/GlobalSlackSolver.h"
 #include "../include/solvers/mobj/LexiVISolver.h"
 #include "../include/solvers/mobj/MOLAOStarSolver.h"
+#include "../include/solvers/mobj/CMDPSlackSolver.h"
 #include "../include/util/general.h"
 #include "../include/util/graph.h"
 
@@ -36,7 +36,7 @@ int main(int argc, char* args[])
     double gamma = argc > 7 ? atof(args[7]) : 0.95;
     bool useSafety = atoi(args[4]);
     int verbosity = argc > 6 ? atoi(args[6]) : 1;
-    int size = 3;
+    int size = 1;
 
     MOProblem* problem = new MORacetrackProblem(args[1], size);
     ((MORacetrackProblem*) problem)->setPError(0.00);
@@ -54,16 +54,9 @@ int main(int argc, char* args[])
 
     clock_t startTime = clock();
     double tol = 1.0e-6;
-    if (strcmp(args[2], "global") == 0) {
-        GlobalSlackSolver gss(problem, tol, 1000000);
-        gss.solve(problem->initialState());
-    } else if (strcmp(args[2], "lp") == 0) {
-        vector<double> targets(2);
-        vector<int> constIndices(2);
-        constIndices[0] = 1; constIndices[1] = 2;
-        targets[0] = 10000; targets[1] = 10000;
-        CMDPSolver lp(problem, 0, constIndices, targets);
-        lp.solve(problem->initialState());
+    CMDPSlackSolver css(problem, vector<double> (problem->size(), slack));
+    if (strcmp(args[2], "css") == 0) {
+        css.solve(problem->initialState());
     } else if (strcmp(args[2], "lao") == 0) {
         MOLAOStarSolver lao(problem, tol, 1000000);
         lao.solve(problem->initialState());
@@ -96,21 +89,35 @@ int main(int argc, char* args[])
         if (verbosity > 100) {
             cerr << " ********* Simulation Starts ********* " << endl;
         }
+
+        double discount = 1.0;
+        vector <double> cost(problem->size(), 0.0);
         while (!problem->goal(tmp)) {
             Action* a;
-            a = tmp->bestAction();
+            if (strcmp(args[2], "css") == 0)
+                a = css.policy()->getRandomAction(tmp);
+            else
+                a = tmp->bestAction();
 
             if (verbosity > 100) {
                 MOState* lex = (MOState *) tmp;
-                cerr << endl << "STATE-ACTION *** " << tmp << " " << a << " " << endl;
+                cerr << endl << "STATE-ACTION *** " << tmp << " " << a << " est. cost " << endl;
                 double c0 = problem->cost(lex,a,0), c1 = problem->cost(lex,a,1);
                 cerr << lex->mobjCost()[0] << " " <<  lex->mobjCost()[1];
-                cerr << " - costs " << c0 << " " << c1 << endl;
+                cerr << " - acc. costs " << cost[0] << " " << cost[1] << endl;
+                dsleep(250);
             }
 
-            expectedCost[0] += problem->cost(tmp, a, 0);
-            expectedCost[1] += problem->cost(tmp, a, 1);
+            double discCost = discount * problem->cost(tmp, a, i);
+            if (discCost < 1.0-6)
+                break;
+
+            for (int i = 0; i < problem->size(); i++) {
+                cost[i] += discount * problem->cost(tmp, a, i);
+                expectedCost[i] += discount * problem->cost(tmp, a, i);
+            }
             tmp = randomSuccessor(problem, tmp, a);
+            discount *= gamma;
         }
         if (verbosity > 100)
             cerr << endl;

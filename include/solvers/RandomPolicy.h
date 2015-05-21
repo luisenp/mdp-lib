@@ -25,6 +25,8 @@ private:
 
     mlcore::StateIntMap stateIndex_;
 
+    mlcore::StateDoubleMap values_;
+
     std::vector< std::vector <double> > policy_;
 
     int stateCounter_;
@@ -68,6 +70,25 @@ public:
      * @param s the state for which the action is requested.
      */
     mlcore::Action* getRandomAction(mlcore::State* s);
+
+    /**
+     * Computes the value of the policy for all states with respect to the value
+     * function at the given index (ignore this parameter is not a MOMDP).
+     *
+     * Multi-objective problem *must* use this parameter.
+     *
+     * @param functionIndex the index of the value function over which the value will be
+     * computed (only for multi-objective problems; otherwise ignore).
+     */
+    void computeValues(int functionIndex = -1);
+
+    /**
+     * Returns the value of the given state under this policy.
+     *
+     * @param s the state for which the value will be returned.
+     * @return the value of the state under this policy.
+     */
+    double getValue(mlcore::State* s);
 };
 
 

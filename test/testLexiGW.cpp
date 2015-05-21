@@ -38,7 +38,7 @@ int main(int argc, char* args[])
 //    goals[0].insert(make_pair(pair<int,int> (n-1,n-1), 0.0));
 
 //    MOGridWorldProblem* problem = new MOGridWorldProblem(n, n, n-1, n-1, goals, 2, 1.0);
-    int problemSize = 2;
+    int problemSize = 1;
     double actionCost = 1.0;
     MOGridWorldProblem* problem =
         new MOGridWorldProblem(n, n, 0, 0, goals, problemSize, actionCost);

@@ -30,8 +30,13 @@ mlcore::Action* LexiVISolver::solve(mlcore::State* s0)
             if (residual > maxResidual)
                 maxResidual = residual;
         }
-        if (maxResidual < tol_)
+
+        mlmobj::MOState* mos = (mlmobj::MOState *) s0;
+        dprint4("iter ", i, " ", maxResidual);
+        if (maxResidual < tol_) {
+            dprint1("FINISHED!");
             return nullptr;
+        }
     }
 }
 

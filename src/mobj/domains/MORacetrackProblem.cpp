@@ -92,9 +92,16 @@ MORacetrackProblem::transition(mlcore::State* s, mlcore::Action* a, int index)
         return successors;
     }
 
-    if (goal(s) || s == absorbing_) {
+    if (goal(s) /*|| s == absorbing_*/) {
         std::list<mlcore::Successor> successors;
         successors.push_back(mlcore::Successor(this->addState(absorbing_), 1.0));
+        return successors;
+    }
+
+    // TODO: Remove this later and fix above
+    if (s == absorbing_) {
+        std::list<mlcore::Successor> successors;
+        successors.push_back(mlcore::Successor(this->addState(s0), 1.0));
         return successors;
     }
 
