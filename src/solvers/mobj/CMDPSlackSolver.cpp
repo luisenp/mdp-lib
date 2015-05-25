@@ -16,9 +16,6 @@ mlcore::Action* CMDPSlackSolver::solve(mlcore::State* s0)
             std::cout << "    C" << constIndices[j] << " <= " << constTargets[j] << std::endl;
         }
         double value = internalSolver_->solve(problem_->initialState());
-//        internalSolver_->policy()->computeValues(i);
-//        dprint2("VALUE OF INITIAL STATE ",
-//                internalSolver_->policy()->getValue(problem_->initialState()));
         constIndices.push_back(i);
         constTargets.push_back(value + slack_[i] + 1.0e-5);
         internalSolver_->constIndices(constIndices);
@@ -27,7 +24,7 @@ mlcore::Action* CMDPSlackSolver::solve(mlcore::State* s0)
         std::cout << "\n******************************************************** \n" << std::endl;
     }
     policy_ = internalSolver_->policy();
-//    policy_->print(std::cout);
+    policy_->print(std::cerr);
 }
 
 } // mlsolvers

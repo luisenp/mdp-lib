@@ -60,6 +60,7 @@ MORacetrackProblem::MORacetrackProblem(char* filename, int size)
         actions_.push_back(new RacetrackAction(ax, ay));
 }
 
+
 void MORacetrackProblem::printTrack(std::ostream& os)
 {
     for (int i = 0; i < track_.size(); i++) {
@@ -70,12 +71,14 @@ void MORacetrackProblem::printTrack(std::ostream& os)
     }
 }
 
+
 bool MORacetrackProblem::goal(mlcore::State* s, int index) const
 {
     MORacetrackState* rts = (MORacetrackState*) s;
     std::pair<int, int> pos(rts->x(), rts->y());
     return goals_.find(pos) != goals_.end();
 }
+
 
 std::list<mlcore::Successor>
 MORacetrackProblem::transition(mlcore::State* s, mlcore::Action* a, int index)
@@ -92,16 +95,9 @@ MORacetrackProblem::transition(mlcore::State* s, mlcore::Action* a, int index)
         return successors;
     }
 
-    if (goal(s) /*|| s == absorbing_*/) {
+    if (goal(s) || s == absorbing_) {
         std::list<mlcore::Successor> successors;
         successors.push_back(mlcore::Successor(this->addState(absorbing_), 1.0));
-        return successors;
-    }
-
-    // TODO: Remove this later and fix above
-    if (s == absorbing_) {
-        std::list<mlcore::Successor> successors;
-        successors.push_back(mlcore::Successor(this->addState(s0), 1.0));
         return successors;
     }
 
@@ -160,6 +156,7 @@ MORacetrackProblem::transition(mlcore::State* s, mlcore::Action* a, int index)
     return allSuccessors->at(idAction);
 }
 
+
 double MORacetrackProblem::cost(mlcore::State* s, mlcore::Action* a, int index) const
 {
     if (s == s0 || s == absorbing_ || goal(s))
@@ -191,6 +188,7 @@ double MORacetrackProblem::cost(mlcore::State* s, mlcore::Action* a, int index) 
         return 100 * fabs(angle) + 1.0;
     }
 }
+
 
 bool MORacetrackProblem::applicable(mlcore::State* s, mlcore::Action* a) const
 {

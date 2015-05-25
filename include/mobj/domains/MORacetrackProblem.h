@@ -76,6 +76,8 @@ private:
     void addSuccessors(int idAction, MORacetrackState* source,
                         MORacetrackState* dest, double prob);
 
+    bool dummyApplicable(mlcore::State* s, mlcore::Action* a) const;
+
 public:
 
     using MOProblem::goal;
@@ -87,6 +89,9 @@ public:
 
     virtual ~MORacetrackProblem() {}
 
+    /**
+     * Specifies whether the second objective function is safety or not.
+     */
     void useSafety(bool value) { useSafety_ = value; }
 
     /**

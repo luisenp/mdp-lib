@@ -63,16 +63,17 @@ void RandomPolicy::print(std::ostream& os)
 }
 
 
+// TODO: this method is wrong!
 void RandomPolicy::computeValues(int functionIndex)
 {
     double residual = mdplib::dead_end_cost;
     while (residual > 1.0e-6) {
         residual = 0.0;
         for (mlcore::State* s : problem_->states()) {
-            int idxAction = -1;
+            int idxState = stateIndex_[s];
             double prevValue = values_[s];
             values_[s] = 0.0;
-            int idxState = stateIndex_[s];
+            int idxAction = -1;
             for (mlcore::Action* a : problem_->actions()) {
                 idxAction++;
                 if (!problem_->applicable(s, a))

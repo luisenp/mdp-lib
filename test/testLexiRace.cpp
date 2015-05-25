@@ -25,8 +25,8 @@ using namespace std;
 int main(int argc, char* args[])
 {
     if (argc < 5) {
-        cerr << "Usage ./textlexirace TRACK ALGORITHM SLACK SAFETY";
-        cerr << " --optional [NSIMS VERBOSITY GAMMA]" << endl;
+        cout << "Usage ./textlexirace TRACK ALGORITHM SLACK SAFETY";
+        cout << " --optional [NSIMS VERBOSITY GAMMA]" << endl;
         exit(0);
     }
 
@@ -56,6 +56,7 @@ int main(int argc, char* args[])
     double tol = 1.0e-6;
     CMDPSlackSolver css(problem, vector<double> (problem->size(), slack));
     if (strcmp(args[2], "css") == 0) {
+        problem->gamma(gamma);
         css.solve(problem->initialState());
     } else if (strcmp(args[2], "lao") == 0) {
         MOLAOStarSolver lao(problem, tol, 1000000);
@@ -65,19 +66,19 @@ int main(int argc, char* args[])
         problem->slack(slack * (1 - gamma));
         problem->generateAll();
         if (verbosity > 1)
-            cerr << problem->states().size() << " states" << endl;
+            cout << problem->states().size() << " states" << endl;
         LexiVISolver vi(problem, 1000000000, tol);
         vi.solve();
     }
     clock_t endTime = clock();
     if (verbosity > 10) {
-        cerr << "Estimated cost "
+        cout << "Estimated cost "
              << ((MOState *) problem->initialState())->mobjCost()[0] << " "
              << ((MOState *) problem->initialState())->mobjCost()[1] << endl;
-        cerr << startTime << " " << endTime << endl;
-        cerr << "Time " << ((endTime - startTime + 0.0) / CLOCKS_PER_SEC) << endl;
+        cout << startTime << " " << endTime << endl;
+        cout << "Time " << ((endTime - startTime + 0.0) / CLOCKS_PER_SEC) << endl;
     } else if (verbosity > 1) {
-        cerr << ((MOState *) problem->initialState())->mobjCost()[0] << " "
+        cout << ((MOState *) problem->initialState())->mobjCost()[0] << " "
              << ((MOState *) problem->initialState())->mobjCost()[1] << endl;
     }
 
@@ -87,7 +88,7 @@ int main(int argc, char* args[])
     for (int i = 0; i < nsims; i++) {
         State* tmp = problem->initialState();
         if (verbosity > 100) {
-            cerr << " ********* Simulation Starts ********* " << endl;
+            cout << " ********* Simulation Starts ********* " << endl;
         }
 
         double discount = 1.0;
@@ -101,10 +102,10 @@ int main(int argc, char* args[])
 
             if (verbosity > 100) {
                 MOState* lex = (MOState *) tmp;
-                cerr << endl << "STATE-ACTION *** " << tmp << " " << a << " est. cost " << endl;
+                cout << endl << "STATE-ACTION *** " << tmp << " " << a << " est. cost " << endl;
                 double c0 = problem->cost(lex,a,0), c1 = problem->cost(lex,a,1);
-                cerr << lex->mobjCost()[0] << " " <<  lex->mobjCost()[1];
-                cerr << " - acc. costs " << cost[0] << " " << cost[1] << endl;
+                cout << lex->mobjCost()[0] << " " <<  lex->mobjCost()[1];
+                cout << " - acc. costs " << cost[0] << " " << cost[1] << endl;
                 dsleep(250);
             }
 
@@ -120,11 +121,15 @@ int main(int argc, char* args[])
             discount *= gamma;
         }
         if (verbosity > 100)
-            cerr << endl;
+            cout << endl;
     }
 
-    if (verbosity > 0)
-        cerr << "Avg. Exec cost " << expectedCost[0] / nsims << " " << expectedCost[1] / nsims << endl;
+    if (verbosity > 0) {
+        cout << "Avg. Exec cost ";
+        for (int i = 0; i < problem->size(); i++)
+            cout << expectedCost[i] / nsims << " ";
+        cout << endl;
+    }
 
     delete problem;
     delete ((MORTrackDetHeuristic*) heuristic);

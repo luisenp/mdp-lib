@@ -45,12 +45,16 @@ double CMDPSolver::solvePrimal(mlcore::State* s0)
             std::string name = oss.str();
             std::replace(name.begin(), name.end(), ' ', '_');
             variables[varIdx] = model.addVar(1.0e-8, GRB_INFINITY, 0.0, GRB_CONTINUOUS, name);
-            if (!problem_->applicable(s, a))
-                objFun += 10 * variables[varIdx];
-            else
+            if (!problem_->applicable(s, a)) {
+                objFun += 100 * variables[varIdx];
+            }
+            else {
                 objFun += problem_->cost(s, a, indexObjFun_) * variables[varIdx];
+            }
         }
     }
+    std::cout << std::endl;
+
     model.update();
     model.setObjective(objFun, GRB_MINIMIZE);
     model.update();
@@ -92,7 +96,7 @@ double CMDPSolver::solvePrimal(mlcore::State* s0)
     for (mlcore::State* s : problem_->states()) {
         int idxState = stateIndex_[s];
         double b = (s == problem_->initialState()) ? 1.0 : 0.0;
-        GRBLinExpr rhs = (1 - problem_->gamma()) * b;
+        GRBLinExpr rhs = /* (1 - problem_->gamma()) * */ b;
         std::ostringstream oss; oss << s;
         std::string name = oss.str();
         std::replace(name.begin(), name.end(), ' ', '_');
@@ -116,7 +120,7 @@ double CMDPSolver::solvePrimal(mlcore::State* s0)
 
     // Solving the model
     model.getEnv().set(GRB_IntParam_Presolve, 2);
-    model.getEnv().set(GRB_IntParam_Method, 0);
+    model.getEnv().set(GRB_IntParam_Method, 2);
     model.getEnv().set(GRB_DoubleParam_FeasibilityTol, 1.0e-9);
 //    model.getEnv().set(GRB_IntParam_Crossover, 3);
 //    model.getEnv().set(GRB_IntParam_CrossoverBasis, 1);
@@ -138,12 +142,8 @@ double CMDPSolver::solvePrimal(mlcore::State* s0)
             }
             int varIdx = idxState * numActions + idxAction;
             double varValue = variables[varIdx].get(GRB_DoubleAttr_X);
-            if (varValue < 0.0) {
+            if (varValue < 0.0)
                 varValue = 0.0;
-                dprint2("OMG NEGATIVE!!! ", variables[varIdx].get(GRB_StringAttr_VarName));
-                dprint2("VALUE ", variables[varIdx].get(GRB_DoubleAttr_X));
-                dprint2("LOWER BOUND ", variables[varIdx].get(GRB_DoubleAttr_LB));
-            }
             actionProbs.push_back(varValue);
             total += varValue;
         }
@@ -155,12 +155,9 @@ double CMDPSolver::solvePrimal(mlcore::State* s0)
                 continue;
             if (total == 0) {
                 actionProbs[idxAction] = 0.0;
-                dprint1("NO ACTIONS!");
             }
             else {
-                dprint5(s, " ", actionProbs[idxAction], " ", total);
                 actionProbs[idxAction] /= total;
-                dprint1(actionProbs[idxAction]);
             }
         }
         policy_->addActionsState(s, actionProbs);
@@ -172,6 +169,7 @@ double CMDPSolver::solvePrimal(mlcore::State* s0)
 
     return objFun.getValue();
 }   // solve
+
 
 double CMDPSolver::solveDual(mlcore::State* s0)
 {
@@ -207,8 +205,6 @@ double CMDPSolver::solveDual(mlcore::State* s0)
     model.update();
     model.setObjective(objFun, GRB_MAXIMIZE);
     model.update();
-
-    dprint1("here1");
 
     // Creating LP constraints
     int numConstraints = numStates * numActions;
@@ -248,11 +244,7 @@ double CMDPSolver::solveDual(mlcore::State* s0)
 
     // solving the model
     model.getEnv().set(GRB_IntParam_Method, 0);
-//    model.getEnv().set(GRB_IntParam_DisplayInterval, 100);
-//    model.getEnv().set(GRB_IntParam_LogToConsole, 0);
     model.optimize();
-
-    dprint1("here3");
 
     // Extracting the policy
     if (policy_ != nullptr)
