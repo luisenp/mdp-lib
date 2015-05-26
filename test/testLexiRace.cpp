@@ -36,7 +36,7 @@ int main(int argc, char* args[])
     double gamma = argc > 7 ? atof(args[7]) : 0.95;
     bool useSafety = atoi(args[4]);
     int verbosity = argc > 6 ? atoi(args[6]) : 1;
-    int size = 1;
+    int size = 3;
 
     MOProblem* problem = new MORacetrackProblem(args[1], size);
     ((MORacetrackProblem*) problem)->setPError(0.00);

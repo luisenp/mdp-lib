@@ -17,6 +17,8 @@ mlcore::Action* CMDPSlackSolver::solve(mlcore::State* s0)
         }
         double value = internalSolver_->solve(problem_->initialState());
         constIndices.push_back(i);
+        if (slack_[i] == 0.0)
+            break;
         constTargets.push_back(value + slack_[i] + 1.0e-5);
         internalSolver_->constIndices(constIndices);
         internalSolver_->constTargets(constTargets);

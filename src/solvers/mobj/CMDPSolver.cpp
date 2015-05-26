@@ -120,11 +120,12 @@ double CMDPSolver::solvePrimal(mlcore::State* s0)
 
     // Solving the model
     model.getEnv().set(GRB_IntParam_Presolve, 2);
-    model.getEnv().set(GRB_IntParam_Method, 2);
+    model.getEnv().set(GRB_IntParam_Method, -1);
     model.getEnv().set(GRB_DoubleParam_FeasibilityTol, 1.0e-9);
 //    model.getEnv().set(GRB_IntParam_Crossover, 3);
 //    model.getEnv().set(GRB_IntParam_CrossoverBasis, 1);
     model.getEnv().set(GRB_IntParam_LogToConsole, 1);
+    model.getEnv().set(GRB_IntParam_DisplayInterval, 100);
     model.optimize();
 
     // Extracting the policy
