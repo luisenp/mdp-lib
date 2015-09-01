@@ -7,8 +7,8 @@
 #include <mutex>
 
 #include "../../include/problem.h"
-#include "../../include/lexi/lexi_problem.h"
-#include "../../include/lexi/lexi_state.h"
+#include "../../include/mobj/mobj_problem.h"
+#include "../../include/mobj/mobj_state.h"
 #include "../../include/heuristic.h"
 #include "../../include/state.h"
 #include "../../include/util/general.h"
@@ -81,7 +81,7 @@ double qvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a);
  * @param i The index of the value function to use.
  * @return The Q-value of the state-action pair.
  */
-double qvalue(mllexi::LexiProblem* problem, mllexi::LexiState* s, mlcore::Action* a, int i);
+double qvalue(mlmobj::MOProblem* problem, mlmobj::MOState* s, mlcore::Action* a, int i);
 
 
 /**
@@ -123,7 +123,7 @@ std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem, mlcor
  * @param level The level of the cost function to be miminized.
  * @return The maximum residual among all value functions.
  */
-double lexiBellmanUpdate(mllexi::LexiProblem* problem, mllexi::LexiState* s, int level);
+double lexiBellmanUpdate(mlmobj::MOProblem* problem, mlmobj::MOState* s, int level);
 
 
 /**
@@ -135,6 +135,19 @@ double lexiBellmanUpdate(mllexi::LexiProblem* problem, mllexi::LexiState* s, int
  * @return The residual of the state.
  */
 double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s);
+
+
+/**
+ * Bellman update for MOSSPs using linear combinations of the cost functions.
+ *
+ * Performs a Bellman backup of a state, and then updates the state with
+ * the resulting expected cost and greedy action.
+ *
+ * @param problem The problem that contains the given state.
+ * @param s The state on which the Bellman backup will be performed.
+ * @return The residual of the state.
+ */
+double bellmanUpdate(mlmobj::MOProblem* problem, mlmobj::MOState* s);
 
 
 /**

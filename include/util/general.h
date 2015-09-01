@@ -42,6 +42,13 @@ void dprint4(T1 x, T2 y, T3 z, T4 w)
         std::cerr << x << " " << y << " " << z << " " << w << std::endl;
 }
 
+template <class T1, class T2, class T3, class T4, class T5>
+void dprint5(T1 x, T2 y, T3 z, T4 w, T5 xx)
+{
+    if (mdplib_debug)
+        std::cerr << x << " " << y << " " << z << " " << w << " " << xx << std::endl;
+}
+
 /**
  * Sleeps the current thread for the given number of milliseconds. This is just a wrapper for
  * function std::this_thread::sleep_for(std::chrono milliseconds).

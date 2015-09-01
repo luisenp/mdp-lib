@@ -5,19 +5,19 @@
 #include <unistd.h>
 
 #include "../include/solvers/solver.h"
-#include "../include/solvers/LexiVISolver.h"
-#include "../include/solvers/LexiLAOStarSolver.h"
+#include "../include/solvers/mobj/LexiVISolver.h"
+#include "../include/solvers/mobj/MOLAOStarSolver.h"
 
 #include "../include/util/general.h"
 #include "../include/util/graph.h"
 
-#include "../include/lexi/domains/RawFileLexiProblem.h"
-#include "../include/lexi/domains/RawFileLexiState.h"
-#include "../include/lexi/domains/RawFileLexiAction.h"
+#include "../include/mobj/domains/RawFileMOProblem.h"
+#include "../include/mobj/domains/RawFileMOState.h"
+#include "../include/mobj/domains/RawFileMOAction.h"
 
 using namespace mlcore;
 using namespace mlsolvers;
-using namespace mllexi;
+using namespace mlmobj;
 using namespace std;
 
 int main(int argc, char* args[])
@@ -32,7 +32,7 @@ int main(int argc, char* args[])
     double slack = atof(args[3]);
     int verbosity = argc > 5 ? atoi(args[5]) : 1;
 
-    RawFileLexiProblem* problem = new RawFileLexiProblem(args[1]);
+    RawFileMOProblem* problem = new RawFileMOProblem(args[1]);
     problem->slack(slack);
     problem->generateAll();
 
@@ -46,7 +46,7 @@ int main(int argc, char* args[])
     clock_t startTime = clock();
     double tol = 1.0e-6;
     if (strcmp(args[2], "lao") == 0) {
-        LexiLAOStarSolver lao(problem, tol, 1000000);
+        MOLAOStarSolver lao(problem, tol, 1000000);
         lao.solve(problem->initialState());
     } else if (strcmp(args[2], "vi") == 0) {
         LexiVISolver vi(problem, 1000000000, tol);
@@ -55,12 +55,12 @@ int main(int argc, char* args[])
     clock_t endTime = clock();
     if (verbosity > 0) {
         cerr << "Estimated cost "
-             << ((LexiState *) problem->initialState())->lexiCost()[0] << " "
-             << ((LexiState *) problem->initialState())->lexiCost()[1] << endl;
+             << ((MOState *) problem->initialState())->mobjCost()[0] << " "
+             << ((MOState *) problem->initialState())->mobjCost()[1] << endl;
         cerr << "Time " << ((endTime - startTime + 0.0) / CLOCKS_PER_SEC) << endl;
     } else {
-        cerr << ((LexiState *) problem->initialState())->lexiCost()[0] << " "
-             << ((LexiState *) problem->initialState())->lexiCost()[1] << endl;
+        cerr << ((MOState *) problem->initialState())->mobjCost()[0] << " "
+             << ((MOState *) problem->initialState())->mobjCost()[1] << endl;
     }
 
     int nsims = argc > 4 ? atoi(args[4]) : 1;

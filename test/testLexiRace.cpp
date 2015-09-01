@@ -4,72 +4,82 @@
 #include <sstream>
 #include <unistd.h>
 
+#include "../include/domains/racetrack/RacetrackAction.h"
+#include "../include/mobj/domains/MORTrackDetHeuristic.h"
+#include "../include/mobj/domains/MORacetrackProblem.h"
+#include "../include/mobj/domains/MORacetrackState.h"
 #include "../include/solvers/solver.h"
-#include "../include/solvers/LexiVISolver.h"
-#include "../include/solvers/LexiLAOStarSolver.h"
-
+#include "../include/solvers/mobj/CMDPSolver.h"
+#include "../include/solvers/mobj/LexiVISolver.h"
+#include "../include/solvers/mobj/MOLAOStarSolver.h"
+#include "../include/solvers/mobj/CMDPSlackSolver.h"
 #include "../include/util/general.h"
 #include "../include/util/graph.h"
 
-#include "../include/lexi/domains/LexiRacetrackProblem.h"
-#include "../include/lexi/domains/LexiRacetrackState.h"
-#include "../include/lexi/domains/LexiRTrackDetHeuristic.h"
-#include "../include/domains/racetrack/RacetrackAction.h"
 
 using namespace mlcore;
 using namespace mlsolvers;
-using namespace mllexi;
+using namespace mlmobj;
 using namespace std;
 
 int main(int argc, char* args[])
 {
     if (argc < 5) {
-        cerr << "Usage ./textlexirace TRACK ALGORITHM SLACK SAFETY --optional [NSIMS VERBOSITY]" << endl;
+        cout << "Usage ./textlexirace TRACK ALGORITHM SLACK SAFETY";
+        cout << " --optional [NSIMS VERBOSITY GAMMA]" << endl;
         exit(0);
     }
 
-    mdplib_debug = false;
+    mdplib_debug = true;
 
     double slack = atof(args[3]);
+    double gamma = argc > 7 ? atof(args[7]) : 0.95;
+    bool useSafety = atoi(args[4]);
     int verbosity = argc > 6 ? atoi(args[6]) : 1;
+    int size = 3;
 
-    LexiProblem* problem = new LexiRacetrackProblem(args[1], 2);
-    ((LexiRacetrackProblem*) problem)->setPError(0.00);
-    ((LexiRacetrackProblem*) problem)->setPSlip(0.20);
-    ((LexiRacetrackProblem*) problem)->setMDS(0);
-    ((LexiRacetrackProblem*) problem)->useSafety((bool) atoi(args[4]));
+    MOProblem* problem = new MORacetrackProblem(args[1], size);
+    ((MORacetrackProblem*) problem)->setPError(0.00);
+    ((MORacetrackProblem*) problem)->setPSlip(0.20);
+    ((MORacetrackProblem*) problem)->setMDS(0);
+    ((MORacetrackProblem*) problem)->useSafety(useSafety);
     problem->slack(slack);
-    problem->generateAll();
 
     vector<Heuristic*> heuristics;
     Heuristic* heuristic =
-        (strcmp(args[2], "vi") == 0) ? nullptr : new LexiRTrackDetHeuristic(args[1]);
-    heuristics.push_back(heuristic);
-    heuristics.push_back(heuristic);
+        (strcmp(args[2], "vi") == 0) ? nullptr : new MORTrackDetHeuristic(args[1], useSafety);
+    for (int i = 0; i < size; i++)
+        heuristics.push_back(heuristic);
     problem->heuristics(heuristics);
-
-    if (verbosity > 1)
-        cerr << problem->states().size() << " states" << endl;
 
     clock_t startTime = clock();
     double tol = 1.0e-6;
-    if (strcmp(args[2], "lao") == 0) {
-        LexiLAOStarSolver lao(problem, tol, 1000000);
+    CMDPSlackSolver css(problem, vector<double> (problem->size(), slack));
+    if (strcmp(args[2], "css") == 0) {
+        problem->gamma(gamma);
+        css.solve(problem->initialState());
+    } else if (strcmp(args[2], "lao") == 0) {
+        MOLAOStarSolver lao(problem, tol, 1000000);
         lao.solve(problem->initialState());
     } else if (strcmp(args[2], "vi") == 0) {
+        problem->gamma(gamma);
+        problem->slack(slack * (1 - gamma));
+        problem->generateAll();
+        if (verbosity > 1)
+            cout << problem->states().size() << " states" << endl;
         LexiVISolver vi(problem, 1000000000, tol);
         vi.solve();
     }
     clock_t endTime = clock();
-    if (verbosity > 0) {
-        cerr << "Estimated cost "
-             << ((LexiState *) problem->initialState())->lexiCost()[0] << " "
-             << ((LexiState *) problem->initialState())->lexiCost()[1] << endl;
-        cerr << startTime << " " << endTime << endl;
-        cerr << "Time " << ((endTime - startTime + 0.0) / CLOCKS_PER_SEC) << endl;
-    } else {
-        cerr << ((LexiState *) problem->initialState())->lexiCost()[0] << " "
-             << ((LexiState *) problem->initialState())->lexiCost()[1] << endl;
+    if (verbosity > 10) {
+        cout << "Estimated cost "
+             << ((MOState *) problem->initialState())->mobjCost()[0] << " "
+             << ((MOState *) problem->initialState())->mobjCost()[1] << endl;
+        cout << startTime << " " << endTime << endl;
+        cout << "Time " << ((endTime - startTime + 0.0) / CLOCKS_PER_SEC) << endl;
+    } else if (verbosity > 1) {
+        cout << ((MOState *) problem->initialState())->mobjCost()[0] << " "
+             << ((MOState *) problem->initialState())->mobjCost()[1] << endl;
     }
 
     int nsims = argc > 5 ? atoi(args[5]) : 1;
@@ -78,23 +88,50 @@ int main(int argc, char* args[])
     for (int i = 0; i < nsims; i++) {
         State* tmp = problem->initialState();
         if (verbosity > 100) {
-            cerr << " ********* Simulation Starts ********* " << endl;
+            cout << " ********* Simulation Starts ********* " << endl;
         }
+
+        double discount = 1.0;
+        vector <double> cost(problem->size(), 0.0);
         while (!problem->goal(tmp)) {
             Action* a;
-            a = tmp->bestAction();
-            expectedCost[0] += problem->cost(tmp, a, 0);
-            expectedCost[1] += problem->cost(tmp, a, 1);
+            if (strcmp(args[2], "css") == 0)
+                a = css.policy()->getRandomAction(tmp);
+            else
+                a = tmp->bestAction();
+
+            if (verbosity > 100) {
+                MOState* lex = (MOState *) tmp;
+                cout << endl << "STATE-ACTION *** " << tmp << " " << a << " est. cost " << endl;
+                double c0 = problem->cost(lex,a,0), c1 = problem->cost(lex,a,1);
+                cout << lex->mobjCost()[0] << " " <<  lex->mobjCost()[1];
+                cout << " - acc. costs " << cost[0] << " " << cost[1] << endl;
+                dsleep(250);
+            }
+
+            double discCost = discount * problem->cost(tmp, a, i);
+            if (discCost < 1.0-6)
+                break;
+
+            for (int i = 0; i < problem->size(); i++) {
+                cost[i] += discount * problem->cost(tmp, a, i);
+                expectedCost[i] += discount * problem->cost(tmp, a, i);
+            }
             tmp = randomSuccessor(problem, tmp, a);
+            discount *= gamma;
         }
         if (verbosity > 100)
-            cerr << endl;
+            cout << endl;
     }
 
-    if (verbosity > 0)
-        cerr << "Avg. Exec cost " << expectedCost[0] / nsims << " " << expectedCost[1] / nsims << endl;
+    if (verbosity > 0) {
+        cout << "Avg. Exec cost ";
+        for (int i = 0; i < problem->size(); i++)
+            cout << expectedCost[i] / nsims << " ";
+        cout << endl;
+    }
 
     delete problem;
-    delete ((LexiRTrackDetHeuristic*) heuristic);
+    delete ((MORTrackDetHeuristic*) heuristic);
 }
 

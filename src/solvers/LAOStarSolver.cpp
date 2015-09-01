@@ -19,7 +19,6 @@ mlcore::Action* LAOStarSolver::solve(mlcore::State* s0)
             visited.clear();
             countExpanded = expand(s0);
             totalExpanded += countExpanded;
-
             clock_t currentTime = clock();
             if ((0.001 * (currentTime - startTime)) / CLOCKS_PER_SEC > timeLimit_)
                 return s0->bestAction();

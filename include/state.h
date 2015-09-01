@@ -24,6 +24,7 @@ class Problem;
 class State
 {
 protected:
+
     /**
      * A bit mask that is helpful to speed up solvers.
      */
@@ -62,6 +63,7 @@ protected:
     virtual std::ostream& print(std::ostream& os) const =0;
 
 public:
+
     /**
      * Common constructor. Used to initialize inherited variables.
      */
@@ -284,6 +286,6 @@ typedef std::unordered_map<State*, Action*, StateHash, StateEqual> StateActionMa
  */
 typedef std::list<Successor> SuccessorsList;
 
-}
+}   // namespace mlcore
 
 #endif // MDPLIB_STATE_H

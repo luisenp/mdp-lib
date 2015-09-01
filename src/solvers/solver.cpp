@@ -22,11 +22,11 @@ double qvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
 }
 
 
-double qvalue(mllexi::LexiProblem* problem, mllexi::LexiState* s, mlcore::Action* a, int i)
+double qvalue(mlmobj::MOProblem* problem, mlmobj::MOState* s, mlcore::Action* a, int i)
 {
     double qAction = 0.0;
     for (mlcore::Successor su : problem->transition(s, a, 0)) {
-        qAction += su.su_prob * ((mllexi::LexiState *) su.su_state)->lexiCost()[i];
+        qAction += su.su_prob * ((mlmobj::MOState *) su.su_state)->mobjCost()[i];
     }
     qAction = (qAction * problem->gamma()) + problem->cost(s, a, i);
     return qAction;
@@ -49,7 +49,7 @@ weightedQvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
 
 std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem, mlcore::State* s)
 {
-    double bestQ = problem->goal(s) ? 0.0 : mdplib::dead_end_cost;
+    double bestQ = problem->goal(s) ? 0.0 : mdplib::dead_end_cost + 1;
     bool hasAction = false;
     mlcore::Action* bestAction = nullptr;
     for (mlcore::Action* a : problem->actions()) {
@@ -63,14 +63,14 @@ std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem, mlcor
         }
     }
 
-    if (!hasAction && bestQ == mdplib::dead_end_cost)
+    if (!hasAction && bestQ >= mdplib::dead_end_cost)
         s->markDeadEnd();
 
     return std::make_pair(bestQ, bestAction);
 }
 
 
-double lexiBellmanUpdate(mllexi::LexiProblem* problem, mllexi::LexiState* s, int level)
+double lexiBellmanUpdate(mlmobj::MOProblem* problem, mlmobj::MOState* s, int level)
 {
     bool hasAction = true;
     mlcore::Action* bestAction = nullptr;
@@ -101,7 +101,7 @@ double lexiBellmanUpdate(mllexi::LexiProblem* problem, mllexi::LexiState* s, int
         }
 
         /* Updating cost, best action and residual */
-        double currentResidual = fabs(bestQ - s->lexiCost()[i]);
+        double currentResidual = fabs(bestQ - s->mobjCost()[i]);
         if (currentResidual > residual)
             residual = currentResidual;
         s->setCost(bestQ, i);
@@ -137,6 +137,18 @@ double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s)
     s->setCost(best.bb_cost);
     s->setBestAction(best.bb_action);
     bellman_mutex.unlock();
+    return fabs(residual);
+}
+
+
+double bellmanUpdate(mlmobj::MOProblem* problem, mlmobj::MOState* s)
+{
+    std::pair<double, mlcore::Action*> best = bellmanBackup(problem, s);
+    double residual = s->cost() - best.bb_cost;
+    s->setCost(best.bb_cost);
+    s->setBestAction(best.bb_action);
+    for (int i = 0; i < problem->size(); i++)
+        s->setCost(qvalue(problem, s, best.bb_action, i), i);
     return fabs(residual);
 }
 

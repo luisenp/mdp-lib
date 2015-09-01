@@ -35,7 +35,9 @@ testsail
 testrace
 testlexi*
 testairplane
+*.lp
 *.txt
+*.lp.*
 data/*
 experiments/*
 scripts/*.track

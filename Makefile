@@ -3,21 +3,28 @@
 #########################################################################
 
 
-# Compilation flags and variables #
+# Compilation flags and variables
 CC = g++
-CFLAGS = -std=c++11 -O3 -DATOM_STATES -pthread
+CFLAGS = -std=c++11 -g -DATOM_STATES -pthread
 
-# Variables for directories #
+# Variables for directories
 ID = include
 SD = src
 TD = test
+OD = obj
 ID_UTIL = $(ID)/util
 SD_UTIL = $(SD)/util
 ID_SOLV = $(ID)/solvers
 SD_SOLV = $(SD)/solvers
+OD_SOLV = $(OD)/solvers
+OD_SOLV_MOBJ = $(OD)/solvers/mobj
+ID_SOLV_MOBJ = $(ID)/solvers/mobj
+SD_SOLV_MOBJ = $(SD)/solvers/mobj
 
 ID_DOM = $(ID)/domains
 SD_DOM = $(SD)/domains
+ID_MODOM = $(ID)/mobj/domains
+SD_MODOM = $(SD)/mobj/domains
 SD_GW = $(SD_DOM)/gridworld
 ID_GW = $(ID_DOM)/gridworld
 SD_CTP = $(SD_DOM)/ctp
@@ -28,17 +35,21 @@ SD_BT = $(SD_DOM)/binarytree
 ID_BT = $(ID_DOM)/binarytree
 SD_RACE = $(SD_DOM)/racetrack
 ID_RACE = $(ID_DOM)/racetrack
+OD_MODOM = $(OD)/domains/mobj
 
-# Variables for include directives #
+# Variables for include directives
 INCLUDE_DOM = -I$(ID_GW) -I$(ID_CTP) -I$(ID_SAIL) -I$(ID_DOM) -I$(ID_RACE)
-INCLUDE_CORE = -I$(ID_SOLV) -I$(ID_UTIL) -I$(ID)
-INCLUDE = $(INCLUDE_DOM) $(INCLUDE_CORE)
+INCLUDE_CORE = -I$(ID_UTIL) -I$(ID)
+INCLUDE_SOLVERS = -I$(ID_SOLV) -I$(ID_SOLV_MOBJ)
+INCLUDE = $(INCLUDE_DOM) $(INCLUDE_CORE) $(INCLUDE_SOLVERS)
 
-# Variables for source/header files #
+# Variables for source/header files
 I_H = $(ID)/*.h
 S_CPP = $(SD)/*.cpp
 SOLV_CPP = $(SD_SOLV)/*.cpp
 SOLV_H = $(ID_SOLV)/*.h
+MOSOLV_CPP = $(SD_SOLV_MOBJ)/*.cpp
+MOSOLV_H = $(ID_SOLV_MOBJ)/*.h
 UTIL_CPP = $(SD_UTIL)/*.cpp
 UTIL_H = $(ID_UTIL)/*.h
 
@@ -55,35 +66,88 @@ RACE_H = $(ID_RACE)/*.h
 DOM_CPP = $(GW_CPP) $(CTP_CPP) $(SAIL_CPP) $(RACE_CPP) $(SD_DOM)/*.cpp
 DOM_H = $(GW_H) $(CTP_H) $(SAIL_H) $(RACE_H)
 
-ALL_H = $(I_H) $(SOLV_H) $(DOM_H) $(UTIL_H)
-ALL_CPP = $(DOM_CPP) $(SOLV_CPP) $(UTIL_CPP)
+ALL_H = $(I_H) $(SOLV_H) $(MOSOLV_H) $(DOM_H) $(UTIL_H)
+ALL_CPP = $(DOM_CPP) $(SOLV_CPP) $(MOSOLV_CPP) $(UTIL_CPP)
 
 # Libraries
-LIBS = lib/libmdp.a
+LIBS = lib/libmdp.a -lgurobi_c++ -lgurobi60 -Llib
 
 #########################################################################
 #                                 TARGETS                               #
 #########################################################################
 
 # Compiles the core MDP-LIB library #
-libmdp: $(S_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(UTIL_H)
-	rm -f *.o
-	$(CC) $(CFLAGS) $(INCLUDE_CORE) -c $(UTIL_CPP) $(S_CPP) $(SOLV_CPP) $(UTIL_CPP)
-	ar rvs libmdp.a *.o
+.PHONY: libmdp
+libmdp:
+	make $(OD)/core.a
+	make $(OD)/solvers.a
+	make $(OD)/mo-solvers.a
+	ar rvs libmdp.a $(OD)/core/*.o $(OD)/solvers/*.o $(OD)/solvers/mobj/*.o
 	mv libmdp.a lib
-	rm *.o
 
-# Compiles the lexicographic SSPP library #
-lexi: $(ALL_CPP) $(ALL_H)
-	$(CC) $(CFLAGS) $(INCLUDE) -Iinclude/lexi/*.h -Iinclude/lexi/domains/*.h \
-	-Iinclude/lexi/domains/airplane/*.h -c src/lexi/domains/*.cpp $(GW_CPP) \
-	src/lexi/domains/airplane/*.cpp
-	mv *.o test/
-	$(CC) $(CFLAGS) $(INCLUDE) -o testlexirace $(TD)/testLexiRace.cpp $(TD)/*.o $(LIBS)
-	$(CC) $(CFLAGS) $(INCLUDE) -o testlexigw $(TD)/testLexiGW.cpp $(TD)/*.o $(LIBS)
-	$(CC) $(CFLAGS) $(INCLUDE) -o testlexiraw $(TD)/testLexiRaw.cpp $(TD)/*.o $(LIBS)
-	$(CC) $(CFLAGS) $(INCLUDE) -o testairplane $(TD)/testAirplane.cpp $(TD)/*.o $(LIBS)
-	rm test/*.o
+# Compiles the multi-objective solvers
+$(OD)/mo-solvers.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_H) $(MOSOLV_H) $(MOSOLV_CPP)
+	make $(OD)/core.a
+	make $(OD)/solvers.a
+	$(CC) $(CFLAGS) $(INCLUDE_CORE) $(INCLUDE_SOLVERS) -c $(MOSOLV_CPP)
+	mv *.o $(OD_SOLV_MOBJ)
+	ar rvs obj/mo-solvers.a $(OD_SOLV_MOBJ)/*.o
+
+# Compiles the base (single-objective) solvers
+$(OD)/solvers.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_H)
+	make $(OD)/core.a
+	$(CC) $(CFLAGS) $(INCLUDE_CORE) -c $(SOLV_CPP)
+	mv *.o $(OD_SOLV)
+	ar rvs $(OD)/solvers.a $(OD_SOLV)/*.o
+
+# Compiles the core classes
+$(OD)/core.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H)
+	$(CC) $(CFLAGS) $(INCLUDE_CORE) -c $(UTIL_CPP) $(S_CPP) $(UTIL_CPP)
+	mv *.o obj/core
+	ar rvs $(OD)/core.a $(OD)/core/*.o
+
+# Compiles the multiobjective domains and test programs #
+mobj: $(ALL_CPP) $(ALL_H)
+	make $(OD_MODOM)/airplane.a
+	make $(OD_MODOM)/mo-racetrack.a
+	make $(OD_MODOM)/mo-gw.a
+	make $(OD_MODOM)/rawfile.a
+	$(CC) $(CFLAGS) $(INCLUDE) -o testlexirace $(TD)/testLexiRace.cpp $(OD_MODOM)/*.o $(LIBS)
+	$(CC) $(CFLAGS) $(INCLUDE) -o testlexigw $(TD)/testLexiGW.cpp $(OD_MODOM)/*.o $(LIBS)
+	$(CC) $(CFLAGS) $(INCLUDE) -o testlexiraw $(TD)/testLexiRaw.cpp $(OD_MODOM)/*.o $(LIBS)
+	$(CC) $(CFLAGS) $(INCLUDE) -o testairplane $(TD)/testAirplane.cpp $(OD_MODOM)/*.o $(LIBS)
+
+# Compiles the airplane domain #
+$(OD_MODOM)/airplane.a: $(ID_MODOM)/airplane/*.h $(SD_MODOM)/airplane/*.cpp
+	rm -f *.o
+	$(CC) $(CFLAGS) $(INCLUDE) -Iinclude/mobj/*.h -I$(ID_MODOM)/*.h \
+	-I$(ID_MODOM)/airplane/*.h -c $(SD_MODOM)/airplane/*.cpp
+	ar rvs $(OD_MODOM)/airplane.a *.o
+	mv *.o $(OD_MODOM)
+
+# Compiles the MO-Racetrack domain #
+$(OD_MODOM)/mo-racetrack.a: $(RACE_CPP) $(RACE_H) $(ID_MODOM)/*rack*.h $(SD_MODOM)/*rack*.cpp
+	rm -f *.o
+	$(CC) $(CFLAGS) $(INCLUDE) -Iinclude/mobj/*.h -I$(ID_MODOM)/*.h \
+	-I$(ID_MODOM)/*rack*/*.h -c $(SD_MODOM)/*rack*.cpp
+	ar rvs $(OD_MODOM)/mo-racetrack.a *.o
+	mv *.o $(OD_MODOM)
+
+# Compiles the MO-Gridworld domain #
+$(OD_MODOM)/mo-gw.a: $(ID_MODOM)/*.h $(SD_MODOM)/*.cpp $(GW_CPP) $(GW_H) Makefile
+	rm -f *.o
+	$(CC) $(CFLAGS) $(INCLUDE) -Iinclude/mobj/*.h -I$(ID_MODOM)/*.h \
+	-I$(ID_MODOM)/*GridWorld*/*.h -c $(SD_MODOM)/*GridWorld*.cpp $(GW_CPP)
+	ar rvs $(OD_MODOM)/mo-gw.a *.o
+	mv *.o $(OD_MODOM)
+
+# Compiles the Raw File domain #
+$(OD_MODOM)/rawfile.a: $(ID_MODOM)/*Raw*.h $(SD_MODOM)/*Raw*.cpp
+	rm -f *.o
+	$(CC) $(CFLAGS) $(INCLUDE) -Iinclude/mobj/*.h -I$(ID_MODOM)/*.h \
+	-I$(ID_MODOM)/*Raw*/*.h -c $(SD_MODOM)/*Raw*.cpp
+	ar rvs $(OD_MODOM)/rawfile.a *.o
+	mv *.o $(OD_MODOM)
 
 # Compiles the concurrent planning test program #
 conc: $(ALL_CPP) $(ALL_H)
@@ -127,12 +191,15 @@ b2t: $(BT_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(BT_H)
 	$(CC) $(CFLAGS) -I$(ID_BT) $(INCLUDE_CORE) -o testb2t $(TD)/testB2T.cpp $(TD)/*.o $(LIBS)
 	rm test/*.o
 
+# Compiles the PPDDL library
 ppddl: src/ppddl/*.cpp $(I_H) include/ppddl/*.h include/ppddl/mini-gpt/*.h $(SOLV_CPP) $(UTIL_CPP)
 	$(CC) $(CFLAGS) -Iinclude -Iinclude/ppddl -Include/ppddl/mini-gpt -I$(ID_SOLV) -c src/ppddl/*.cpp src/*.cpp $(SOLV_CPP) $(UTIL_CPP)
 	mv *.o test/
 	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) -o testppddl test/testPPDDL.cpp test/*.o $(LIBS) lib/libminigpt.a
 
+.PHONY: clean
 clean:
 	rm -f test/*.o
 	rm -f *.o
+	rm -f obj/*.a
 
