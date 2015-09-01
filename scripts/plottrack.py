@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 plt.close("all")
 
-ftrack = open('map1.track')
+ftrack = open('testcss2.track')
 
 [X,Y] = [int(x) for x in ftrack.readline().split()]
 numWalls = int(ftrack.readline())
@@ -36,11 +36,11 @@ for j in range(Y):
             k4 = k4 + 1
       
 plt.plot(Walls[:,0],Walls[:,1],'s', color = '0.25', ms=9, mec='0.25')
-plt.plot(Slips[:,0],Slips[:,1],'.', color='0.65')
+plt.plot(Slips[:,0],Slips[:,1],'.', color='0.65', ms=9, mec='0.25')
 plt.plot(Starts[:,0],Starts[:,1],'gs')
 plt.plot(Goals[:,0],Goals[:,1],'rs')
-plt.text(3,20, 'Start')
-plt.text(60,20, 'Goal')
+#plt.text(3,20, 'Start')
+#plt.text(60,20, 'Goal')
 plt.axis([-1,X,-1,Y])
 plt.show()
 

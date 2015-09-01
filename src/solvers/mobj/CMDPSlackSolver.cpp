@@ -26,7 +26,6 @@ mlcore::Action* CMDPSlackSolver::solve(mlcore::State* s0)
         std::cout << "\n******************************************************** \n" << std::endl;
     }
     policy_ = internalSolver_->policy();
-    policy_->print(std::cerr);
 }
 
 } // mlsolvers

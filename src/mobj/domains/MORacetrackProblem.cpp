@@ -185,7 +185,7 @@ double MORacetrackProblem::cost(mlcore::State* s, mlcore::Action* a, int index) 
         double dot = (rts->vx() * rta->ax() + rts->vy() * rta->ay()) / (m1 * m2);
         double angle = acos( dot );
 
-        return 100 * fabs(angle) + 1.0;
+        return 2 * fabs(angle) + 1.0;
     }
 }
 
