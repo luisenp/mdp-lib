@@ -1,12 +1,14 @@
 #ifndef MDPLIB_GLOBALSLACKSOLVER_H
 #define MDPLIB_GLOBALSLACKSOLVER_H
 
+#include "../solver.h"
+
 #include "MOLAOStarSolver.h"
 
-namespace mlsolvers
+namespace mdplib_mobj_solvers
 {
 
-class GlobalSlackSolver : public Solver
+class GlobalSlackSolver : public mlsolvers::Solver
 {
 private:
 
@@ -61,6 +63,6 @@ public:
     virtual mlcore::Action* solve(mlcore::State* s0);
 };
 
-}
+} // namespace mdplib_mobj_solvers
 
 #endif // MDPLIB_GLOBALSLACKSOLVER_H

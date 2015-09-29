@@ -161,7 +161,6 @@ double MORacetrackProblem::cost(mlcore::State* s, mlcore::Action* a, int index) 
 {
     if (s == s0 || s == absorbing_ || goal(s))
         return 0.0;
-
     MORacetrackState* rts = (MORacetrackState*) s;
     if (track_[rts->x()][rts->y()] == rtrack::wall)
         return 10.0;

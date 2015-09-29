@@ -56,7 +56,8 @@ void dprint5(T1 x, T2 y, T3 z, T4 w, T5 xx)
 void dsleep(int miliseconds);
 
 /**
- * Computes the next combination (no repetitions) of numbers from 0 to (n-1) chosen k at a time.
+ * Computes the next combination (no repetitions) of numbers from 0 to (n-1)
+ * chosen k at a time.
  * The method returns true unless no more combinations are possible.
  *
  * This method modifies the given vector in place.
@@ -67,7 +68,8 @@ void dsleep(int miliseconds);
 bool nextComb(std::vector<int>& comb, int n, int k);
 
 /**
- * Computes the next combination (with repetitions) of n elements with k options for each.
+ * Computes the next combination (with repetitions) of n elements with k options
+ * for each.
  * The method returns true unless no more combinations are possible.
  *
  * This method modifies the given vector in place.

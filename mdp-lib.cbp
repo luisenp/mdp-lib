@@ -507,6 +507,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/mobj/domains/airplane/AirplaneProblem.h" />
 		<Unit filename="include/mobj/domains/airplane/AirplaneState.h" />
 		<Unit filename="include/mobj/mobj_problem.h" />
+		<Unit filename="include/mobj/mobj_solvers.h" />
 		<Unit filename="include/mobj/mobj_state.h" />
 		<Unit filename="include/ppddl/mini-gpt/actions.h" />
 		<Unit filename="include/ppddl/mini-gpt/algorithms.h" />
@@ -547,6 +548,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/solvers/RandomPolicy.h" />
 		<Unit filename="include/solvers/UCTSolver.h" />
 		<Unit filename="include/solvers/VISolver.h" />
+		<Unit filename="include/solvers/mobj/CMDPLagrangeSearchSolver.h" />
 		<Unit filename="include/solvers/mobj/CMDPSlackSolver.h" />
 		<Unit filename="include/solvers/mobj/CMDPSolver.h" />
 		<Unit filename="include/solvers/mobj/GlobalSlackSolver.h" />
@@ -825,6 +827,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="src/solvers/RandomPolicy.cpp" />
 		<Unit filename="src/solvers/UCTSolver.cpp" />
 		<Unit filename="src/solvers/VISolver.cpp" />
+		<Unit filename="src/solvers/mobj/CMDPLagrangeSearchSolver.cpp" />
 		<Unit filename="src/solvers/mobj/CMDPSlackSolver.cpp" />
 		<Unit filename="src/solvers/mobj/CMDPSolver.cpp" />
 		<Unit filename="src/solvers/mobj/GlobalSlackSolver.cpp" />

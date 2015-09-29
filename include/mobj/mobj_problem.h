@@ -55,45 +55,45 @@ public:
     /**
      * Returns the number of value functions for this lexicographical problem.
      *
-     * @return the number of value functions for this lexicographical problem.
+     * @return The number of value functions for this lexicographical problem.
      */
     int size() const { return size_; }
 
     /**
      * Returns the slack to use for this lexicographical problem.
      *
-     * @return the slack of the problem.
+     * @return The slack of the problem.
      */
     double slack() const { return slack_; }
 
     /**
      * Sets the slack to use for this lexicographical problem.
      *
-     * @param slack the slack of the problem.
+     * @param slack The slack of the problem.
      */
     void slack(double slack) { slack_ = slack; }
 
     /**
      * Returns the weights used for linearly combining the objectives.
      *
-     * @return the weights used for linearly combining the objectives.
+     * @return The weights used for linearly combining the objectives.
      */
     std::vector<double> weights() const { return weights_; }
 
     /**
      * Sets the weights used for linearly combining the objectives.
      *
-     * @param weights_ the weights used for linearly combining the objectives.
+     * @param w The weights used for linearly combining the objectives.
      */
     void weights(std::vector<double> w) { weights_ = w; }
 
     /**
      * Multiobjective cost function for the problem.
      *
-     * Returns the cost of applying the given action to the given state
+     * Returns themobj_problem.h:169 cost of applying the given action to the given state
      * according to the i-th cost function.
      *
-     * @return the cost of applying action the given action to the given state according
+     * @return The cost of applying the given action to the given state according
      *        to the specified value function.
      */
     virtual double cost(mlcore::State* s, mlcore::Action* a, int i) const = 0;
@@ -104,7 +104,7 @@ public:
      * Returns a linear combination of the cost functions evaluated at the given state
      * and action pair. The weights for the linear combination are passed as parameters.
      *
-     * @return the linear combination of the cost functions.
+     * @return The linear combination of the cost functions.
      */
     double cost(mlcore::State* s, mlcore::Action* a, const std::vector<double>& weights) const
     {
@@ -168,7 +168,6 @@ public:
         return cost(s, a, weights_);
         //return cost(s, a, 0);
     }
-
 
 };
 

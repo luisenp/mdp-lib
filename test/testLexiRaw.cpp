@@ -14,7 +14,10 @@
 #include "../include/mobj/domains/RawFileMOProblem.h"
 #include "../include/mobj/domains/RawFileMOState.h"
 #include "../include/mobj/domains/RawFileMOAction.h"
+#include "../include/mobj/mobj_problem.h"
+#include "../include/mobj/mobj_state.h"
 
+using namespace mdplib_mobj_solvers;
 using namespace mlcore;
 using namespace mlsolvers;
 using namespace mlmobj;

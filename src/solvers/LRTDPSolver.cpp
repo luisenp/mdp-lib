@@ -88,9 +88,7 @@ namespace mlsolvers
     {
         int trials = 0;
         while (!s0->checkBits(mdplib::SOLVED) && trials++ < maxTrials_) {
-//            checkSolved(s0);
             trial(s0);
-//            dprint1("*****************************");   dsleep(1000);
         }
     }
 

@@ -2,7 +2,7 @@
 #include "../../../include/solvers/solver.h"
 #include "../../../include/solvers/mobj/GlobalSlackSolver.h"
 
-namespace mlsolvers
+namespace mdplib_mobj_solvers
 {
 
 mlcore::Action* GlobalSlackSolver::solve(mlcore::State* s)
@@ -119,8 +119,8 @@ mlcore::Action* GlobalSlackSolver::binarySearch(mlcore::State* s)
     internalSolver_->solve(s);
 
     return s->bestAction();
-}
+} // GlobalSlackSolver::binarySearch
 
-}
+} // namespace mdplib_mobj_solvers
 
 

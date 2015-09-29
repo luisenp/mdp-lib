@@ -4,9 +4,10 @@
 #include <sstream>
 #include <unistd.h>
 
-#include "../include/solvers/solver.h"
+#include "../include/solvers/mobj/mobj_solvers.h"
 #include "../include/solvers/mobj/LexiVISolver.h"
 #include "../include/solvers/mobj/MOLAOStarSolver.h"
+#include "../include/solvers/solver.h"
 
 #include "../include/util/general.h"
 #include "../include/util/graph.h"
@@ -16,6 +17,7 @@
 #include "../include/mobj/domains/airplane/AirplaneAction.h"
 #include "../include/mobj/domains/airplane/AirplaneHeuristic.h"
 
+using namespace mdplib_mobj_solvers;
 using namespace mlcore;
 using namespace mlsolvers;
 using namespace mlmobj;

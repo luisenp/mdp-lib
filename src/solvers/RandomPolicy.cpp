@@ -1,3 +1,4 @@
+#include "../mobj/mobj_problem.h"
 #include "../solvers/RandomPolicy.h"
 
 #include <cassert>
@@ -20,12 +21,8 @@ void RandomPolicy::addActionsState(mlcore::State* s, std::vector<double> actions
     double total = 0.0;
     for (int i = 0; i < actions.size(); i++) {
         double d = actions[i];
-//        if (d > 0 && d < 0.999999)
-//            dprint4("NOT DETERMINISTIC!!! ", d, " ", total);
-//        dprint1(d);
         total += d;
     }
-//    dprint2("    total ",total);
 }
 
 mlcore::Action* RandomPolicy::getRandomAction(mlcore::State* s)

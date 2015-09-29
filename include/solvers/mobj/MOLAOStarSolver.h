@@ -3,11 +3,12 @@
 
 #include "../solver.h"
 #include "../../mobj/mobj_problem.h"
+#include "../../mobj/mobj_state.h"
 
-namespace mlsolvers
+namespace mdplib_mobj_solvers
 {
 
-class MOLAOStarSolver : public Solver
+class MOLAOStarSolver : public mlsolvers::Solver
 {
 private:
     mlmobj::MOProblem* problem_;
@@ -75,6 +76,6 @@ public:
 };
 
 
-}
+} // namespace mdplib_mobj_solvers
 
 #endif // MDPLIB_MOLAOSTARSOLVER_H

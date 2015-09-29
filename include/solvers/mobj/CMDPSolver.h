@@ -6,11 +6,12 @@
 
 #include "../../lib/gurobi_c++.h"
 
-#include "RandomPolicy.h"
 #include "../../mobj/mobj_problem.h"
 #include "../../state.h"
 
-namespace mlsolvers
+#include "../RandomPolicy.h"
+
+namespace mdplib_mobj_solvers
 {
 
 /**
@@ -27,7 +28,7 @@ class CMDPSolver
 private:
     mlmobj::MOProblem* problem_;
 
-    RandomPolicy* policy_;
+    mlsolvers::RandomPolicy* policy_;
 
     mlcore::StateIntMap stateIndex_;
 
@@ -48,6 +49,14 @@ private:
     double solvePrimal(mlcore::State* s0);
 
     double solveDual(mlcore::State* s0);
+
+    void createVariablesAndObjFunForPrimal(
+        int numVariables, int numActions, GRBModel& model, GRBVar* variables, GRBLinExpr &objFun);
+
+    void createLPConstraintsLHSForPrimal(
+        GRBVar* variables, int numActions, GRBLinExpr* MDPConstLHS, GRBLinExpr* CMDPConstLHS);
+
+    void ComputePolicyFromPrimalSolution(GRBVar* variables, int numStates, int numActions);
 
 public:
     /**
@@ -90,15 +99,17 @@ public:
      * assumed to be the objective, and the rest are assumed to be constraints.
      * The function returns the value of the optimal policy.
      *
-     * @param s0 the state to start the search at.
-     * @param constTargets the upper bounds for the constraints 2,3,...k.
+     * @param s0 The state to start the search at.
+     * @param constTargets The upper bounds for the constraints 2,3,...k.
+     *
+     * @return The value of the optimal policy.
      */
     double solve(mlcore::State* s0);
 
     /**
      * Returns the optimal random policy for the problem.
      */
-    RandomPolicy* policy() { return policy_; }
+    mlsolvers::RandomPolicy* policy() { return policy_; }
 };
 
 } // namespace mlsolvers

@@ -54,21 +54,21 @@ public:
      */
     void resetCost(std::vector<double>& weights, int keepIdx)
     {
+        MOProblem* mobjProblem_ = (MOProblem*) problem_;
         cost_ = 0;
-        MOProblem* lp_ = (MOProblem*) problem_;
-        mobjCost_ = std::vector<double> (lp_->size());
-        for (int i = 0; i < lp_->size(); i++) {
+        gValue_ = 0;
+        hValue_ = 0;
+        mobjCost_ = std::vector<double> (mobjProblem_->size(), 0.0);
+        for (int i = 0; i < mobjProblem_->size(); i++) {
             if (i == keepIdx) {
                 cost_ += mobjCost_[i] * weights[i];
                 continue;
             }
-            if (lp_->heuristics().size() > i && lp_->heuristics()[i] != nullptr) {
-                mobjCost_[i] = lp_->heuristics()[i]->cost(this);
-                cost_ += lp_->heuristics()[i]->cost(this) * weights[i];
-            }
-            else {
-                cost_ += 0.0;
-                mobjCost_[i] = 0.0;
+            if (mobjProblem_->heuristics().size() > i &&
+                    mobjProblem_->heuristics()[i] != nullptr) {
+                mobjCost_[i] = mobjProblem_->heuristics()[i]->cost(this);
+                cost_ += mobjProblem_->heuristics()[i]->cost(this) * weights[i];
+                hValue_ += mobjProblem_->heuristics()[i]->cost(this) * weights[i];
             }
         }
     }

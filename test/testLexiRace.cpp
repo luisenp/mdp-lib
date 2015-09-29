@@ -10,6 +10,7 @@
 #include "../include/mobj/domains/MORacetrackState.h"
 #include "../include/solvers/solver.h"
 #include "../include/solvers/mobj/CMDPSolver.h"
+#include "../include/solvers/mobj/CMDPLagrangeSearchSolver.h"
 #include "../include/solvers/mobj/LexiVISolver.h"
 #include "../include/solvers/mobj/MOLAOStarSolver.h"
 #include "../include/solvers/mobj/CMDPSlackSolver.h"
@@ -17,9 +18,10 @@
 #include "../include/util/graph.h"
 
 
+using namespace mdplib_mobj_solvers;
 using namespace mlcore;
-using namespace mlsolvers;
 using namespace mlmobj;
+using namespace mlsolvers;
 using namespace std;
 
 int main(int argc, char* args[])
@@ -47,7 +49,8 @@ int main(int argc, char* args[])
 
     vector<Heuristic*> heuristics;
     Heuristic* heuristic =
-        (strcmp(args[2], "vi") == 0) ? nullptr : new MORTrackDetHeuristic(args[1], useSafety);
+        (strcmp(args[2], "vi") == 0 || strcmp(args[2], "lagrange") == 0) ?
+            nullptr : new MORTrackDetHeuristic(args[1], useSafety);
     for (int i = 0; i < size; i++)
         heuristics.push_back(heuristic);
     problem->heuristics(heuristics);
@@ -69,6 +72,12 @@ int main(int argc, char* args[])
             cout << problem->states().size() << " states" << endl;
         LexiVISolver vi(problem, 1000000000, tol);
         vi.solve();
+    } else if (strcmp(args[2], "lagrange") == 0) {
+        problem->gamma(gamma);
+        problem->slack(0.0);
+        problem->generateAll();
+        CMDPLagrangeSearchSolver lag(problem);
+        lag.solve(problem->initialState());
     }
     clock_t endTime = clock();
     if (verbosity > 10) {

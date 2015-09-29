@@ -13,10 +13,10 @@
 #include "../include/solvers/solver.h"
 #include "../include/util/general.h"
 
-using namespace std;
+using namespace mdplib_mobj_solvers;
 using namespace mlcore;
 using namespace mlmobj;
-using namespace mlsolvers;
+using namespace std;
 
 int main(int argc, char* args[])
 {
@@ -101,7 +101,7 @@ int main(int argc, char* args[])
                 cost[i] += discount * problem->cost(tmp, a, i);
                 expectedCost[i] += discount * problem->cost(tmp, a, i);
             }
-            tmp = randomSuccessor(problem, tmp, a);
+            tmp = mlsolvers::randomSuccessor(problem, tmp, a);
             discount *= gamma;
         }
 

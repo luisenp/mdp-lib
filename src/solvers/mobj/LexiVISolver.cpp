@@ -5,12 +5,13 @@
 #include "../../../include/mobj/domains/MORacetrackState.h"
 
 #include "../../../include/solvers/solver.h"
+#include "../../../include/solvers/mobj/mobj_solvers.h"
 #include "../../../include/solvers/mobj/LexiVISolver.h"
 #include "../../../include/mobj/mobj_problem.h"
 #include "../../../include/mobj/mobj_state.h"
 #include "../../../include/util/general.h"
 
-namespace mlsolvers
+namespace mdplib_mobj_solvers
 {
 
 LexiVISolver::LexiVISolver(mlmobj::MOProblem* problem, int maxIter, double tol)
@@ -32,9 +33,7 @@ mlcore::Action* LexiVISolver::solve(mlcore::State* s0)
         }
 
         mlmobj::MOState* mos = (mlmobj::MOState *) s0;
-        dprint4("iter ", i, " ", maxResidual);
         if (maxResidual < tol_) {
-            dprint1("FINISHED!");
             return nullptr;
         }
     }

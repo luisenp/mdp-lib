@@ -6,12 +6,10 @@
 #include <vector>
 #include <mutex>
 
-#include "../../include/problem.h"
-#include "../../include/mobj/mobj_problem.h"
-#include "../../include/mobj/mobj_state.h"
-#include "../../include/heuristic.h"
-#include "../../include/state.h"
-#include "../../include/util/general.h"
+#include "../heuristic.h"
+#include "../problem.h"
+#include "../state.h"
+#include "../util/general.h"
 
 #define bb_cost first
 #define bb_action second
@@ -40,8 +38,7 @@ extern std::mt19937 gen;
 extern std::uniform_real_distribution<> dis;
 
 /**
- * An interface for states to have some polymorphism on methods that want to call
- * different planners.
+ * An interface describing planning algorithms.
  */
 class Solver
 {
@@ -66,22 +63,6 @@ public:
  * @return The Q-value of the state-action pair.
  */
 double qvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a);
-
-
-/**
- * Computes the Q-value of a state-action pair for the given lexicographical MDP.
- * The method receives the index of the value function according to which the Q-value
- * will be computed.
- *
- * This method assumes that the given action is applicable on the state.
- *
- * @param problem The problem that contains the given state.
- * @param s The state for which the Q-value will be computed.
- * @param a The action for which the Q-value will be computed.
- * @param i The index of the value function to use.
- * @return The Q-value of the state-action pair.
- */
-double qvalue(mlmobj::MOProblem* problem, mlmobj::MOState* s, mlcore::Action* a, int i);
 
 
 /**
@@ -113,20 +94,6 @@ std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem, mlcor
 
 
 /**
- * Performs a Lexicographic Bellman update of a state according to the level-th cost
- * function. The operator assumes that all values from 1 to (level - 1) are correct.
- *
- * This backup uses fSSPUDE - see http://arxiv.org/pdf/1210.4875.pdf
- *
- * @param problem The problem that contains the given state.
- * @param s The state on which the Bellman backup will be performed.
- * @param level The level of the cost function to be miminized.
- * @return The maximum residual among all value functions.
- */
-double lexiBellmanUpdate(mlmobj::MOProblem* problem, mlmobj::MOState* s, int level);
-
-
-/**
  * Performs a Bellman backup of a state, and then updates the state with
  * the resulting expected cost and greedy action.
  *
@@ -135,19 +102,6 @@ double lexiBellmanUpdate(mlmobj::MOProblem* problem, mlmobj::MOState* s, int lev
  * @return The residual of the state.
  */
 double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s);
-
-
-/**
- * Bellman update for MOSSPs using linear combinations of the cost functions.
- *
- * Performs a Bellman backup of a state, and then updates the state with
- * the resulting expected cost and greedy action.
- *
- * @param problem The problem that contains the given state.
- * @param s The state on which the Bellman backup will be performed.
- * @return The residual of the state.
- */
-double bellmanUpdate(mlmobj::MOProblem* problem, mlmobj::MOState* s);
 
 
 /**
@@ -219,7 +173,19 @@ double residual(mlcore::Problem* problem, mlcore::State* s);
  */
 mlcore::State* mostLikelyOutcome(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a);
 
-}
+
+/**
+ * Samples a trial of the greedy policy implied by the current state values and returns
+ * the accumulated discounted cost (using problem->gamma()).
+ * The trial starts at the given state s.
+ *
+ * @param problem The problem that defines the transition function.
+ * @param s The initial state for the trial.
+ * @return The accumulated cost of this trial.
+ */
+double sampleTrial(mlcore::Problem* problem, mlcore::State* s);
+
+} // mlsolvers
 
 
 #endif // MDPLIB_SOLVER_H

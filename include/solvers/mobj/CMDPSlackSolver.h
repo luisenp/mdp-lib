@@ -7,14 +7,14 @@
 #include "../solver.h"
 #include "CMDPSolver.h"
 
-namespace mlsolvers
+namespace mdplib_mobj_solvers
 {
 
 /**
  * This class transforms the LMDP with global slack into a series of CMDPs to
  * obtain the optimal policy within the alotted slack.
  */
-class CMDPSlackSolver : public Solver
+class CMDPSlackSolver : public mlsolvers::Solver
 {
 private:
 
@@ -22,7 +22,7 @@ private:
 
     CMDPSolver* internalSolver_;
 
-    RandomPolicy* policy_;
+    mlsolvers::RandomPolicy* policy_;
 
     /* Error tolerance */
     std::vector<double> slack_;
@@ -53,7 +53,7 @@ public:
     /**
      * Returns the optimal policy for the problem.
      */
-    RandomPolicy* policy() { return policy_; }
+    mlsolvers::RandomPolicy* policy() { return policy_; }
 };
 
 }

@@ -1,18 +1,18 @@
 #ifndef MDPLIB_LEXIVISOLVER_H
 #define MDPLIB_LEXIVISOLVER_H
 
-#include "../../problem.h"
-#include "../../state.h"
+#include "../../mobj/mobj_problem.h"
+#include "../../mobj/mobj_state.h"
 
 #include "../solver.h"
 
-namespace mlsolvers
+namespace mdplib_mobj_solvers
 {
 /**
  * A LMDP solver that uses Lexicographic Value Iteration (LVI).
  * See http://anytime.cs.umass.edu/shlomo/papers/WZMaaai15.pdf
  */
-class LexiVISolver : public Solver
+class LexiVISolver : public mlsolvers::Solver
 {
 
 private:
@@ -26,7 +26,7 @@ public:
     /**
      * Creates a Lexicographical Value Iteration solver for the specified problem.
      *
-     * @param problem The problem to be solved.
+     * @param problem The MOMDP problem to be solved.
      * @param maxIter The maximum number of iterations to perform.
      * @param tol The tolerance for the Bellman residual. If the residual is less
      *           than the tolerance the method stops.

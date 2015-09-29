@@ -1,10 +1,11 @@
 #include "../../../include/util/general.h"
 #include "../../../include/solvers/solver.h"
+#include "../../../include/solvers/mobj/mobj_solvers.h"
 #include "../../../include/solvers/mobj/MOLAOStarSolver.h"
 
 #include <ctime>
 
-namespace mlsolvers
+namespace mdplib_mobj_solvers
 {
 
 void MOLAOStarSolver::solveLevel(mlcore::State* s, int level, mlmobj::MOState*& unsolved)
@@ -133,5 +134,5 @@ void MOLAOStarSolver::addSolved(mlcore::State* s)
     }
 }
 
-}
+} // namespace mdplib_mobj_solvers
 

@@ -81,8 +81,7 @@ LIBS = lib/libmdp.a -lgurobi_c++ -lgurobi60 -Llib
 libmdp:
 	make $(OD)/core.a
 	make $(OD)/solvers.a
-	make $(OD)/mo-solvers.a
-	ar rvs libmdp.a $(OD)/core/*.o $(OD)/solvers/*.o $(OD)/solvers/mobj/*.o
+	ar rvs libmdp.a $(OD)/core/*.o $(OD)/solvers/*.o
 	mv libmdp.a lib
 
 # Compiles the multi-objective solvers
@@ -92,6 +91,7 @@ $(OD)/mo-solvers.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_H) 
 	$(CC) $(CFLAGS) $(INCLUDE_CORE) $(INCLUDE_SOLVERS) -c $(MOSOLV_CPP)
 	mv *.o $(OD_SOLV_MOBJ)
 	ar rvs obj/mo-solvers.a $(OD_SOLV_MOBJ)/*.o
+	mv obj/mo-solvers.a lib
 
 # Compiles the base (single-objective) solvers
 $(OD)/solvers.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_H)
@@ -108,14 +108,15 @@ $(OD)/core.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H)
 
 # Compiles the multiobjective domains and test programs #
 mobj: $(ALL_CPP) $(ALL_H)
+	make $(OD)/mo-solvers.a
 	make $(OD_MODOM)/airplane.a
 	make $(OD_MODOM)/mo-racetrack.a
 	make $(OD_MODOM)/mo-gw.a
 	make $(OD_MODOM)/rawfile.a
-	$(CC) $(CFLAGS) $(INCLUDE) -o testlexirace $(TD)/testLexiRace.cpp $(OD_MODOM)/*.o $(LIBS)
-	$(CC) $(CFLAGS) $(INCLUDE) -o testlexigw $(TD)/testLexiGW.cpp $(OD_MODOM)/*.o $(LIBS)
-	$(CC) $(CFLAGS) $(INCLUDE) -o testlexiraw $(TD)/testLexiRaw.cpp $(OD_MODOM)/*.o $(LIBS)
-	$(CC) $(CFLAGS) $(INCLUDE) -o testairplane $(TD)/testAirplane.cpp $(OD_MODOM)/*.o $(LIBS)
+	$(CC) $(CFLAGS) $(INCLUDE) -o testlexirace $(TD)/testLexiRace.cpp $(OD_MODOM)/*.o lib/mo-solvers.a $(LIBS)
+	$(CC) $(CFLAGS) $(INCLUDE) -o testlexigw $(TD)/testLexiGW.cpp $(OD_MODOM)/*.o lib/mo-solvers.a $(LIBS)
+	$(CC) $(CFLAGS) $(INCLUDE) -o testlexiraw $(TD)/testLexiRaw.cpp $(OD_MODOM)/*.o lib/mo-solvers.a $(LIBS)
+	$(CC) $(CFLAGS) $(INCLUDE) -o testairplane $(TD)/testAirplane.cpp $(OD_MODOM)/*.o lib/mo-solvers.a $(LIBS)
 
 # Compiles the airplane domain #
 $(OD_MODOM)/airplane.a: $(ID_MODOM)/airplane/*.h $(SD_MODOM)/airplane/*.cpp
@@ -202,4 +203,11 @@ clean:
 	rm -f test/*.o
 	rm -f *.o
 	rm -f obj/*.a
-
+	rm -f obj/*.o
+	rm -f obj/core/*.o
+	rm -f obj/domains/*.o
+	rm -f obj/domains/*.a
+	rm -f obj/domains/mobj/*
+	rm -f obj/solvers/*.o
+	rm -f obj/solvers/*.a
+	rm -f obj/solvers/mobj/*
