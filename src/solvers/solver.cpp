@@ -12,12 +12,11 @@ std::mt19937 gen(rand_dev());
 
 std::uniform_real_distribution<> dis(0, 1);
 
-
 #ifndef NO_META
 int meta_iteration_index = -1;
 mlcore::StateIntMap state_indices;
 int current_state_index = 1;
-extern std::unordered_map<int, std::list<double> > previousQValues;
+std::unordered_map<int, std::list<double> > previousQValues;
 #endif
 
 

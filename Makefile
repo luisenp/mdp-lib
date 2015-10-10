@@ -113,10 +113,10 @@ mobj: $(ALL_CPP) $(ALL_H)
 	make $(OD_MODOM)/mo-racetrack.a
 	make $(OD_MODOM)/mo-gw.a
 	make $(OD_MODOM)/rawfile.a
-	$(CC) $(CFLAGS) $(INCLUDE) -o testlexirace $(TD)/testLexiRace.cpp $(OD_MODOM)/*.o lib/mo-solvers.a $(LIBS)
-	$(CC) $(CFLAGS) $(INCLUDE) -o testlexigw $(TD)/testLexiGW.cpp $(OD_MODOM)/*.o lib/mo-solvers.a $(LIBS)
-	$(CC) $(CFLAGS) $(INCLUDE) -o testlexiraw $(TD)/testLexiRaw.cpp $(OD_MODOM)/*.o lib/mo-solvers.a $(LIBS)
-	$(CC) $(CFLAGS) $(INCLUDE) -o testairplane $(TD)/testAirplane.cpp $(OD_MODOM)/*.o lib/mo-solvers.a $(LIBS)
+	$(CC) $(CFLAGS) $(INCLUDE) -o testlexirace $(TD)/mobj/testLexiRace.cpp $(OD_MODOM)/*.o lib/mo-solvers.a $(LIBS)
+	$(CC) $(CFLAGS) $(INCLUDE) -o testlexigw $(TD)/mobj/testLexiGW.cpp $(OD_MODOM)/*.o lib/mo-solvers.a $(LIBS)
+	$(CC) $(CFLAGS) $(INCLUDE) -o testlexiraw $(TD)/mobj/testLexiRaw.cpp $(OD_MODOM)/*.o lib/mo-solvers.a $(LIBS)
+	$(CC) $(CFLAGS) $(INCLUDE) -o testairplane $(TD)/mobj/testAirplane.cpp $(OD_MODOM)/*.o lib/mo-solvers.a $(LIBS)
 
 # Compiles the airplane domain #
 $(OD_MODOM)/airplane.a: $(ID_MODOM)/airplane/*.h $(SD_MODOM)/airplane/*.cpp
