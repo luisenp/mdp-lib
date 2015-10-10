@@ -1,10 +1,11 @@
 #ifndef MDPLIB_SOLVER_H
 #define MDPLIB_SOLVER_H
 
-#include <random>
 #include <cassert>
-#include <vector>
 #include <mutex>
+#include <random>
+#include <unordered_map>
+#include <vector>
 
 #include "../heuristic.h"
 #include "../problem.h"
@@ -36,6 +37,15 @@ extern std::mt19937 gen;
  * Uniform distribution [0,1] generator.
  */
 extern std::uniform_real_distribution<> dis;
+
+
+#ifndef NO_META
+extern int meta_iteration_index;
+extern mlcore::StateIntMap state_indices;
+extern int current_state_index;
+extern std::unordered_map<int, std::list<double> > previousQValues;
+#endif
+
 
 /**
  * An interface describing planning algorithms.
@@ -184,6 +194,18 @@ mlcore::State* mostLikelyOutcome(mlcore::Problem* problem, mlcore::State* s, mlc
  * @return The accumulated cost of this trial.
  */
 double sampleTrial(mlcore::Problem* problem, mlcore::State* s);
+
+
+#ifndef NO_META
+/**
+ * Predicts the next action that the planner is going to choose for the given state.
+ *
+ * @param problem The problem that defines the transition function.
+ * @param s The state for which the prediction will take place.
+ * @return The predicted action.
+ */
+mlcore::Action* predictNextAction(mlcore::Problem* problem, mlcore::State* s);
+#endif
 
 } // mlsolvers
 

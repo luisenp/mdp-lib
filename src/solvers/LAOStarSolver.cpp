@@ -1,4 +1,3 @@
-#include "../../include/solvers/solver.h"
 #include "../../include/solvers/LAOStarSolver.h"
 
 #include "../../include/util/general.h"
@@ -22,15 +21,12 @@ mlcore::Action* LAOStarSolver::solve(mlcore::State* s0)
             clock_t currentTime = clock();
             if ((0.001 * (currentTime - startTime)) / CLOCKS_PER_SEC > timeLimit_)
                 return s0->bestAction();
-
         } while (countExpanded != 0);
 
         while (true) {
-
             clock_t currentTime = clock();
             if ((0.001 * (currentTime - startTime)) / CLOCKS_PER_SEC > timeLimit_)
                 return s0->bestAction();
-
             visited.clear();
             error = testConvergence(s0);
             if (error < epsilon_)

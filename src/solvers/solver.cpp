@@ -13,6 +13,14 @@ std::mt19937 gen(rand_dev());
 std::uniform_real_distribution<> dis(0, 1);
 
 
+#ifndef NO_META
+int meta_iteration_index = -1;
+mlcore::StateIntMap state_indices;
+int current_state_index = 1;
+extern std::unordered_map<int, std::list<double> > previousQValues;
+#endif
+
+
 double qvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
 {
     double qAction = 0.0;
@@ -42,11 +50,35 @@ std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem, mlcor
     double bestQ = problem->goal(s) ? 0.0 : mdplib::dead_end_cost + 1;
     bool hasAction = false;
     mlcore::Action* bestAction = nullptr;
+#ifndef NO_META
+    int state_idx = current_state_index;
+    if (state_indices.count(s) > 0) {
+        state_idx = state_indices[s];
+    } else {
+        state_indices[s] = state_idx;
+        current_state_index += problem->actions().size();
+    }
+    int state_action_idx = state_idx - 1;
+#endif
     for (mlcore::Action* a : problem->actions()) {
+#ifndef NO_META
+        state_action_idx++;
+#endif
         if (!problem->applicable(s, a))
             continue;
         hasAction = true;
         double qAction = std::min(mdplib::dead_end_cost, qvalue(problem, s, a));
+#ifndef NO_META
+        if (previousQValues.count(state_action_idx) == 0) {
+            previousQValues[state_action_idx] = std::list<double> (1, qAction);
+        } else {
+            std::list<double> & previousQValuesSA = previousQValues[state_action_idx];
+            previousQValuesSA.push_back(qAction);
+            if (previousQValuesSA.size() > 2) {
+                previousQValuesSA.pop_front();
+            }
+        }
+#endif
         if (qAction < bestQ) {
             bestQ = qAction;
             bestAction = a;
@@ -192,5 +224,36 @@ double sampleTrial(mlcore::Problem* problem, mlcore::State* s)
     }
     return cost;
 }
+
+#ifndef NO_META
+mlcore::Action* predictNextAction(mlcore::Problem* problem, mlcore::State* s)
+{
+    if (state_indices.count(s) == 0) {
+        // no previous information, assume the planner will choose based on current values.
+        return greedyAction(problem, s);
+    }
+    int state_idx = state_indices[s];
+    int state_action_idx = state_idx - 1;
+    double bestPredictedQValue = mdplib::dead_end_cost;
+    mlcore::Action* nextAction = nullptr;
+    for (mlcore::Action* a : problem->actions()) {
+        state_action_idx++;
+        if (!problem->applicable(s, a))
+            continue;
+        double predictedQValueAction = std::min(mdplib::dead_end_cost, qvalue(problem, s, a));
+        // if there is not enough information, assume the QValue will remain unchanged.
+        if (previousQValues.count(state_action_idx) > 0) {
+            std::list<double> & previousQValuesAction = previousQValues[state_action_idx];
+            if (previousQValuesAction.size() == 2) {
+                predictedQValueAction +=
+                    previousQValuesAction.back() - previousQValuesAction.front();
+            }
+        }
+        if (bestPredictedQValue < bestPredictedQValue)
+            nextAction = a;
+    }
+    return nextAction;
+}
+#endif
 
 } // mlsolvers

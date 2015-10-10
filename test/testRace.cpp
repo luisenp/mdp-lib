@@ -24,6 +24,7 @@ using namespace mlcore;
 using namespace mlsolvers;
 using namespace std;
 
+// Usage: ./testrace problem algorithm nsims
 int main(int argc, char* args[])
 {
     Problem* problem = new RacetrackProblem(args[1]);
