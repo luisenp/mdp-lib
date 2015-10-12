@@ -228,6 +228,7 @@ double sampleTrial(mlcore::Problem* problem, mlcore::State* s)
 mlcore::Action* predictNextAction(mlcore::Problem* problem, mlcore::State* s)
 {
     if (state_indices.count(s) == 0) {
+        dprint2(" --- no previous information for ", s);
         // no previous information, assume the planner will choose based on current values.
         return greedyAction(problem, s);
     }

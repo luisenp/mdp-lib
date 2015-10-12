@@ -13,10 +13,14 @@ namespace mlsolvers
 
 mlcore::Action* MetareasoningSolver::solve(mlcore::State* s)
 {
+    mdplib_debug = true;
     // Estimating the best action taking into account the current state of the planner.
     mlcore::Action* bestAction = nullptr;
     double bestQValue = mdplib::dead_end_cost + 1;
     for (mlcore::Action* a : problem_->actions()) {
+        if (!problem_->applicable(s, a))
+            continue;
+        dprint2("Estimating Q-Value of ", a);
         double estimatedQValueAction = estimateQValueAction(s, a);
         if (estimatedQValueAction < bestQValue) {
             bestAction = a;
@@ -26,6 +30,7 @@ mlcore::Action* MetareasoningSolver::solve(mlcore::State* s)
     // Simulate the planner running during the next action.
     int numSearches = 3;
     for (int i = 0; i < numSearches; i++) {
+        dprint2("Search ", i);
         visited.clear();
         expand(s);
     }
@@ -59,12 +64,14 @@ double MetareasoningSolver::estimateQValueAction(mlcore::State* s, mlcore::Actio
     int horizon = 50;
     double QValueEstimate = 0.0;
     for (int i = 0; i < numSamples; i++) {
+        dprint2("      sample ", i);
         // Add cost of taking this action first, and sample a successor.
         double trialCost = problem_->cost(s, a);
         mlcore::State* currentState = randomSuccessor(problem_, s, a);
         int steps = 1;
         while (!problem_->goal(currentState) && steps < horizon) {
             mlcore::Action *predictedAction = predictNextAction(problem_, s);
+            dprint4("              ", currentState, " ", predictedAction);
             trialCost += problem_->cost(s, predictedAction);
             currentState = randomSuccessor(problem_, s, predictedAction);
         }
