@@ -20,6 +20,7 @@ using namespace mlcore;
 using namespace mlsolvers;
 using namespace std;
 
+// usage ./testmeta racetrack nsims
 int main(int argc, char* args[])
 {
     Problem* problem = new RacetrackProblem(args[1]);

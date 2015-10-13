@@ -5,7 +5,7 @@ namespace mlsolvers
 /*********************************************************/
 /** ******************** README!!! ******************** **/
 /** Right now this is just a simulation of the concurrent
-  * metareasoning approach. The planning and execution
+  * meta-reasoning approach. The planning and execution
   * occur separately, under the assumption the during the
   * time it takes to execution one action there are exactly
   * X LAO* searches (for some fixed value X).
@@ -14,6 +14,7 @@ namespace mlsolvers
 mlcore::Action* MetareasoningSolver::solve(mlcore::State* s)
 {
     mdplib_debug = true;
+    using_metareasoning = true;
     // Estimating the best action taking into account the current state of the planner.
     mlcore::Action* bestAction = nullptr;
     double bestQValue = mdplib::dead_end_cost + 1;
@@ -22,6 +23,8 @@ mlcore::Action* MetareasoningSolver::solve(mlcore::State* s)
             continue;
         dprint2("Estimating Q-Value of ", a);
         double estimatedQValueAction = estimateQValueAction(s, a);
+        dprint2("Q-Value is ", estimatedQValueAction);
+        dsleep(1000);
         if (estimatedQValueAction < bestQValue) {
             bestAction = a;
             bestQValue = estimatedQValueAction;
@@ -70,10 +73,15 @@ double MetareasoningSolver::estimateQValueAction(mlcore::State* s, mlcore::Actio
         mlcore::State* currentState = randomSuccessor(problem_, s, a);
         int steps = 1;
         while (!problem_->goal(currentState) && steps < horizon) {
-            mlcore::Action *predictedAction = predictNextAction(problem_, s);
-            dprint4("              ", currentState, " ", predictedAction);
+            steps++;
+            dprint2("               current state ", currentState);
+            mlcore::Action *predictedAction =
+                predictNextAction(problem_, currentState);
+            dprint2("               current action ", predictedAction);
             trialCost += problem_->cost(s, predictedAction);
+            dprint2("               cost action ", problem_->cost(s, predictedAction));
             currentState = randomSuccessor(problem_, s, predictedAction);
+            dprint2("*********************** ", steps);
         }
         QValueEstimate += trialCost;
     }

@@ -40,6 +40,7 @@ extern std::uniform_real_distribution<> dis;
 
 
 #ifndef NO_META
+extern bool using_metareasoning;
 extern int meta_iteration_index;
 extern mlcore::StateIntMap state_indices;
 extern int current_state_index;

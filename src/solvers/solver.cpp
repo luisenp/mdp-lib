@@ -13,6 +13,7 @@ std::mt19937 gen(rand_dev());
 std::uniform_real_distribution<> dis(0, 1);
 
 #ifndef NO_META
+bool using_metareasoning = false;
 int meta_iteration_index = -1;
 mlcore::StateIntMap state_indices;
 int current_state_index = 1;
@@ -51,13 +52,15 @@ std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem, mlcor
     mlcore::Action* bestAction = nullptr;
 #ifndef NO_META
     int state_idx = current_state_index;
-    if (state_indices.count(s) > 0) {
-        state_idx = state_indices[s];
-    } else {
-        state_indices[s] = state_idx;
-        current_state_index += problem->actions().size();
-    }
     int state_action_idx = state_idx - 1;
+    if (using_metareasoning) {
+        if (state_indices.count(s) > 0) {
+            state_idx = state_indices[s];
+        } else {
+            state_indices[s] = state_idx;
+            current_state_index += problem->actions().size();
+        }
+    }
 #endif
     for (mlcore::Action* a : problem->actions()) {
 #ifndef NO_META
@@ -68,13 +71,18 @@ std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem, mlcor
         hasAction = true;
         double qAction = std::min(mdplib::dead_end_cost, qvalue(problem, s, a));
 #ifndef NO_META
-        if (previousQValues.count(state_action_idx) == 0) {
-            previousQValues[state_action_idx] = std::list<double> (1, qAction);
-        } else {
-            std::list<double> & previousQValuesSA = previousQValues[state_action_idx];
-            previousQValuesSA.push_back(qAction);
-            if (previousQValuesSA.size() > 2) {
-                previousQValuesSA.pop_front();
+        if (using_metareasoning) {
+            // storing the last two Q-Values for this state-action pair
+            if (previousQValues.count(state_action_idx) == 0) {
+                previousQValues[state_action_idx] =
+                    std::list<double> (1, qAction);
+            } else {
+                std::list<double> & previousQValuesSA =
+                    previousQValues[state_action_idx];
+                previousQValuesSA.push_back(qAction);
+                if (previousQValuesSA.size() > 2) {
+                    previousQValuesSA.pop_front();
+                }
             }
         }
 #endif
@@ -227,6 +235,9 @@ double sampleTrial(mlcore::Problem* problem, mlcore::State* s)
 #ifndef NO_META
 mlcore::Action* predictNextAction(mlcore::Problem* problem, mlcore::State* s)
 {
+    dprint4("predicting ", s, " state count ", state_indices.count(s));
+    dprint2("size of state_indices ", state_indices.size());
+    dprint2("using metareasoning ", using_metareasoning);
     if (state_indices.count(s) == 0) {
         dprint2(" --- no previous information for ", s);
         // no previous information, assume the planner will choose based on current values.
