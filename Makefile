@@ -70,7 +70,8 @@ ALL_H = $(I_H) $(SOLV_H) $(MOSOLV_H) $(DOM_H) $(UTIL_H)
 ALL_CPP = $(DOM_CPP) $(SOLV_CPP) $(MOSOLV_CPP) $(UTIL_CPP)
 
 # Libraries
-LIBS = lib/libmdp.a -lgurobi_c++ -lgurobi60 -Llib
+LIBS = lib/libmdp.a -Llib
+LIBS_MOBJ = $(LIBS) -lgurobi_c++ -lgurobi60
 
 #########################################################################
 #                                 TARGETS                               #
@@ -79,6 +80,9 @@ LIBS = lib/libmdp.a -lgurobi_c++ -lgurobi60 -Llib
 # Compiles the core MDP-LIB library #
 .PHONY: libmdp
 libmdp:
+	mkdir -p $(OD)/core
+	mkdir -p $(OD)/solvers
+	mkdir -p lib
 	make $(OD)/core.a
 	make $(OD)/solvers.a
 	ar rvs libmdp.a $(OD)/core/*.o $(OD)/solvers/*.o
