@@ -545,6 +545,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/solvers/DeterministicSolver.h" />
 		<Unit filename="include/solvers/LAOStarSolver.h" />
 		<Unit filename="include/solvers/LRTDPSolver.h" />
+		<Unit filename="include/solvers/MetareasoningSolver.h" />
 		<Unit filename="include/solvers/RandomPolicy.h" />
 		<Unit filename="include/solvers/UCTSolver.h" />
 		<Unit filename="include/solvers/VISolver.h" />
@@ -834,7 +835,6 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="src/solvers/mobj/GlobalSlackSolver.cpp" />
 		<Unit filename="src/solvers/mobj/LexiVISolver.cpp" />
 		<Unit filename="src/solvers/mobj/MOLAOStarSolver.cpp" />
-		<Unit filename="src/solvers/mobj/mobj_solvers.cpp" />
 		<Unit filename="src/solvers/solver.cpp" />
 		<Unit filename="src/state.cpp" />
 		<Unit filename="src/util/general.cpp" />

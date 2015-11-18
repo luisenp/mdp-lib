@@ -13,7 +13,9 @@ class MetareasoningSolver : public Solver
 {
 private:
     mlcore::Problem* problem_;
-    mlcore::StateSet visited;
+    mlcore::StateSet visited_;
+
+    bool useMetareasoning_ = false;
 
     /* Estimates the Q-Value of a state-action pair given the current state of the planner. */
     double estimateQValueAction(mlcore::State* s, mlcore::Action* a);
@@ -24,6 +26,8 @@ private:
 public:
     MetareasoningSolver(mlcore::Problem* problem) : problem_(problem) { }
     virtual ~MetareasoningSolver() { }
+
+    void useMetareasoning(bool value) { useMetareasoning_ = value; }
 
     /**
      * Returns an action for the given state using the metareasoning algorithm.

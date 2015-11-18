@@ -235,11 +235,10 @@ double sampleTrial(mlcore::Problem* problem, mlcore::State* s)
 #ifndef NO_META
 mlcore::Action* predictNextAction(mlcore::Problem* problem, mlcore::State* s)
 {
-    dprint4("predicting ", s, " state count ", state_indices.count(s));
-    dprint2("size of state_indices ", state_indices.size());
-    dprint2("using metareasoning ", using_metareasoning);
+//    dprint4("predicting ", s, " state count ", state_indices.count(s));
+//    dprint2("size of state_indices ", state_indices.size());
     if (state_indices.count(s) == 0) {
-        dprint2(" --- no previous information for ", s);
+//        dprint2(" --- no previous information for ", s);
         // no previous information, assume the planner will choose based on current values.
         return greedyAction(problem, s);
     }
@@ -252,6 +251,7 @@ mlcore::Action* predictNextAction(mlcore::Problem* problem, mlcore::State* s)
         if (!problem->applicable(s, a))
             continue;
         double predictedQValueAction = std::min(mdplib::dead_end_cost, qvalue(problem, s, a));
+//        dprint4(" -----> ", a, "                   predicted Q-value ", predictedQValueAction);
         // if there is not enough information, assume the QValue will remain unchanged.
         if (previousQValues.count(state_action_idx) > 0) {
             std::list<double> & previousQValuesAction = previousQValues[state_action_idx];
@@ -260,9 +260,12 @@ mlcore::Action* predictNextAction(mlcore::Problem* problem, mlcore::State* s)
                     previousQValuesAction.back() - previousQValuesAction.front();
             }
         }
-        if (bestPredictedQValue < bestPredictedQValue)
+        if (predictedQValueAction < bestPredictedQValue) {
+            bestPredictedQValue = predictedQValueAction;
             nextAction = a;
+        }
     }
+//    dprint2(" -----> next action ", nextAction);
     return nextAction;
 }
 #endif
