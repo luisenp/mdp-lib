@@ -45,12 +45,15 @@ weightedQvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
 }
 
 
-std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem, mlcore::State* s)
+std::pair<double, mlcore::Action*>
+bellmanBackup(mlcore::Problem* problem, mlcore::State* s)
 {
     double bestQ = problem->goal(s) ? 0.0 : mdplib::dead_end_cost + 1;
     bool hasAction = false;
     mlcore::Action* bestAction = nullptr;
 #ifndef NO_META
+    // the metareasoning approach memorizes the Q-values of all visited
+    // state-action pairs. The indices below are used to recover these Q-values
     int state_idx = current_state_index;
     int state_action_idx = state_idx - 1;
     if (using_metareasoning) {
@@ -123,7 +126,8 @@ double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s, double weight)
             continue;
         hasAction = true;
         std::pair<double, double> gh = weightedQvalue(problem, s, a);
-        double qAction = std::min(mdplib::dead_end_cost, gh.first + weight * gh.second);
+        double qAction =
+            std::min(mdplib::dead_end_cost, gh.first + weight * gh.second);
         if (qAction < bestQ) {
             bestQ = qAction;
             bestG = gh.first;
@@ -146,7 +150,8 @@ double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s, double weight)
 }
 
 
-mlcore::State* randomSuccessor(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
+mlcore::State*
+randomSuccessor(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
 {
     double pick = dis(gen);
 
@@ -198,7 +203,8 @@ double residual(mlcore::Problem* problem, mlcore::State* s)
 }
 
 
-mlcore::State* mostLikelyOutcome(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
+mlcore::State*
+mostLikelyOutcome(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
 {
     double prob = -1.0;
     double eps = 1.0e-6;
@@ -223,8 +229,10 @@ double sampleTrial(mlcore::Problem* problem, mlcore::State* s)
     while (!problem->goal(tmp)) {
         mlcore::Action* a = greedyAction(problem, tmp);
         double discountedCost = discount * problem->cost(tmp, a);
-        if (discountedCost < 1.0-6)
-            break;  // stop because no more cost can be accumulated (avoid infinite loop)
+        if (discountedCost < 1.0-6) {
+            // no more cost can be accumulated (avoid infinite loop)
+            break;
+        }
         cost += discountedCost;
         tmp = randomSuccessor(problem, tmp, a);
         discount *= problem->gamma();
@@ -237,9 +245,11 @@ mlcore::Action* predictNextAction(mlcore::Problem* problem, mlcore::State* s)
 {
 //    dprint4("predicting ", s, " state count ", state_indices.count(s));
 //    dprint2("size of state_indices ", state_indices.size());
-    if (state_indices.count(s) == 0) {
+    if (state_indices.count(s) == 0
+                    /* this is here for debugging, remove */ || true ) {
 //        dprint2(" --- no previous information for ", s);
-        // no previous information, assume the planner will choose based on current values.
+        // no previous information,
+        // assume planner will choose based on current values
         return greedyAction(problem, s);
     }
     int state_idx = state_indices[s];

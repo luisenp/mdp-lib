@@ -84,8 +84,9 @@ double qvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a);
  * @param s The state for which the Q-value will be computed.
  * @param a The action for which the Q-value will be computed.
  * @param weight The weight to use.
- * @return A pair of doubles representing the g-value and h-value of the state-action
- *        pair. The weighted-Q-value can be recovered as g + weight * h.
+ * @return A pair of doubles representing the g-value and
+           h-value of the state-action pair.
+           The weighted-Q-value can be recovered as g + weight * h.
  */
 std::pair<double, double>
 weightedQvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a);
@@ -98,10 +99,11 @@ weightedQvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a);
  *
  * @param problem The problem that contains the given state.
  * @param s The state on which the Bellman backup will be performed.
- * @return A pair containing the estimated cost and estimated best action according
- *        to this Bellman backup.
+ * @return A pair containing the estimated cost and estimated best
+           action according to this Bellman backup.
  */
-std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem, mlcore::State* s);
+std::pair<double, mlcore::Action*>
+bellmanBackup(mlcore::Problem* problem, mlcore::State* s);
 
 
 /**
@@ -133,9 +135,9 @@ double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s, double weight);
  * Samples a successor state of a state and action using the probabilities
  * defined by the problem's transition function.
  *
- * If the given action is a null pointer or if the state is a dead-end (i.e., the
- * transition function returns empty list of successors) this method will return
- * the same state that is given.
+ * If the given action is a null pointer or if the state is a dead-end
+ * (i.e., the transition function returns empty list of successors) this
+ * method will return the same state that is given.
  *
  * @param problem The problem that defines the transition function.
  * @param s The state for which the sucessor state will be sampled.
@@ -143,15 +145,17 @@ double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s, double weight);
  * @return A successor sampled from the transition function corresponding to the
  *        state and action pair.
  */
-mlcore::State* randomSuccessor(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a);
+mlcore::State*
+randomSuccessor(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a);
 
 
 /**
  * Returns the action with minimum Q-value for a state.
  *
- * This method assumes that any action stored in state.bestAction() is consistent with
- * the latest expected costs in the problem. This is guaranteed by any solver that
- * performs backup operations through calls to bellmanUpdate(problem, state).
+ * This method assumes that any action stored in state.bestAction()
+ * is consistent with the latest expected costs in the problem.
+ * This is guaranteed by any solver that performs backup operations
+ * through calls to bellmanUpdate(problem, state).
 
  * When no action is stored in the state, then action is chosen greedily on the
  * states estimated costs as stored in state.cost().
@@ -174,20 +178,21 @@ double residual(mlcore::Problem* problem, mlcore::State* s);
 
 
 /**
- * Returns the most likely outcome after executing the given action on the given
- * state.
+ * Returns the most likely outcome after executing the given action on
+ * the given state.
  *
  * @param problem The problem that defines the transition function.
  * @param s The state for which the most likely outcome will be obtained.
  * @param a The action executed in the given state.
  * @return The most likely outcome of the state and action pair.
  */
-mlcore::State* mostLikelyOutcome(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a);
+mlcore::State* mostLikelyOutcome(
+    mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a);
 
 
 /**
- * Samples a trial of the greedy policy implied by the current state values and returns
- * the accumulated discounted cost (using problem->gamma()).
+ * Samples a trial of the greedy policy implied by the current state values
+ * and returns the accumulated discounted cost (using problem->gamma()).
  * The trial starts at the given state s.
  *
  * @param problem The problem that defines the transition function.
@@ -199,7 +204,8 @@ double sampleTrial(mlcore::Problem* problem, mlcore::State* s);
 
 #ifndef NO_META
 /**
- * Predicts the next action that the planner is going to choose for the given state.
+ * Predicts the next action that the planner is going to choose for
+ * the given state.
  *
  * @param problem The problem that defines the transition function.
  * @param s The state for which the prediction will take place.

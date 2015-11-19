@@ -16,22 +16,27 @@ mlcore::Action* MetareasoningSolver::solve(mlcore::State* s)
     mdplib_debug = true;
     using_metareasoning = true;
 
+    /********* This is here for debugging, it should be below!! **********/
+    // Simulate the planner running during the next action
+    int numSearches = 3;
+    for (int i = 0; i < numSearches; i++) {
+        visited_.clear();
+        expand(s);
+    }
+
+    // This code is to test the accuracy of the action prediction estimator
 //    std::vector<mlcore::Action *> predictedActions;
 //    for (mlcore::State* tmpState : problem_->states()) {
 //        predictedActions.push_back(predictNextAction(problem_, tmpState));
 //    }
 
     mlcore::Action* bestAction = nullptr;
-    // Estimating the best action taking into account the future state of the planner
     if (useMetareasoning_) {
         double bestQValue = mdplib::dead_end_cost + 1;
         for (mlcore::Action* a : problem_->actions()) {
             if (!problem_->applicable(s, a))
                 continue;
-    //        dprint2("Estimating Q-Value of ", a);
             double estimatedQValueAction = estimateQValueAction(s, a);
-    //        dprint2("Q-Value is ", estimatedQValueAction);
-            // dsleep(1000);
             if (estimatedQValueAction < bestQValue) {
                 bestAction = a;
                 bestQValue = estimatedQValueAction;
@@ -40,13 +45,10 @@ mlcore::Action* MetareasoningSolver::solve(mlcore::State* s)
     } else {
         bestAction = greedyAction(problem_, s);
     }
-    // Simulate the planner running during the next action
-    int numSearches = 3;
-    for (int i = 0; i < numSearches; i++) {
-        visited_.clear();
-        expand(s);
-    }
 
+    /******** The code up there should be here **********/
+
+    // This code is to test the accuracy of the action prediction estimator
 //    int i = 0;
 //    double cntSuccess = 0;
 //    double total = 0;
@@ -55,21 +57,21 @@ mlcore::Action* MetareasoningSolver::solve(mlcore::State* s)
 //            cntSuccess++;
 //        total++;
 //        i++;
-//    }
 //    dprint2("successes ", (cntSuccess/total));
+//    }
     return bestAction;
 }
 
 int MetareasoningSolver::expand(mlcore::State* s)
 {
-    if (!visited_.insert(s).second)  // state was already visited_
+    if (!visited_.insert(s).second) // state was already visited_
         return 0;
 
     if (s->deadEnd() || problem_->goal(s))
         return 0;
 
     int cnt = 0;
-    if (s->bestAction() == nullptr) {   // this means state has not been expanded
+    if (s->bestAction() == nullptr) { // this means 's' has not been expanded
         bellmanUpdate(problem_, s);
         return 1;
     } else {
@@ -81,29 +83,24 @@ int MetareasoningSolver::expand(mlcore::State* s)
     return cnt;
 }
 
-double MetareasoningSolver::estimateQValueAction(mlcore::State* s, mlcore::Action* a)
+double
+MetareasoningSolver::estimateQValueAction(mlcore::State* s, mlcore::Action* a)
 {
-    int numSamples = 500;
+    int numSamples = 1000;
     int horizon = 50;
     double QValueEstimate = 0.0;
     for (int i = 0; i < numSamples; i++) {
-//        dprint2("      sample ", i);
-        // Add cost of taking this action first, and sample a successor.
+        // Add cost of taking this action first, and then sample a successor
         double trialCost = problem_->cost(s, a);
         mlcore::State* currentState = randomSuccessor(problem_, s, a);
         int steps = 1;
         while (!problem_->goal(currentState) && steps < horizon) {
             steps++;
-//            dprint2("               current state ", currentState);
             mlcore::Action *predictedAction =
                 predictNextAction(problem_, currentState);
-//            dprint2("               current action ", predictedAction);
             trialCost += problem_->cost(currentState, predictedAction);
-//            dprint2("               cost action ", problem_->cost(currentState, predictedAction));
-            currentState = randomSuccessor(problem_, currentState, predictedAction);
-//            if (problem_->goal(currentState))
-//                dprint1("GOAL!!");
-//            dprint2("*********************** ", steps);
+            currentState =
+                randomSuccessor(problem_, currentState, predictedAction);
         }
         QValueEstimate += trialCost;
     }
