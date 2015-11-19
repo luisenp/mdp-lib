@@ -23,6 +23,9 @@ using namespace std;
 // usage ./testmeta racetrack nsims verbosity use_metareasoning
 int main(int argc, char* args[])
 {
+    int nsims = atoi(args[2]);
+    int verbosity = atoi(args[3]);
+
     Problem* problem = new RacetrackProblem(args[1]);
     ((RacetrackProblem*) problem)->setPError(0.10);
     ((RacetrackProblem*) problem)->setPSlip(0.20);
@@ -32,21 +35,19 @@ int main(int argc, char* args[])
     Heuristic* heuristic = new RTrackDetHeuristic(args[1]);
     problem->setHeuristic(heuristic);
 
-    cout << problem->states().size() << " states" << endl;
+    if (verbosity > 100)
+        cout << problem->states().size() << " states" << endl;
 
-    MetareasoningSolver solver(problem);
+    MetareasoningSolver solver(problem, atoi(args[5]));
     solver.useMetareasoning(atoi(args[4]));
-    int nsims = atoi(args[2]);
-    int verbosity = atoi(args[3]);
     double expectedCost = 0.0;
     for (int i = 0; i < nsims; i++) {
-        if (verbosity > 1)
-            cout << "sim " << i << endl;
         State* tmp = problem->initialState();
         if (verbosity > 100) {
             cout << " ********* Simulation Starts ********* " << endl;
             cout << tmp << " ";
         }
+        double cost = 0.0;
         while (!problem->goal(tmp)) {
             clock_t startTime = clock();
             Action* a = solver.solve(tmp);
@@ -54,6 +55,7 @@ int main(int argc, char* args[])
             if (verbosity > 100) {
                 cout << (double(endTime - startTime) / CLOCKS_PER_SEC) << endl;
             }
+            cost += problem->cost(tmp, a);
             expectedCost += problem->cost(tmp, a);
             tmp = randomSuccessor(problem, tmp, a);
             if (verbosity > 100) {
@@ -61,11 +63,14 @@ int main(int argc, char* args[])
                 cout << tmp << " ";
             }
         }
+        if (verbosity > 10)
+            cout << cost << endl;
         if (verbosity > 100)
             cout << endl;
     }
 
-    cout << "Avg. Exec cost " << expectedCost / nsims << endl;
+    if (verbosity > 100)
+        cout << "Avg. Exec cost " << expectedCost / nsims << endl;
 
     delete problem;
     delete ((RTrackDetHeuristic*) heuristic);

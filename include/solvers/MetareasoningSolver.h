@@ -20,11 +20,14 @@ private:
     /* Estimates the Q-Value of a state-action pair given the current state of the planner. */
     double estimateQValueAction(mlcore::State* s, mlcore::Action* a);
 
+    int numSamples_;
+
     /* Expands the BPSG rooted at state s and returns the number of states expanded */
     int expand(mlcore::State* s);
 
 public:
-    MetareasoningSolver(mlcore::Problem* problem) : problem_(problem) { }
+    MetareasoningSolver(mlcore::Problem* problem, int numSamples) :
+        problem_(problem), numSamples_(numSamples) { }
     virtual ~MetareasoningSolver() { }
 
     void useMetareasoning(bool value) { useMetareasoning_ = value; }

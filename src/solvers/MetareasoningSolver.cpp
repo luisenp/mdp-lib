@@ -18,7 +18,7 @@ mlcore::Action* MetareasoningSolver::solve(mlcore::State* s)
 
     /********* This is here for debugging, it should be below!! **********/
     // Simulate the planner running during the next action
-    int numSearches = 3;
+    int numSearches = 5;
     for (int i = 0; i < numSearches; i++) {
         visited_.clear();
         expand(s);
@@ -86,10 +86,9 @@ int MetareasoningSolver::expand(mlcore::State* s)
 double
 MetareasoningSolver::estimateQValueAction(mlcore::State* s, mlcore::Action* a)
 {
-    int numSamples = 1000;
     int horizon = 50;
     double QValueEstimate = 0.0;
-    for (int i = 0; i < numSamples; i++) {
+    for (int i = 0; i < numSamples_; i++) {
         // Add cost of taking this action first, and then sample a successor
         double trialCost = problem_->cost(s, a);
         mlcore::State* currentState = randomSuccessor(problem_, s, a);
@@ -104,7 +103,7 @@ MetareasoningSolver::estimateQValueAction(mlcore::State* s, mlcore::Action* a)
         }
         QValueEstimate += trialCost;
     }
-    return QValueEstimate /= numSamples;
+    return QValueEstimate /= numSamples_;
 }
 
 } // mlsolvers
