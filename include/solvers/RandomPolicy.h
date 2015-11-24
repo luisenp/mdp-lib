@@ -12,10 +12,10 @@ namespace mlsolvers
 {
 
 /**
- * A class representing a random policy.It provides a method to add probabilistic
- * actions for a given state, and one for retrieving, for a given state, a random
- * action according to the probability distribution of actions associated to the given
- * state.
+ * A class representing a random policy. It provides a method
+ * to add probabilistic actions for a given state, and one for
+ * retrieving a random action according to the probability
+ * distribution of actions associated to a given state.
  */
 class RandomPolicy
 {
@@ -34,7 +34,8 @@ private:
 public:
 
     /**
-     * Creates a random policy for a problem with the given number of states.
+     * Creates a random policy for a problem with the
+     * given number of states.
      *
      * @param problem the problem to which the policy is associated.
      * @param numStates the number of states in the problem.
@@ -48,13 +49,15 @@ public:
     virtual ~RandomPolicy() {}
 
     /**
-     * Associates the given state with the given vector representing a
-     * probability distribution over actions. The order of the action is assumed to
+     * Associates a state with a vector representing a
+     * probability distribution over actions.
+     * The order of the actions is assumed to
      * be the same order returned by Problem::actions().
      *
-     * @param s the state that will be associated with these set of actions.
-     * @param actions the probability distribution over actions that will be associated
-     * with this state.
+     * @param s the state that will be associated with these
+     *       set of actions.
+     * @param actions the probability distribution over actions
+     *       that will be associated with this state.
      */
     void addActionsState(mlcore::State* s, std::vector<double> actions);
 
@@ -64,21 +67,23 @@ public:
      void print(std::ostream& os);
 
     /**
-     * Returns an action sampled from the probability distribution associated with the
-     * given state.
+     * Returns an action sampled from the action probability
+     * distribution associated a state.
      *
      * @param s the state for which the action is requested.
      */
     mlcore::Action* getRandomAction(mlcore::State* s);
 
     /**
-     * Computes the value of the policy for all states with respect to the value
-     * function at the given index (ignore this parameter is not a MOMDP).
+     * Computes the value of the policy for all states with respect
+     * to the value function at the given index
+     * (ignore this parameter if not a MOMDP).
      *
-     * Multi-objective problem *must* use this parameter.
+     * Multi-objective problems *must* use this parameter.
      *
-     * @param functionIndex the index of the value function over which the value will be
-     * computed (only for multi-objective problems; otherwise ignore).
+     * @param functionIndex the index of the value function over
+     *        which the value will be computed
+     *        (only for multi-objective problems; otherwise ignore).
      */
     void computeValues(int functionIndex = -1);
 

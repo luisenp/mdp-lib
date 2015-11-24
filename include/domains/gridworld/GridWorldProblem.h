@@ -21,7 +21,8 @@ namespace gridworld
 }
 
 /**
- * A class representing a grid world problem as described in AIAMA 3rd Edition.
+ * A class representing a grid world problem as described
+ * in AIAMA 3rd Edition.
  */
 class GridWorldProblem : public mlcore::Problem
 {
@@ -36,28 +37,35 @@ private:
     PairDoubleMap* goals_;
     mlcore::State* absorbing;
 
-    void addSuccessor(GridWorldState* state, std::list<mlcore::Successor>& successors, int val,
-                      int limit, int newx, int newy, double prob);
+    void addSuccessor(GridWorldState* state,
+                      std::list<mlcore::Successor>& successors,
+                      int val,
+                      int limit,
+                      int newx,
+                      int newy,
+                      double prob);
 
     void addAllActions();
 public:
     /**
      * Default constructor.
      *
-     * Creates a grid world with a single goal state (0,0) and all-zero heuristic.
+     * Creates a grid world with a single goal state (0,0)
+     * and all-zero heuristic.
      */
     GridWorldProblem();
 
     /**
-     * Constructs a grid world with the specified width, height, goal states,
-     * initial state (x0,y0). Heuristic is initialized to all-zero heuristic.
+     * Constructs a grid world with the specified width, height,
+     * goal states, initial state (x0,y0).
+     * Heuristic is initialized to all-zero heuristic.
      */
     GridWorldProblem(int width, int height, int x0, int y0,
                      PairDoubleMap* goals, double actionCost);
 
     /**
-     * Constructs a grid world with the specified width, height, goal states,
-     * initial state (x0,y0) and heuristic.
+     * Constructs a grid world with the specified width, height,
+     * goal states, initial state (x0,y0) and heuristic.
      */
     GridWorldProblem(int width, int height, int x0, int y0,
                      PairDoubleMap* goals, mlcore::Heuristic* h);
@@ -70,7 +78,8 @@ public:
     /**
      * Overrides method from Problem.
      */
-    virtual std::list<mlcore::Successor> transition(mlcore::State* s, mlcore::Action* a);
+    virtual std::list<mlcore::Successor> transition(mlcore::State* s,
+                                                     mlcore::Action* a);
 
     /**
      * Overrides method from Problem.

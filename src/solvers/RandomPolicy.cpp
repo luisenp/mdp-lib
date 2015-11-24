@@ -6,7 +6,8 @@
 namespace mlsolvers
 {
 
-void RandomPolicy::addActionsState(mlcore::State* s, std::vector<double> actions)
+void
+RandomPolicy::addActionsState(mlcore::State* s, std::vector<double> actions)
 {
     if (stateIndex_.count(s) == 0)
         stateIndex_[s] = stateCounter_++;
@@ -52,7 +53,8 @@ void RandomPolicy::print(std::ostream& os)
         int idxAction = 0;
         for (mlcore::Action* a : problem_->actions()) {
             if (policy_[idxState][idxAction] > 0.0) {
-                os << "    " << a << " " << policy_[idxState][idxAction] << " " << std::endl;
+                os << "    " << a << " " <<
+                    policy_[idxState][idxAction] << " " << std::endl;
             }
             idxAction++;
         }
@@ -79,9 +81,11 @@ void RandomPolicy::computeValues(int functionIndex)
                 for (mlcore::Successor su : problem_->transition(s, a))
                     qValue += su.su_prob * values_[su.su_state];
                 qValue *= problem_->gamma();
-                qValue += (functionIndex != -1) ?
-                                problem_->cost(s, a) :
-                                ((mlmobj::MOProblem* ) problem_)->cost(s, a, functionIndex);
+                qValue +=
+                    (functionIndex != -1) ?
+                        problem_->cost(s, a) :
+                        ((mlmobj::MOProblem* ) problem_)->
+                        cost(s, a, functionIndex);
                 values_[s] += policy_[idxState][idxAction] * qValue;
             }
             residual = std::max(residual, fabs(values_[s] - prevValue));

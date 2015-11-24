@@ -169,10 +169,11 @@ race: $(I_H) $(RACE_H) $(RACE_CPP) $(S_CPP)
 	rm test/*.o
 
 # Compiles the Metareasoning algorithm test program #
-meta: $(I_H) $(RACE_H) $(RACE_CPP) $(S_CPP)
-	$(CC) $(CFLAGS) -I$(ID_RACE) -I$(ID) -c $(RACE_CPP)
+meta: $(I_H) $(RACE_H) $(RACE_CPP) $(S_CPP) $(GW_CPP)
+	$(CC) $(CFLAGS) -I$(ID_RACE) -I$(ID) -c $(RACE_CPP) $(GW_CPP)
 	mv *.o test/
 	$(CC) $(CFLAGS) $(INCLUDE) -o testmeta $(TD)/testMetareasoning.cpp $(TD)/*.o $(LIBS)
+	$(CC) $(CFLAGS) $(INCLUDE) -o simulmeta $(TD)/simulateMetareasoning.cpp $(TD)/*.o $(LIBS)
 	rm test/*.o
 
 # Compiles the Sailing domain test program #

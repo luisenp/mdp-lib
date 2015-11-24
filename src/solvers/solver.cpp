@@ -89,10 +89,6 @@ bellmanBackup(mlcore::Problem* problem, mlcore::State* s)
             }
         }
 #endif
-        if (qAction < bestQ) {
-            bestQ = qAction;
-            bestAction = a;
-        }
     }
 
     if (!hasAction && bestQ >= mdplib::dead_end_cost)
@@ -105,6 +101,7 @@ bellmanBackup(mlcore::Problem* problem, mlcore::State* s)
 double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s)
 {
     std::pair<double, mlcore::Action*> best = bellmanBackup(problem, s);
+    dprint5(s, " ", s->cost(), " ", best.bb_cost);
     double residual = s->cost() - best.bb_cost;
     bellman_mutex.lock();
     s->setCost(best.bb_cost);

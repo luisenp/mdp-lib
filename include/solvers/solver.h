@@ -18,8 +18,8 @@
 namespace mlsolvers
 {
 /**
- * A mutex used by BellmanUpdate in order to avoid race conditions while
- * planning/executing concurrently.
+ * A mutex used by BellmanUpdate in order to avoid race
+ * conditions while planning/executing concurrently.
  */
 extern std::mutex bellman_mutex;
 
@@ -66,7 +66,7 @@ public:
 
 /**
  * Computes the Q-value of a state-action pair.
- * This method assumes that the given action is applicable on the state.
+ * This method assumes that the is applicable at this state.
  *
  * @param problem The problem that contains the given state.
  * @param s The state for which the Q-value will be computed.
@@ -78,7 +78,7 @@ double qvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a);
 
 /**
  * Computes the weighted-Q-value of a state-action pair.
- * This method assumes that the given action is applicable on the state.
+ * This method assumes that the action is applicable at the state.
  *
  * @param problem The problem that contains the given state.
  * @param s The state for which the Q-value will be computed.
@@ -107,8 +107,8 @@ bellmanBackup(mlcore::Problem* problem, mlcore::State* s);
 
 
 /**
- * Performs a Bellman backup of a state, and then updates the state with
- * the resulting expected cost and greedy action.
+ * Performs a Bellman backup of a state, and then updates the state
+ * with the resulting expected cost and greedy action.
  *
  * @param problem The problem that contains the given state.
  * @param s The state on which the Bellman backup will be performed.
@@ -118,8 +118,8 @@ double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s);
 
 
 /**
- * Performs a weighted-Bellman backup a state, and then updates the state with
- * the resulting expected cost and greedy action.
+ * Performs a weighted-Bellman backup a state, and then updates
+ * the state with the resulting expected cost and greedy action.
  *
  * This backup uses fSSPUDE - see http://arxiv.org/pdf/1210.4875.pdf
  *
@@ -128,22 +128,23 @@ double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s);
  * @param weight The weight to use.
  * @return The residual of the state.
  */
-double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s, double weight);
+double
+bellmanUpdate(mlcore::Problem* problem, mlcore::State* s, double weight);
 
 
 /**
- * Samples a successor state of a state and action using the probabilities
- * defined by the problem's transition function.
+ * Samples a successor state of a state and action using the
+ * probabilities defined by the problem's transition function.
  *
  * If the given action is a null pointer or if the state is a dead-end
- * (i.e., the transition function returns empty list of successors) this
- * method will return the same state that is given.
+ * (i.e., the transition function returns empty list of successors)
+ * this method will return the same state that is given.
  *
  * @param problem The problem that defines the transition function.
  * @param s The state for which the sucessor state will be sampled.
  * @param a The action that generates the successors.
- * @return A successor sampled from the transition function corresponding to the
- *        state and action pair.
+ * @return A successor sampled from the transition function
+ *        corresponding to the state and action pair.
  */
 mlcore::State*
 randomSuccessor(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a);
@@ -157,8 +158,8 @@ randomSuccessor(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a);
  * This is guaranteed by any solver that performs backup operations
  * through calls to bellmanUpdate(problem, state).
 
- * When no action is stored in the state, then action is chosen greedily on the
- * states estimated costs as stored in state.cost().
+ * When no action is stored in the state, then action is chosen
+ * greedily on the states estimated costs as stored in state.cost().
  *
  * @param problem The problem that contains the given state.
  * @param s The state for which the action will be computed.
@@ -178,11 +179,11 @@ double residual(mlcore::Problem* problem, mlcore::State* s);
 
 
 /**
- * Returns the most likely outcome after executing the given action on
- * the given state.
+ * Returns the most likely outcome after executing an action
+ * at a state.
  *
  * @param problem The problem that defines the transition function.
- * @param s The state for which the most likely outcome will be obtained.
+ * @param s The state.
  * @param a The action executed in the given state.
  * @return The most likely outcome of the state and action pair.
  */
@@ -191,9 +192,10 @@ mlcore::State* mostLikelyOutcome(
 
 
 /**
- * Samples a trial of the greedy policy implied by the current state values
- * and returns the accumulated discounted cost (using problem->gamma()).
- * The trial starts at the given state s.
+ * Samples a trial of the greedy policy implied by the current
+ * state values and returns the accumulated discounted
+ * cost (using problem->gamma()).
+ * The trial starts at the given state.
  *
  * @param problem The problem that defines the transition function.
  * @param s The initial state for the trial.
