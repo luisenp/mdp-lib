@@ -22,8 +22,9 @@ using namespace std;
 int main(int argc, char* args[])
 {
     PairDoubleMap goals;
-    goals.insert(make_pair(pair<int,int> (1, 1), 0.0));
-    Problem* problem = new GridWorldProblem(2, 2, 0, 0, &goals, 1.0);
+    int n = atoi(args[1]);
+    goals.insert(make_pair(pair<int,int> (n - 1, n - 1), 0.0));
+    Problem* problem = new GridWorldProblem(n, n, 0, 0, &goals, 1.0);
     problem->gamma(0.90);
     Heuristic* heuristic = new GWManhattanHeuristic((GridWorldProblem*) problem);
     problem->setHeuristic(heuristic);

@@ -62,15 +62,13 @@ void MetareasoningSimulator::precomputeAllExpectedPolicyCosts()
         std::cout << "residual " << maxResidual << " " << std::endl;
 
         // Storing the cost of the current policy
-//        mlcore::StateDoubleMap currentPolicyCost;
-//        computeExpectedCostCurrentPolicy(currentPolicyCost);
-//        policyCosts_.push_back(currentPolicyCost);
-//        dprint1("Policy");
-//        for (mlcore::State* s : problem_->states()) {
-//            std::cerr << s << " " << currentPolicyCost[s] << " ";
-//        }
-//        std::cout << " " << std::endl;
-//        dprint1("That's the policy");
+        mlcore::StateDoubleMap currentPolicyCost;
+        computeExpectedCostCurrentPolicy(currentPolicyCost);
+        policyCosts_.push_back(currentPolicyCost);
+        for (mlcore::State* s : problem_->states()) {
+            std::cerr << s << " " << policyCosts_.back()[s] << " ";
+        }
+        std::cout << " " << std::endl << " " << std::endl;
 
         dsleep(500);
 

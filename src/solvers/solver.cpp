@@ -73,6 +73,10 @@ bellmanBackup(mlcore::Problem* problem, mlcore::State* s)
             continue;
         hasAction = true;
         double qAction = std::min(mdplib::dead_end_cost, qvalue(problem, s, a));
+        if (qAction < bestQ) {
+            bestQ = qAction;
+            bestAction = a;
+        }
 #ifndef NO_META
         if (using_metareasoning) {
             // storing the last two Q-Values for this state-action pair
@@ -101,7 +105,6 @@ bellmanBackup(mlcore::Problem* problem, mlcore::State* s)
 double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s)
 {
     std::pair<double, mlcore::Action*> best = bellmanBackup(problem, s);
-    dprint5(s, " ", s->cost(), " ", best.bb_cost);
     double residual = s->cost() - best.bb_cost;
     bellman_mutex.lock();
     s->setCost(best.bb_cost);
