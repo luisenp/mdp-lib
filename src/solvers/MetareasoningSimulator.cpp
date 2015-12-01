@@ -72,8 +72,6 @@ void MetareasoningSimulator::precomputeAllExpectedPolicyCosts()
         }
         std::cout << " " << std::endl << " " << std::endl;
 
-        dsleep(500);
-
         if (maxResidual < tolerance_)
             break;
     }
@@ -85,6 +83,7 @@ void MetareasoningSimulator::simulate()
     int time = 0;
     double cost = 0;
     while (true) {
+        dprint1(currentState);
         if (problem_->goal(currentState))
             break;
         mlcore::Action* action = nullptr;
@@ -97,23 +96,31 @@ void MetareasoningSimulator::simulate()
             case NO_META:
                 break;
         }
-        if (action == nullptr)
+        if (action == nullptr) {
+            dprint1("NOP");
             time += numPlanningStepsPerNOP_;
-        else
+            cost += costNOP_;
+        }
+        else {
+            dprint1(action);
             time += numPlanningStepsPerAction_;
+            cost += problem_->cost(currentState, action);
+            currentState = randomSuccessor(problem_, currentState, action);
+        }
     }
+    dprint1(cost);
 }
 
 mlcore::Action*
 MetareasoningSimulator::getActionMetaAssumption1(mlcore::State* s, int t)
 {
     // The time after executing an action.
-    // Capped at policyCosts_.size() - 1 because at that point the policy is
-    // optimal anyway
+    // Maxed at policyCosts_.size() - 1 because at that point the policy is
+    // optimal anyway.
     int tNextAction = std::min(t + numPlanningStepsPerAction_,
                          (int) policyCosts_.size() - 1);
 
-    // Computing the QValue of the action chosen by the current plan, assuming
+    // Computing the Q-Value of the action chosen by the current plan, assuming
     // the plan after one action execution will remain unchanged.
     double qValueCurrentPlan = mdplib::dead_end_cost + 1;
     mlcore::Action* bestActionCurrentPlan;
@@ -133,7 +140,7 @@ MetareasoningSimulator::getActionMetaAssumption1(mlcore::State* s, int t)
     }
     assert(bestActionCurrentPlan != nullptr);
 
-    // The time after executing NOP.
+    // The time after executing NOP
     int tNextNOP = std::min(t + numPlanningStepsPerNOP_,
                          (int) policyCosts_.size() - 1);
     double qValueNOP =

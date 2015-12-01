@@ -43,7 +43,7 @@ GridWorldProblem::GridWorldProblem(
                 if (line.at(width_) == 'x') {
                     goals->insert(
                         std::make_pair(std::pair<int,int> (width_, height_),
-                                        500.0));
+                                        10.0));
                 } else if (line.at(width_) == 'G') {
                     goals->insert(
                         std::make_pair(
@@ -115,7 +115,7 @@ GridWorldProblem::transition(mlcore::State *s, mlcore::Action *a)
     std::list<mlcore::Successor> successors;
 
     if (s == absorbing || gridGoal(s)) {
-        successors.push_front(mlcore::Successor(s, 1.0));
+        successors.push_front(mlcore::Successor(absorbing, 1.0));
         return successors;
     }
 
