@@ -46,6 +46,8 @@ private:
                       double prob);
 
     void addAllActions();
+
+    bool gridGoal(mlcore::State* s) const;
 public:
     /**
      * Default constructor.
@@ -54,6 +56,15 @@ public:
      * and all-zero heuristic.
      */
     GridWorldProblem();
+
+    /**
+     * Constructs a grid world from a string file representation stored
+     * at the given filename. The constructor receives a PairDoubleMap to
+     * store the goals, and the cost of the actions.
+     */
+
+    GridWorldProblem(
+        char* filename, PairDoubleMap* goals, double actionCost = 1.0);
 
     /**
      * Constructs a grid world with the specified width, height,

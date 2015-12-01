@@ -1,3 +1,8 @@
+#include <cassert>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+
 #include "../../../include/problem.h"
 #include "../../../include/domains/gridworld/GridWorldProblem.h"
 #include "../../../include/domains/gridworld/GridWorldState.h"
@@ -16,16 +21,58 @@ void GridWorldProblem::addAllActions()
 }
 
 GridWorldProblem::GridWorldProblem() :
-                    width_(0), height_(0), x0_(0), y0_(0), goals_(0), actionCost_(0.03)
+                    width_(0), height_(0), x0_(0), y0_(0),
+                    goals_(0), actionCost_(0.03)
 {
     absorbing = new GridWorldState(this, -1, -1);
     addAllActions();
 }
 
-GridWorldProblem::GridWorldProblem(int width, int height, int x0, int y0,
-                                   PairDoubleMap* goals, double actionCost)
-                                   : width_(width), height_(height), x0_(x0), y0_(y0),
-                                     goals_(goals), actionCost_(actionCost)
+GridWorldProblem::GridWorldProblem(
+    char* filename, PairDoubleMap* goals, double actionCost)
+{
+    mdplib_debug = true;
+    std::ifstream myfile (filename);
+
+    // Once the file is finished parsing, these will have correct values
+    width_ = 0, height_ = 0;
+    if (myfile.is_open()) {
+        std::string line;
+        while ( std::getline (myfile, line) ) {
+            for (width_ = 0; width_ < line.size(); width_++) {
+                if (line.at(width_) == 'x') {
+                    goals->insert(
+                        std::make_pair(std::pair<int,int> (width_, height_),
+                                        500.0));
+                } else if (line.at(width_) == 'G') {
+                    goals->insert(
+                        std::make_pair(
+                            std::pair<int,int> (width_, height_), 0.0));
+
+                } else if (line.at(width_) == 'S') {
+                    x0_ = width_;
+                    y0_ - height_;
+                } else {
+                    assert(line.at(width_) == '.');
+                }
+            }
+            height_++;
+        }
+        myfile.close();
+    }
+    goals_ = goals;
+    actionCost_ = actionCost;
+    mlcore::State* init = new GridWorldState(this, x0_, y0_);
+    absorbing = new GridWorldState(this, -1, -1);
+    s0 = this->addState(init);
+    addAllActions();
+}
+
+GridWorldProblem::GridWorldProblem(
+    int width, int height, int x0, int y0,
+    PairDoubleMap* goals, double actionCost) :
+        width_(width), height_(height), x0_(x0), y0_(y0),
+        goals_(goals), actionCost_(actionCost)
 {
     mlcore::State* init = new GridWorldState(this, x0_, y0_);
     absorbing = new GridWorldState(this, -1, -1);
@@ -47,27 +94,28 @@ GridWorldProblem::GridWorldProblem(int width, int height,
     addAllActions();
 }
 
-bool GridWorldProblem::goal(mlcore::State* s) const
+bool GridWorldProblem::gridGoal(mlcore::State* s) const
 {
     GridWorldState* gws = (GridWorldState *) s;
     std::pair<int,int> pos(gws->x(),gws->y());
     return goals_->find(pos) != goals_->end();
 }
 
-std::list<mlcore::Successor> GridWorldProblem::transition(mlcore::State *s, mlcore::Action *a)
+bool GridWorldProblem::goal(mlcore::State* s) const
+{
+    return s == absorbing;
+}
+
+std::list<mlcore::Successor>
+GridWorldProblem::transition(mlcore::State *s, mlcore::Action *a)
 {
     GridWorldState* state = (GridWorldState *) s;
     GridWorldAction* action = (GridWorldAction *) a;
 
     std::list<mlcore::Successor> successors;
 
-    if (s == absorbing) {
+    if (s == absorbing || gridGoal(s)) {
         successors.push_front(mlcore::Successor(s, 1.0));
-        return successors;
-    }
-
-    if (goal(s)) {
-        successors.push_front(mlcore::Successor(absorbing, 1.0));
         return successors;
     }
 
@@ -115,7 +163,7 @@ double GridWorldProblem::cost(mlcore::State* s, mlcore::Action* a) const
 {
     if (s == absorbing)
         return 0.0;
-    if (goal(s)) {
+    if (gridGoal(s)) {
         GridWorldState* gws = (GridWorldState *) s;
         std::pair<int,int> pos(gws->x(),gws->y());
         return (*goals_)[pos];
@@ -128,8 +176,9 @@ bool GridWorldProblem::applicable(mlcore::State* s, mlcore::Action* a) const
     return true;
 }
 
-void GridWorldProblem::addSuccessor(GridWorldState* state, std::list<mlcore::Successor>& successors,
-                                    int val, int limit, int newx, int newy, double prob)
+void GridWorldProblem::addSuccessor(
+    GridWorldState* state, std::list<mlcore::Successor>& successors,
+    int val, int limit, int newx, int newy, double prob)
 {
     if (val > limit) {
         GridWorldState *next = new GridWorldState(this, newx, newy);
