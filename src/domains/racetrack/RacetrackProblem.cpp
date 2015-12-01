@@ -72,22 +72,26 @@ bool RacetrackProblem::goal(mlcore::State* s) const
     return goals_.find(pos) != goals_.end();
 }
 
-std::list<mlcore::Successor> RacetrackProblem::transition(mlcore::State* s, mlcore::Action* a)
+std::list<mlcore::Successor>
+RacetrackProblem::transition(mlcore::State* s, mlcore::Action* a)
 {
     assert(applicable(s, a));
 
     if (s == s0) {
         std::list<mlcore::Successor> successors;
         for (std::pair<int,int> start : starts_) {
-            mlcore::State* next = new RacetrackState(start.first, start.second, 0, 0, this);
-            successors.push_back(mlcore::Successor(this->addState(next), 1.0 / starts_.size()));
+            mlcore::State* next =
+                new RacetrackState(start.first, start.second, 0, 0, this);
+            successors.push_back(
+                mlcore::Successor(this->addState(next), 1.0 / starts_.size()));
         }
         return successors;
     }
 
     if (goal(s) || s == absorbing_) {
         std::list<mlcore::Successor> successors;
-        successors.push_back(mlcore::Successor(this->addState(absorbing_), 1.0));
+        successors.push_back(
+            mlcore::Successor(this->addState(absorbing_), 1.0));
         return successors;
     }
 
@@ -105,7 +109,8 @@ std::list<mlcore::Successor> RacetrackProblem::transition(mlcore::State* s, mlco
     if (track_[rts->x()][rts->y()] == rtrack::wall) {
         int x = rts->x(), y = rts->y();
         int ax = rta->ax(), ay = rta->ay();
-        mlcore::State* next = this->addState(new RacetrackState(x + ax, y + ay, ax, ay, this));
+        mlcore::State* next =
+            this->addState(new RacetrackState(x + ax, y + ay, ax, ay, this));
         allSuccessors->at(idAction).push_back(mlcore::Successor(next, 1.0));
         return allSuccessors->at(idAction);
     }
@@ -129,23 +134,28 @@ std::list<mlcore::Successor> RacetrackProblem::transition(mlcore::State* s, mlco
         acc += pSlip_;
     }
     if (p_int != 0.0) {
-        mlcore::State* next = this->addState(resultingState(rts, rta->ax(), rta->ay()));
+        mlcore::State* next =
+            this->addState(resultingState(rts, rta->ax(), rta->ay()));
         allSuccessors->at(idAction).push_back(mlcore::Successor(next, p_int));
         acc += p_int;
     }
     if (p_err != 0.0) {
-        /* "ta" stores how many other actions are within distance 1 of the current action */
+        // "ta" stores how many other actions
+        // are within distance 1 of the current action.
         int ta = abs(rta->ax()) + abs(rta->ay());
         int cnt = 4;
         if (ta == 1) cnt = 3;
         if (ta == 2) cnt = 2;
         for (mlcore::Action* a2 : actions_) {
             RacetrackAction* rtaE = (RacetrackAction*) a2;
-            int dist = abs(rtaE->ax() - rta->ax()) + abs(rtaE->ay() - rta->ay());
+            int dist =
+                abs(rtaE->ax() - rta->ax()) + abs(rtaE->ay() - rta->ay());
             if (dist == 0 || dist > 1)
                 continue;
-            mlcore::State* next = this->addState(resultingState(rts, rtaE->ax(), rtaE->ay()));
-            allSuccessors->at(idAction).push_back(mlcore::Successor(next, p_err / cnt));
+            mlcore::State* next =
+                this->addState(resultingState(rts, rtaE->ax(), rtaE->ay()));
+            allSuccessors->at(idAction).
+                            push_back(mlcore::Successor(next, p_err / cnt));
             acc += p_err / cnt;
         }
     }
@@ -180,13 +190,15 @@ bool RacetrackProblem::applicable(mlcore::State* s, mlcore::Action* a) const
     if (x < 0 || x >= track_.size() || y < 0 || y >= track_[x].size())
         return false;
 
-    if (track_[rts->x()][rts->y()] == rtrack::wall && track_[x][y] == rtrack::wall)
+    if (track_[rts->x()][rts->y()] == rtrack::wall &&
+         track_[x][y] == rtrack::wall)
         return false;
 
     return true;
 }
 
-RacetrackState* RacetrackProblem::resultingState(RacetrackState* rts, int ax, int ay)
+RacetrackState*
+RacetrackProblem::resultingState(RacetrackState* rts, int ax, int ay)
 {
     int x1 = rts->x(), y1 = rts->y();
     int vx = rts->vx() + ax, vy = rts->vy() + ay;
