@@ -51,7 +51,7 @@ GridWorldProblem::GridWorldProblem(
 
                 } else if (line.at(width_) == 'S') {
                     x0_ = width_;
-                    y0_ - height_;
+                    y0_ = height_;
                 } else {
                     assert(line.at(width_) == '.');
                 }
@@ -62,9 +62,9 @@ GridWorldProblem::GridWorldProblem(
     }
     goals_ = goals;
     actionCost_ = actionCost;
-    mlcore::State* init = new GridWorldState(this, x0_, y0_);
+    s0 = new GridWorldState(this, x0_, y0_);
     absorbing = new GridWorldState(this, -1, -1);
-    s0 = this->addState(init);
+    this->addState(s0);
     addAllActions();
 }
 
@@ -74,9 +74,9 @@ GridWorldProblem::GridWorldProblem(
         width_(width), height_(height), x0_(x0), y0_(y0),
         goals_(goals), actionCost_(actionCost)
 {
-    mlcore::State* init = new GridWorldState(this, x0_, y0_);
+    s0 = new GridWorldState(this, x0_, y0_);
     absorbing = new GridWorldState(this, -1, -1);
-    s0 = this->addState(init);
+    this->addState(s0);
     addAllActions();
 }
 
@@ -86,9 +86,9 @@ GridWorldProblem::GridWorldProblem(int width, int height,
                                    : width_(width), height_(height),
                                       x0_(x0), y0_(y0), goals_(goals)
 {
-    mlcore::State* init = new GridWorldState(this, x0_, y0_);
+    s0 = new GridWorldState(this, x0_, y0_);
     absorbing = new GridWorldState(this, -1, -1);
-    s0 = this->addState(init);
+    this->addState(s0);
     heuristic_ = h;
     gamma_ = 1.0;
     addAllActions();
