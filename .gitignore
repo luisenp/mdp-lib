@@ -36,6 +36,7 @@ testrace
 testlexi*
 testmeta
 testairplane
+simulmeta
 *.lp
 *.txt
 *.lp.*
