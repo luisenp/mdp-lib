@@ -36,6 +36,7 @@ private:
     double actionCost_;
     PairDoubleMap* goals_;
     mlcore::State* absorbing;
+    IntPairSet walls;
 
     void addSuccessor(GridWorldState* state,
                       std::list<mlcore::Successor>& successors,
@@ -58,13 +59,12 @@ public:
     GridWorldProblem();
 
     /**
-     * Constructs a grid world from a string file representation stored
-     * at the given filename. The constructor receives a PairDoubleMap to
-     * store the goals, and the cost of the actions.
+     * Constructs a grid world from a string file representation
+     * stored at the given filename. The constructor receives a
+     * PairDoubleMap to store the goals, and the cost of the actions.
      */
-
     GridWorldProblem(
-        char* filename, PairDoubleMap* goals, double actionCost = 1.0);
+        const char* filename, PairDoubleMap* goals, double actionCost = 1.0);
 
     /**
      * Constructs a grid world with the specified width, height,

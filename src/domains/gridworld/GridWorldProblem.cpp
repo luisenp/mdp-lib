@@ -29,7 +29,7 @@ GridWorldProblem::GridWorldProblem() :
 }
 
 GridWorldProblem::GridWorldProblem(
-    char* filename, PairDoubleMap* goals, double actionCost)
+    const char* filename, PairDoubleMap* goals, double actionCost)
 {
     mdplib_debug = true;
     std::ifstream myfile (filename);
@@ -41,9 +41,7 @@ GridWorldProblem::GridWorldProblem(
         while ( std::getline (myfile, line) ) {
             for (width_ = 0; width_ < line.size(); width_++) {
                 if (line.at(width_) == 'x') {
-                    goals->insert(
-                        std::make_pair(std::pair<int,int> (width_, height_),
-                                        10.0));
+                    walls.insert(std::pair<int, int>(width_, height_));
                 } else if (line.at(width_) == 'G') {
                     goals->insert(
                         std::make_pair(
@@ -180,7 +178,8 @@ void GridWorldProblem::addSuccessor(
     GridWorldState* state, std::list<mlcore::Successor>& successors,
     int val, int limit, int newx, int newy, double prob)
 {
-    if (val > limit) {
+    bool isWall = (walls.count(std::pair<int, int> (newx, newy)) != 0);
+    if (val > limit && !isWall) {
         GridWorldState *next = new GridWorldState(this, newx, newy);
         successors.push_front(mlcore::Successor(this->addState(next), prob));
     } else {

@@ -110,7 +110,7 @@ private:
 public:
     MetareasoningSimulator(mlcore::Problem* problem,
                             double tolerance = 1.0e-6,
-                            int numPlanninStepsPerAction = 5,
+                            int numPlanningStepsPerAction = 5,
                             int numPlanningStepsPerNOP = 5,
                             double costNOP = 1.0,
                             bool tryAllActions = false,
@@ -121,6 +121,16 @@ public:
     void rule(ActionSelectionRule value) { rule_ = value; }
 
     void tryAllActions(bool value) { tryAllActions_ = value; }
+
+    void numPlanningStepsPerAction(int value)
+    {
+        numPlanningStepsPerAction_ = value;
+    }
+
+    void numPlanningStepsPerNOP(int value)
+    {
+        numPlanningStepsPerNOP_ = value;
+    }
 
     /**
      * Simulates a run of a metareasoning approach that uses the information

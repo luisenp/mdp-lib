@@ -7,6 +7,7 @@
 #include "../include/solvers/solver.h"
 #include "../include/solvers/MetareasoningSimulator.h"
 
+#include "../include/util/flags.h"
 #include "../include/util/general.h"
 #include "../include/util/graph.h"
 
@@ -18,32 +19,57 @@
 using namespace mlcore;
 using namespace mlsolvers;
 using namespace std;
+using namespace mdplib;
 
 int main(int argc, char* args[])
 {
-    if (argc < 5) {
-        cout << "Usage: ./simulmeta MAP METHOD TRYALLACTIONS NSIMS" << endl;
-        return 0;
+    // Parsing flags
+    register_flags(argc, args);
+    if (!flag_is_registered_with_value("grid")) {
+        cerr << "Must specify grid file using --grid " <<
+            "=file command line flag." << endl;
+        return -1;
     }
+    string gridFile = flag_value("grid");
+    string metaChoice = "none";
+    if (flag_is_registered_with_value("meta"))
+        metaChoice = flag_value("meta");
+    bool tryAllActions = flag_is_registered("all_actions");
+    int verbosity = 1;
+    if (flag_is_registered_with_value("v"))
+        verbosity = atoi(flag_value("v").c_str());
+    int numSims = 100;
+    if (flag_is_registered_with_value("nsims"))
+        numSims = atoi(flag_value("nsims").c_str());
+    int numPlanningStepsPerAction = 1;
+    if (flag_is_registered_with_value("steps_action"))
+        numPlanningStepsPerAction = atoi(flag_value("steps_action").c_str());
+    int numPlanningStepsPerNOP = 1;
+    if (flag_is_registered_with_value("steps_nop"))
+        numPlanningStepsPerNOP = atoi(flag_value("steps_nop").c_str());
+
     PairDoubleMap goals;
-    Problem* problem = new GridWorldProblem(args[1], &goals);
-    problem->gamma(0.90);
+    Problem* problem = new GridWorldProblem(gridFile.c_str(), &goals);
+    problem->gamma(0.99);
     Heuristic* heuristic =
         new GWManhattanHeuristic((GridWorldProblem*) problem);
     problem->setHeuristic(heuristic);
     problem->generateAll();
 
+
     MetareasoningSimulator simulator(problem);
-    if (strcmp(args[2], "assume1") == 0)
+    simulator.numPlanningStepsPerAction(numPlanningStepsPerAction);
+    simulator.numPlanningStepsPerNOP(numPlanningStepsPerNOP);
+    if (metaChoice.compare("assume1") == 0) {
         simulator.rule(META_ASSUMPTION_1);
-    if (strcmp(args[2], "assume2") == 0)
+    } else if (metaChoice.compare("assume2") == 0) {
         simulator.rule(META_ASSUMPTION_2);
-    if (strcmp(args[2], "nometa") == 0)
+    } else if (metaChoice.compare("nometa") == 0) {
         simulator.rule(NO_META);
-    if (strcmp(args[3], "true") == 0)
+    }
+    if (tryAllActions)
         simulator.tryAllActions(true);
 
-    int numSims = atoi(args[4]);
     double expectedCost = 0.0;
     double expectedNOPCost = 0.0;
     for (int i = 0; i < numSims; i++) {
@@ -52,8 +78,13 @@ int main(int argc, char* args[])
         expectedNOPCost += simResult.second;
     }
 
-    cout << "Expected Cost " << expectedCost / numSims << endl;
-    cout << "Expected NOP Cost " << expectedNOPCost / numSims << endl;
+    if (verbosity > 1) {
+        cout << "Expected Cost " << expectedCost / numSims << endl;
+        cout << "Expected NOP Cost " << expectedNOPCost / numSims << endl;
+    } else {
+        cout << expectedCost / numSims << " " <<
+            expectedNOPCost / numSims << endl;
+    }
 
     delete problem;
     delete heuristic;

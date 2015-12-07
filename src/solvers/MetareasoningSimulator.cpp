@@ -10,7 +10,7 @@ namespace mlsolvers
 
 MetareasoningSimulator::MetareasoningSimulator(mlcore::Problem* problem,
                         double tolerance,
-                        int numPlanninStepsPerAction,
+                        int numPlanningStepsPerAction,
                         int numPlanningStepsPerNOP,
                         double costNOP,
                         bool tryAllActions,
@@ -18,7 +18,7 @@ MetareasoningSimulator::MetareasoningSimulator(mlcore::Problem* problem,
 {
     problem_ = problem;
     tolerance_ = tolerance;
-    numPlanningStepsPerAction_ = numPlanninStepsPerAction;
+    numPlanningStepsPerAction_ = numPlanningStepsPerAction;
     numPlanningStepsPerNOP_ = numPlanningStepsPerNOP;
     costNOP_ = costNOP;
     rule_ = rule;
@@ -87,10 +87,8 @@ void MetareasoningSimulator::precomputeAllExpectedPolicyCosts()
         mlcore::StateDoubleMap currentPolicyCost;
         computeExpectedCostCurrentPolicy(currentPolicyCost);
         policyCosts_.push_back(currentPolicyCost);
-//        for (mlcore::State* s : problem_->states()) {
-//            std::cerr << s << " " << policyCosts_.back()[s] << " ";
-//        }
-//        std::cout << " " << std::endl << " " << std::endl;
+
+//        std::cout << policyCosts_.back()[problem_->initialState()] << std::endl;
 
         if (maxResidual < tolerance_)
             break;
@@ -120,11 +118,13 @@ std::pair<double, double> MetareasoningSimulator::simulate()
                 break;
         }
         if (action == nullptr) {
+//            dprint2(currentState, "NOP");
             time += numPlanningStepsPerNOP_;
             cost += costNOP_;
             totalNOPCost += costNOP_;
         }
         else {
+//            dprint3(time, currentState, action);
             time += numPlanningStepsPerAction_;
             cost += problem_->cost(currentState, action);
             currentState = randomSuccessor(problem_, currentState, action);
