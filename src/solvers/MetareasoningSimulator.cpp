@@ -129,6 +129,7 @@ std::pair<double, double> MetareasoningSimulator::simulate()
             cost += problem_->cost(currentState, action);
             currentState = randomSuccessor(problem_, currentState, action);
         }
+//        dsleep(500);
     }
     return std::make_pair(cost, totalNOPCost);
 }
@@ -228,7 +229,8 @@ MetareasoningSimulator::getActionMetaAssumption2(mlcore::State* s, int t)
     // assuming the plan after one action execution will remain unchanged.
     mlcore::Action* actionCurrentPlan = getActionNoMetareasoning(s, t);
     double qValueAction = 0.0;
-    for (mlcore::Successor su : problem_->transition(s, actionCurrentPlan)) {
+    for (mlcore::Successor su :
+            problem_->transition(s, actionCurrentPlan)) {
         qValueAction += su.su_prob * stateValues_[endTime][su.su_state];
     }
     qValueAction =

@@ -46,7 +46,6 @@ GridWorldProblem::GridWorldProblem(
                     goals->insert(
                         std::make_pair(
                             std::pair<int,int> (width_, height_), 0.0));
-
                 } else if (line.at(width_) == 'S') {
                     x0_ = width_;
                     y0_ = height_;
