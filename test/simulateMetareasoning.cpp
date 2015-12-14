@@ -64,6 +64,8 @@ int main(int argc, char* args[])
         simulator.rule(META_ASSUMPTION_1);
     } else if (metaChoice.compare("assume2") == 0) {
         simulator.rule(META_ASSUMPTION_2);
+    } else if (metaChoice.compare("change") == 0) {
+        simulator.rule(META_CHANGE_ACTION);
     } else if (metaChoice.compare("nometa") == 0) {
         simulator.rule(NO_META);
     }

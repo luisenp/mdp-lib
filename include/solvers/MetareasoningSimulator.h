@@ -7,6 +7,7 @@ enum ActionSelectionRule
 {
     META_ASSUMPTION_1,
     META_ASSUMPTION_2,
+    META_CHANGE_ACTION,
     NO_META
 };
 
@@ -100,6 +101,14 @@ private:
      *  action = arg min_{a \in A} C(s,a) + sum_s' T(s',s,a) EC[t][s']
      */
     mlcore::Action* getActionNoMetareasoning(mlcore::State* s, int t);
+
+    /*
+     * Returns the action chosen according to the following rule:
+     *     If the action chosen by the planner would change after one
+     *     application of NOP, then use NOP. Otherwise, stick to the current
+     *     action.
+     */
+    mlcore::Action* getActionMetaChangeBestAction(mlcore::State* s, int t);
 
     /*
      * Pre-computes and stores the expected costs
