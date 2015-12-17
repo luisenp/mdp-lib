@@ -1,3 +1,5 @@
+#include "../../../include/util/general.h"
+
 #include "../../../include/domains/gridworld/GridWorldState.h"
 
 GridWorldState::GridWorldState(mlcore::Problem* problem, int x, int y) : x_(x), y_(y)

@@ -18,8 +18,12 @@ ID_SOLV = $(ID)/solvers
 SD_SOLV = $(SD)/solvers
 OD_SOLV = $(OD)/solvers
 OD_SOLV_MOBJ = $(OD)/solvers/mobj
+OD_SOLV_META = $(OD)/solvers/metareasoning
 ID_SOLV_MOBJ = $(ID)/solvers/mobj
+ID_SOLV_META = $(ID)/solvers/metareasoning
 SD_SOLV_MOBJ = $(SD)/solvers/mobj
+SD_SOLV_META = $(SD)/solvers/metareasoning
+
 
 ID_DOM = $(ID)/domains
 SD_DOM = $(SD)/domains
@@ -40,7 +44,7 @@ OD_MODOM = $(OD)/domains/mobj
 # Variables for include directives
 INCLUDE_DOM = -I$(ID_GW) -I$(ID_CTP) -I$(ID_SAIL) -I$(ID_DOM) -I$(ID_RACE)
 INCLUDE_CORE = -I$(ID_UTIL) -I$(ID)
-INCLUDE_SOLVERS = -I$(ID_SOLV) -I$(ID_SOLV_MOBJ)
+INCLUDE_SOLVERS = -I$(ID_SOLV) -I$(ID_SOLV_MOBJ) -I$(ID_SOLV_META)
 INCLUDE = $(INCLUDE_DOM) $(INCLUDE_CORE) $(INCLUDE_SOLVERS)
 
 # Variables for source/header files
@@ -49,7 +53,9 @@ S_CPP = $(SD)/*.cpp
 SOLV_CPP = $(SD_SOLV)/*.cpp
 SOLV_H = $(ID_SOLV)/*.h
 MOSOLV_CPP = $(SD_SOLV_MOBJ)/*.cpp
+META_CPP = $(SD_SOLV_META)/*.cpp
 MOSOLV_H = $(ID_SOLV_MOBJ)/*.h
+META_H = $(ID_SOLV_META)/*.h
 UTIL_CPP = $(SD_UTIL)/*.cpp
 UTIL_H = $(ID_UTIL)/*.h
 
@@ -66,8 +72,8 @@ RACE_H = $(ID_RACE)/*.h
 DOM_CPP = $(GW_CPP) $(CTP_CPP) $(SAIL_CPP) $(RACE_CPP) $(SD_DOM)/*.cpp
 DOM_H = $(GW_H) $(CTP_H) $(SAIL_H) $(RACE_H)
 
-ALL_H = $(I_H) $(SOLV_H) $(MOSOLV_H) $(DOM_H) $(UTIL_H)
-ALL_CPP = $(DOM_CPP) $(SOLV_CPP) $(MOSOLV_CPP) $(UTIL_CPP)
+ALL_H = $(I_H) $(SOLV_H) $(MOSOLV_H) $(DOM_H) $(UTIL_H) $(META_H)
+ALL_CPP = $(DOM_CPP) $(SOLV_CPP) $(MOSOLV_CPP) $(UTIL_CPP) $(META_CPP)
 
 # Libraries
 LIBS = lib/libmdp.a -Llib
@@ -88,6 +94,13 @@ libmdp:
 	ar rvs libmdp.a $(OD)/core/*.o $(OD)/solvers/*.o
 	mv libmdp.a lib
 
+# Compiles the base (single-objective) solvers
+$(OD)/solvers.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_H)
+	make $(OD)/core.a
+	$(CC) $(CFLAGS) $(INCLUDE_CORE) -c $(SOLV_CPP)
+	mv *.o $(OD_SOLV)
+	ar rvs $(OD)/solvers.a $(OD_SOLV)/*.o
+
 # Compiles the multi-objective solvers
 $(OD)/mo-solvers.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_H) $(MOSOLV_H) $(MOSOLV_CPP)
 	make $(OD)/core.a
@@ -97,12 +110,14 @@ $(OD)/mo-solvers.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_H) 
 	ar rvs obj/mo-solvers.a $(OD_SOLV_MOBJ)/*.o
 	mv obj/mo-solvers.a lib
 
-# Compiles the base (single-objective) solvers
-$(OD)/solvers.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_H)
+# Compiles the metareasoning code
+$(OD)/meta.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_H) $(META_H) $(META_CPP)
 	make $(OD)/core.a
-	$(CC) $(CFLAGS) $(INCLUDE_CORE) -c $(SOLV_CPP)
-	mv *.o $(OD_SOLV)
-	ar rvs $(OD)/solvers.a $(OD_SOLV)/*.o
+	make $(OD)/solvers.a
+	$(CC) $(CFLAGS) $(INCLUDE_CORE) $(INCLUDE_SOLVERS) -c $(META_CPP)
+	mv *.o $(OD_SOLV_META)
+	ar rvs obj/meta.a $(OD_SOLV_META)/*.o
+	mv obj/meta.a lib
 
 # Compiles the core classes
 $(OD)/core.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H)
@@ -169,11 +184,12 @@ race: $(I_H) $(RACE_H) $(RACE_CPP) $(S_CPP)
 	rm test/*.o
 
 # Compiles the Metareasoning algorithm test program #
-meta: $(I_H) $(RACE_H) $(RACE_CPP) $(S_CPP) $(GW_CPP)
+meta: $(I_H) $(RACE_H) $(RACE_CPP) $(S_CPP) $(GW_CPP) $(OD)/meta.a
+	make $(OD)/meta.a
 	$(CC) $(CFLAGS) -I$(ID_RACE) -I$(ID) -c $(RACE_CPP) $(GW_CPP)
 	mv *.o test/
-	$(CC) $(CFLAGS) $(INCLUDE) -o testmeta $(TD)/testMetareasoning.cpp $(TD)/*.o $(LIBS)
-	$(CC) $(CFLAGS) $(INCLUDE) -o simulmeta $(TD)/simulateMetareasoning.cpp $(TD)/*.o $(LIBS)
+	$(CC) $(CFLAGS) $(INCLUDE) -o testmeta $(TD)/testMetareasoning.cpp $(TD)/*.o lib/meta.a $(LIBS)
+	$(CC) $(CFLAGS) $(INCLUDE) -o simulmeta $(TD)/simulateMetareasoning.cpp $(TD)/*.o lib/meta.a $(LIBS)
 	rm test/*.o
 
 # Compiles the Sailing domain test program #

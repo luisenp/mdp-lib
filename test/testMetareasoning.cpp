@@ -5,7 +5,7 @@
 #include <unistd.h>
 
 #include "../include/solvers/solver.h"
-#include "../include/solvers/MetareasoningSolver.h"
+#include "../include/solvers/metareasoning/MetareasoningSolver.h"
 
 #include "../include/util/general.h"
 #include "../include/util/graph.h"

@@ -62,6 +62,7 @@ GridWorldProblem::GridWorldProblem(
     s0 = new GridWorldState(this, x0_, y0_);
     absorbing = new GridWorldState(this, -1, -1);
     this->addState(s0);
+    this->addState(absorbing);
     addAllActions();
 }
 
