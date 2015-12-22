@@ -103,8 +103,7 @@ $(OD)/solvers.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_H)
 
 # Compiles the multi-objective solvers
 $(OD)/mo-solvers.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_H) $(MOSOLV_H) $(MOSOLV_CPP)
-	make $(OD)/core.a
-	make $(OD)/solvers.a
+	make libmdp
 	$(CC) $(CFLAGS) $(INCLUDE_CORE) $(INCLUDE_SOLVERS) -c $(MOSOLV_CPP)
 	mv *.o $(OD_SOLV_MOBJ)
 	ar rvs obj/mo-solvers.a $(OD_SOLV_MOBJ)/*.o
@@ -112,8 +111,7 @@ $(OD)/mo-solvers.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_H) 
 
 # Compiles the metareasoning code
 $(OD)/meta.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_H) $(META_H) $(META_CPP)
-	make $(OD)/core.a
-	make $(OD)/solvers.a
+	make libmdp
 	$(CC) $(CFLAGS) $(INCLUDE_CORE) $(INCLUDE_SOLVERS) -c $(META_CPP)
 	mv *.o $(OD_SOLV_META)
 	ar rvs obj/meta.a $(OD_SOLV_META)/*.o
@@ -239,3 +237,6 @@ clean:
 	rm -f obj/solvers/*.o
 	rm -f obj/solvers/*.a
 	rm -f obj/solvers/mobj/*
+	rm -f lib/libmdp.a
+	rm -f lib/meta.a
+	rm -f lib/mo-solvers.a

@@ -11,8 +11,6 @@ namespace mlsolvers
 {
     VISolver::VISolver(mlcore::Problem* problem, int maxIter, double tol)
     {
-        mdplib_debug = true;
-        dprint1("VISOLVER");
         problem_ = problem;
         maxIter_ = maxIter;
         tol_ = tol;
@@ -20,8 +18,6 @@ namespace mlsolvers
 
     mlcore::Action* VISolver::solve(mlcore::State* s0)
     {
-        mdplib_debug = true;
-        dprint2("solving", maxIter_);
         for (int i = 0; i < maxIter_; i++) {
             double maxResidual = 0.0;
             for (mlcore::State* s : problem_->states()) {
@@ -29,7 +25,6 @@ namespace mlsolvers
                 if (residual > maxResidual)
                     maxResidual = residual;
             }
-                                                std:: cout << maxResidual << std::endl;
             if (maxResidual < tol_)
                 return nullptr;
         }

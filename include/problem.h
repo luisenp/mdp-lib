@@ -162,10 +162,10 @@ public:
      */
     State* addState(State* s)
     {
-        bool check = states_.insert(s).second;
+        bool firstTimeInserted = states_.insert(s).second;
         State* ret = *states_.find(s);
         // the void cast is used to check if the pointers point to the same object
-        if ((void *) ret != (void *) s && !check)
+        if ((void *) ret != (void *) s && !firstTimeInserted)
             delete s; // another state was already stored, get rid of the state used to find it
         return ret;
     }

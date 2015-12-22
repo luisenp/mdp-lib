@@ -115,6 +115,12 @@ private:
     mlcore::Action* getActionMetaChangeBestAction(mlcore::State* s, int t);
 
     /*
+     * Returns the action chosen accordint the optimal metareasoning problem
+     * as described in the MetareasoningProblem class.
+     */
+    mlcore::Action* getActionOptimalMetareasoning(mlcore::State* s, int t);
+
+    /*
      * Pre-computes and stores the expected costs
      * of all the intermediate policies found during Value Iteration.
      */

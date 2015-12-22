@@ -4,8 +4,10 @@
 #include "../../../include/solvers/solver.h"
 #include "../../../include/solvers/VISolver.h"
 
+#include "../../../include/solvers/metareasoning/MetareasoningAction.h"
 #include "../../../include/solvers/metareasoning/MetareasoningProblem.h"
 #include "../../../include/solvers/metareasoning/MetareasoningSimulator.h"
+#include "../../../include/solvers/metareasoning/MetareasoningState.h"
 
 namespace mlsolvers
 {
@@ -108,6 +110,7 @@ std::pair<double, double> MetareasoningSimulator::simulate()
     while (true) {
         if (problem_->goal(currentState))
             break;
+//        dprint2(time, currentState);
         mlcore::Action* action = nullptr;
         switch(rule_) {
             case META_ASSUMPTION_1:
@@ -122,20 +125,23 @@ std::pair<double, double> MetareasoningSimulator::simulate()
             case META_CHANGE_ACTION:
                 action = getActionMetaChangeBestAction(currentState, time);
                 break;
+            case OPTIMAL:
+                action = getActionOptimalMetareasoning(currentState, time);
+                break;
         }
         if (action == nullptr) {
-//            dprint2(currentState, "NOP");
+//            dprint1("NOP");
             time += numPlanningStepsPerNOP_;
             cost += costNOP_;
             totalNOPCost += costNOP_;
         }
         else {
-//            dprint3(time, currentState, action);
+//            dprint1(action);
             time += numPlanningStepsPerAction_;
             cost += problem_->cost(currentState, action);
             currentState = randomSuccessor(problem_, currentState, action);
         }
-//            dsleep(500);
+//            dsleep(50);
     }
     return std::make_pair(cost, totalNOPCost);
 }
@@ -288,18 +294,28 @@ MetareasoningSimulator::getActionMetaChangeBestAction(mlcore::State* s, int t)
 
 }
 
+
+mlcore::Action* MetareasoningSimulator::getActionOptimalMetareasoning(mlcore::State* s, int t)
+{
+    // Making sure the time doesn't go over the number of iterations,
+    t = std::min(t, (int) policyCosts_.size() - 1);
+    MetareasoningState* metaState =
+        (MetareasoningState *) metaProblem_->addState(new MetareasoningState(s, t));
+    MetareasoningAction* metaAction = (MetareasoningAction *) metaState->bestAction();
+    if (metaAction->isNOP())
+        return nullptr;
+    return ((MetareasoningProblem *) metaProblem_)->getGreedyActionForStateValues(metaState);
+}
+
+
 void MetareasoningSimulator::rule(ActionSelectionRule value)
 {
     rule_ = value;
-    mdplib_debug = true;
     if (rule_ == OPTIMAL) {
-        dprint1("OPTIMAL");
-//        metaProblem_= new MetareasoningProblem(this);
-        dprint1("Created problem");
-//        VISolver vi(metaProblem_, 100000, 1.0e-6);
-        dprint1("Created VI Solver");
-//        vi.solve();
-        dprint1("Solved");
+        metaProblem_= new MetareasoningProblem(this);
+        metaProblem_->generateAll();
+        VISolver vi(metaProblem_, 10000, 1.0e-6);
+        vi.solve();
     }
 }
 

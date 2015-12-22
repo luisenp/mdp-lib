@@ -42,16 +42,19 @@ private:
     /* The simulator for the problem on which metareasoning will be applied. */
     mlsolvers::MetareasoningSimulator* simulator_;
 
-    /*
-     * Returns an action chosen greedily according to the values estimated by VI for
-     * s.baseState() at iteration s.iteration().
-     */
-    mlcore::Action* getGreedyActionStateValue(MetareasoningState* s) const;
-
 public:
     MetareasoningProblem(mlsolvers::MetareasoningSimulator* simulator);
 
     virtual ~MetareasoningProblem() { }
+
+    /**
+     * Returns an action chosen greedily according to the values estimated by VI for
+     * s.baseState() at iteration s.iteration().
+     *
+     * @param s the metareasoning state for which the greedy action will be computed.
+     * @return an action chosen greedily on the current VI values for state s.
+     */
+    mlcore::Action* getGreedyActionForStateValues(MetareasoningState* s) const;
 
     /**
      * Overrides method from Problem.

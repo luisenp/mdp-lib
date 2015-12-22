@@ -70,7 +70,6 @@ int main(int argc, char* args[])
         simulator.rule(NO_META);
     } else if (metaChoice.compare("optimal") == 0) {
         simulator.rule(OPTIMAL);
-        numSims = 0;
     }
     if (tryAllActions)
         simulator.tryAllActions(true);

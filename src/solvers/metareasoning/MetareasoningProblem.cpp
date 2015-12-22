@@ -12,6 +12,8 @@ MetareasoningProblem::MetareasoningProblem(mlsolvers::MetareasoningSimulator* si
     simulator_ = simulator;
     mlcore::State* initialState = new MetareasoningState(simulator_->problem()->initialState(), 0);
     s0 = this->addState(initialState);
+    actions_.push_back(new MetareasoningAction(true));
+    actions_.push_back(new MetareasoningAction(false));
 }
 
 
@@ -32,11 +34,11 @@ std::list<mlcore::Successor> MetareasoningProblem::transition(mlcore::State* s, 
         int nextTime = std::min(metaState->iteration() + simulator_->numPlanningStepsPerNOP(),
                                 (int) simulator_->stateValues().size() - 1);
         MetareasoningState* nextMetaState =
-            new MetareasoningState(s, nextTime);
+            new MetareasoningState(metaState->baseState(), nextTime);
         successors.push_back(mlcore::Successor(this->addState(nextMetaState), 1.0));
     } else {
         // Adding successors of the greedy action in the base MDP.
-        mlcore::Action* greedyActionChoice = getGreedyActionStateValue(metaState);
+        mlcore::Action* greedyActionChoice = getGreedyActionForStateValues(metaState);
         for (mlcore::Successor su :
                 simulator_->problem()->transition(metaState->baseState(), greedyActionChoice)) {
             int nextTime =
@@ -57,7 +59,7 @@ double MetareasoningProblem::cost(mlcore::State* s, mlcore::Action* a) const
     if (metaAction->isNOP())
         return simulator_->costNOP();
     MetareasoningState* metaState = (MetareasoningState *) s;
-    mlcore::Action* greedyActionChoice = getGreedyActionStateValue(metaState);
+    mlcore::Action* greedyActionChoice = getGreedyActionForStateValues(metaState);
     return simulator_->problem()->cost(metaState->baseState(), greedyActionChoice);
 }
 
@@ -69,12 +71,12 @@ bool MetareasoningProblem::applicable(mlcore::State* s, mlcore::Action* a) const
 
     if (metaAction->isNOP())
         return true;
-    mlcore::Action* greedyActionChoice = getGreedyActionStateValue(metaState);
+    mlcore::Action* greedyActionChoice = getGreedyActionForStateValues(metaState);
     return simulator_->problem()->applicable(metaState->baseState(), greedyActionChoice);
 }
 
 
-mlcore::Action* MetareasoningProblem::getGreedyActionStateValue(MetareasoningState* s) const
+mlcore::Action* MetareasoningProblem::getGreedyActionForStateValues(MetareasoningState* s) const
 {
     mlcore::Problem* problem = simulator_->problem();
     MetareasoningState* metaState = (MetareasoningState *) s;
@@ -84,6 +86,8 @@ mlcore::Action* MetareasoningProblem::getGreedyActionStateValue(MetareasoningSta
     double bestQValue = mdplib::dead_end_cost + 1;
     mlcore::Action* greedyActionChoice = nullptr;
     for (mlcore::Action* a : problem->actions()) {
+        if (!problem->applicable(baseState, a))
+            continue;
         double qValue = 0.0;
         for (mlcore::Successor su :
                 problem->transition(baseState, a)) {
