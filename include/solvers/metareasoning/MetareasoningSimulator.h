@@ -28,7 +28,8 @@ private:
     /* The problem to solve. */
     mlcore::Problem* problem_;
 
-    /* A metareasoning problem (only used if the action selection rule is OPTIMAL). */
+    /* A metareasoning problem (only used if the action
+                                selection rule is OPTIMAL). */
     mlcore::Problem* metaProblem_;
 
     /* Residual tolerance used as a stopping condition for VI. */
@@ -67,7 +68,7 @@ private:
      *  Q(s, a) = C(s,a) + sum_s' T(s',s,a) EC[t + dta][s']
      *
      *  where:
-     *     dtnop := numPlanningStepsPerNOP_
+     *     dtnop := numPlanningStepsPerNOP_OptimalMeta
      *     dta := numPlanningStepsPerAction_
      *     EC := policyCosts_
      *     C(s, NOP) = costNOP_

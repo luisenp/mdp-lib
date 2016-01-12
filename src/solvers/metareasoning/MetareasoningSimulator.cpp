@@ -301,11 +301,14 @@ MetareasoningSimulator::getActionOptimalMetareasoning(mlcore::State* s, int t)
     // Making sure the time doesn't go over the number of iterations,
     t = std::min(t, (int) policyCosts_.size() - 1);
     MetareasoningState* metaState =
-        (MetareasoningState *) metaProblem_->addState(new MetareasoningState(s, t));
-    MetareasoningAction* metaAction = (MetareasoningAction *) metaState->bestAction();
+        (MetareasoningState *) metaProblem_->
+            addState(new MetareasoningState(s, t));
+    MetareasoningAction* metaAction =
+        (MetareasoningAction *) metaState->bestAction();
     if (metaAction->isNOP())
         return nullptr;
-    return ((MetareasoningProblem *) metaProblem_)->getGreedyActionForStateValues(metaState);
+    return ((MetareasoningProblem *) metaProblem_)->
+        getGreedyActionForStateValues(metaState);
 }
 
 
