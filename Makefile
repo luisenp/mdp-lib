@@ -98,6 +98,7 @@ libmdp:
 $(OD)/solvers.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_H)
 	make $(OD)/core.a
 	$(CC) $(CFLAGS) $(INCLUDE_CORE) -c $(SOLV_CPP)
+	mkdir -p $(OD_SOLV)
 	mv *.o $(OD_SOLV)
 	ar rvs $(OD)/solvers.a $(OD_SOLV)/*.o
 
@@ -105,21 +106,26 @@ $(OD)/solvers.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_H)
 $(OD)/mo-solvers.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_H) $(MOSOLV_H) $(MOSOLV_CPP)
 	make libmdp
 	$(CC) $(CFLAGS) $(INCLUDE_CORE) $(INCLUDE_SOLVERS) -c $(MOSOLV_CPP)
+	mkdir -p $(OD_SOLV_MOBJ)
 	mv *.o $(OD_SOLV_MOBJ)
 	ar rvs obj/mo-solvers.a $(OD_SOLV_MOBJ)/*.o
+	mkdir -p lib
 	mv obj/mo-solvers.a lib
 
 # Compiles the metareasoning code
 $(OD)/meta.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_H) $(META_H) $(META_CPP)
 	make libmdp
 	$(CC) $(CFLAGS) $(INCLUDE_CORE) $(INCLUDE_SOLVERS) -c $(META_CPP)
+	mkdir -p $(OD_SOLV_META)
 	mv *.o $(OD_SOLV_META)
 	ar rvs obj/meta.a $(OD_SOLV_META)/*.o
+	mkdir -p obj
 	mv obj/meta.a lib
 
 # Compiles the core classes
 $(OD)/core.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H)
 	$(CC) $(CFLAGS) $(INCLUDE_CORE) -c $(UTIL_CPP) $(S_CPP) $(UTIL_CPP)
+	mkdir -p obj/core
 	mv *.o obj/core
 	ar rvs $(OD)/core.a $(OD)/core/*.o
 
@@ -141,6 +147,7 @@ $(OD_MODOM)/airplane.a: $(ID_MODOM)/airplane/*.h $(SD_MODOM)/airplane/*.cpp
 	$(CC) $(CFLAGS) $(INCLUDE) -Iinclude/mobj/*.h -I$(ID_MODOM)/*.h \
 	-I$(ID_MODOM)/airplane/*.h -c $(SD_MODOM)/airplane/*.cpp
 	ar rvs $(OD_MODOM)/airplane.a *.o
+	mkdir -p $(OD_MODOM)
 	mv *.o $(OD_MODOM)
 
 # Compiles the MO-Racetrack domain #
@@ -149,6 +156,7 @@ $(OD_MODOM)/mo-racetrack.a: $(RACE_CPP) $(RACE_H) $(ID_MODOM)/*rack*.h $(SD_MODO
 	$(CC) $(CFLAGS) $(INCLUDE) -Iinclude/mobj/*.h -I$(ID_MODOM)/*.h \
 	-I$(ID_MODOM)/*rack*/*.h -c $(SD_MODOM)/*rack*.cpp
 	ar rvs $(OD_MODOM)/mo-racetrack.a *.o
+	mkdir -p $(OD_MODOM)
 	mv *.o $(OD_MODOM)
 
 # Compiles the MO-Gridworld domain #
@@ -157,6 +165,7 @@ $(OD_MODOM)/mo-gw.a: $(ID_MODOM)/*.h $(SD_MODOM)/*.cpp $(GW_CPP) $(GW_H) Makefil
 	$(CC) $(CFLAGS) $(INCLUDE) -Iinclude/mobj/*.h -I$(ID_MODOM)/*.h \
 	-I$(ID_MODOM)/*GridWorld*/*.h -c $(SD_MODOM)/*GridWorld*.cpp $(GW_CPP)
 	ar rvs $(OD_MODOM)/mo-gw.a *.o
+	mkdir -p $(OD_MODOM)
 	mv *.o $(OD_MODOM)
 
 # Compiles the Raw File domain #
@@ -165,11 +174,13 @@ $(OD_MODOM)/rawfile.a: $(ID_MODOM)/*Raw*.h $(SD_MODOM)/*Raw*.cpp
 	$(CC) $(CFLAGS) $(INCLUDE) -Iinclude/mobj/*.h -I$(ID_MODOM)/*.h \
 	-I$(ID_MODOM)/*Raw*/*.h -c $(SD_MODOM)/*Raw*.cpp
 	ar rvs $(OD_MODOM)/rawfile.a *.o
+	mkdir -p $(OD_MODOM)
 	mv *.o $(OD_MODOM)
 
 # Compiles the concurrent planning test program #
 conc: $(ALL_CPP) $(ALL_H)
 	$(CC) $(CFLAGS) $(INCLUDE) -c $(DOM_CPP)
+	mkdir -p test
 	mv *.o test/
 	$(CC) $(CFLAGS) $(INCLUDE) -o testconc $(TD)/testConc.cpp $(TD)/*.o $(LIBS)
 	rm test/*.o
@@ -177,6 +188,7 @@ conc: $(ALL_CPP) $(ALL_H)
 # Compiles the Racetrack domain test program #
 race: $(I_H) $(RACE_H) $(RACE_CPP) $(S_CPP)
 	$(CC) $(CFLAGS) -I$(ID_RACE) -I$(ID) -c $(RACE_CPP)
+	mkdir -p test
 	mv *.o test/
 	$(CC) $(CFLAGS) $(INCLUDE) -o testrace $(TD)/testRace.cpp $(TD)/*.o $(LIBS)
 	rm test/*.o
@@ -185,6 +197,7 @@ race: $(I_H) $(RACE_H) $(RACE_CPP) $(S_CPP)
 meta: $(I_H) $(RACE_H) $(RACE_CPP) $(S_CPP) $(GW_CPP) $(OD)/meta.a
 	make $(OD)/meta.a
 	$(CC) $(CFLAGS) -I$(ID_RACE) -I$(ID) -c $(RACE_CPP) $(GW_CPP)
+	mkdir -p test
 	mv *.o test/
 	$(CC) $(CFLAGS) $(INCLUDE) -o testmeta $(TD)/testMetareasoning.cpp $(TD)/*.o lib/meta.a $(LIBS)
 	$(CC) $(CFLAGS) $(INCLUDE) -o simulmeta $(TD)/simulateMetareasoning.cpp $(TD)/*.o lib/meta.a $(LIBS)
@@ -193,6 +206,7 @@ meta: $(I_H) $(RACE_H) $(RACE_CPP) $(S_CPP) $(GW_CPP) $(OD)/meta.a
 # Compiles the Sailing domain test program #
 sail: $(I_H) $(SAIL_H) $(SAIL_CPP) $(S_CPP)
 	$(CC) $(CFLAGS) -I$(ID_SAIL) -I$(ID) -c $(SAIL_CPP)
+	mkdir -p test
 	mv *.o test/
 	$(CC) $(CFLAGS) $(INCLUDE) -o testsail $(TD)/testSail.cpp $(TD)/*.o $(LIBS)
 	rm test/*.o
@@ -200,6 +214,7 @@ sail: $(I_H) $(SAIL_H) $(SAIL_CPP) $(S_CPP)
 # Compiles the Canadian Traveler Problem domain test program #
 ctp: $(CTP_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(CTP_H)
 	$(CC) $(CFLAGS) -I$(ID_CTP) $(INCLUDE_CORE) -c $(CTP_CPP)
+	mkdir -p test
 	mv *.o test/
 	$(CC) $(CFLAGS) -I$(ID_CTP) $(INCLUDE_CORE) -o testctp $(TD)/testCTP.cpp $(TD)/*.o $(LIBS)
 	rm test/*.o
@@ -207,6 +222,7 @@ ctp: $(CTP_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(CTP_H)
 # Compiles the Gridworld domain test program #
 gw: $(GW_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(GW_H)
 	$(CC) $(CFLAGS) -I$(ID_GW) -I$(ID) -I$(ID_SOLV) -c $(GW_CPP)
+	mkdir -p test
 	mv *.o test/
 	$(CC) $(CFLAGS) -I$(ID_GW) $(INCLUDE_CORE) -o testgw $(TD)/testGridWorld.cpp $(TD)/*.o $(LIBS)
 	rm test/*.o
@@ -214,6 +230,7 @@ gw: $(GW_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(GW_H)
 # Compiles a test program for a simple binary tree domain  #
 b2t: $(BT_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(BT_H)
 	$(CC) $(CFLAGS) -I$(ID_BT) $(INCLUDE_CORE) -c $(BT_CPP)
+	mkdir -p test
 	mv *.o test/
 	$(CC) $(CFLAGS) -I$(ID_BT) $(INCLUDE_CORE) -o testb2t $(TD)/testB2T.cpp $(TD)/*.o $(LIBS)
 	rm test/*.o
@@ -221,6 +238,7 @@ b2t: $(BT_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(BT_H)
 # Compiles the PPDDL library
 ppddl: src/ppddl/*.cpp $(I_H) include/ppddl/*.h include/ppddl/mini-gpt/*.h $(SOLV_CPP) $(UTIL_CPP)
 	$(CC) $(CFLAGS) -Iinclude -Iinclude/ppddl -Include/ppddl/mini-gpt -I$(ID_SOLV) -c src/ppddl/*.cpp src/*.cpp $(SOLV_CPP) $(UTIL_CPP)
+	mkdir -p test
 	mv *.o test/
 	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) -o testppddl test/testPPDDL.cpp test/*.o $(LIBS) lib/libminigpt.a
 
