@@ -128,6 +128,9 @@ std::pair<double, double> MetareasoningSimulator::simulate()
             case OPTIMAL:
                 action = getActionOptimalMetareasoning(currentState, time);
                 break;
+            case QVALIMPROV:
+                action = getActionQValueImprovement(currentState, time);
+                break;
         }
         if (action == nullptr) {
 //            dprint1("NOP");
@@ -225,7 +228,6 @@ MetareasoningSimulator::getActionNoMetareasoning(mlcore::State* s, int t)
     }
     assert(actionCurrentPlan != nullptr);
     return actionCurrentPlan;
-
 }
 
 
@@ -238,8 +240,7 @@ MetareasoningSimulator::getActionMetaAssumption2(mlcore::State* s, int t)
     int endTime = policyCosts_.size() - 1;
     int timeAfterAction = std::min(t + numPlanningStepsPerAction_, endTime);
 
-    // Computing the true Q-Value of the action chosen by the current plan,
-    // assuming the plan after one action execution will remain unchanged.
+    // Computing the true Q-Value of the action chosen by the current plan.
     mlcore::Action* actionCurrentPlan = getActionNoMetareasoning(s, t);
     double qValueAction = 0.0;
     for (mlcore::Successor su :
@@ -250,7 +251,6 @@ MetareasoningSimulator::getActionMetaAssumption2(mlcore::State* s, int t)
         (qValueAction * problem_->gamma()) +
             problem_->cost(s, actionCurrentPlan);
 
-    // The time after executing NOP.
     double qValueNOP = costNOP_ + problem_->gamma() * stateValues_[endTime][s];
 
     if (qValueNOP < qValueAction)
@@ -295,16 +295,20 @@ MetareasoningSimulator::getActionMetaChangeBestAction(mlcore::State* s, int t)
 }
 
 
-mlcore::Action* MetareasoningSimulator::getActionOptimalMetareasoning(mlcore::State* s, int t)
+mlcore::Action*
+MetareasoningSimulator::getActionOptimalMetareasoning(mlcore::State* s, int t)
 {
     // Making sure the time doesn't go over the number of iterations,
     t = std::min(t, (int) policyCosts_.size() - 1);
     MetareasoningState* metaState =
-        (MetareasoningState *) metaProblem_->addState(new MetareasoningState(s, t));
-    MetareasoningAction* metaAction = (MetareasoningAction *) metaState->bestAction();
+        (MetareasoningState *) metaProblem_->
+            addState(new MetareasoningState(s, t));
+    MetareasoningAction* metaAction =
+        (MetareasoningAction *) metaState->bestAction();
     if (metaAction->isNOP())
         return nullptr;
-    return ((MetareasoningProblem *) metaProblem_)->getGreedyActionForStateValues(metaState);
+    return ((MetareasoningProblem *) metaProblem_)->
+        getGreedyActionForStateValues(metaState);
 }
 
 
@@ -317,6 +321,57 @@ void MetareasoningSimulator::rule(ActionSelectionRule value)
         VISolver vi(metaProblem_, 10000, 1.0e-6);
         vi.solve();
     }
+}
+
+
+mlcore::Action*
+MetareasoningSimulator::getActionQValueImprovement(mlcore::State* s, int t)
+{
+//    dprint1(s);
+    // The time after executing an action.
+    // Maxed at policyCosts_.size() - 1 because at that point the policy is
+    // optimal anyway.
+    int endTime = policyCosts_.size() - 1;
+    int timeAfterAction = std::min(t + numPlanningStepsPerAction_, endTime);
+
+    // Computing the true Q-Value of the action chosen by the current plan.
+    mlcore::Action* actionCurrentPlan = getActionNoMetareasoning(s, t);
+    double qValueCurrentAction = 0.0;
+    for (mlcore::Successor su :
+            problem_->transition(s, actionCurrentPlan)) {
+        qValueCurrentAction += su.su_prob * stateValues_[endTime][su.su_state];
+    }
+    qValueCurrentAction =
+        (qValueCurrentAction * problem_->gamma()) +
+            problem_->cost(s, actionCurrentPlan);
+
+    // If the current action is optimal, return this action.
+    if (fabs(qValueCurrentAction - stateValues_[endTime][s]) < 1.0e-6)
+        return actionCurrentPlan;
+
+//    dprint3("current action not optimal:",
+//            actionCurrentPlan,
+//            qValueCurrentAction);
+
+    // The time after executing NOP.
+    int timeAfterNOP = std::min(t + numPlanningStepsPerNOP_,
+                         (int) policyCosts_.size() - 1);
+
+    mlcore::Action* actionAfterNOP = getActionNoMetareasoning(s, timeAfterNOP);
+    // Computing the true Q-Value of the resulting action after NOP.
+    double qValueActionAfterNOP = 0.0;
+    for (mlcore::Successor su :
+            problem_->transition(s, actionAfterNOP)) {
+        qValueActionAfterNOP += su.su_prob * stateValues_[endTime][su.su_state];
+    }
+    qValueActionAfterNOP =
+        (qValueActionAfterNOP * problem_->gamma()) +
+            problem_->cost(s, actionAfterNOP);
+//    dprint3("Action after NOP:", actionAfterNOP, qValueActionAfterNOP);
+
+    if (qValueActionAfterNOP + costNOP_ < (qValueCurrentAction - 1.0e-6))
+        return nullptr;
+    return actionCurrentPlan;
 }
 
 }

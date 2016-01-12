@@ -26,7 +26,7 @@ int main(int argc, char* args[])
     // Parsing flags
     register_flags(argc, args);
     if (!flag_is_registered_with_value("grid")) {
-        cerr << "Must specify grid file using --grid " <<
+        cerr << "Must specify grid file using --grid" <<
             "=file command line flag." << endl;
         return -1;
     }
@@ -38,7 +38,7 @@ int main(int argc, char* args[])
     int verbosity = 1;
     if (flag_is_registered_with_value("v"))
         verbosity = atoi(flag_value("v").c_str());
-    int numSims = 100;
+    int numSims = 1000;
     if (flag_is_registered_with_value("nsims"))
         numSims = atoi(flag_value("nsims").c_str());
     int numPlanningStepsPerAction = 1;
@@ -70,6 +70,8 @@ int main(int argc, char* args[])
         simulator.rule(NO_META);
     } else if (metaChoice.compare("optimal") == 0) {
         simulator.rule(OPTIMAL);
+    } else if (metaChoice.compare("qvimprov") == 0) {
+        simulator.rule(QVALIMPROV);
     }
     if (tryAllActions)
         simulator.tryAllActions(true);

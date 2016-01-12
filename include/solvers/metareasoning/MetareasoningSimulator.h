@@ -9,6 +9,7 @@ enum ActionSelectionRule
     META_ASSUMPTION_2,
     META_CHANGE_ACTION,
     NO_META,
+    QVALIMPROV,
     OPTIMAL
 };
 
@@ -27,7 +28,8 @@ private:
     /* The problem to solve. */
     mlcore::Problem* problem_;
 
-    /* A metareasoning problem (only used if the action selection rule is OPTIMAL). */
+    /* A metareasoning problem (only used if the action
+                                selection rule is OPTIMAL). */
     mlcore::Problem* metaProblem_;
 
     /* Residual tolerance used as a stopping condition for VI. */
@@ -66,7 +68,7 @@ private:
      *  Q(s, a) = C(s,a) + sum_s' T(s',s,a) EC[t + dta][s']
      *
      *  where:
-     *     dtnop := numPlanningStepsPerNOP_
+     *     dtnop := numPlanningStepsPerNOP_OptimalMeta
      *     dta := numPlanningStepsPerAction_
      *     EC := policyCosts_
      *     C(s, NOP) = costNOP_
@@ -88,9 +90,7 @@ private:
      *  Q(s, a) = C(s,a) + sum_s' T(s',s,a) V*[s']
      *
      *  where:
-     *     dtnop := numPlanningStepsPerNOP_
-     *     dta := numPlanningStepsPerAction_
-     *     V[s] := optimal value for the state s
+     *     V*[s] := optimal value for the state s
      *     C(s, NOP) = costNOP_
      *     a := action chosen by the current plan
      *            (computed as in getActionNoMetareasoning)
@@ -100,8 +100,26 @@ private:
     mlcore::Action* getActionMetaAssumption2(mlcore::State* s, int t);
 
     /*
+     * Returns the action chosen as follows:
+     *
+     * For any action a we define:
+     *  Q*(s, a) = C(s,a) + sum_s' T(s',s,a) V*[s']
+     *
+     * Let a*, ac, and anop, be the optimal action, the current action and the
+     * action recommended by NOP, respectively.
+     *
+     * Then:
+     *
+     *    If Q*(s, ac) == Q*(s, a*), return ac
+     *    Else
+     *      If Q*(s, anop) + C(s, NOP) < Q*(s. ac), return NOP
+     *      Else, return a
+     */
+    mlcore::Action* getActionQValueImprovement(mlcore::State* s, int t);
+
+    /*
      * Returns the action chosen using the Values estimated by VI at each time
-     * step:
+     * step (that is, the current best plan):
      *  action = arg min_{a \in A} C(s,a) + sum_s' T(s',s,a) EC[t][s']
      */
     mlcore::Action* getActionNoMetareasoning(mlcore::State* s, int t);

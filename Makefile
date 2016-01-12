@@ -112,14 +112,17 @@ $(OD)/mo-solvers.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_H) 
 	mv *.o $(OD_SOLV_MOBJ)
 	ar rvs obj/mo-solvers.a $(OD_SOLV_MOBJ)/*.o
 	mkdir -p obj
+	mkdir -p lib
 	mv obj/mo-solvers.a lib
 
 # Compiles the metareasoning code
 $(OD)/meta.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_H) $(META_H) $(META_CPP)
 	make libmdp
 	$(CC) $(CFLAGS) $(INCLUDE_CORE) $(INCLUDE_SOLVERS) -c $(META_CPP)
+	mkdir -p $(OD_SOLV_META)
 	mv *.o $(OD_SOLV_META)
 	ar rvs obj/meta.a $(OD_SOLV_META)/*.o
+	mkdir -p obj
 	mv obj/meta.a lib
 
 # Compiles the core classes
@@ -197,6 +200,7 @@ race: $(I_H) $(RACE_H) $(RACE_CPP) $(S_CPP)
 meta: $(I_H) $(RACE_H) $(RACE_CPP) $(S_CPP) $(GW_CPP) $(OD)/meta.a
 	make $(OD)/meta.a
 	$(CC) $(CFLAGS) -I$(ID_RACE) -I$(ID) -c $(RACE_CPP) $(GW_CPP)
+	mkdir -p test
 	mv *.o test/
 	$(CC) $(CFLAGS) $(INCLUDE) -o testmeta $(TD)/testMetareasoning.cpp $(TD)/*.o lib/meta.a $(LIBS)
 	$(CC) $(CFLAGS) $(INCLUDE) -o simulmeta $(TD)/simulateMetareasoning.cpp $(TD)/*.o lib/meta.a $(LIBS)
@@ -237,7 +241,7 @@ b2t: $(BT_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(BT_H)
 # Compiles the PPDDL library
 ppddl: libmdp src/ppddl/*.cpp $(I_H) include/ppddl/*.h include/ppddl/mini-gpt/*.h $(SOLV_CPP) $(UTIL_CPP)
 	$(CC) $(CFLAGS) -Iinclude -Iinclude/ppddl -Include/ppddl/mini-gpt -I$(ID_SOLV) -c src/ppddl/*.cpp src/*.cpp $(SOLV_CPP) $(UTIL_CPP)
-	mkdir -p test	
+	mkdir -p test
 	mv *.o test/
 	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) -o testppddl test/testPPDDL.cpp test/*.o $(LIBS) lib/libminigpt.a
 
