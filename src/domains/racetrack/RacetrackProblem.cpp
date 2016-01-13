@@ -10,7 +10,7 @@
 #include "../../../include/domains/racetrack/RacetrackState.h"
 #include "../../../include/domains/racetrack/RacetrackAction.h"
 
-RacetrackProblem::RacetrackProblem(char* filename)
+RacetrackProblem::RacetrackProblem(const char* filename)
 {
     std::ifstream myfile (filename);
     int width, height;

@@ -40,9 +40,6 @@ void MetareasoningSimulator::computeExpectedCostCurrentPolicy(
     int i = 0;
     while (true) {
         double maxResidual = 0.0;
-                /******
-        std::cout << i << std::endl;
-                ******/
         for (mlcore::State* s : problem_->states()) {
             mlcore::Action* a = greedyAction(problem_, s);
             double newCost = 0.0;
@@ -54,14 +51,7 @@ void MetareasoningSimulator::computeExpectedCostCurrentPolicy(
             expectedCosts_[s] = newCost;
             if (residual > maxResidual)
                 maxResidual = residual;
-                /******
-                std::cout << newCost << " ";
-                i++;
-                ****/
         }
-                /******
-        std::cout << std::endl;
-                ******/
         if (maxResidual < tolerance_)
             break;
     }

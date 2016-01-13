@@ -83,7 +83,7 @@ public:
     /**
      * Constructs a racetrack problem instance from the given track file.
      */
-    RacetrackProblem(char* filename);
+    RacetrackProblem(const char* filename);
 
     virtual ~RacetrackProblem() {}
 

@@ -15,6 +15,8 @@
 #include "../include/domains/gridworld/GridWorldState.h"
 #include "../include/domains/gridworld/GridWorldAction.h"
 #include "../include/domains/gridworld/GWManhattanHeuristic.h"
+#include "../include/domains/racetrack/RacetrackProblem.h"
+#include "../include/domains/racetrack/RTrackDetHeuristic.h"
 
 using namespace mlcore;
 using namespace mlsolvers;
@@ -39,12 +41,18 @@ int main(int argc, char* args[])
 {
     // Parsing flags
     register_flags(argc, args);
-    if (!flag_is_registered_with_value("grid")) {
-        cerr << "Must specify grid file using --grid" <<
+    if (!flag_is_registered_with_value("input")) {
+        cerr << "Must specify input file using --input" <<
             "=file command line flag." << endl;
         return -1;
     }
-    string gridFile = flag_value("grid");
+    if (!flag_is_registered_with_value("domain")) {
+        cerr << "Must specify domain using --domain" <<
+            "=file command line flag." << endl;
+        return -1;
+    }
+    string inputFile = flag_value("input");
+    string domain = flag_value("domain");
     string metaChoice = "none";
     int maxSteps = -1;
     if (flag_is_registered_with_value("meta"))
@@ -66,10 +74,20 @@ int main(int argc, char* args[])
         maxSteps = atoi(flag_value("steps_range").c_str());
 
     PairDoubleMap goals;
-    Problem* problem = new GridWorldProblem(gridFile.c_str(), &goals);
+    Problem* problem;
+    Heuristic* heuristic;
+    if (domain.compare("racetrack") == 0) {
+        problem = new RacetrackProblem(inputFile.c_str());
+        ((RacetrackProblem*) problem)->setPError(0.10);
+        ((RacetrackProblem*) problem)->setPSlip(0.20);
+        ((RacetrackProblem*) problem)->setMDS(-1);
+//        heuristic = new RTrackDetHeuristic(inputFile.c_str());
+        heuristic = nullptr;
+    } else {
+        problem = new GridWorldProblem(inputFile.c_str(), &goals);
+        heuristic = new GWManhattanHeuristic((GridWorldProblem*) problem);
+    }
     problem->gamma(0.99);
-    Heuristic* heuristic =
-        new GWManhattanHeuristic((GridWorldProblem*) problem);
     problem->setHeuristic(heuristic);
     problem->generateAll();
 
