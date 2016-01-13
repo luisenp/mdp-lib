@@ -7,7 +7,8 @@
 #include "../../../include/solvers/metareasoning/MetareasoningSimulator.h"
 #include "../../../include/solvers/metareasoning/MetareasoningState.h"
 
-MetareasoningProblem::MetareasoningProblem(mlsolvers::MetareasoningSimulator* simulator)
+MetareasoningProblem::MetareasoningProblem(
+    mlsolvers::MetareasoningSimulator* simulator)
 {
     simulator_ = simulator;
     mlcore::State* initialState =

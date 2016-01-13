@@ -70,7 +70,6 @@ void MetareasoningSimulator::computeExpectedCostCurrentPolicy(
 
 void MetareasoningSimulator::precomputeAllExpectedPolicyCosts()
 {
-    mdplib_debug = true;
     while (true) {
         stateValues_.push_back(mlcore::StateDoubleMap());
         double maxResidual = 0.0;
@@ -110,7 +109,6 @@ std::pair<double, double> MetareasoningSimulator::simulate()
     while (true) {
         if (problem_->goal(currentState))
             break;
-//        dprint2(time, currentState);
         mlcore::Action* action = nullptr;
         switch(rule_) {
             case META_ASSUMPTION_1:
@@ -133,13 +131,13 @@ std::pair<double, double> MetareasoningSimulator::simulate()
                 break;
         }
         if (action == nullptr) {
-//            dprint1("NOP");
+            dprint3(time, currentState, "NOP");
             time += numPlanningStepsPerNOP_;
             cost += costNOP_;
             totalNOPCost += costNOP_;
         }
         else {
-//            dprint1(action);
+            dprint3(time, currentState, action);
             time += numPlanningStepsPerAction_;
             cost += problem_->cost(currentState, action);
             currentState = randomSuccessor(problem_, currentState, action);

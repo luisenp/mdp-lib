@@ -21,6 +21,20 @@ using namespace mlsolvers;
 using namespace std;
 using namespace mdplib;
 
+void
+simulateAndPrintExpectedCosts(MetareasoningSimulator& simulator, int numSims)
+{
+    double expectedCost = 0.0;
+    double expectedNOPCost = 0.0;
+    for (int i = 0; i < numSims; i++) {
+        pair <double, double> simResult = simulator.simulate();
+        expectedCost += simResult.first;
+        expectedNOPCost += simResult.second;
+    }
+    cout << expectedCost / numSims << " " <<
+        expectedNOPCost / numSims << endl;
+}
+
 int main(int argc, char* args[])
 {
     // Parsing flags
@@ -32,6 +46,7 @@ int main(int argc, char* args[])
     }
     string gridFile = flag_value("grid");
     string metaChoice = "none";
+    int maxSteps = -1;
     if (flag_is_registered_with_value("meta"))
         metaChoice = flag_value("meta");
     bool tryAllActions = flag_is_registered("all_actions");
@@ -47,6 +62,8 @@ int main(int argc, char* args[])
     int numPlanningStepsPerNOP = 1;
     if (flag_is_registered_with_value("steps_nop"))
         numPlanningStepsPerNOP = atoi(flag_value("steps_nop").c_str());
+    if (flag_is_registered_with_value("steps_range"))
+        maxSteps = atoi(flag_value("steps_range").c_str());
 
     PairDoubleMap goals;
     Problem* problem = new GridWorldProblem(gridFile.c_str(), &goals);
@@ -55,7 +72,6 @@ int main(int argc, char* args[])
         new GWManhattanHeuristic((GridWorldProblem*) problem);
     problem->setHeuristic(heuristic);
     problem->generateAll();
-
 
     MetareasoningSimulator simulator(problem);
     simulator.numPlanningStepsPerAction(numPlanningStepsPerAction);
@@ -76,20 +92,15 @@ int main(int argc, char* args[])
     if (tryAllActions)
         simulator.tryAllActions(true);
 
-    double expectedCost = 0.0;
-    double expectedNOPCost = 0.0;
-    for (int i = 0; i < numSims; i++) {
-        pair <double, double> simResult = simulator.simulate();
-        expectedCost += simResult.first;
-        expectedNOPCost += simResult.second;
-    }
-
-    if (verbosity > 1) {
-        cout << "Expected Cost " << expectedCost / numSims << endl;
-        cout << "Expected NOP Cost " << expectedNOPCost / numSims << endl;
+    mdplib_debug = (verbosity > 1000);
+    if (maxSteps == -1) {
+        simulateAndPrintExpectedCosts(simulator, numSims);
     } else {
-        cout << expectedCost / numSims << " " <<
-            expectedNOPCost / numSims << endl;
+        for (int steps = 1; steps <= maxSteps; steps++) {
+            simulator.numPlanningStepsPerAction(steps);
+            simulator.numPlanningStepsPerNOP(steps);
+            simulateAndPrintExpectedCosts(simulator, numSims);
+        }
     }
 
     delete problem;
