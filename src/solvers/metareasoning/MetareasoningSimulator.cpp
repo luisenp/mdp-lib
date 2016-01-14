@@ -174,7 +174,8 @@ MetareasoningSimulator::getActionMetaAssumption1(mlcore::State* s, int t)
         qValueAction = 0.0;
         for (mlcore::Successor su :
                 problem_->transition(s, actionCurrentPlan)) {
-            qValueAction += su.su_prob * policyCosts_[timeAfterAction][su.su_state];
+            qValueAction += su.su_prob *
+                policyCosts_[timeAfterAction][su.su_state];
         }
         qValueAction =
             (qValueAction * problem_->gamma()) +
@@ -187,7 +188,7 @@ MetareasoningSimulator::getActionMetaAssumption1(mlcore::State* s, int t)
     double qValueNOP =
         costNOP_ + problem_->gamma() * policyCosts_[timeAfterNOP][s];
 
-    if (qValueNOP < qValueAction)
+    if (qValueNOP < (qValueAction - 1.0-6))
         return nullptr;
     return actionCurrentPlan;
 }

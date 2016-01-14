@@ -68,10 +68,9 @@ void assignMetaRule(MetareasoningSimulator& simulator, string rule)
     }
 }
 
-
 int main(int argc, char* args[])
 {
-    // Parsing flags
+    // Parsing flags.
     register_flags(argc, args);
     if (!flag_is_registered_with_value("input")) {
         cerr << "Must specify input file using --input" <<
@@ -86,7 +85,6 @@ int main(int argc, char* args[])
     string inputFile = flag_value("input");
     string domain = flag_value("domain");
     string metaRules = "none";
-    int maxSteps = -1;
     if (flag_is_registered_with_value("rule"))
         metaRules = flag_value("rule");
     bool tryAllActions = flag_is_registered("all_actions");
@@ -96,16 +94,26 @@ int main(int argc, char* args[])
     int numSims = 1000;
     if (flag_is_registered_with_value("nsims"))
         numSims = atoi(flag_value("nsims").c_str());
-    int numPlanningStepsPerAction = 1;
-    if (flag_is_registered_with_value("steps_action"))
-        numPlanningStepsPerAction = atoi(flag_value("steps_action").c_str());
-    int numPlanningStepsPerNOP = 1;
-    if (flag_is_registered_with_value("steps_nop"))
-        numPlanningStepsPerNOP = atoi(flag_value("steps_nop").c_str());
-    if (flag_is_registered_with_value("steps_range"))
-        maxSteps = atoi(flag_value("steps_range").c_str());
 
-    // Creating the domain
+    /*
+     * The user can specify a list of time steps duration for actions and NOP.
+     * The experiment will traverse these lists and take pairs of values
+     * at the same index, and create a experiment for each of those pairs.
+     * If one list is shorter than the other, the last value will be use for
+     * all remaining experiments.
+     */
+    vector<int> allStepsAction;
+    if (flag_is_registered_with_value("steps_action")) {
+        for (string step : split(flag_value("steps_action"), ';'))
+            allStepsAction.push_back(atoi(step.c_str()));
+    }
+    vector<int> allStepsNOP;
+    if (flag_is_registered_with_value("steps_nop")) {
+        for (string step : split(flag_value("steps_nop"), ';'))
+            allStepsNOP.push_back(atoi(step.c_str()));
+    }
+
+    // Creating the domain.
     PairDoubleMap goals;
     Problem* problem;
     Heuristic* heuristic;
@@ -123,26 +131,24 @@ int main(int argc, char* args[])
     problem->setHeuristic(heuristic);
     problem->generateAll();
 
-    // Simulating
+    // Simulating.
     MetareasoningSimulator simulator(problem);
     if (tryAllActions)
         simulator.tryAllActions(true);
     mdplib_debug = (verbosity > 1000);
     for (string rule : split(metaRules, ';')) {
-        if (maxSteps == -1) {
-            simulator.numPlanningStepsPerAction(numPlanningStepsPerAction);
-            simulator.numPlanningStepsPerNOP(numPlanningStepsPerNOP);
-            // This is here because OPTIMAL needs updated steps.
+        for (int i = 0;
+             i < max(allStepsNOP.size(), allStepsAction.size());
+             i++) {
+            int stepActionIndex = min(i, (int) allStepsAction.size() - 1);
+            int stepNOPIndex = min(i, (int) allStepsNOP.size() - 1);
+            simulator.numPlanningStepsPerAction(allStepsAction[stepActionIndex]);
+            simulator.numPlanningStepsPerNOP(allStepsNOP[stepNOPIndex]);
+
+            // This is here because OPTIMAL calculation needs updated steps,
+            // and the calculation happens when the rule is assigned.
             assignMetaRule(simulator, rule);
             simulateAndPrintExpectedCosts(simulator, numSims);
-        } else {
-            for (int steps = 1; steps <= maxSteps; steps++) {
-                simulator.numPlanningStepsPerAction(steps);
-                simulator.numPlanningStepsPerNOP(steps);
-                // This is here because OPTIMAL needs updated steps.
-                assignMetaRule(simulator, rule);
-                simulateAndPrintExpectedCosts(simulator, numSims);
-            }
         }
     }
 
