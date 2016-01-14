@@ -163,7 +163,8 @@ public:
 
     double tolerance() { return tolerance_; }
 
-    std::vector< mlcore::StateDoubleMap>& stateValues() { return stateValues_; };
+    std::vector< mlcore::StateDoubleMap>&
+        stateValues() { return stateValues_; };
 
     void rule(ActionSelectionRule value);
 
@@ -171,7 +172,8 @@ public:
 
     int numPlanningStepsPerAction() { return numPlanningStepsPerAction_; }
 
-    void numPlanningStepsPerAction(int value) { numPlanningStepsPerAction_ = value; }
+    void numPlanningStepsPerAction(int value)
+        { numPlanningStepsPerAction_ = value; }
 
     int numPlanningStepsPerNOP() { return numPlanningStepsPerNOP_; }
 

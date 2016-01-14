@@ -1,6 +1,6 @@
-#include <iostream>
 #include <ctime>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 #include <unistd.h>
 
@@ -37,6 +37,38 @@ simulateAndPrintExpectedCosts(MetareasoningSimulator& simulator, int numSims)
         expectedNOPCost / numSims << endl;
 }
 
+
+vector<string> split(string s, char delim)
+{
+    vector<string> elems;
+    stringstream ss(s);
+    string item;
+    while (getline(ss, item, delim))
+        elems.push_back(item);
+    return elems;
+}
+
+
+void assignMetaRule(MetareasoningSimulator& simulator, string rule)
+{
+    if (rule.compare("assume1") == 0) {
+        simulator.rule(META_ASSUMPTION_1);
+    } else if (rule.compare("assume2") == 0) {
+        simulator.rule(META_ASSUMPTION_2);
+    } else if (rule.compare("change") == 0) {
+        simulator.rule(META_CHANGE_ACTION);
+    } else if (rule.compare("nometa") == 0) {
+        simulator.rule(NO_META);
+    } else if (rule.compare("optimal") == 0) {
+        simulator.rule(OPTIMAL);
+    } else if (rule.compare("qvimprov") == 0) {
+        simulator.rule(QVALIMPROV);
+    } else {
+        assert(false);
+    }
+}
+
+
 int main(int argc, char* args[])
 {
     // Parsing flags
@@ -53,10 +85,10 @@ int main(int argc, char* args[])
     }
     string inputFile = flag_value("input");
     string domain = flag_value("domain");
-    string metaChoice = "none";
+    string metaRules = "none";
     int maxSteps = -1;
-    if (flag_is_registered_with_value("meta"))
-        metaChoice = flag_value("meta");
+    if (flag_is_registered_with_value("rule"))
+        metaRules = flag_value("rule");
     bool tryAllActions = flag_is_registered("all_actions");
     int verbosity = 1;
     if (flag_is_registered_with_value("v"))
@@ -73,6 +105,7 @@ int main(int argc, char* args[])
     if (flag_is_registered_with_value("steps_range"))
         maxSteps = atoi(flag_value("steps_range").c_str());
 
+    // Creating the domain
     PairDoubleMap goals;
     Problem* problem;
     Heuristic* heuristic;
@@ -81,7 +114,6 @@ int main(int argc, char* args[])
         ((RacetrackProblem*) problem)->setPError(0.10);
         ((RacetrackProblem*) problem)->setPSlip(0.20);
         ((RacetrackProblem*) problem)->setMDS(-1);
-//        heuristic = new RTrackDetHeuristic(inputFile.c_str());
         heuristic = nullptr;
     } else {
         problem = new GridWorldProblem(inputFile.c_str(), &goals);
@@ -91,33 +123,26 @@ int main(int argc, char* args[])
     problem->setHeuristic(heuristic);
     problem->generateAll();
 
+    // Simulating
     MetareasoningSimulator simulator(problem);
-    simulator.numPlanningStepsPerAction(numPlanningStepsPerAction);
-    simulator.numPlanningStepsPerNOP(numPlanningStepsPerNOP);
-    if (metaChoice.compare("assume1") == 0) {
-        simulator.rule(META_ASSUMPTION_1);
-    } else if (metaChoice.compare("assume2") == 0) {
-        simulator.rule(META_ASSUMPTION_2);
-    } else if (metaChoice.compare("change") == 0) {
-        simulator.rule(META_CHANGE_ACTION);
-    } else if (metaChoice.compare("nometa") == 0) {
-        simulator.rule(NO_META);
-    } else if (metaChoice.compare("optimal") == 0) {
-        simulator.rule(OPTIMAL);
-    } else if (metaChoice.compare("qvimprov") == 0) {
-        simulator.rule(QVALIMPROV);
-    }
     if (tryAllActions)
         simulator.tryAllActions(true);
-
     mdplib_debug = (verbosity > 1000);
-    if (maxSteps == -1) {
-        simulateAndPrintExpectedCosts(simulator, numSims);
-    } else {
-        for (int steps = 1; steps <= maxSteps; steps++) {
-            simulator.numPlanningStepsPerAction(steps);
-            simulator.numPlanningStepsPerNOP(steps);
+    for (string rule : split(metaRules, ';')) {
+        if (maxSteps == -1) {
+            simulator.numPlanningStepsPerAction(numPlanningStepsPerAction);
+            simulator.numPlanningStepsPerNOP(numPlanningStepsPerNOP);
+            // This is here because OPTIMAL needs updated steps.
+            assignMetaRule(simulator, rule);
             simulateAndPrintExpectedCosts(simulator, numSims);
+        } else {
+            for (int steps = 1; steps <= maxSteps; steps++) {
+                simulator.numPlanningStepsPerAction(steps);
+                simulator.numPlanningStepsPerNOP(steps);
+                // This is here because OPTIMAL needs updated steps.
+                assignMetaRule(simulator, rule);
+                simulateAndPrintExpectedCosts(simulator, numSims);
+            }
         }
     }
 

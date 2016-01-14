@@ -21,10 +21,11 @@ class MetareasoningState;
  * The metareasoning action space is {PLAN, ACT}.
  *
  * The metareasoning transition function is defined as follows:
- *    T_meta( (s',i') | (s,i), ACT ) = T(s' | s, GREEDY) for i' = i + tau(s, GREEDY),
+ *    T_meta( (s',i') | (s,i), ACT ) =
+ *          T(s' | s, GREEDY) for i' = i + tau(s, GREEDY),
  *        where tau is a function that represents the number of computational
- *        time steps required to perform a in s, and GREEDY is the action chosen by
- *        VI for state s at the i-th time step.
+ *        time steps required to perform a in s, and GREEDY is the
+ *        action chosen by VI for state s at the i-th time step.
  *    T_meta( (s,i+1) | (s,i), PLAN) = 1.0, for i' = i + tau(s, PLAN)
  *    0 otherwise.
  *
@@ -48,10 +49,11 @@ public:
     virtual ~MetareasoningProblem() { }
 
     /**
-     * Returns an action chosen greedily according to the values estimated by VI for
-     * s.baseState() at iteration s.iteration().
+     * Returns an action chosen greedily according to the values estimated by
+     * VI for s.baseState() at iteration s.iteration().
      *
-     * @param s the metareasoning state for which the greedy action will be computed.
+     * @param s the metareasoning state for which the greedy action
+     *          will be computed.
      * @return an action chosen greedily on the current VI values for state s.
      */
     mlcore::Action* getGreedyActionForStateValues(MetareasoningState* s) const;
