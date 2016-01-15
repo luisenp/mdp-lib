@@ -181,6 +181,8 @@ public:
 
     double costNOP() { return costNOP_; }
 
+    void costNOP(double value) { costNOP_ = value; }
+
     /**
      * Simulates a run of a metareasoning approach that uses the information
      * collected by precomputeAllExpectedPolicyCosts.

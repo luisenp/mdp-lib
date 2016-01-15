@@ -85,6 +85,9 @@ int main(int argc, char* args[])
     string inputFile = flag_value("input");
     string domain = flag_value("domain");
     string metaRules = "none";
+    bool costNOPEqualsStepNOP = false;
+    if (flag_is_registered("same_cost_nop"))
+        costNOPEqualsStepNOP = true;
     if (flag_is_registered_with_value("rule"))
         metaRules = flag_value("rule");
     bool tryAllActions = flag_is_registered("all_actions");
@@ -144,6 +147,8 @@ int main(int argc, char* args[])
             int stepNOPIndex = min(i, (int) allStepsNOP.size() - 1);
             simulator.numPlanningStepsPerAction(allStepsAction[stepActionIndex]);
             simulator.numPlanningStepsPerNOP(allStepsNOP[stepNOPIndex]);
+            if (costNOPEqualsStepNOP)
+                simulator.costNOP(allStepsNOP[stepNOPIndex]);
 
             // This is here because OPTIMAL calculation needs updated steps,
             // and the calculation happens when the rule is assigned.
