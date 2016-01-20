@@ -10,6 +10,7 @@ enum ActionSelectionRule
     META_CHANGE_ACTION,
     NO_META,
     QVALIMPROV,
+    MULTNOP,
     OPTIMAL
 };
 
@@ -62,26 +63,48 @@ private:
     double costNOP_;
 
     /*
-     * Returns the action chosen using the following Q-values:
+     * Assumes that the policy won't change after executing one action (either
+     * NOP or the current action). Formally, returns the action chosen using
+     * the following Q-values:
      *
      *  Q(s, NOP) = C(s, NOP) + EC[t + dtnop][s]
-     *  Q(s, a) = C(s,a) + sum_s' T(s',s,a) EC[t + dta][s']
+     *  Q(s, current) = C(s,current) + sum_s' T(s',s,current) EC[t + dta][s']
      *
      *  where:
      *     dtnop := numPlanningStepsPerNOP_OptimalMeta
      *     dta := numPlanningStepsPerAction_
      *     EC := policyCosts_
      *     C(s, NOP) = costNOP_
-     *     a := action chosen by the current plan
+     *     current := action chosen by the current plan
      *            (computed as in getActionNoMetareasoning)
      *
-     * If Q(s, NOP) < Q(s, a), NOP is returned, otherwise a is returned.
+     * If Q(s, NOP) < Q(s, current), NOP is returned, otherwise a is returned.
      *
      * If the "tryAllActions_" variable is set to TRUE, then instead of using
      * the action chosen by the current plan, the method will look for the
-     * action with the lowest Q(s,a) as computed above.
+     * action with the lowest Q(s,current) as computed above.
      */
     mlcore::Action* getActionMetaAssumption1(mlcore::State* s, int t);
+
+    /*
+     * Similar to getActionMetaAssumption1, except that instead of allowing a
+     * single NOP, a sequence of multiple NOPs can be chosen as a metareasoning
+     * action. Thus, the metareasoning choices are:
+     *
+     *   -A sequence of multiple NOPs.
+     *   -The current best action recommended by the plan.
+     *
+     * After either of these actions is chosen, it is assumed that the policy
+     * will remain fixed thereafter.
+     *
+     * The length of the sequence of NOPs is chosen as the minimum of:
+     *   1) The number of NOPs so that there are no more policy improvements.
+     *   2) The number of NOPs so that the cost of the NOPs plus the cost of
+     *      the resulting policy is better than Q(s, current), as defined in
+     *      getActionMetaAssumption1.
+     */
+    mlcore::Action*
+    getActionMetaAssumption1MultipleNOPs(mlcore::State* s, int t);
 
     /*
      * Returns the action chosen using the following Q-values:
@@ -143,6 +166,13 @@ private:
      * of all the intermediate policies found during Value Iteration.
      */
     void precomputeAllExpectedPolicyCosts();
+
+    /*
+     * Samples the expected cost of reaching the goal from the given state
+     * using the policy implicit at time t.
+     */
+    double
+    estimateExpectedCostPolicyAtTime(mlcore::State* s, int t, int trials);
 
 public:
     MetareasoningSimulator(mlcore::Problem* problem,

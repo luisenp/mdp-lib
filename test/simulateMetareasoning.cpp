@@ -63,6 +63,8 @@ void assignMetaRule(MetareasoningSimulator& simulator, string rule)
         simulator.rule(OPTIMAL);
     } else if (rule.compare("qvimprov") == 0) {
         simulator.rule(QVALIMPROV);
+    } else if (rule.compare("multnop") == 0) {
+        simulator.rule(MULTNOP);
     } else {
         assert(false);
     }
