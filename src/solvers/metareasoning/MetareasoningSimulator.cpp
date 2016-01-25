@@ -379,8 +379,7 @@ MetareasoningSimulator::getActionMetaAssumption1MultipleNOPs(
     actionCurrentPlan = getActionNoMetareasoning(s, t);
     qValueAction = 0.0;
     for (mlcore::Successor su : problem_->transition(s, actionCurrentPlan)) {
-        qValueAction += su.su_prob *
-            policyCosts_[timeAfterAction][su.su_state];
+        qValueAction += su.su_prob * policyCosts_[timeAfterAction][su.su_state];
     }
     qValueAction =
         (qValueAction * problem_->gamma()) +
@@ -390,6 +389,7 @@ MetareasoningSimulator::getActionMetaAssumption1MultipleNOPs(
     int previousTime = std::min(t, (int) policyCosts_.size() - 1);
     while (true) {
         numberOfNOPs++;
+
         // The time after executing numberOfNOPs NOPs.
         int timeAfterNOPs = std::min(t + numPlanningStepsPerNOP_ * numberOfNOPs,
                             (int) policyCosts_.size() - 1);
@@ -407,8 +407,9 @@ MetareasoningSimulator::getActionMetaAssumption1MultipleNOPs(
         double qValueNOPs = discountedNOPs +
                 gammaPowerNNOPS * policyCosts_[timeAfterNOPs][s];
 
-        if (qValueNOPs < (qValueAction - 1.0-6))
+        if (qValueNOPs < (qValueAction - 1.0-6)) {
             return nullptr;
+        }
     }
     return actionCurrentPlan;
 }

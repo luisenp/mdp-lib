@@ -99,6 +99,10 @@ int main(int argc, char* args[])
     int numSims = 1000;
     if (flag_is_registered_with_value("nsims"))
         numSims = atoi(flag_value("nsims").c_str());
+    if (verbosity > 1000) {
+        for (int i = 1; i < argc; i++)
+            cout << args[i] << endl;
+    }
 
     /*
      * The user can specify a list of time steps duration for actions and NOP.
