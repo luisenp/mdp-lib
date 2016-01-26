@@ -1,3 +1,5 @@
+#include "../../../include/util/general.h"
+
 #include "../../../include/domains/gridworld/GridWorldState.h"
 
 GridWorldState::GridWorldState(mlcore::Problem* problem, int x, int y) : x_(x), y_(y)
@@ -7,7 +9,7 @@ GridWorldState::GridWorldState(mlcore::Problem* problem, int x, int y) : x_(x), 
 
 std::ostream& GridWorldState::print(std::ostream& os) const
 {
-    os << "(" << x_ << "," << y_ << ")";
+    os << "grid state: (" << x_ << "," << y_ << ")";
     return os;
 }
 

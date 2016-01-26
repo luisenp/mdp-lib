@@ -45,7 +45,6 @@ int main(int argc, char* args[])
     }
 
     cout << problem->initialState()->cost() << endl;
-    cout << bbcount << endl;
 
 
     delete heuristic;
