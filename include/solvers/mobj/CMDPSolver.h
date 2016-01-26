@@ -50,29 +50,38 @@ private:
 
     double solveDual(mlcore::State* s0);
 
-    void createVariablesAndObjFunForPrimal(
-        int numVariables, int numActions, GRBModel& model, GRBVar* variables, GRBLinExpr &objFun);
+    void createVariablesAndObjFunForPrimal(int numVariables,
+                                           int numActions,
+                                           GRBModel& model,
+                                           GRBVar* variables,
+                                           GRBLinExpr &objFun);
 
-    void createLPConstraintsLHSForPrimal(
-        GRBVar* variables, int numActions, GRBLinExpr* MDPConstLHS, GRBLinExpr* CMDPConstLHS);
+    void createLPConstraintsLHSForPrimal(GRBVar* variables,
+                                         int numActions,
+                                         GRBLinExpr* MDPConstLHS,
+                                         GRBLinExpr* CMDPConstLHS);
 
-    void ComputePolicyFromPrimalSolution(GRBVar* variables, int numStates, int numActions);
+    void ComputePolicyFromPrimalSolution(GRBVar* variables,
+                                         int numStates,
+                                         int numActions);
 
 public:
     /**
      * Creates a CMDPSolver for the given problem. This constructor receives the
-     * index of the objective function and a permutation of the remaining indices
-     * corresponding to the CMDP constraints.
+     * index of the objective function and a permutation of the remaining
+     * indices corresponding to the CMDP constraints.
      *
-     * Let <C[0], C[1], ..., C[m]> be the vector of cost functions defined in the given
-     * MOProblem. Then, the constructed CMDPSolver solves:
+     * Let <C[0], C[1], ..., C[m]> be the vector of cost functions defined
+     * in the given MOProblem. Then, the constructed CMDPSolver solves:
      *
      * min C[indexObjFun_]
      * s.t.
      *      C[constIndices[i]] <= constTargets[i], for i = 1:m-1
      */
-    CMDPSolver(mlmobj::MOProblem* problem, int indexObjFun,
-               std::vector<int>& constIndices, std::vector<double>& constTargets)
+    CMDPSolver(mlmobj::MOProblem* problem,
+               int indexObjFun,
+               std::vector<int>& constIndices,
+               std::vector<double>& constTargets)
     {
         assert(constTargets.size() == constIndices.size());
         assert(constTargets.size() < problem->size());
@@ -95,8 +104,9 @@ public:
     void constIndices(std::vector<int>& ci) { constIndices_ = ci; }
 
     /**
-     * Solves the associated problem using an LP-solver. The first cost function is
-     * assumed to be the objective, and the rest are assumed to be constraints.
+     * Solves the associated problem using an LP-solver.
+     * The first cost function is assumed to be the objective,
+     * and the rest are assumed to be constraints.
      * The function returns the value of the optimal policy.
      *
      * @param s0 The state to start the search at.
