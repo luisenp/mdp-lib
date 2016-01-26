@@ -143,7 +143,7 @@ $(OD_MODOM)/mo-racetrack.a: $(RACE_CPP) $(RACE_H) $(ID_MODOM)/*rack*.h $(SD_MODO
 	mv *.o $(OD_MODOM)
 
 # Compiles the MO-Gridworld domain #
-$(OD_MODOM)/mo-gw.a: $(ID_MODOM)/*.h $(SD_MODOM)/*.cpp $(GW_CPP) $(GW_H) Makefile
+$(OD_MODOM)/mo-gw.a: $(ID_MODOM)/*.h $(SD_MODOM)/*.cpp $(GW_CPP) $(GW_H)
 	rm -f *.o
 	$(CC) $(CFLAGS) $(INCLUDE) -Iinclude/mobj/*.h -I$(ID_MODOM)/*.h \
 	-I$(ID_MODOM)/*GridWorld*/*.h -c $(SD_MODOM)/*GridWorld*.cpp $(GW_CPP)
@@ -211,7 +211,7 @@ b2t: $(BT_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(BT_H)
 # Compiles the PPDDL library
 ppddl: libmdp src/ppddl/*.cpp $(I_H) include/ppddl/*.h include/ppddl/mini-gpt/*.h $(SOLV_CPP) $(UTIL_CPP)
 	$(CC) $(CFLAGS) -Iinclude -Iinclude/ppddl -Include/ppddl/mini-gpt -I$(ID_SOLV) -c src/ppddl/*.cpp src/*.cpp $(SOLV_CPP) $(UTIL_CPP)
-	mkdir -p test	
+	mkdir -p test
 	mv *.o test/
 	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) -o testppddl test/testPPDDL.cpp test/*.o $(LIBS) lib/libminigpt.a
 
