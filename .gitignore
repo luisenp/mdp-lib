@@ -22,9 +22,6 @@
 
 # Other
 include/ppddl/mdpsim/*
-include/ppddl/mini-gpt/*
-!include/ppddl/mdpsim/actions.h
-!include/ppddl/mdpsim/effects.h
 lib/*
 testgw
 testctp

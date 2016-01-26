@@ -1,0 +1,113 @@
+OBJ	=	actions.o algorithms.o client.o domains.o effects.o exceptions.o \
+		expressions.o formulas.o functions.o full_states.o global.o hash.o \
+		heuristics.o lexer.o main.o md4c.o parser.o planners.o predicates.o \
+		problems.o rational.o requirements.o strxml.o terms.o types.o
+
+LDFLAGS	=	
+CFLAGS	=	-g -Wall -DMEM_DEBUG -DFULL_STATES
+#CFLAGS	=	-O3 -Wall -DNDEBUG -DFULL_STATES
+LIBS	=	-lnsl -lsocket
+INCLUDE	=	#-I ../mdpsim-1.1
+CC	=	gcc
+C++	=	g++
+YACC	=	yacc -d
+LEX	=	flex
+
+
+planner:	$(OBJ)
+		$(C++) -o planner $(OBJ) $(LDFLAGS) $(LIBS)
+
+pplanner:	$(OBJ)
+		purify $(C++) -o pplanner $(OBJ) $(LDFLAGS) $(LIBS)
+
+parser.cc:	parser.y
+		$(YACC) parser.y
+		mv y.tab.c parser.cc
+		mv y.tab.h parser.h
+
+lexer.cc:	lexer.l
+		$(LEX) lexer.l
+		mv lex.yy.c lexer.cc
+
+.c.o:
+		$(CC) $(CFLAGS) $(INCLUDE) -c $<
+
+.cc.o:
+		$(C++) $(CFLAGS) $(INCLUDE) -c $<
+
+clean-version:
+		rm actions.o algorithms.o client.o effects.o formulas.o full_states.o \
+		   hash.o heuristics.o main.o planners.o problems.o
+
+clean:
+		rm -f *.o *~ planner parser.cc parser.h lexer.cc
+
+dist:
+		tar -cvf - Makefile.* *.c *.cc *.h *.y *.l | gzip -c > ../dist.tgz
+
+
+# DO NOT DELETE
+
+actions.o: actions.h global.h effects.h terms.h types.h rational.h
+actions.o: problems.h formulas.h predicates.h expressions.h functions.h
+actions.o: domains.h requirements.h states.h md4.h
+algorithms.o: hash.h global.h heuristics.h rational.h states.h md4.h
+algorithms.o: actions.h effects.h terms.h types.h problems.h
+algorithms.o: formulas.h predicates.h expressions.h functions.h queue.h
+algorithms.o: algorithms.h
+atom_states.o: global.h domains.h actions.h effects.h terms.h types.h
+atom_states.o: rational.h functions.h predicates.h requirements.h
+atom_states.o: expressions.h formulas.h hash.h heuristics.h states.h md4.h
+atom_states.o: problems.h
+client.o: global.h client.h rational.h strxml.h domains.h actions.h effects.h
+client.o: terms.h types.h functions.h predicates.h requirements.h
+client.o: hash.h heuristics.h states.h md4.h planners.h algorithms.h
+domains.o: domains.h actions.h global.h effects.h terms.h types.h
+domains.o: rational.h functions.h predicates.h requirements.h
+effects.o: global.h actions.h effects.h terms.h types.h rational.h
+effects.o: problems.h formulas.h predicates.h expressions.h functions.h
+effects.o: exceptions.h states.h
+exceptions.o: exceptions.h
+expressions.o: expressions.h functions.h types.h terms.h global.h
+expressions.o: rational.h problems.h actions.h effects.h formulas.h
+expressions.o: predicates.h domains.h requirements.h exceptions.h
+formulas.o: domains.h actions.h global.h effects.h terms.h types.h
+formulas.o: rational.h functions.h predicates.h requirements.h exceptions.h
+formulas.o: expressions.h formulas.h problems.h states.h strxml.h
+full_states.o: global.h domains.h actions.h effects.h terms.h types.h
+full_states.o: rational.h functions.h predicates.h requirements.h
+full_states.o: expressions.h formulas.h hash.h heuristics.h states.h md4.h
+full_states.o: problems.h
+functions.o: functions.h types.h
+global.o: global.h
+hash.o: global.h actions.h effects.h terms.h types.h rational.h
+hash.o: problems.h formulas.h predicates.h expressions.h functions.h hash.h
+hash.o: heuristics.h states.h md4.h
+heuristics.o: global.h actions.h effects.h terms.h types.h
+heuristics.o: rational.h algorithms.h hash.h heuristics.h states.h md4.h
+heuristics.o: exceptions.h queue.h
+lexer.o: effects.h global.h terms.h types.h formulas.h predicates.h
+lexer.o: rational.h parser.h
+main.o: global.h actions.h effects.h terms.h types.h rational.h
+main.o: client.h strxml.h domains.h functions.h predicates.h requirements.h
+main.o: exceptions.h planners.h algorithms.h hash.h heuristics.h states.h
+main.o: md4.h problems.h formulas.h expressions.h
+parser.o: global.h problems.h actions.h effects.h terms.h types.h
+parser.o: rational.h formulas.h predicates.h expressions.h functions.h
+parser.o: domains.h requirements.h exceptions.h
+planners.o: global.h hash.h heuristics.h rational.h states.h md4.h planners.h
+planners.o: algorithms.h actions.h effects.h terms.h types.h
+predicates.o: predicates.h types.h
+problems.o: problems.h global.h actions.h effects.h terms.h types.h
+problems.o: rational.h formulas.h predicates.h expressions.h functions.h
+problems.o: domains.h requirements.h exceptions.h states.h
+rational.o: rational.h exceptions.h
+requirements.o: requirements.h
+strxml.o: global.h strxml.h
+terms.o: terms.h global.h types.h
+types.o: global.h types.h
+md4c.o: md4.h
+parser.o: global.h problems.h actions.h effects.h terms.h types.h
+parser.o: rational.h formulas.h predicates.h expressions.h functions.h
+parser.o: domains.h requirements.h exceptions.h
+lexer.o: effects.h global.h terms.h types.h.h parser.h

@@ -31,7 +31,8 @@ bool Problem::goal(mlcore::State* s) const
     return pProblem_->goal().holds(*state->pState());
 }
 
-std::list<mlcore::Successor> Problem::transition(mlcore::State* s, mlcore::Action* a)
+std::list<mlcore::Successor> Problem::transition(mlcore::State* s,
+                                                 mlcore::Action* a)
 {
     std::list<mlcore::Successor> successors;
 
@@ -42,8 +43,9 @@ std::list<mlcore::Successor> Problem::transition(mlcore::State* s, mlcore::Actio
     for (int i = 0; display_[i].second != Rational(-1); i++) {
         State* nextState = new State(this);
         nextState->setPState(*display_[i].first);
-        successors.push_back(mlcore::Successor(this->addState(nextState),
-                                               display_[i].second.double_value()));
+        successors.push_back(
+            mlcore::Successor(this->addState(nextState),
+                              display_[i].second.double_value()));
     }
     return successors;
 }

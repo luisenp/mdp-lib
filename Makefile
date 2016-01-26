@@ -112,7 +112,7 @@ $(OD)/core.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H)
 	mv *.o obj/core
 	ar rvs $(OD)/core.a $(OD)/core/*.o
 
-# Compiles the multiobjective domains and test programs #
+# Compiles the multi-objective domains and test programs #
 mobj: $(ALL_CPP) $(ALL_H)
 	make $(OD)/mo-solvers.a
 	make $(OD_MODOM)/airplane.a
@@ -208,8 +208,13 @@ b2t: $(BT_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(BT_H)
 	$(CC) $(CFLAGS) -I$(ID_BT) $(INCLUDE_CORE) -o testb2t $(TD)/testB2T.cpp $(TD)/*.o $(LIBS)
 	rm test/*.o
 
+# Compiles the mini-gpt library
+minigpt: include/ppddl/mini-gpt/*
+	$(MAKE) -C include/ppddl/mini-gpt
+	ar rvs lib/libminigpt.a include/ppddl/mini-gpt/*.o
+
 # Compiles the PPDDL library
-ppddl: libmdp src/ppddl/*.cpp $(I_H) include/ppddl/*.h include/ppddl/mini-gpt/*.h $(SOLV_CPP) $(UTIL_CPP)
+ppddl: libmdp src/ppddl/*.cpp $(I_H) include/ppddl/*.h $(SOLV_CPP) $(UTIL_CPP) minigpt
 	$(CC) $(CFLAGS) -Iinclude -Iinclude/ppddl -Include/ppddl/mini-gpt -I$(ID_SOLV) -c src/ppddl/*.cpp src/*.cpp $(SOLV_CPP) $(UTIL_CPP)
 	mkdir -p test
 	mv *.o test/

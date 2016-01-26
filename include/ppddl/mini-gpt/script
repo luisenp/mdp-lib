@@ -1,0 +1,35 @@
+#!/usr/bin/bash
+
+blocks="3 4 5 6 7"
+H1=zero
+H2=ff
+H4=min-min-lrtdp
+H7=atom-min-1-forward
+H8=atom-min-1-backward
+
+for b in ${blocks}; do
+  echo  ./planner -v 50 -i 102400 -p vi -h ${H1} -e .001 0:232${b} ../examples/bw${b}.pddl blocks
+  (time ./planner -v 50 -i 102400 -p vi -h ${H1} -e .001 0:232${b} ../examples/bw${b}.pddl blocks >&2) 2>> results/results.vi
+done
+
+for b in ${blocks}; do
+  for h in "${H1}" "${H1}|${H4}" "${H7}|${H4}" "${H8}|${H4}" "${H2}"; do
+    echo  ./planner -v 50 -i 102400 -p lrtdp -h ${h} -e .001 0:232${b} ../examples/bw${b}.pddl blocks
+    (time ./planner -v 50 -i 102400 -p lrtdp -h ${h} -e .001 0:232${b} ../examples/bw${b}.pddl blocks >&2) 2>> results/results.lrtdp.\"${h}\"
+  done
+done
+
+for b in ${blocks}; do
+  for h in "${H1}" "${H1}|${H4}" "${H7}|${H4}" "${H8}|${H4}" "${H2}"; do
+    echo  ./planner -v 50 -i 102400 -p asp -s 10 -c 20 -h ${h} -e .001 0:232${b} ../examples/bw${b}.pddl blocks
+    (time ./planner -v 50 -i 102400 -p asp -s 10 -c 20 -h ${h} -e .001 0:232${b} ../examples/bw${b}.pddl blocks >&2) 2>> results/results.asp.\"${h}\"
+  done
+done
+
+for b in ${blocks}; do
+  for h in "${H1}" "${H1}|${H4}" "${H7}|${H4}" "${H8}|${H4}" "${H2}"; do
+    echo  ./planner -v 50 -i 102400 -p hdp-2 -h ${h} -e .001 0:232${b} ../examples/bw${b}.pddl blocks
+    (time ./planner -v 50 -i 102400 -p hdp-2 -h ${h} -e .001 0:232${b} ../examples/bw${b}.pddl blocks >&2) 2>> results/results.hdp.\"${h}\"
+  done
+done
+
