@@ -20,8 +20,11 @@
 *.out
 *.app
 
+# Related to mini-gpt
+include/ppddl/mdpsim*
+include/ppddl/mini-gpt/planner
+
 # Other
-include/ppddl/mdpsim/*
 lib/*
 testgw
 testctp

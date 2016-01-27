@@ -104,7 +104,7 @@ Constant::analyze( PredicateTable &predicates, TermTable &terms,
   return( true );
 }
 
-const StateFormula& 
+const StateFormula&
 Constant::rewrite( std::map<const StateFormula*,const Atom*> &hash ) const
 {
   StateFormula::register_use( this );
@@ -143,7 +143,7 @@ Atom::AtomLess::operator()( const Atom* a1, const Atom* a2 ) const
   return( false );
 }
 
-const Atom& 
+const Atom&
 Atom::make_atom( Predicate predicate, const TermList& terms )
 {
   Atom *atom = new Atom( predicate );
@@ -199,7 +199,7 @@ Atom::holds( const state_t& state ) const
   return( state.holds( *this ) );
 }
 
-const Atom& 
+const Atom&
 Atom::substitution( const SubstitutionMap& subst ) const
 {
   TermList inst_terms;
@@ -254,7 +254,7 @@ Atom::translate( atomListList_t &alist ) const
   alist.insert( al );
 }
 
-const StateFormula& 
+const StateFormula&
 Atom::instantiation( const SubstitutionMap& subst,
 		     const problem_t& problem ) const
 {
@@ -284,7 +284,7 @@ Atom::instantiation( const SubstitutionMap& subst,
   if( substituted || ground )
     {
       const Atom& inst_atom = make_atom( predicate(), inst_terms );
-      if( problem.domain().predicates().static_predicate( predicate() ) && 
+      if( problem.domain().predicates().static_predicate( predicate() ) &&
 	  (objects == inst_terms.size()) )
 	{
 	  if( problem.init_atoms().find( &inst_atom ) != problem.init_atoms().end() )
@@ -326,7 +326,7 @@ Atom::operator==( const StateFormula &formula ) const
   return( false );
 }
 
-void 
+void
 Atom::print( std::ostream& os, const PredicateTable& predicates,
 	     const FunctionTable& functions, const TermTable& terms ) const {
   os << '(';
@@ -339,7 +339,7 @@ Atom::print( std::ostream& os, const PredicateTable& predicates,
   os << ')';
 }
 
-void 
+void
 Atom::printXML( std::ostream& os, const PredicateTable& predicates,
 		const FunctionTable& functions, const TermTable& terms) const
 {
@@ -406,7 +406,7 @@ Atom::analyze( PredicateTable &predicates, TermTable &terms,
   return( true );
 }
 
-const StateFormula& 
+const StateFormula&
 Atom::rewrite( std::map<const StateFormula*,const Atom*> &hash ) const
 {
   Atom *atom = new Atom( predicate() );
@@ -469,7 +469,7 @@ Equality::translate( atomListList_t &alist ) const
   throw Exception( "Equality::translate() error: unsupported formula" );
 }
 
-const StateFormula& 
+const StateFormula&
 Equality::instantiation( const SubstitutionMap& subst,
 			 const problem_t& problem) const
 {
@@ -519,7 +519,7 @@ Equality::operator==( const StateFormula &formula ) const
   return( (eq != NULL) && (term1() == eq->term1()) && (term2() == eq->term2()) );
 }
 
-void 
+void
 Equality::print( std::ostream& os, const PredicateTable& predicates,
 		 const FunctionTable& functions, const TermTable& terms) const
 {
@@ -603,7 +603,7 @@ Equality::analyze( PredicateTable &predicates, TermTable &terms,
   return( true );
 }
 
-const StateFormula& 
+const StateFormula&
 Equality::rewrite( std::map<const StateFormula*,const Atom*> &hash ) const
 {
   Equality *eq = new Equality( term1(), term2() );
@@ -639,7 +639,7 @@ Comparison::~Comparison()
   Expression::unregister_use( expr2_ );
 }
 
-bool 
+bool
 Comparison::holds( const AtomSet& atoms, const ValueMap& values ) const
 {
   if( predicate() == LT_CMP )
@@ -654,7 +654,7 @@ Comparison::holds( const AtomSet& atoms, const ValueMap& values ) const
     return( expr1().value(values) > expr2().value(values) );
 }
 
-bool 
+bool
 Comparison::holds( const state_t& state ) const
 {
   throw Exception( "Comparison::holds() erroneously called" );
@@ -678,7 +678,7 @@ Comparison::translate( atomListList_t &alist ) const
   throw Exception( "Comparison::translate: error: unsupported formula" );
 }
 
-const StateFormula& 
+const StateFormula&
 Comparison::instantiation( const SubstitutionMap& subst, const problem_t& problem) const
 {
   const Expression& inst_expr1 = expr1().instantiation( subst, problem );
@@ -700,7 +700,7 @@ Comparison::instantiation( const SubstitutionMap& subst, const problem_t& proble
 	    value = (v1->value() >= v2->value());
 	  else // predicate() == GT_CMP
 	    value = (v1->value() > v2->value());
-	  
+
 	  Expression::unregister_use( v1 );
 	  Expression::unregister_use( v2 );
 	  if( value )
@@ -729,7 +729,7 @@ Comparison::operator==( const StateFormula &formula ) const
 	  (expr1() == comp->expr1()) && (expr2() == comp->expr2()) );
 }
 
-void 
+void
 Comparison::print( std::ostream& os, const PredicateTable& predicates,
 		   const FunctionTable& functions, const TermTable& terms) const
 {
@@ -771,7 +771,7 @@ Comparison::analyze( PredicateTable &predicates, TermTable &terms,
   return( true );
 }
 
-const StateFormula& 
+const StateFormula&
 Comparison::rewrite( std::map<const StateFormula*,const Atom*> &hash ) const
 {
   Comparison *cmp = new Comparison( predicate(), expr1(), expr2() );
@@ -791,7 +791,7 @@ Comparison::generate_atoms( void ) const
  *
  ******************************************************************************/
 
-const StateFormula& 
+const StateFormula&
 Negation::make_negation( const StateFormula& formula )
 {
   if( formula.tautology() )
@@ -827,13 +827,13 @@ Negation::~Negation()
   StateFormula::unregister_use( negand_ );
 }
 
-bool 
+bool
 Negation::holds( const AtomSet& atoms, const ValueMap& values ) const
 {
   return( !negand().holds( atoms, values ) );
 }
 
-bool 
+bool
 Negation::holds( const state_t& state ) const
 {
   return( !negand().holds( state ) );
@@ -866,7 +866,7 @@ Negation::translate( atomListList_t &alist ) const
   alist.insert( al );
 }
 
-const StateFormula& 
+const StateFormula&
 Negation::instantiation( const SubstitutionMap& subst,
 			 const problem_t& problem) const
 {
@@ -898,7 +898,7 @@ Negation::operator==( const StateFormula &formula ) const
   return( (neg != NULL) && (negand() == neg->negand()) );
 }
 
-void 
+void
 Negation::print( std::ostream& os, const PredicateTable& predicates,
 		 const FunctionTable& functions, const TermTable& terms) const
 {
@@ -927,7 +927,7 @@ Negation::analyze( PredicateTable &predicates, TermTable &terms,
   return( negand().analyze( predicates, terms, hash ) );
 }
 
-const StateFormula& 
+const StateFormula&
 Negation::rewrite( std::map<const StateFormula*,const Atom*> &hash ) const
 {
   return( Negation::make_negation( negand().rewrite( hash ) ) );
@@ -1017,7 +1017,7 @@ Conjunction::merge( const Conjunction &conjunction ) const
   return( *result );
 }
 
-void 
+void
 Conjunction::add_conjunct( const StateFormula& conjunct )
 {
   if( !conjunct.tautology() )
@@ -1026,7 +1026,7 @@ Conjunction::add_conjunct( const StateFormula& conjunct )
     StateFormula::unregister_use( &conjunct );
 }
 
-bool 
+bool
 Conjunction::holds( const AtomSet& atoms, const ValueMap& values ) const
 {
   for( FormulaList::const_iterator fi = conjuncts_.begin(); fi != conjuncts_.end(); ++fi )
@@ -1035,7 +1035,7 @@ Conjunction::holds( const AtomSet& atoms, const ValueMap& values ) const
   return( true );
 }
 
-bool 
+bool
 Conjunction::holds( const state_t& state ) const
 {
   for( FormulaList::const_iterator fi = conjuncts_.begin(); fi != conjuncts_.end(); ++fi )
@@ -1127,7 +1127,7 @@ Conjunction::flatten( bool negated ) const
 
       for( std::list<const Conjunction*>::const_iterator it = conj_list.begin(); it != conj_list.end(); ++it )
 	result->add_disjunct( *(*it) );
-      
+
       for( std::list<const StateFormula*>::const_iterator it = other_list.begin(); it != other_list.end(); ++it )
 	result->add_disjunct( *(*it) );
 
@@ -1151,7 +1151,7 @@ Conjunction::translate( atomListList_t &alist ) const
   alist.insert( al );
 }
 
-const StateFormula& 
+const StateFormula&
 Conjunction::instantiation( const SubstitutionMap& subst,
 			    const problem_t& problem) const
 {
@@ -1207,8 +1207,8 @@ Conjunction::operator==( const StateFormula &formula ) const
   return( false );
 }
 
-void 
-Conjunction::print( std::ostream& os, const PredicateTable& predicates, 
+void
+Conjunction::print( std::ostream& os, const PredicateTable& predicates,
 		    const FunctionTable& functions, const TermTable& terms ) const
 {
   if( size() == 1 )
@@ -1258,7 +1258,7 @@ Conjunction::analyze( PredicateTable &predicates, TermTable &terms,
   return( rv );
 }
 
-const StateFormula& 
+const StateFormula&
 Conjunction::rewrite( std::map<const StateFormula*,const Atom*> &hash ) const
 {
   Conjunction *conj = new Conjunction;
@@ -1352,7 +1352,7 @@ Disjunction::merge( const Disjunction &disjunction ) const
   return( *result );
 }
 
-void 
+void
 Disjunction::add_disjunct( const StateFormula& disjunct )
 {
   if( !disjunct.contradiction() )
@@ -1361,7 +1361,7 @@ Disjunction::add_disjunct( const StateFormula& disjunct )
     StateFormula::unregister_use( &disjunct );
 }
 
-bool 
+bool
 Disjunction::holds( const AtomSet& atoms, const ValueMap& values ) const
 {
   for( FormulaList::const_iterator fi = disjuncts_.begin(); fi != disjuncts_.end(); ++fi )
@@ -1370,7 +1370,7 @@ Disjunction::holds( const AtomSet& atoms, const ValueMap& values ) const
   return( false );
 }
 
-bool 
+bool
 Disjunction::holds( const state_t& state ) const
 {
   for( FormulaList::const_iterator fi = disjuncts_.begin(); fi != disjuncts_.end(); ++fi )
@@ -1488,7 +1488,7 @@ Disjunction::translate( atomListList_t &alist ) const
     }
 }
 
-const StateFormula& 
+const StateFormula&
 Disjunction::instantiation( const SubstitutionMap& subst,
 			    const problem_t& problem) const
 {
@@ -1544,7 +1544,7 @@ Disjunction::operator==( const StateFormula &formula ) const
   return( false );
 }
 
-void 
+void
 Disjunction::print( std::ostream& os, const PredicateTable& predicates,
 		    const FunctionTable& functions, const TermTable& terms ) const
 {
@@ -1593,7 +1593,7 @@ Disjunction::analyze( PredicateTable &predicates, TermTable &terms,
   return( rv );
 }
 
-const StateFormula& 
+const StateFormula&
 Disjunction::rewrite( std::map<const StateFormula*,const Atom*> &hash ) const
 {
   Disjunction *disj = new Disjunction;
@@ -1629,7 +1629,7 @@ Exists::~Exists()
   StateFormula::unregister_use( body_ );
 }
 
-void 
+void
 Exists::set_body( const StateFormula& body )
 {
   if( &body != body_ )
@@ -1640,13 +1640,13 @@ Exists::set_body( const StateFormula& body )
     }
 }
 
-bool 
+bool
 Exists::holds( const AtomSet& atoms, const ValueMap& values ) const
 {
   throw Exception( "Exists::holds() erroneously called" );
 }
 
-bool 
+bool
 Exists::holds( const state_t& state ) const
 {
   throw Exception( "Exists::holds() erroneously called" );
@@ -1670,7 +1670,7 @@ Exists::translate( atomListList_t &alist ) const
   throw Exception( "Exists::translate: error: unsupported formula" );
 }
 
-const StateFormula& 
+const StateFormula&
 Exists::instantiation( const SubstitutionMap& subst,
 		       const problem_t& problem ) const
 {
@@ -1769,7 +1769,7 @@ Exists::instantiation( const SubstitutionMap& subst,
 	  return( TRUE );
 	}
     }
-  return( *this ); // to remove a g++ warning 
+  return( *this ); // to remove a g++ warning
 }
 
 bool
@@ -1783,7 +1783,7 @@ Exists::operator==( const StateFormula &formula ) const
   return( false );
 }
 
-void 
+void
 Exists::print( std::ostream& os, const PredicateTable& predicates,
 	       const FunctionTable& functions, const TermTable& terms) const
 {
@@ -1851,7 +1851,7 @@ Exists::analyze( PredicateTable &predicates, TermTable &terms,
 	{
 	  context.clear();
 	  (*hi).first->free_vars( context, fvars2 );
-	  
+
 	  if( fvars1.size() == fvars2.size() )
 	    {
 	      subst.clear();
@@ -1893,7 +1893,7 @@ Exists::analyze( PredicateTable &predicates, TermTable &terms,
   return( false );
 }
 
-const StateFormula& 
+const StateFormula&
 Exists::rewrite( std::map<const StateFormula*,const Atom*> &hash ) const
 {
   std::map<const StateFormula*,const Atom*>::const_iterator hi = hash.find( this );
@@ -1925,7 +1925,7 @@ Exists::generate_atoms( void ) const
  ******************************************************************************/
 
 Forall::Forall()
-  : body_(&StateFormula::TRUE) 
+  : body_(&StateFormula::TRUE)
 {
   StateFormula::register_use( this );
   StateFormula::register_use( body_ );
@@ -1937,7 +1937,7 @@ Forall::~Forall()
   StateFormula::unregister_use( body_ );
 }
 
-void 
+void
 Forall::set_body( const StateFormula& body )
 {
   if( &body != body_ )
@@ -1948,13 +1948,13 @@ Forall::set_body( const StateFormula& body )
     }
 }
 
-bool 
+bool
 Forall::holds( const AtomSet& atoms, const ValueMap& values ) const
 {
   throw Exception( "Forall::holds() erroneously called" );
 }
 
-bool 
+bool
 Forall::holds( const state_t& state ) const
 {
   throw Exception( "Forall::holds() erroneously called" );
@@ -1978,7 +1978,7 @@ Forall::translate( atomListList_t &alist ) const
   throw Exception( "Forall::translate: error: unsupported formula" );
 }
 
-const StateFormula& 
+const StateFormula&
 Forall::instantiation(const SubstitutionMap& subst,
 		      const problem_t& problem) const
 {
@@ -2078,7 +2078,7 @@ Forall::instantiation(const SubstitutionMap& subst,
 	  return( FALSE );
 	}
     }
-  return( *this ); // to remove a g++ warning 
+  return( *this ); // to remove a g++ warning
 }
 
 bool
@@ -2092,7 +2092,7 @@ Forall::operator==( const StateFormula &formula ) const
   return( false );
 }
 
-void 
+void
 Forall::print( std::ostream& os, const PredicateTable& predicates,
 	       const FunctionTable& functions, const TermTable& terms ) const
 {
@@ -2160,7 +2160,7 @@ Forall::analyze( PredicateTable &predicates, TermTable &terms,
 	{
 	  context.clear();
 	  (*hi).first->free_vars( context, fvars2 );
-	  
+
 	  if( fvars1.size() == fvars2.size() )
 	    {
 	      subst.clear();
@@ -2203,7 +2203,7 @@ Forall::analyze( PredicateTable &predicates, TermTable &terms,
   return( false );
 }
 
-const StateFormula& 
+const StateFormula&
 Forall::rewrite( std::map<const StateFormula*,const Atom*> &hash ) const
 {
   std::map<const StateFormula*,const Atom*>::const_iterator hi = hash.find( this );

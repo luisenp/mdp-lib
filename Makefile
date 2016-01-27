@@ -209,7 +209,7 @@ b2t: $(BT_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(BT_H)
 	rm test/*.o
 
 # Compiles the mini-gpt library
-minigpt: include/ppddl/mini-gpt/*
+minigpt:
 	$(MAKE) -C include/ppddl/mini-gpt
 	ar rvs lib/libminigpt.a include/ppddl/mini-gpt/*.o
 
@@ -233,3 +233,4 @@ clean:
 	rm -f obj/solvers/*.o
 	rm -f obj/solvers/*.a
 	rm -f obj/solvers/mobj/*
+	rm -f include/ppddl/mini-gpt/*.o
