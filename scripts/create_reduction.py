@@ -5,7 +5,7 @@ import argparse, sys
 
 def parse_sexp(string):
   """
-  Code to parse an S-Expression. 
+  Parses an S-Expression into a list-based tree.
   
   >>> parse_sexp("(+ 5 (+ 3 5))")
   [['+', '5', ['+', '3', '5']]]
@@ -34,25 +34,45 @@ def parse_sexp(string):
   return sexp[0]
 
 
-def make_str(ppddltree, level=0):
+def make_reduced_ppddl_str(ppddltree, level=0):
   """
   Creates a string representation of a PPDDL tree.
   """
+  # Make sure the resulting string has the correct indentation.
   indent = (' ' * (2*level))
   ppddlstr = indent + '('
+  indent += ' '
+  
+  # If the PPDDL tree is a probabilistic effect, create reduced version.
+  if ppddltree[0] == 'probabilistic':    
+    reduce_probabilistic_effect(ppddltree)
+    
+  # Appending subelements of the PPDDL tree.
   for i, element in enumerate(ppddltree):
     if isinstance(element, list):
-      ppddlstr += '\n' + make_str(element, level + 1)
+      ppddlstr += '\n' + make_reduced_ppddl_str(element, level + 1)
     else:
       if element.startswith(':') and i != 0:
         ppddlstr += '\n' + indent
       ppddlstr += element
       if i != len(ppddltree) - 1:
         ppddlstr += ' '
-  ppddlstr += ')' + ' '
+  ppddlstr += ')'
   return ppddlstr
     
 
+def reduce_probabilistic_effect(effect):
+  """
+  Applies model reduction to a probabilistic effect. 
+  """
+  print(effect)
+  effect[0] = 'yupi!!'
+  
+
+def is_primary(effect):
+  return true
+  
+  
 def main(argv):
   parser = argparse.ArgumentParser(
     description='Create a reduced model of a PPDDL domain.')
@@ -70,12 +90,9 @@ def main(argv):
   except IOError:
     print "Could not read file:", domain_file_name
     sys.exit(-1)
-    
-  #print domain_str
   
   domain_tree = parse_sexp(domain_str)
-  #print domain_sexp
-  print make_str(domain_tree[0])
+  print make_reduced_ppddl_str(domain_tree[0])
     
 
 if __name__ == "__main__":
