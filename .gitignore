@@ -26,15 +26,7 @@ include/ppddl/mini-gpt/planner
 
 # Other
 lib/*
-testgw
-testctp
-testb2t
-testppddl
-testconc
-testsail
-testrace
-testlexi*
-testairplane
+*test*
 *.lp
 *.txt
 *.lp.*
