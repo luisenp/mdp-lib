@@ -1,7 +1,9 @@
 #!/usr/bin/python
 
-import argparse, sys
+import argparse
+import sys
 
+from fractions import Fraction
 
 def parse_sexp(string):
   """
@@ -33,7 +35,7 @@ def parse_sexp(string):
   return sexp[0]
 
 
-def make_str(ppddltree, level=0):
+def make_str(ppddl_tree, level=0):
   """
   Creates a string representation of a PPDDL tree.
   """
@@ -43,14 +45,14 @@ def make_str(ppddltree, level=0):
   indent += ' '
     
   # Appending subelements of the PPDDL tree.
-  for i, element in enumerate(ppddltree):
+  for i, element in enumerate(ppddl_tree):
     if isinstance(element, list):
       ppddlstr += '\n' + make_str(element, level + 1)
     else:
       if element.startswith(':') and i != 0:
         ppddlstr += '\n' + indent
       ppddlstr += element
-      if i != len(ppddltree) - 1:
+      if i != len(ppddl_tree) - 1:
         ppddlstr += ' '
   ppddlstr += ') '
   return ppddlstr
@@ -65,7 +67,7 @@ def reduce_probabilistic_effect(probabilistic_effect):
   exceptions = []
   for i in range(2, len(probabilistic_effect), 2):
     effect = probabilistic_effect[i]
-    probability = float(probabilistic_effect[i - 1])
+    probability = Fraction(probabilistic_effect[i - 1])
     if remove_primary_label(effect):    
       # Returns True if the effect was labeled primary.
       primary_effects.append((effect, probability))
@@ -144,7 +146,15 @@ def reduce_ppddl_tree(ppddl_tree):
   
   The method performs a depth-first search of the tree and applies the 
   reduction in post-order transversal. 
+  
+  Additionally, if the given tree represents the set of predicates, 
+  it adds the (k-0) and (k-1) predicates.
   """
+  
+  if ppddl_tree[0] == ":predicates":
+    ppddl_tree.append(['k-0'])
+    ppddl_tree.append(['k-1'])
+  
   for sub_tree in ppddl_tree:
     if isinstance(sub_tree, list):      
       reduce_ppddl_tree(sub_tree)
@@ -173,6 +183,8 @@ def main(argv):
   domain_tree = parse_sexp(domain_str)
   reduce_ppddl_tree(domain_tree)
   print make_str(domain_tree[0])
+  
+  
     
 
 if __name__ == "__main__":

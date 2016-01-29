@@ -28,7 +28,8 @@ static bool read_file( const char* name )
 {
     yyin = fopen( name, "r" );
     if( yyin == NULL ) {
-        std::cout << "parser:" << name << ": " << strerror( errno ) << std::endl;
+        std::cout << "parser:" << name <<
+            ": " << strerror( errno ) << std::endl;
         return( false );
     }
     else {
@@ -63,7 +64,8 @@ int main(int argc, char **argv)
     prob = argv[2];
 
     if( !read_file( file.c_str() ) ) {
-        std::cout << "<main>: ERROR: couldn't read problem file `" << file << std::endl;
+        std::cout <<
+            "<main>: ERROR: couldn't read problem file `" << file << std::endl;
         return( -1 );
     }
     problem = (problem_t*) problem_t::find( prob.c_str() );
