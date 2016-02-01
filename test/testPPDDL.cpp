@@ -82,7 +82,8 @@ int main(int argc, char **argv)
     if (argc > 3) {
         ntrials = atoi(argv[3]);
     }
-    mlsolvers::LRTDPSolver solver(MLProblem, ntrials, 0.01);
+    mlsolvers::LRTDPSolver solver(MLProblem, ntrials, 0.0001);
+//    mlsolvers::LAOStarSolver solver(MLProblem);
 
     solver.solve(MLProblem->initialState());
 
@@ -117,7 +118,8 @@ int main(int argc, char **argv)
                 solver.solve(tmp);
                 a = tmp->bestAction();
                 if (tmp->deadEnd() || a == nullptr) {
-                    cerr << "DEAD END!! giving up :-( " << endl;
+                    if (verbosity > 100)
+                      cerr << "DEAD END!! giving up :-( " << endl;
                     break;
                 }
             }

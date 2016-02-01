@@ -2,7 +2,9 @@
 
 namespace mlsolvers
 {
-    LRTDPSolver::LRTDPSolver(mlcore::Problem* problem, int maxTrials, double epsilon)
+    LRTDPSolver::LRTDPSolver(mlcore::Problem* problem,
+                             int maxTrials,
+                             double epsilon)
     {
         problem_ = problem;
         maxTrials_ = maxTrials;
@@ -58,10 +60,10 @@ namespace mlsolvers
             if (residual(problem_, tmp) > epsilon_)
                 rv = false;
 
-
             for (mlcore::Successor su : problem_->transition(tmp, a)) {
                 mlcore::State* next = su.su_state;
-                if (!next->checkBits(mdplib::SOLVED) && !next->checkBits(mdplib::CLOSED)) {
+                if (!next->checkBits(mdplib::SOLVED) &&
+                    !next->checkBits(mdplib::CLOSED)) {
                     open.push_front(next);
                     next->setBits(mdplib::CLOSED);
                 }
