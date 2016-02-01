@@ -54,8 +54,13 @@ namespace mlsolvers
 
             mlcore::Action* a = greedyAction(problem_, tmp);
 
-            if (problem_->goal(tmp) || tmp->deadEnd())
+            if (problem_->goal(tmp))
                 continue;
+
+            if (tmp->deadEnd()) {
+                rv = false;
+                continue;
+            }
 
             if (residual(problem_, tmp) > epsilon_)
                 rv = false;

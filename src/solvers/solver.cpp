@@ -40,7 +40,7 @@ weightedQvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
 std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem,
                                                  mlcore::State* s)
 {
-    double bestQ = problem->goal(s) ? 0.0 : mdplib::dead_end_cost + 1;
+    double bestQ = problem->goal(s) ? 0.0 : mdplib::dead_end_cost;
     bool hasAction = false;
     mlcore::Action* bestAction = nullptr;
     for (mlcore::Action* a : problem->actions()) {
@@ -48,7 +48,7 @@ std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem,
             continue;
         hasAction = true;
         double qAction = std::min(mdplib::dead_end_cost, qvalue(problem, s, a));
-        if (qAction < bestQ) {
+        if (qAction <= bestQ) {
             bestQ = qAction;
             bestAction = a;
         }
@@ -87,7 +87,7 @@ double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s, double weight)
         std::pair<double, double> gh = weightedQvalue(problem, s, a);
         double qAction = std::min(mdplib::dead_end_cost,
                                   gh.first + weight * gh.second);
-        if (qAction < bestQ) {
+        if (qAction <= bestQ) {
             bestQ = qAction;
             bestG = gh.first;
             bestH = gh.second;

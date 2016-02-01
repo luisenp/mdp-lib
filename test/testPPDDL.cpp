@@ -83,8 +83,8 @@ int main(int argc, char **argv)
         ntrials = atoi(argv[3]);
     }
     mlsolvers::LRTDPSolver solver(MLProblem, ntrials, 0.0001);
-//    mlsolvers::LAOStarSolver solver(MLProblem);
 
+    mdplib_debug = false;
     solver.solve(MLProblem->initialState());
 
     cerr << "MAIN: " << MLProblem->initialState() << " "
