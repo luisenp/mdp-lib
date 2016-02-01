@@ -21,7 +21,10 @@ private:
     /* Weight for the Bellman backup */
     double weight_;
 
-    /* Expands the BPSG rooted at state s and returns the number of states expanded */
+    /*
+     * Expands the BPSG rooted at state s and returns the
+     * number of states expanded.
+     */
     int expand(mlcore::State* s);
 
     /* Test if the BPSG rooted at state s has converged */
@@ -41,7 +44,8 @@ public:
      */
     LAOStarSolver(mlcore::Problem* problem, double epsilon = 1.0e-6,
                   int timeLimit = 1000000, double weight = 1.0)
-        : problem_(problem), epsilon_(epsilon), timeLimit_(timeLimit), weight_(weight) { }
+        : problem_(problem), epsilon_(epsilon),
+          timeLimit_(timeLimit), weight_(weight) { }
 
     /**
      * Solves the associated problem using the LAO* algorithm.

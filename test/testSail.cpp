@@ -65,7 +65,8 @@ int main(int argc, char* args[])
         vi.solve();
         for (State* s : problem->states()) {
             if (s->cost() > heuristic->cost(s)) {
-                cerr << "ERROR!!" << s << " " << s->cost() << " " << heuristic->cost(s) << endl;
+                cerr << "ERROR!!" << s << " " <<
+                    s->cost() << " " << heuristic->cost(s) << endl;
             }
         }
     } else if (strcmp(args[3], "det") != 0) {
@@ -82,7 +83,7 @@ int main(int argc, char* args[])
     for (int i = 0; i < numSims; i++) {
         State* tmp = problem->initialState();
         while (!problem->goal(tmp)) {
-            Action* a = tmp->bestAction();
+            Action* a = greedyAction(problem, tmp);
             expectedCost += problem->cost(tmp, a);
             tmp = randomSuccessor(problem, tmp, a);
         }

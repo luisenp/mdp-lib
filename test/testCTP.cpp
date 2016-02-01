@@ -43,7 +43,7 @@ int main(int argc, char* args[])
                 }
                 break;
             }
-            Action* a = tmp->bestAction();
+            Action* a = greedyAction(problem, cur);
             costSim = costSim + problem->cost(tmp, a);
             tmp = randomSuccessor(problem, tmp, a);
         }

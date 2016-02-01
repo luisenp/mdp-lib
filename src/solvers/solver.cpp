@@ -37,9 +37,10 @@ weightedQvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
 }
 
 
-std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem, mlcore::State* s)
+std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem,
+                                                 mlcore::State* s)
 {
-    double bestQ = problem->goal(s) ? 0.0 : mdplib::dead_end_cost + 1;
+    double bestQ = problem->goal(s) ? 0.0 : mdplib::dead_end_cost;
     bool hasAction = false;
     mlcore::Action* bestAction = nullptr;
     for (mlcore::Action* a : problem->actions()) {
@@ -47,7 +48,7 @@ std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem, mlcor
             continue;
         hasAction = true;
         double qAction = std::min(mdplib::dead_end_cost, qvalue(problem, s, a));
-        if (qAction < bestQ) {
+        if (qAction <= bestQ) {
             bestQ = qAction;
             bestAction = a;
         }
@@ -84,8 +85,9 @@ double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s, double weight)
             continue;
         hasAction = true;
         std::pair<double, double> gh = weightedQvalue(problem, s, a);
-        double qAction = std::min(mdplib::dead_end_cost, gh.first + weight * gh.second);
-        if (qAction < bestQ) {
+        double qAction = std::min(mdplib::dead_end_cost,
+                                  gh.first + weight * gh.second);
+        if (qAction <= bestQ) {
             bestQ = qAction;
             bestG = gh.first;
             bestH = gh.second;
@@ -107,7 +109,9 @@ double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s, double weight)
 }
 
 
-mlcore::State* randomSuccessor(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
+mlcore::State* randomSuccessor(mlcore::Problem* problem,
+                               mlcore::State* s,
+                               mlcore::Action* a)
 {
     double pick = dis(gen);
 
@@ -159,7 +163,8 @@ double residual(mlcore::Problem* problem, mlcore::State* s)
 }
 
 
-mlcore::State* mostLikelyOutcome(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
+mlcore::State* mostLikelyOutcome(mlcore::Problem* problem, mlcore::State* s,
+                                 mlcore::Action* a)
 {
     double prob = -1.0;
     double eps = 1.0e-6;
@@ -176,6 +181,7 @@ mlcore::State* mostLikelyOutcome(mlcore::Problem* problem, mlcore::State* s, mlc
     return outcomes[rand() % outcomes.size()];
 }
 
+
 double sampleTrial(mlcore::Problem* problem, mlcore::State* s)
 {
     mlcore::State* tmp = s;
@@ -185,7 +191,7 @@ double sampleTrial(mlcore::Problem* problem, mlcore::State* s)
         mlcore::Action* a = greedyAction(problem, tmp);
         double discountedCost = discount * problem->cost(tmp, a);
         if (discountedCost < 1.0-6)
-            break;  // stop because no more cost can be accumulated (avoid infinite loop)
+            break;  // stop  to avoid infinite loop
         cost += discountedCost;
         tmp = randomSuccessor(problem, tmp, a);
         discount *= problem->gamma();

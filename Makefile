@@ -17,6 +17,7 @@ SD_UTIL = $(SD)/util
 ID_SOLV = $(ID)/solvers
 SD_SOLV = $(SD)/solvers
 OD_SOLV = $(OD)/solvers
+OD_PPDDL = $(OD)/ppddl
 OD_SOLV_MOBJ = $(OD)/solvers/mobj
 ID_SOLV_MOBJ = $(ID)/solvers/mobj
 SD_SOLV_MOBJ = $(SD)/solvers/mobj
@@ -93,9 +94,8 @@ $(OD)/mo-solvers.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_H) 
 	$(CC) $(CFLAGS) $(INCLUDE_CORE) $(INCLUDE_SOLVERS) -c $(MOSOLV_CPP)
 	mkdir -p $(OD_SOLV_MOBJ)
 	mv *.o $(OD_SOLV_MOBJ)
-	ar rvs obj/mo-solvers.a $(OD_SOLV_MOBJ)/*.o
-	mkdir -p obj
-	mv obj/mo-solvers.a lib
+	mkdir -p lib
+	ar rvs lib/libmdp_mosolvers.a $(OD_SOLV_MOBJ)/*.o
 
 # Compiles the base (single-objective) solvers
 $(OD)/solvers.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_H)
@@ -119,10 +119,10 @@ mobj: $(ALL_CPP) $(ALL_H)
 	make $(OD_MODOM)/mo-racetrack.a
 	make $(OD_MODOM)/mo-gw.a
 	make $(OD_MODOM)/rawfile.a
-	$(CC) $(CFLAGS) $(INCLUDE) -o testlexirace $(TD)/testLexiRace.cpp $(OD_MODOM)/*.o lib/mo-solvers.a $(LIBS_GUROBI)
-	$(CC) $(CFLAGS) $(INCLUDE) -o testlexigw $(TD)/testLexiGW.cpp $(OD_MODOM)/*.o lib/mo-solvers.a $(LIBS_GUROBI)
-	$(CC) $(CFLAGS) $(INCLUDE) -o testlexiraw $(TD)/testLexiRaw.cpp $(OD_MODOM)/*.o lib/mo-solvers.a $(LIBS_GUROBI)
-	$(CC) $(CFLAGS) $(INCLUDE) -o testairplane $(TD)/testAirplane.cpp $(OD_MODOM)/*.o lib/mo-solvers.a $(LIBS_GUROBI)
+	$(CC) $(CFLAGS) $(INCLUDE) -o testlexirace $(TD)/testLexiRace.cpp $(OD_MODOM)/*.o lib/libmdp_mosolvers.a $(LIBS_GUROBI)
+	$(CC) $(CFLAGS) $(INCLUDE) -o testlexigw $(TD)/testLexiGW.cpp $(OD_MODOM)/*.o lib/libmdp_mosolvers.a $(LIBS_GUROBI)
+	$(CC) $(CFLAGS) $(INCLUDE) -o testlexiraw $(TD)/testLexiRaw.cpp $(OD_MODOM)/*.o lib/libmdp_mosolvers.a $(LIBS_GUROBI)
+	$(CC) $(CFLAGS) $(INCLUDE) -o testairplane $(TD)/testAirplane.cpp $(OD_MODOM)/*.o lib/libmdp_mosolvers.a $(LIBS_GUROBI)
 
 # Compiles the airplane domain #
 $(OD_MODOM)/airplane.a: $(ID_MODOM)/airplane/*.h $(SD_MODOM)/airplane/*.cpp
@@ -169,7 +169,7 @@ conc: $(ALL_CPP) $(ALL_H)
 	rm test/*.o
 
 # Compiles the Racetrack domain test program #
-race: $(I_H) $(RACE_H) $(RACE_CPP) $(S_CPP)
+race: $(I_H) $(RACE_H) $(RACE_CPP) $(S_CPP) libmdp
 	$(CC) $(CFLAGS) -I$(ID_RACE) -I$(ID) -c $(RACE_CPP)
 	mkdir -p test
 	mv *.o test/
@@ -177,7 +177,7 @@ race: $(I_H) $(RACE_H) $(RACE_CPP) $(S_CPP)
 	rm test/*.o
 
 # Compiles the Sailing domain test program #
-sail: $(I_H) $(SAIL_H) $(SAIL_CPP) $(S_CPP)
+sail: $(I_H) $(SAIL_H) $(SAIL_CPP) $(S_CPP) libmdp
 	$(CC) $(CFLAGS) -I$(ID_SAIL) -I$(ID) -c $(SAIL_CPP)
 	mkdir -p test
 	mv *.o test/
@@ -185,7 +185,7 @@ sail: $(I_H) $(SAIL_H) $(SAIL_CPP) $(S_CPP)
 	rm test/*.o
 
 # Compiles the Canadian Traveler Problem domain test program #
-ctp: $(CTP_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(CTP_H)
+ctp: $(CTP_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(CTP_H) libmdp
 	$(CC) $(CFLAGS) -I$(ID_CTP) $(INCLUDE_CORE) -c $(CTP_CPP)
 	mkdir -p test
 	mv *.o test/
@@ -193,7 +193,7 @@ ctp: $(CTP_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(CTP_H)
 	rm test/*.o
 
 # Compiles the Gridworld domain test program #
-gw: $(GW_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(GW_H)
+gw: $(GW_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(GW_H) libmdp
 	$(CC) $(CFLAGS) -I$(ID_GW) -I$(ID) -I$(ID_SOLV) -c $(GW_CPP)
 	mkdir -p test
 	mv *.o test/
@@ -201,7 +201,7 @@ gw: $(GW_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(GW_H)
 	rm test/*.o
 
 # Compiles a test program for a simple binary tree domain  #
-b2t: $(BT_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(BT_H)
+b2t: $(BT_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(BT_H) libmdp
 	$(CC) $(CFLAGS) -I$(ID_BT) $(INCLUDE_CORE) -c $(BT_CPP)
 	mkdir -p test
 	mv *.o test/
@@ -215,10 +215,12 @@ minigpt:
 
 # Compiles the PPDDL library
 ppddl: libmdp src/ppddl/*.cpp $(I_H) include/ppddl/*.h $(SOLV_CPP) $(UTIL_CPP) minigpt
-	$(CC) $(CFLAGS) -Iinclude -Iinclude/ppddl -Include/ppddl/mini-gpt -I$(ID_SOLV) -c src/ppddl/*.cpp src/*.cpp $(SOLV_CPP) $(UTIL_CPP)
+	$(CC) $(CFLAGS) -Iinclude -Iinclude/ppddl -Include/ppddl/mini-gpt -I$(ID_SOLV) -c src/ppddl/*.cpp
 	mkdir -p test
-	mv *.o test/
-	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) -o testppddl test/testPPDDL.cpp test/*.o $(LIBS) lib/libminigpt.a
+	ar rvs lib/libmdp_ppddl.a *.o
+	mkdir -p $(OD_PPDDL)
+	mv *.o $(OD_PPDDL)
+	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) -o testppddl test/testPPDDL.cpp $(LIBS) lib/libminigpt.a lib/libmdp_ppddl.a
 
 .PHONY: clean
 clean:

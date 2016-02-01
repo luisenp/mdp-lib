@@ -65,11 +65,12 @@ int main(int argc, char *args[])
         0.20, 0.00, 0.00, 0.00, 0.20, 0.20, 0.20, 0.20,
         0.20, 0.20, 0.00, 0.00, 0.00, 0.20, 0.20, 0.20};
 
-    /* ************************************************************************************** */
-    /*                                  Setting up the problem                                */
-    /* ************************************************************************************** */
+    /* ********************************************************************* */
+    /*                        Setting up the problem                         */
+    /* ********************************************************************* */
     if (argc < 3) {
-        cerr << "Usage: testconc [algorithm] [domain-name] [problem-instance] [parameters]" << endl;
+        cerr << "Usage: testconc [algorithm] [domain-name] " <<
+            [problem-instance] [parameters]" << endl;
         return 1;
     }
 
@@ -89,7 +90,9 @@ int main(int argc, char *args[])
         costs.push_back(mdplib::dead_end_cost + 1);
         int size = atoi(args[3]);
         int goal = atoi(args[4]);
-        problem = new SailingProblem(0, 0, 1, goal, goal, size, size, costs, windTransition);
+        problem =
+            new SailingProblem(0, 0, 1, goal, goal,
+                               size, size, costs, windTransition);
         problem->generateAll();
         heuristic = new SailingNoWindHeuristic((SailingProblem *) problem);
         problem->setHeuristic(heuristic);
@@ -102,13 +105,14 @@ int main(int argc, char *args[])
         heuristic = new RTrackDetHeuristic(args[3]);
         problem->setHeuristic(heuristic);
     } else {
-        cerr << "Usage: testconc [algorithm] [domain-name] [problem-instance] [parameters]" << endl;
+        cerr << "Usage: testconc [algorithm] [domain-name] " <<
+            [problem-instance] [parameters]" << endl;
         return 1;
     }
 
-    /* ************************************************************************************** */
-    /*                            Setting up concurrent planner                               */
-    /* ************************************************************************************** */
+    /* ********************************************************************* */
+    /*                      Setting up concurrent planner                    */
+    /* ********************************************************************* */
     WrapperProblem* wrapper = new WrapperProblem(problem);
     DummyState* dummy = wrapper->dummyState();
 
@@ -124,21 +128,23 @@ int main(int argc, char *args[])
     } else if (strcmp(args[1], "wlao") == 0) {
         solver = new ConcurrentSolver(wlao);
     } else if (strcmp(args[1], "det") == 0) {
-        solver = new ConcurrentSolver(det); // not really used, only here to avoid null pointers
+        // not really used, only here to avoid null pointers
+        solver = new ConcurrentSolver(det);
         solver->setKeepRunning(false);
     }
 
     solver->setState(wrapper->initialState());
     mutex& solverMutex = mlsolvers::bellman_mutex;
     solver->run();
-    this_thread::sleep_for(chrono::milliseconds( initialPlanningT ));   // Initial planning time
+    // Initial planning time
+    this_thread::sleep_for(chrono::milliseconds( initialPlanningT ));
 
     if (verbosity > 100)
         cerr << "Initial planning completed." << endl;
 
-    /* ************************************************************************************** */
-    /*                         Starting execution/planning simulation                         */
-    /* ************************************************************************************** */
+    /* ********************************************************************* */
+    /*                   Starting execution/planning simulation              */
+    /* ********************************************************************* */
     State* cur = wrapper->initialState();
     double costPlan = (double) initialPlanningT / kappa;
     double costExec = 0.0;
@@ -166,7 +172,7 @@ int main(int argc, char *args[])
             return 0;
         }
 
-        /* Choosing action an updating cost */
+        // Choosing action and updating cost.
         Action* a;
         double costCurAction;
         if (strcmp(args[1], "det") == 0) {
@@ -175,7 +181,8 @@ int main(int argc, char *args[])
             clock_t time2 = clock();
             costPlan += (double(time2 - time1) / CLOCKS_PER_SEC) * 1000 / kappa;
         } else {
-            a = cur->bestAction();
+            a = greedyAction(problem, cur);
+            a = problem
         }
 
         if (a == nullptr) {
@@ -202,14 +209,16 @@ int main(int argc, char *args[])
 
         if (verbosity > 100) {
             cerr << "    succ: " << cur << " ";
-            cerr << "cost action " << costCurAction << "; acc. cost exec. " << costExec;
+            cerr << "cost action " << costCurAction <<
+                "; acc. cost exec. " << costExec;
             cerr << "; acc. cost plan. " << costPlan << endl;
         }
 
         solverMutex.unlock();
 
         if (strcmp(args[1], "det") != 0)
-            this_thread::sleep_for(chrono::milliseconds( int(costCurAction) * actionT ));
+            this_thread::sleep_for(
+                chrono::milliseconds(int(costCurAction) * actionT ));
 
         if (verbosity > 100)
             cerr << "Executing Action " << endl;

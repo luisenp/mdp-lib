@@ -26,6 +26,7 @@ using namespace std;
 
 int main(int argc, char* args[])
 {
+    mdplib_debug = true;
     Problem* problem = new RacetrackProblem(args[1]);
     ((RacetrackProblem*) problem)->setPError(0.10);
     ((RacetrackProblem*) problem)->setPSlip(0.20);
@@ -66,13 +67,14 @@ int main(int argc, char* args[])
     if (strcmp(args[2], "vi") == 0) {
         for (State* s : problem->states()) {
             if (s->cost() < heuristic->cost(s)) {
-                cerr << "Error: " << s << " " << s->cost() << " " << heuristic->cost(s) << endl;
+                cerr << "Error: " << s << " " << s->cost() <<
+                    " " << heuristic->cost(s) << endl;
             }
         }
     }
 
-    int nsims = atoi(args[3]);
-    int verbosity = 1000;
+    int nsims = argc > 3 ? atoi(args[3]) : 10000;
+    int verbosity = argc > 4 ? atoi(args[4]) : 0;
     double expectedCost = 0.0;
     for (int i = 0; i < nsims; i++) {
         State* tmp = problem->initialState();
@@ -86,11 +88,11 @@ int main(int argc, char* args[])
                 startTime = clock();
                 a = det.solve(tmp);
                 endTime = clock();
-                costTime += (double(endTime - startTime) / CLOCKS_PER_SEC) * 4.0;
+                costTime +=
+                    (double(endTime - startTime) / CLOCKS_PER_SEC) * 4.0;
             } else {
-                a = tmp->bestAction();
+                a = greedyAction(problem, tmp);
             }
-
             expectedCost += problem->cost(tmp, a);
             tmp = randomSuccessor(problem, tmp, a);
             if (verbosity > 100) {
