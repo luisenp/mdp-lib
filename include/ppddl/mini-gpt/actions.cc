@@ -302,13 +302,13 @@ Action::translate( const problem_t &problem ) const
     }
 }
 
-bool 
+bool
 Action::enabled( const state_t& state ) const
 {
   return( precondition().holds( state ) );
 }
 
-void 
+void
 Action::affect( state_t& state ) const
 {
   AtomList adds;
@@ -390,11 +390,13 @@ Action::printXML( std::ostream& os, const TermTable& terms ) const
  ******************************************************************************/
 
 bool
-conditionalEffectList_t::affect( state_t &state, bool nprec ) const
+conditionalEffectList_t::affect( state_t &resulting_state,
+                                 state_t &original_state,
+                                 bool nprec ) const
 {
   bool rv = false;
   for( size_t i = 0; i < size(); ++i )
-    rv = effect( i ).affect( state, nprec ) || rv;
+    rv = effect( i ).affect( resulting_state, original_state, nprec ) || rv;
   return( rv );
 }
 
@@ -441,7 +443,9 @@ conditionalEffectList_t::operator=( const conditionalEffectList_t &clist )
  ******************************************************************************/
 
 bool
-probabilisticEffectList_t::affect( state_t &state, bool nprec ) const
+probabilisticEffectList_t::affect( state_t &resulting_state,
+                                   state_t &original_state,
+                                   bool nprec ) const
 {
   double r = drand48();
   double sum = 0;
@@ -449,7 +453,7 @@ probabilisticEffectList_t::affect( state_t &state, bool nprec ) const
     {
       sum += effect( i ).probability().double_value();
       if( r < sum )
-	return( effect( i ).affect( state, nprec ) );
+	return( effect( i ).affect( resulting_state, original_state, nprec ) );
     }
   return( false );
 }
@@ -488,13 +492,15 @@ probabilisticEffectList_t::operator=( const probabilisticEffectList_t &plist )
  ******************************************************************************/
 
 bool
-stripsEffect_t::affect( state_t &state, bool nprec ) const
+stripsEffect_t::affect( state_t &resulting_state,
+                        state_t &original_state,
+                        bool nprec ) const
 {
   bool rv = false;
   for( size_t i = 0; i < add_list().size(); ++i )
-    rv = state.add( add_list().atom( i ) ) || rv;
+    rv = resulting_state.add( add_list().atom( i ) ) || rv;
   for( size_t i = 0; i < del_list().size(); ++i )
-    rv = state.clear( del_list().atom( i ) ) || rv;
+    rv = resulting_state.clear( del_list().atom( i ) ) || rv;
   return( rv );
 }
 
@@ -556,9 +562,12 @@ stripsEffect_t::operator=( const stripsEffect_t &effect )
  ******************************************************************************/
 
 bool
-conditionalEffect_t::affect( state_t &state, bool nprec ) const
+conditionalEffect_t::affect( state_t &resulting_state,
+                             state_t &original_state,
+                             bool nprec ) const
 {
-  return( precondition().holds( state, nprec ) && s_effect().affect( state, nprec ) );
+  return( precondition().holds( original_state, nprec ) &&
+          s_effect().affect( resulting_state, original_state, nprec ) );
 }
 
 void
@@ -639,11 +648,13 @@ deterministicEffect_t::insert_effect( const stripsEffect_t &seff )
 }
 
 bool
-deterministicEffect_t::affect( state_t &state, bool nprec ) const
+deterministicEffect_t::affect( state_t &resulting_state,
+                               state_t &original_state,
+                               bool nprec ) const
 {
   bool rv = false;
-  rv = s_effect().affect( state, nprec ) || rv;
-  rv = c_effect().affect( state, nprec ) || rv;
+  rv = s_effect().affect( resulting_state, original_state, nprec ) || rv;
+  rv = c_effect().affect( resulting_state, original_state, nprec ) || rv;
   return( rv );
 }
 
@@ -707,9 +718,13 @@ deterministicEffect_t::operator=( const deterministicEffect_t &effect )
  ******************************************************************************/
 
 bool
-probabilisticEffect_t::affect( state_t &state, bool nprec ) const
+probabilisticEffect_t::affect( state_t &resulting_state,
+                               state_t &original_state,
+                               bool nprec ) const
 {
-  return( deterministicEffect_t::affect( state, nprec ) );
+  return( deterministicEffect_t::affect( resulting_state,
+                                         original_state,
+                                         nprec ) );
 }
 
 void
@@ -793,8 +808,10 @@ deterministicAction_t::~deterministicAction_t()
 bool
 deterministicAction_t::affect( state_t& state, bool nprec ) const
 {
-  bool rv = effect().affect( state, nprec );
+  state_t *original_state = new state_t(state);
+  bool rv = effect().affect( state, *original_state, nprec );
   state.make_digest();
+  delete original_state;
   return( rv );
 }
 
@@ -808,7 +825,7 @@ deterministicAction_t::expand( const state_t &state, bool nprec ) const
 }
 
 void
-deterministicAction_t::expand( const state_t &state, 
+deterministicAction_t::expand( const state_t &state,
 			       std::pair<state_t*,Rational> *list, bool nprec ) const
 {
   *list[0].first = state;
@@ -889,8 +906,10 @@ probabilisticAction_t::empty( void ) const
 bool
 probabilisticAction_t::affect( state_t& state, bool nprec ) const
 {
-  bool rv = effect().affect( state, nprec );
+  state_t *original_state = new state_t(state);
+  bool rv = effect().affect( state, *original_state, nprec );
   state.make_digest();
+  delete original_state;
   return( rv );
 }
 
@@ -901,25 +920,29 @@ probabilisticAction_t::expand( const state_t &state, bool nprec ) const
   for( size_t i = 0; i < effect().size(); ++i )
     {
       state_t *nstate = new state_t( state );
-      effect( i ).affect( *nstate, nprec );
+      state_t *original_state = new state_t(state);
+      effect( i ).affect( *nstate, *original_state, nprec );
       nstate->make_digest();
+      delete original_state;
       result->push_back( std::make_pair( nstate, probability( i ) ) );
     }
   return( *result );
 }
 
 void
-probabilisticAction_t::expand( const state_t &state, 
-			       std::pair<state_t*,Rational> *list, bool nprec ) const
+probabilisticAction_t::expand( const state_t &state,
+			       std::pair<state_t*,Rational> *state_prob_list, bool nprec ) const
 {
   for( size_t i = 0; i < effect().size(); ++i )
     {
-      *list[i].first = state;
-      effect( i ).affect( *list[i].first, nprec );
-      list[i].first->make_digest();
-      list[i].second = probability( i );
+      *state_prob_list[i].first = state;
+      state_t *original_state = new state_t(state);
+      effect( i ).affect( *state_prob_list[i].first, *original_state, nprec );
+      delete original_state;
+      state_prob_list[i].first->make_digest();
+      state_prob_list[i].second = probability( i );
     }
-  list[effect().size()].second = Rational( -1 );
+  state_prob_list[effect().size()].second = Rational( -1 );
 }
 
 void

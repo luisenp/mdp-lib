@@ -153,7 +153,9 @@ public:
   const conditionalEffect_t& effect( size_t i ) const { return( *data_[i] ); }
   bool find( const conditionalEffect_t &eff ) const;
   void insert( const conditionalEffect_t *effect );
-  bool affect( state_t &state, bool nprec = false ) const;
+  bool affect( state_t &resulting_state,
+               state_t &original_state,
+               bool nprec = false ) const;
   void clear( void ) { data_ptr_ = data_; }
   void print( std::ostream &os ) const;
   bool operator==( const conditionalEffectList_t &clist ) const;
@@ -180,7 +182,9 @@ public:
   const probabilisticEffect_t& effect( size_t i ) const { return( *data_[i] ); }
   bool find( const probabilisticEffect_t &eff ) const;
   bool insert( const probabilisticEffect_t *effect );
-  bool affect( state_t &state, bool nprec = false ) const;
+  bool affect( state_t &resulting_state,
+               state_t &original_state,
+               bool nprec = false ) const;
   void clear( void ) { data_ptr_ = data_; }
   void print( std::ostream &os ) const;
   probabilisticEffectList_t& operator=( const probabilisticEffectList_t &effect );
@@ -198,7 +202,9 @@ class effect_t
 public:
   effect_t() { }
   virtual ~effect_t() { }
-  virtual bool affect( state_t &state, bool nprec = false ) const = 0;
+  virtual bool affect( state_t &resulting_state,
+                       state_t &original_state,
+                       bool nprec = false ) const = 0;
   virtual void collect_prec_atoms( atomList_t &atoms ) const = 0;
   virtual void collect_add_atoms( atomList_t &atoms ) const = 0;
   virtual void collect_del_atoms( atomList_t &atoms ) const = 0;
@@ -232,7 +238,9 @@ public:
   void insert_add( ushort_t atom ) { add_list_.insert( atom ); }
   void insert_del( ushort_t atom ) { del_list_.insert( atom ); }
 
-  virtual bool affect( state_t &state, bool nprec = false ) const;
+  virtual bool affect( state_t &resulting_state,
+                       state_t &original_state,
+                       bool nprec = false ) const;
   virtual void collect_prec_atoms( atomList_t &atoms ) const;
   virtual void collect_add_atoms( atomList_t &atoms ) const;
   virtual void collect_del_atoms( atomList_t &atoms ) const;
@@ -266,7 +274,9 @@ public:
   const stripsEffect_t& s_effect( void ) const { return( s_effect_ ); }
   bool empty( void ) const { return( s_effect().empty() ); }
 
-  virtual bool affect( state_t &state, bool nprec = false ) const;
+  virtual bool affect( state_t &resulting_state,
+                       state_t &original_state,
+                       bool nprec = false ) const;
   virtual void collect_prec_atoms( atomList_t &atoms ) const;
   virtual void collect_add_atoms( atomList_t &atoms ) const;
   virtual void collect_del_atoms( atomList_t &atoms ) const;
@@ -301,7 +311,9 @@ public:
   void insert_effect( const stripsEffect_t &seff );
   void delete_del_list( void ) { s_effect().del_list().clear(); }
 
-  virtual bool affect( state_t &state, bool nprec = false ) const;
+  virtual bool affect( state_t &resulting_state,
+                       state_t &original_state,
+                       bool nprec = false ) const;
   virtual void collect_prec_atoms( atomList_t &atoms ) const;
   virtual void collect_add_atoms( atomList_t &atoms ) const;
   virtual void collect_del_atoms( atomList_t &atoms ) const;
@@ -331,7 +343,9 @@ public:
   Rational probability( void ) const { return( probability_ ); }
   void increase_probability( Rational p ) { probability_ = probability_ + p; }
 
-  virtual bool affect( state_t &state, bool nprec = false ) const;
+  virtual bool affect( state_t &resulting_state,
+                       state_t &original_state,
+                       bool nprec = false ) const;
   virtual void print( std::ostream &os ) const;
   bool operator==( const probabilisticEffect_t &effect ) const;
   probabilisticEffect_t& operator=( const probabilisticEffect_t &effect );
@@ -539,7 +553,7 @@ probabilisticEffectList_t::insert( const probabilisticEffect_t *eff )
     }
   else
     {
-      // this is a violation of the const abstraction 
+      // this is a violation of the const abstraction
       ((probabilisticEffect_t*)data_[i])->increase_probability( eff->probability() );
       return( false );
     }
