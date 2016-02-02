@@ -87,7 +87,7 @@ int main(int argc, char **argv)
     mdplib_debug = false;
     solver.solve(MLProblem->initialState());
 
-    cerr << "MAIN: " << MLProblem->initialState() << " "
+    cout << "MAIN: " << MLProblem->initialState() << " "
                 << MLProblem->initialState()->cost() << endl;
 
 
@@ -103,40 +103,40 @@ int main(int argc, char **argv)
             mlcore::Action* a = tmp->bestAction();
 
             if (verbosity > 100)
-                cerr << tmp << " " << tmp->cost() << endl;
+                cout << tmp << " " << tmp->cost() << endl;
 
             if (MLProblem->goal(tmp)) {
                 if (verbosity > 1)
-                    cerr << "GOAL :-)" << endl;
+                    cout << "GOAL :-)" << endl;
                 expectedCost += cost;
                 totalSuccess++;
                 break;
             }
             if (a == nullptr) {
                 if (verbosity > 1)
-                    cerr << "REPLANNING..." << endl;
+                    cout << "REPLANNING..." << endl;
                 solver.solve(tmp);
                 a = tmp->bestAction();
                 if (tmp->deadEnd() || a == nullptr) {
                     if (verbosity > 100)
-                      cerr << "DEAD END!! giving up :-( " << endl;
+                      cout << "DEAD END!! giving up :-( " << endl;
                     break;
                 }
             }
             cost += MLProblem->cost(tmp, a);
 
             if (cost > mdplib::dead_end_cost) {
-                cerr << "Too long... giving up " << endl;
+                cout << "Too long... giving up " << endl;
                 break;
             }
 
             if (verbosity > 100)
-                cerr << tmp->bestAction() << endl;
+                cout << tmp->bestAction() << endl;
             tmp = mlsolvers::randomSuccessor(MLProblem, tmp, a);
         }
     }
-    cerr << "Expected Cost: " << expectedCost / totalSuccess << endl;
-    cerr << "Total Successes " << totalSuccess << "/" << nsims << endl;
+    cout << "Expected Cost: " << expectedCost / totalSuccess << endl;
+    cout << "Total Successes " << totalSuccess << "/" << nsims << endl;
 
     state_t::finalize();
     problem_t::unregister_use(problem);
