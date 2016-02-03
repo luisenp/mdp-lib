@@ -6,9 +6,9 @@
 #include "RacetrackProblem.h"
 
 /**
- * A deterministic heuristic for the Racetrack domain. The heuristic assumes that
- * for any action, the intended outcome will occur with probability 1.0; this
- * results in an admissible heuristic.
+ * A deterministic heuristic for the Racetrack domain.
+ * The heuristic assumes that for any action, the intended outcome
+ * will occur with probability 1.0; this results in an admissible heuristic.
  */
 class RTrackDetHeuristic : public mlcore::Heuristic
 {

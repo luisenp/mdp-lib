@@ -82,13 +82,15 @@ int main(int argc, char **argv)
     if (argc > 3) {
         ntrials = atoi(argv[3]);
     }
+
+    cout << "INITIAL: " << MLProblem->initialState() << " ";
+
     mlsolvers::LRTDPSolver solver(MLProblem, ntrials, 0.0001);
 
     mdplib_debug = false;
     solver.solve(MLProblem->initialState());
 
-    cout << "MAIN: " << MLProblem->initialState() << " "
-                << MLProblem->initialState()->cost() << endl;
+    cout << MLProblem->initialState()->cost() << endl;
 
 
     int nsims = argc > 4 ? atoi(argv[4]) : 1;
