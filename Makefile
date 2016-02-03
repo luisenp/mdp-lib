@@ -15,6 +15,7 @@ OD = obj
 ID_UTIL = $(ID)/util
 SD_UTIL = $(SD)/util
 ID_SOLV = $(ID)/solvers
+ID_PPDDL = $(ID)/ppddl
 SD_SOLV = $(SD)/solvers
 OD_SOLV = $(OD)/solvers
 OD_PPDDL = $(OD)/ppddl
@@ -42,6 +43,7 @@ OD_MODOM = $(OD)/domains/mobj
 INCLUDE_DOM = -I$(ID_GW) -I$(ID_CTP) -I$(ID_SAIL) -I$(ID_DOM) -I$(ID_RACE)
 INCLUDE_CORE = -I$(ID_UTIL) -I$(ID)
 INCLUDE_SOLVERS = -I$(ID_SOLV) -I$(ID_SOLV_MOBJ)
+INCLUDE_PPDDL = -I$(ID_PPDDL) -I$(ID_PPDDL)/mini-gpt
 INCLUDE = $(INCLUDE_DOM) $(INCLUDE_CORE) $(INCLUDE_SOLVERS)
 
 # Variables for source/header files
@@ -220,7 +222,7 @@ ppddl: libmdp src/ppddl/*.cpp $(I_H) include/ppddl/*.h $(SOLV_CPP) $(UTIL_CPP) m
 	ar rvs lib/libmdp_ppddl.a *.o
 	mkdir -p $(OD_PPDDL)
 	mv *.o $(OD_PPDDL)
-	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) -o testppddl test/testPPDDL.cpp $(LIBS) lib/libminigpt.a lib/libmdp_ppddl.a
+	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) $(INCLUDE_PPDDL) -o testppddl test/testPPDDL.cpp include/ppddl/mini-gpt/heuristics.cc $(LIBS) lib/libminigpt.a lib/libmdp_ppddl.a
 
 .PHONY: clean
 clean:

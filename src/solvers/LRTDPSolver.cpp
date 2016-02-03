@@ -25,9 +25,9 @@ namespace mlsolvers
             if (tmp->deadEnd())
                 break;
 
-            dprint1(tmp);
-            dprint1(tmp->bestAction());
-            dsleep(200);
+//            dprint1(tmp);
+//            dprint1(tmp->bestAction());
+//            dsleep(200);
 
             tmp = randomSuccessor(problem_, tmp, tmp->bestAction());
         }
@@ -99,6 +99,7 @@ namespace mlsolvers
     {
         int trials = 0;
         while (!s0->checkBits(mdplib::SOLVED) && trials++ < maxTrials_) {
+            dprint1(trials);
             trial(s0);
         }
     }

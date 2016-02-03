@@ -80,7 +80,8 @@ int main(int argc, char **argv)
     mlppddl::Problem* MLProblem = new mlppddl::Problem(problem);
     mlppddl::PPDDLHeuristic* heuristic =
 //        new mlppddl::PPDDLHeuristic(MLProblem, mlppddl::atomMin1Forward);
-        new mlppddl::PPDDLHeuristic(MLProblem, mlppddl::FF);
+        new mlppddl::PPDDLHeuristic(MLProblem, mlppddl::atomMinMForward);
+//        new mlppddl::PPDDLHeuristic(MLProblem, mlppddl::FF);
     MLProblem->setHeuristic(heuristic);
 
     int ntrials = 5000;
