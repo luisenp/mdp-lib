@@ -9,6 +9,7 @@
 
 #include "../include/state.h"
 #include "../include/ppddl/ppddl_problem.h"
+#include "../include/ppddl/PPDDLHeuristic.h"
 
 #include "../include/solvers/solver.h"
 #include "../include/solvers/LRTDPSolver.h"
@@ -77,6 +78,10 @@ int main(int argc, char **argv)
 
     /* Initializing problem */
     mlppddl::Problem* MLProblem = new mlppddl::Problem(problem);
+    mlppddl::PPDDLHeuristic* heuristic =
+//        new mlppddl::PPDDLHeuristic(MLProblem, mlppddl::atomMin1Forward);
+        new mlppddl::PPDDLHeuristic(MLProblem, mlppddl::FF);
+    MLProblem->setHeuristic(heuristic);
 
     int ntrials = 5000;
     if (argc > 3) {
@@ -87,7 +92,7 @@ int main(int argc, char **argv)
 
     mlsolvers::LRTDPSolver solver(MLProblem, ntrials, 0.0001);
 
-    mdplib_debug = false;
+    mdplib_debug = true;
     solver.solve(MLProblem->initialState());
 
     cout << MLProblem->initialState()->cost() << endl;
@@ -143,4 +148,6 @@ int main(int argc, char **argv)
     state_t::finalize();
     problem_t::unregister_use(problem);
     problem_t::clear();
+
+    delete heuristic;
 }

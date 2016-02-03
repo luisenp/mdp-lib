@@ -1,5 +1,8 @@
+#include "../../include/ppddl/mini-gpt/heuristics.h"
+
 #include "../../include/ppddl/PPDDLHeuristic.h"
 #include "../../include/ppddl/ppddl_state.h"
+#include "../../include/ppddl/ppddl_problem.h"
 
 namespace mlppddl
 {
