@@ -120,6 +120,8 @@ def is_primary(effect):
   """
   Checks if the given effect is primary.
   """
+  if effect == ['primary']:
+    return True;
   if effect[0] != 'and':
     return False
   return ['primary'] in effect[1:]
@@ -129,10 +131,13 @@ def remove_primary_label(effect):
   """
   Removes the (primary) label from a PPDDL effect.
   
-  Returns False if the effect was tagged primary, otherwise returns True.
+  Returns False if the effect was not tagged primary, otherwise returns True.
   """  
   if not is_primary(effect):
     return False
+  if effect == ['primary']:
+    effect[:] = ['k-0']
+    return True
   for subeffect in effect[1:]:
     if subeffect != ['primary']:
       effect[:] = subeffect[:]
@@ -150,7 +155,6 @@ def reduce_ppddl_tree(ppddl_tree):
   Additionally, if the given tree represents the set of predicates, 
   it adds the (k-0) and (k-1) predicates.
   """
-  
   if ppddl_tree[0] == ":predicates":
     ppddl_tree.append(['k-0'])
     ppddl_tree.append(['k-1'])
