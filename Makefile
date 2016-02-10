@@ -19,6 +19,9 @@ ID_PPDDL = $(ID)/ppddl
 SD_SOLV = $(SD)/solvers
 OD_SOLV = $(OD)/solvers
 OD_PPDDL = $(OD)/ppddl
+ID_REDUCED = $(ID)/reduced
+SD_REDUCED = $(SD)/reduced
+OD_REDUCED = $(OD)/reduced
 OD_SOLV_MOBJ = $(OD)/solvers/mobj
 ID_SOLV_MOBJ = $(ID)/solvers/mobj
 SD_SOLV_MOBJ = $(SD)/solvers/mobj
@@ -216,13 +219,21 @@ minigpt:
 	ar rvs lib/libminigpt.a include/ppddl/mini-gpt/*.o
 
 # Compiles the PPDDL library
-ppddl: libmdp src/ppddl/*.cpp $(I_H) include/ppddl/*.h $(SOLV_CPP) $(UTIL_CPP) minigpt
+ppddl: libmdp src/ppddl/*.cpp include/ppddl/*.h minigpt
 	$(CC) $(CFLAGS) -Iinclude -Iinclude/ppddl -Include/ppddl/mini-gpt -I$(ID_SOLV) -c src/ppddl/*.cpp
 	mkdir -p test
 	ar rvs lib/libmdp_ppddl.a *.o
 	mkdir -p $(OD_PPDDL)
 	mv *.o $(OD_PPDDL)
 	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) $(INCLUDE_PPDDL) -o testppddl test/testPPDDL.cpp include/ppddl/mini-gpt/heuristics.cc $(LIBS) lib/libminigpt.a lib/libmdp_ppddl.a
+
+# Compiles the reduced model code
+reduced: libmdp $(SD_REDUCED)/*.cpp $(ID_REDUCED)/*.h
+	$(CC) $(CFLAGS) -Iinclude -I$(ID_REDUCED) -c $(SD_REDUCED)/*.cpp
+	mkdir -p test
+	ar rvs lib/libmdp_reduced.a *.o
+	mkdir -p $(OD_REDUCED)
+	$(CC) $(CFLAGS) -I$(ID_REDUCED) $(INCLUDE_CORE) -o testreduced $(TD)/testReduced.cpp $(TD)/*.o $(LIBS)
 
 .PHONY: clean
 clean:

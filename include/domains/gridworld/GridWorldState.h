@@ -19,7 +19,8 @@ private:
 public:
 
     /**
-     * Constructs a GridWorldState representing grid position (x,y) on the problem
+     * Constructs a GridWorldState representing grid position (x,y)
+     * on the problem
      * given as a first parameter.
      */
     GridWorldState(mlcore::Problem* problem, int x, int y);
@@ -35,7 +36,7 @@ public:
         if (this == &rhs)
             return *this;
 
-        GridWorldState* gws = (GridWorldState *)  & rhs;
+        GridWorldState* gws = (GridWorldState *) &rhs;
         x_ =  gws->x_;
         y_=  gws->y_;
         return *this;
@@ -43,7 +44,7 @@ public:
 
     virtual bool operator==(const mlcore::State& rhs) const
     {
-        GridWorldState* gws = (GridWorldState *)  &rhs;
+        GridWorldState* gws = (GridWorldState *) &rhs;
         return x_ == gws->x_ && y_ == gws->y_;
     }
 

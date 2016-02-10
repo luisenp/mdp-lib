@@ -16,7 +16,7 @@ std::ostream& GridWorldState::print(std::ostream& os) const
 bool GridWorldState::equals(mlcore::State* other) const
 {
     GridWorldState* gws = (GridWorldState*) other;
-    return *this ==  *gws;
+    return *this == *gws;
 }
 
 int GridWorldState::hashValue() const
