@@ -233,7 +233,8 @@ reduced: libmdp $(SD_REDUCED)/*.cpp $(ID_REDUCED)/*.h
 	mkdir -p test
 	ar rvs lib/libmdp_reduced.a *.o
 	mkdir -p $(OD_REDUCED)
-	$(CC) $(CFLAGS) -I$(ID_REDUCED) $(INCLUDE_CORE) -o testreduced $(TD)/testReduced.cpp $(TD)/*.o $(LIBS)
+	mv *.o $(OD_REDUCED)
+	$(CC) $(CFLAGS) -I$(ID_REDUCED) $(INCLUDE_CORE) -o testreduced $(TD)/reduced/testReduced.cpp $(LIBS)
 
 .PHONY: clean
 clean:

@@ -1,11 +1,14 @@
 #ifndef MDPLIB_REDUCEDMODEL_H
 #define MDPLIB_REDUCEDMODEL_H
 
-#include "../action.h"
-#include "../problem.h"
-#include "../state.h"
+#include <list>
+
+#include "../Action.h"
+#include "../Problem.h"
+#include "../State.h"
 
 #include "ReducedState.h"
+#include "ReducedTransitionConfig.h"
 
 namespace mlreduced
 {
@@ -19,13 +22,20 @@ protected:
     mlcore::Problem *originalProblem_;
 
     /**
+     * An object describing the outcomes to be considered primary for
+     * each state, action pair.
+     */
+    ReducedTransitionConfig *config_;
+
+    /**
      * The bound on the number of exceptions.
      */
-    int k;
+    int k_;
 
 public:
-    ReducedModel(mlcore::Problem *originalProblem) :
-        originalProblem_ = originalProblem
+    ReducedModel(mlcore::Problem *originalProblem,
+                 ReducedTransitionConfig *config) :
+        originalProblem_(originalProblem), config_(config)
     {
         s0 = new ReducedState(originalProblem_->initialState(), 0);
         this->addState(s0);
@@ -34,9 +44,16 @@ public:
     virtual ~ReducedModel() {}
 
     /**
+     * Implements a reduced transition model for this problem according to
+     * the stored configuration.
+     */
+    virtual std::list<mlcore::Successor>
+    transition(mlcore::State* s, mlcore::Action *a);
+
+    /**
      * Overrides method from Problem.
      */
-    virtual bool goal(mlcore::State* s) const;
+    virtual bool goal(mlcore::State* s) const
     {
         return originalProblem_->goal(s);
     }

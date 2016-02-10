@@ -1,7 +1,7 @@
 #ifndef MDPLIB_REDUCEDSTATE_H
 #define MDPLIB_REDUCEDSTATE_H
 
-#include "../state.h"
+#include "../State.h"
 
 namespace mlreduced
 {
@@ -25,6 +25,10 @@ public:
 
     virtual ~ReducedState() {}
 
+    mlcore::State* originalState() { return originalState_; }
+
+    int exceptionCount() { return exceptionCount_; }
+
     virtual mlcore::State& operator=(const mlcore::State& rhs)
     {
         if (this == &rhs)
@@ -40,7 +44,7 @@ public:
     {
         ReducedState* rs = (ReducedState *) &rhs;
         return this->originalState_ == rs->originalState_ &&
-                this->exceptionCount_ == rs->exceptionCount_
+                this->exceptionCount_ == rs->exceptionCount_;
     }
 
     virtual bool equals(mlcore::State* other) const
@@ -52,6 +56,13 @@ public:
     virtual int hashValue() const
     {
         return originalState_->hashValue() + 37*exceptionCount_;
+    }
+
+
+    virtual std::ostream& print(std::ostream& os) const
+    {
+        os << "RS:(" << originalState_ << "," << exceptionCount_ << ")";
+        return os;
     }
 
 };
