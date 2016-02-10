@@ -1,8 +1,9 @@
 #ifndef MDPLIB_PPDDLSTATE_H
 #define MDPLIB_PPDDLSTATE_H
 
-#include "../state.h"
 #include "mini-gpt/states.h"
+
+#include "../State.h"
 
 namespace mlppddl
 {

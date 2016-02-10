@@ -1,8 +1,8 @@
 #include <cassert>
 #include <cmath>
 
-#include "../../include/solvers/solver.h"
-#include "../../include/solvers/mobj/mobj_solvers.h"
+#include "../../include/solvers/Solver.h"
+#include "../../include/solvers/mobj/MObjSolvers.h"
 
 namespace mdplib_mobj_solvers
 {

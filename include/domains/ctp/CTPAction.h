@@ -1,7 +1,7 @@
 #ifndef MDPLIB_CTPACTION_H
 #define MDPLIB_CTPACTION_H
 
-#include "../../action.h"
+#include "../../Action.h"
 
 class CTPAction : public mlcore::Action
 {

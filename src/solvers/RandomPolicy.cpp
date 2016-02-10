@@ -1,4 +1,3 @@
-#include "../mobj/mobj_problem.h"
 #include "../solvers/RandomPolicy.h"
 
 #include <cassert>
@@ -6,7 +5,8 @@
 namespace mlsolvers
 {
 
-void RandomPolicy::addActionsState(mlcore::State* s, std::vector<double> actions)
+void RandomPolicy::addActionsState(mlcore::State* s,
+                                   std::vector<double> actions)
 {
     if (stateIndex_.count(s) == 0)
         stateIndex_[s] = stateCounter_++;
@@ -24,6 +24,7 @@ void RandomPolicy::addActionsState(mlcore::State* s, std::vector<double> actions
         total += d;
     }
 }
+
 
 mlcore::Action* RandomPolicy::getRandomAction(mlcore::State* s)
 {
@@ -44,6 +45,7 @@ mlcore::Action* RandomPolicy::getRandomAction(mlcore::State* s)
     return nullptr;
 }
 
+
 void RandomPolicy::print(std::ostream& os)
 {
     for (mlcore::State* s : problem_->states()) {
@@ -55,36 +57,6 @@ void RandomPolicy::print(std::ostream& os)
                 os << "    " << a << " " << policy_[idxState][idxAction] << " " << std::endl;
             }
             idxAction++;
-        }
-    }
-}
-
-
-// TODO: this method is wrong!
-void RandomPolicy::computeValues(int functionIndex)
-{
-    double residual = mdplib::dead_end_cost;
-    while (residual > 1.0e-6) {
-        residual = 0.0;
-        for (mlcore::State* s : problem_->states()) {
-            int idxState = stateIndex_[s];
-            double prevValue = values_[s];
-            values_[s] = 0.0;
-            int idxAction = -1;
-            for (mlcore::Action* a : problem_->actions()) {
-                idxAction++;
-                if (!problem_->applicable(s, a))
-                    continue;
-                double qValue = 0.0;
-                for (mlcore::Successor su : problem_->transition(s, a))
-                    qValue += su.su_prob * values_[su.su_state];
-                qValue *= problem_->gamma();
-                qValue += (functionIndex != -1) ?
-                                problem_->cost(s, a) :
-                                ((mlmobj::MOProblem* ) problem_)->cost(s, a, functionIndex);
-                values_[s] += policy_[idxState][idxAction] * qValue;
-            }
-            residual = std::max(residual, fabs(values_[s] - prevValue));
         }
     }
 }

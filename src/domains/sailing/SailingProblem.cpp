@@ -1,8 +1,8 @@
 #include <algorithm>
 
+#include "../../../include/domains/sailing/SailingAction.h"
 #include "../../../include/domains/sailing/SailingProblem.h"
 #include "../../../include/domains/sailing/SailingState.h"
-#include "../../../include/domains/sailing/SailingAction.h"
 
 SailingProblem::SailingProblem(short startX, short startY, short startWind,
                                short goalX, short goalY,

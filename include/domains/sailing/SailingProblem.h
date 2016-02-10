@@ -3,9 +3,9 @@
 
 #include <vector>
 
-#include "../../problem.h"
-#include "../../state.h"
-#include "../../action.h"
+#include "../../Action.h"
+#include "../../Problem.h"
+#include "../../State.h"
 
 #include "SailingState.h"
 #include "SailingAction.h"

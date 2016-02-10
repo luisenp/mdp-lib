@@ -3,8 +3,10 @@
 
 #include <vector>
 
-#include "../../mobj/mobj_problem.h"
-#include "../solver.h"
+#include "../../mobj/MObjProblem.h"
+
+#include "../Solver.h"
+
 #include "CMDPSolver.h"
 
 namespace mdplib_mobj_solvers

@@ -1,10 +1,10 @@
 #ifndef MDPLIB_LEXIVISOLVER_H
 #define MDPLIB_LEXIVISOLVER_H
 
-#include "../../mobj/mobj_problem.h"
-#include "../../mobj/mobj_state.h"
+#include "../../mobj/MObjProblem.h"
+#include "../../mobj/MObjState.h"
 
-#include "../solver.h"
+#include "../Solver.h"
 
 namespace mdplib_mobj_solvers
 {

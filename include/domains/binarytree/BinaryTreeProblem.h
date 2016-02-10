@@ -1,7 +1,7 @@
 #ifndef MDPLIB_BINARYTREEPROBLEM_H
 #define MDPLIB_BINARYTREEPROBLEM_H
 
-#include "../../problem.h"
+#include "../../Problem.h"
 
 
 class BinaryTreeProblem : public mlcore::Problem
@@ -25,7 +25,8 @@ public:
     /**
      * Overrides method from mlcore::Problem.
      */
-    virtual std::list<mlcore::Successor> transition(mlcore::State* s, mlcore::Action* a);
+    virtual std::list<mlcore::Successor>
+    transition(mlcore::State* s, mlcore::Action* a);
 
     /**
      * Overrides method from mlcore::Problem.

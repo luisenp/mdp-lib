@@ -4,22 +4,24 @@
 #include <thread>
 #include <mutex>
 
-#include "solver.h"
-#include "../state.h"
-#include "../action.h"
+#include "../Action.h"
+#include "../State.h"
+
+#include "Solver.h"
 
 namespace mlsolvers
 {
 
 /**
- * A ConcurrentSolver runs a specific base solver (e.g., LAO*, LRTDP) on a separate
- * thread. The base idea is to use the solver concurrently with the execution thread
- * to take advantage of the time it takes to execute and action for planning.
+ * A ConcurrentSolver runs a specific base solver (e.g., LAO*, LRTDP)
+ * on a separate thread. The base idea is to use the solver concurrently with
+ * the execution thread to take advantage of the time it takes to execute and
+ * action for planning.
  * The base solvers supported are LAO* and LRTDP.
  *
- * The class provides a mutex object to ensure that no race conditions arise between
- * the planning and execution threads try to access state variables (e.g., cost,
- * best actions).
+ * The class provides a mutex object to ensure that no race conditions arise
+ * between the planning and execution threads try to access state variables
+ * (e.g., cost,  best actions).
  */
 class ConcurrentSolver
 {
@@ -65,7 +67,8 @@ public:
     /**
      * Sets whether the base solver should keep running or not.
      *
-     * @param keepRunning true if the base solver should keep running, false otherwise.
+     * @param keepRunning true if the base solver should keep running,
+     *                    false otherwise.
      */
     void setKeepRunning(bool keepRunning)  { keepRunning_ = keepRunning; }
 

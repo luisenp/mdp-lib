@@ -1,7 +1,7 @@
 #ifndef MDPLIB_SAILINGACTION_H
 #define MDPLIB_SAILINGACTION_H
 
-#include "../../action.h"
+#include "../../Action.h"
 
 
 class SailingAction : public mlcore::Action

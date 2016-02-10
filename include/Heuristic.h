@@ -1,7 +1,7 @@
 #ifndef MDPLIB_HEURISTIC_H
 #define MDPLIB_HEURISTIC_H
 
-#include "state.h"
+#include "State.h"
 
 namespace mlcore
 {

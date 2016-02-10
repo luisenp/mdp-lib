@@ -1,5 +1,5 @@
 #include "../../../include/util/general.h"
-#include "../../../include/solvers/solver.h"
+#include "../../../include/solvers/Solver.h"
 #include "../../../include/solvers/mobj/GlobalSlackSolver.h"
 
 namespace mdplib_mobj_solvers

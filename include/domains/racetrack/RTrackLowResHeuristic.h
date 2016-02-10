@@ -1,7 +1,7 @@
 #ifndef MDPLIB_RTRACKLOWRESHEURISTIC_H
 #define MDPLIB_RTRACKLOWRESHEURISTIC_H
 
-#include "../../heuristic.h"
+#include "../../Heuristic.h"
 
 #include "RacetrackProblem.h"
 
@@ -14,7 +14,10 @@ private:
 
     int resolution_;
 public:
-    RTrackLowResHeuristic(char* filename, int resolution, double pSlip, double pError);
+    RTrackLowResHeuristic(char* filename,
+                          int resolution,
+                          double pSlip,
+                          double pError);
 
     virtual ~RTrackLowResHeuristic();
 

@@ -1,6 +1,6 @@
 #include "../../../include/util/general.h"
-#include "../../../include/solvers/solver.h"
-#include "../../../include/solvers/mobj/mobj_solvers.h"
+#include "../../../include/solvers/Solver.h"
+#include "../../../include/solvers/mobj/MObjSolvers.h"
 #include "../../../include/solvers/mobj/MOLAOStarSolver.h"
 
 #include <ctime>
@@ -8,7 +8,8 @@
 namespace mdplib_mobj_solvers
 {
 
-void MOLAOStarSolver::solveLevel(mlcore::State* s, int level, mlmobj::MOState*& unsolved)
+void MOLAOStarSolver::solveLevel(
+    mlcore::State* s, int level, mlmobj::MOState*& unsolved)
 {
     mlmobj::MOState* s0 = (mlmobj::MOState *) s;
     clock_t startTime = clock();
@@ -53,7 +54,9 @@ mlcore::Action* MOLAOStarSolver::solve(mlcore::State* s)
     return s->bestAction();
 }
 
-int MOLAOStarSolver::expand(mlmobj::MOState* s, int level, mlmobj::MOState*& unsolved)
+int MOLAOStarSolver::expand(mlmobj::MOState* s,
+                            int level,
+                            mlmobj::MOState*& unsolved)
 {
     if (level > 0 && solved_.find(s) == solved_.end()) {
         mlmobj::MOState* aux = nullptr;
@@ -106,15 +109,19 @@ double MOLAOStarSolver::testConvergence(mlmobj::MOState* s, int level)
         return mdplib::dead_end_cost + 1;
     } else {
         for (mlcore::Successor sccr : problem_->transition(s, prevAction, 0))
-            error =  std::max(error, testConvergence((mlmobj::MOState *) sccr.su_state, level));
+            error =
+                std::max(error,
+                         testConvergence(
+                             (mlmobj::MOState *) sccr.su_state, level));
     }
 
-    double backupError =
-        useLC_ ? bellmanUpdate(problem_, s) : lexiBellmanUpdate(problem_, s, level);
+    double backupError = useLC_ ?
+        bellmanUpdate(problem_, s) : lexiBellmanUpdate(problem_, s, level);
     error = std::max(error, backupError);
     if (prevAction == s->bestAction())
         return error;
-    return mdplib::dead_end_cost + 2; // hasn't converged because the best action changed
+    // hasn't converged because the best action changed
+    return mdplib::dead_end_cost + 2;
 }
 
 void MOLAOStarSolver::addSolved(mlcore::State* s)

@@ -1,8 +1,8 @@
-#include "../include/state.h"
-#include "../include/problem.h"
-#include "../include/solvers/solver.h"
-#include "../include/mdplib.h"
-#include "../include/heuristic.h"
+#include "../include/State.h"
+#include "../include/Problem.h"
+#include "../include/solvers/Solver.h"
+#include "../include/MDPLib.h"
+#include "../include/Heuristic.h"
 #include <iostream>
 
 namespace mlcore

@@ -54,7 +54,8 @@ double CMDPLagrangeSearchSolver::evaluateObjectiveFunction(
     }
     for (int i = 0; i < k; i++)
         cout << expectedMOCost[i] << " ";
-    cout << totalWeightedCost << " " << (s0->cost() - totalWeightedTargets) << endl;
+    cout << totalWeightedCost <<
+            " " << (s0->cost() - totalWeightedTargets) << endl;
 
 //    cout << " DEBUG " << (s0->cost()) << endl;
     return totalWeightedCost;

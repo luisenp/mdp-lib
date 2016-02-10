@@ -2,8 +2,8 @@
 #define MDPLIB_CTPOPTIMHEUR_H
 
 #include "CTPProblem.h"
-#include "../../heuristic.h"
-#include "../../mdplib.h"
+#include "../../Heuristic.h"
+#include "../../MDPLib.h"
 
 #include "../../util/general.h"
 

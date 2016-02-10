@@ -18,7 +18,8 @@ bool BinaryTreeProblem::goal(mlcore::State* s) const
     return bts->level() == (levels_ - 1);
 }
 
-std::list<mlcore::Successor> BinaryTreeProblem::transition(mlcore::State* s, mlcore::Action* a)
+std::list<mlcore::Successor>
+BinaryTreeProblem::transition(mlcore::State* s, mlcore::Action* a)
 {
     std::list<mlcore::Successor> successors;
     if (s == absorbing_ || goal(s)) {
@@ -27,7 +28,9 @@ std::list<mlcore::Successor> BinaryTreeProblem::transition(mlcore::State* s, mlc
     }
     BinaryTreeState* bts = (BinaryTreeState *) s;
     BinaryTreeAction* bta = (BinaryTreeAction *) a;
-    mlcore::State* next = new BinaryTreeState(bts->level() + 1, 2*bts->index() + ( 1 - bta->left()));
+    mlcore::State* next =
+        new BinaryTreeState(bts->level() + 1,
+                            2*bts->index() + ( 1 - bta->left()));
     next = this->addState(next);
     successors.push_front(mlcore::Successor(next, 1.0));
     return successors;

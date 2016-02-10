@@ -1,12 +1,12 @@
 #ifndef CMDPLAGRANGESEARCHSOLVER_H
 #define CMDPLAGRANGESEARCHSOLVER_H
 
-#include "../solver.h"
-#include "../../problem.h"
-#include "../../state.h"
+#include "../Solver.h"
+#include "../../Problem.h"
+#include "../../State.h"
 #include "../../../include/solvers/VISolver.h"
 
-#include "mobj_solvers.h"
+#include "MObjSolvers.h"
 
 namespace mdplib_mobj_solvers
 {
@@ -18,7 +18,8 @@ private:
 
     mlsolvers::Solver* solver_;
 
-    std::vector<double> getExpectedCostOfGreedyPolicy(mlcore::State* s0, int numIterations);
+    std::vector<double> getExpectedCostOfGreedyPolicy(mlcore::State* s0,
+                                                      int numIterations);
 
     std::vector<double> setNewWeightsForProblem(
         std::vector<int> comb, std::vector<double> WeightValues);
@@ -46,5 +47,5 @@ public:
     virtual mlcore::Action* solve(mlcore::State* s0);
 };
 
-} // namespace mdplib_mobj_solvers
+}
 #endif // CMDPLAGRANGESEARCHSOLVER_H

@@ -1,7 +1,7 @@
 #include <vector>
 #include <cmath>
 
-#include "../../include/solvers/solver.h"
+#include "../../include/solvers/Solver.h"
 #include "../../include/solvers/UCTSolver.h"
 
 namespace mlsolvers

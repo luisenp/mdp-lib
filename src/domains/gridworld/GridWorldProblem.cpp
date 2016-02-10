@@ -3,7 +3,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "../../../include/problem.h"
+#include "../../../include/Problem.h"
 #include "../../../include/domains/gridworld/GridWorldProblem.h"
 #include "../../../include/domains/gridworld/GridWorldState.h"
 #include "../../../include/domains/gridworld/GridWorldAction.h"

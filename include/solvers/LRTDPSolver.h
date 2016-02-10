@@ -1,10 +1,10 @@
 #ifndef MDPLIB_LRTDPSOLVER_H
 #define MDPLIB_LRTDPSOLVER_H
 
-#include "solver.h"
+#include "../Problem.h"
+#include "../Heuristic.h"
 
-#include "../problem.h"
-#include "../heuristic.h"
+#include "Solver.h"
 
 namespace mlsolvers
 {
@@ -59,7 +59,7 @@ namespace mlsolvers
         * the performance of LRTDP in online settings.
         *
         * @param maxChecked the maximum number of states that are visited on
-        * a call to checkSolved.
+        *                   a call to checkSolved.
         */
         void setMaxChecked(int maxChecked) { maxChecked_ = maxChecked; }
 

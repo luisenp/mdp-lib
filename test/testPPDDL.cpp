@@ -7,11 +7,11 @@
 #include "../include/ppddl/mini-gpt/states.h"
 #include "../include/ppddl/mini-gpt/exceptions.h"
 
-#include "../include/state.h"
-#include "../include/ppddl/ppddl_problem.h"
+#include "../include/State.h"
+#include "../include/ppddl/PPDDLProblem.h"
 #include "../include/ppddl/PPDDLHeuristic.h"
 
-#include "../include/solvers/solver.h"
+#include "../include/solvers/Solver.h"
 #include "../include/solvers/LRTDPSolver.h"
 #include "../include/solvers/LAOStarSolver.h"
 #include "../include/solvers/UCTSolver.h"

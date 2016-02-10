@@ -7,8 +7,8 @@
 #include <unordered_set>
 #include <unordered_map>
 
-#include "action.h"
-#include "mdplib.h"
+#include "Action.h"
+#include "MDPLib.h"
 
 #define su_state first
 #define su_prob second

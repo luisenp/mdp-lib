@@ -5,12 +5,12 @@
 #include "../include/domains/gridworld/GridWorldState.h"
 #include "../include/mobj/domains/MOGridWorldProblem.h"
 #include "../include/mobj/domains/MOGWManhattanHeuristic.h"
-#include "../include/mobj/mobj_problem.h"
+#include "../include/mobj/MObjProblem.h"
 #include "../include/solvers/mobj/CMDPSolver.h"
 #include "../include/solvers/mobj/CMDPSlackSolver.h"
 #include "../include/solvers/mobj/LexiVISolver.h"
 #include "../include/solvers/mobj/MOLAOStarSolver.h"
-#include "../include/solvers/solver.h"
+#include "../include/solvers/Solver.h"
 #include "../include/util/general.h"
 
 using namespace mdplib_mobj_solvers;

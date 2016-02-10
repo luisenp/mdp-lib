@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-#include "../../state.h"
+#include "../../State.h"
 
 /**
  * A class representing a grid world state as described in AIAMA 3rd Edition.

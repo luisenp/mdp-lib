@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "../include/solvers/solver.h"
+#include "../include/solvers/Solver.h"
 #include "../include/solvers/VISolver.h"
 #include "../include/solvers/LRTDPSolver.h"
 #include "../include/solvers/LAOStarSolver.h"

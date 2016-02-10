@@ -3,10 +3,10 @@
 
 #include <functional>
 
-#include "../../state.h"
-#include "../../problem.h"
-#include "../mobj_problem.h"
-#include "../mobj_state.h"
+#include "../../State.h"
+#include "../../Problem.h"
+#include "../MObjProblem.h"
+#include "../MObjState.h"
 
 #include "../../../include/domains/racetrack/RacetrackState.h"
 

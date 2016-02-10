@@ -1,7 +1,7 @@
 #ifndef MDPLIB_RTRACKDETHEURISTIC_H
 #define MDPLIB_RTRACKDETHEURISTIC_H
 
-#include "../../heuristic.h"
+#include "../../Heuristic.h"
 
 #include "RacetrackProblem.h"
 

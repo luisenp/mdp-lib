@@ -1,9 +1,10 @@
 #ifndef MDPLIB_DETERMINISTICSOLVER_H
 #define MDPLIB_DETERMINISTICSOLVER_H
 
-#include "../action.h"
-#include "../state.h"
-#include "solver.h"
+#include "../Action.h"
+#include "../State.h"
+
+#include "Solver.h"
 
 namespace mlsolvers
 {
@@ -56,10 +57,10 @@ public:
 };
 
 /**
- * A search-node for A*. Includes information about a state, its parent in the search
- * graph, the action taken to reach this state, the cost to reach the state from the
- * start, and the f-value of the state (estimate of the cost to reach the goal
- * from the start going through this state).
+ * A search-node for A*. Includes information about a state, its parent in
+ * the search graph, the action taken to reach this state, the cost to reach
+ * the state from the start, and the f-value of the state (estimate of the
+ * cost to reach the goal from the start going through this state).
  */
 class Node
 {
@@ -80,8 +81,12 @@ private:
     double f_;
 
 public:
-    Node(Node* parent, mlcore::State* state, mlcore::Action* action, double actionCost,
-         mlcore::Heuristic* heuristic, bool usePathMax = true)
+    Node(Node* parent,
+         mlcore::State* state,
+         mlcore::Action* action,
+         double actionCost,
+         mlcore::Heuristic* heuristic,
+         bool usePathMax = true)
     {
         state_ = state;
         parent_ = parent;
@@ -93,7 +98,8 @@ public:
         }
         g_ = parent_->g() + actionCost;
         double h = heuristic == nullptr ? 0.0 : heuristic->cost(state);
-        double hParent = heuristic == nullptr ? 0.0 : heuristic->cost(parent_->state());
+        double hParent = heuristic == nullptr ?
+                            0.0 : heuristic->cost(parent_->state());
         if (usePathMax) {
             double tmp = hParent - actionCost;
             if (tmp > h)

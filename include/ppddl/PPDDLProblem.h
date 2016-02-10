@@ -1,9 +1,10 @@
 #ifndef MDPLIB_PPDDLPROBLEM_H
 #define MDPLIB_PPDDLPROBLEM_H
 
-#include "../problem.h"
 #include "mini-gpt/problems.h"
 #include "mini-gpt/rational.h"
+
+#include "../Problem.h"
 
 namespace mlppddl
 {

@@ -4,11 +4,11 @@
 
 #include "../../../include/mobj/domains/MORacetrackState.h"
 
-#include "../../../include/solvers/solver.h"
-#include "../../../include/solvers/mobj/mobj_solvers.h"
+#include "../../../include/solvers/Solver.h"
+#include "../../../include/solvers/mobj/MObjSolvers.h"
 #include "../../../include/solvers/mobj/LexiVISolver.h"
-#include "../../../include/mobj/mobj_problem.h"
-#include "../../../include/mobj/mobj_state.h"
+#include "../../../include/mobj/MObjProblem.h"
+#include "../../../include/mobj/MObjState.h"
 #include "../../../include/util/general.h"
 
 namespace mdplib_mobj_solvers
@@ -27,7 +27,9 @@ mlcore::Action* LexiVISolver::solve(mlcore::State* s0)
         double maxResidual = 0.0;
         for (mlcore::State* s : problem_->states()) {
             double residual =
-                lexiBellmanUpdate(problem_, (mlmobj::MOState *) s, problem_->size() - 1);
+                lexiBellmanUpdate(problem_,
+                                  (mlmobj::MOState *) s,
+                                  problem_->size() - 1);
             if (residual > maxResidual)
                 maxResidual = residual;
         }

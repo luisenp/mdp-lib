@@ -1,7 +1,7 @@
 #include <cassert>
 #include <ctime>
 
-#include "../../../include/state.h"
+#include "../../../include/State.h"
 #include "../../../include/solvers/VISolver.h"
 
 #include "../../../include/mobj/domains/MORacetrackProblem.h"

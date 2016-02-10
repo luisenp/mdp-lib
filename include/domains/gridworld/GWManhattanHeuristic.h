@@ -2,8 +2,10 @@
 #define MDPLIB_GWMANHATTANHEUR_H
 
 #include "../../util/general.h"
-#include "../../heuristic.h"
-#include "../../state.h"
+
+#include "../../Heuristic.h"
+#include "../../State.h"
+
 #include "GridWorldProblem.h"
 #include "GridWorldState.h"
 

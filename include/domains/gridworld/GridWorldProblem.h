@@ -5,9 +5,9 @@
 
 #include "GridWorldState.h"
 
-#include "../../problem.h"
-#include "../../state.h"
-#include "../../action.h"
+#include "../../Problem.h"
+#include "../../State.h"
+#include "../../Action.h"
 #include "../../util/general.h"
 
 class GWManhattanHeuristic;

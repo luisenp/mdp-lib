@@ -1,7 +1,7 @@
 #ifndef MDPLIB_MORTRACKDETHEURISTIC_H
 #define MDPLIB_MORTRACKDETHEURISTIC_H
 
-#include "../../heuristic.h"
+#include "../../Heuristic.h"
 
 #include "MORacetrackProblem.h"
 

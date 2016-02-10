@@ -1,4 +1,4 @@
-#include "../../include/solvers/solver.h"
+#include "../../include/solvers/Solver.h"
 #include "../../include/solvers/LAOStarSolver.h"
 
 #include "../../include/util/general.h"

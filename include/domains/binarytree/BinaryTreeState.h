@@ -1,7 +1,7 @@
 #ifndef MDPLIB_BINARYTREESTATE_H
 #define MDPLIB_BINARYTREESTATE_H
 
-#include "../../state.h"
+#include "../../State.h"
 
 
 class BinaryTreeState : public mlcore::State

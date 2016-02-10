@@ -1,7 +1,7 @@
 #ifndef MDPLIB_AIRPLANEHEURISTIC_H
 #define MDPLIB_AIRPLANEHEURISTIC_H
 
-#include "../../../heuristic.h"
+#include "../../../Heuristic.h"
 
 #include "AirplaneProblem.h"
 
@@ -17,7 +17,8 @@ private:
 
 public:
 
-    AirplaneHeuristic(AirplaneProblem* problem, int level) : problem_(problem), level_(level) { }
+    AirplaneHeuristic(AirplaneProblem* problem, int level) :
+        problem_(problem), level_(level) { }
 
     virtual ~AirplaneHeuristic() { }
 

@@ -5,9 +5,10 @@
 #include <vector>
 #include <list>
 
-#include "../mobj_problem.h"
-#include "../mobj_state.h"
-#include "../../action.h"
+#include "../../Action.h"
+
+#include "../MObjProblem.h"
+#include "../MObjState.h"
 
 #include "MORacetrackState.h"
 

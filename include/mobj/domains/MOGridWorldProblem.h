@@ -3,12 +3,12 @@
 
 #include <vector>
 
-#include "../../problem.h"
-#include "../../action.h"
-#include "../../state.h"
+#include "../../Problem.h"
+#include "../../Action.h"
+#include "../../State.h"
 #include "../../domains/gridworld/GridWorldProblem.h"
 #include "../../domains/gridworld/GridWorldAction.h"
-#include "../mobj_problem.h"
+#include "../MObjProblem.h"
 #include "../domains/MOGridWorldState.h"
 
 namespace mlmobj

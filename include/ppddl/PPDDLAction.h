@@ -1,10 +1,11 @@
 #ifndef MDPLIB_PPDDLACTION_H
 #define MDPLIB_PPDDLACTION_H
 
-#include "../action.h"
 #include "mini-gpt/states.h"
 #include "mini-gpt/actions.h"
 #include "mini-gpt/problems.h"
+
+#include "../Action.h"
 
 namespace mlppddl
 {
@@ -18,7 +19,8 @@ private:
     virtual std::ostream& print(std::ostream& os) const;
 
 public:
-    Action(const action_t* pAction, int index) : pAction_(pAction), index_(index) {}
+    Action(const action_t* pAction, int index) :
+        pAction_(pAction), index_(index) {}
 
     const action_t* pAction() { return pAction_; }
 

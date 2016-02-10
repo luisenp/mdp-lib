@@ -1,7 +1,7 @@
 #ifndef MDPLIB_GLOBALSLACKSOLVER_H
 #define MDPLIB_GLOBALSLACKSOLVER_H
 
-#include "../solver.h"
+#include "../Solver.h"
 
 #include "MOLAOStarSolver.h"
 

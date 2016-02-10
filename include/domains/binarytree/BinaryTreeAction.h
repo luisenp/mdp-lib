@@ -1,7 +1,7 @@
 #ifndef MDPLIB_BINARYTREEACTION_H
 #define MDPLIB_BINARYTREEACTION_H
 
-#include "../../action.h"
+#include "../../Action.h"
 
 
 class BinaryTreeAction : public mlcore::Action

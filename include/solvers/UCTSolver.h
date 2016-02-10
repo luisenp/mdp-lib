@@ -3,9 +3,9 @@
 
 #include <unordered_map>
 
-#include "../problem.h"
-#include "../state.h"
-#include "../action.h"
+#include "../Action.h"
+#include "../Problem.h"
+#include "../State.h"
 
 namespace mlsolvers
 {
@@ -50,15 +50,19 @@ namespace mlsolvers
         virtual ~UCTSolver() {}
 
         /**
-         * Creates an UCT solver for the given problem using the given exploration
-         * parameter, maximum number of rollouts, and cutoff (maximum rollout depth).
+         * Creates an UCT solver for the given problem using the given
+         * exploration parameter, maximum number of rollouts, and cutoff
+         * (maximum rollout depth).
          *
          * @param problem The problem to be solved.
          * @param C The value of the exploration parameter.
-         * @param maxRollouts The maximum number of sample trajectories to gather.
+         * @param maxRollouts The maximum number trajectories to sample.
          * @param cutoff The maximum depth allowed for each rollout.
          */
-        UCTSolver(mlcore::Problem* problem, double C, int maxRollouts, int cutoff);
+        UCTSolver(mlcore::Problem* problem,
+                  double C,
+                  int maxRollouts,
+                  int cutoff);
 
         /**
          * Returns the Q-values estimated by the UCT algorithm.
@@ -73,20 +77,21 @@ namespace mlsolvers
         /**
         * Sets the maximum number of sample trajectories to gather.
         *
-        * @param maxRollouts The maximum number of sample trajectories to gather.
+        * @param maxRollouts The maximum number of trajectories to sample.
         */
         void setMaxRollouts(int maxRollouts) { maxRollouts_ = maxRollouts; }
 
         /**
-        * Sets the cutoff for the algorithm (i.e., the maximum depth of each rollout).
+        * Sets the cutoff for the algorithm (i.e., the maximum depth of
+        * each rollout).
         *
         * @param cutoff The maximum depth of the rollouts.
         */
         void setCutoff(int cutoff) { cutoff_ = cutoff; }
 
         /**
-         * Computes the UCB1 cost of the given state-action pair with the current
-         * visit counts.
+         * Computes the UCB1 cost of the given state-action pair with the
+         * current visit counts.
          *
          * @param s The state for which the cost is going to be computed.
          * @param a The action for which the cost is going to be computed.

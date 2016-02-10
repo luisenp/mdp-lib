@@ -1,7 +1,7 @@
 #include <cassert>
 #include <ctime>
 
-#include "../../../include/state.h"
+#include "../../../include/State.h"
 #include "../../../include/solvers/VISolver.h"
 
 #include "../../../include/domains/racetrack/RacetrackProblem.h"
@@ -21,9 +21,13 @@ RTrackDetHeuristic::RTrackDetHeuristic(char* filename)
 double RTrackDetHeuristic::cost(const mlcore::State* s) const
 {
     RacetrackState* rts = (RacetrackState*) s;
-    RacetrackState* tmp =
-        new RacetrackState(rts->x(), rts->y(), rts->vx(), rts->vy(), detProblem_);
-    mlcore::StateSet::const_iterator it = detProblem_->states().find((mlcore::State *) tmp);
+    RacetrackState* tmp = new RacetrackState(rts->x(),
+                                             rts->y(),
+                                             rts->vx(),
+                                             rts->vy(),
+                                             detProblem_);
+    mlcore::StateSet::const_iterator it =
+        detProblem_->states().find((mlcore::State *) tmp);
     assert(it != detProblem_->states().end());
     delete tmp;
     return (*it)->cost();

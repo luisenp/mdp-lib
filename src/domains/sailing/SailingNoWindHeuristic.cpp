@@ -1,13 +1,13 @@
 #include <algorithm>
 
+#include "../../../include/domains/sailing/SailingAction.h"
 #include "../../../include/domains/sailing/SailingNoWindHeuristic.h"
 #include "../../../include/domains/sailing/SailingProblem.h"
 #include "../../../include/domains/sailing/SailingState.h"
-#include "../../../include/domains/sailing/SailingAction.h"
 
-#include "../../../include/problem.h"
-#include "../../../include/action.h"
-#include "../../../include/state.h"
+#include "../../../include/Action.h"
+#include "../../../include/Problem.h"
+#include "../../../include/State.h"
 
 SailingNoWindHeuristic::SailingNoWindHeuristic(SailingProblem* problem)
 {

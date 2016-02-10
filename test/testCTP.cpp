@@ -4,7 +4,7 @@
 #include <sstream>
 #include <unistd.h>
 
-#include "../include/solvers/solver.h"
+#include "../include/solvers/Solver.h"
 #include "../include/solvers/VISolver.h"
 #include "../include/solvers/LRTDPSolver.h"
 #include "../include/solvers/UCTSolver.h"
@@ -43,7 +43,7 @@ int main(int argc, char* args[])
                 }
                 break;
             }
-            Action* a = greedyAction(problem, cur);
+            Action* a = greedyAction(problem, tmp);
             costSim = costSim + problem->cost(tmp, a);
             tmp = randomSuccessor(problem, tmp, a);
         }

@@ -1,7 +1,7 @@
 #ifndef MDPLIB_WRAPPERPROBLEM_H
 #define MDPLIB_WRAPPERPROBLEM_H
 
-#include "../problem.h"
+#include "../Problem.h"
 #include "DummyState.h"
 
 /**

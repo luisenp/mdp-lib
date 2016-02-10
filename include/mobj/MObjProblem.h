@@ -1,9 +1,9 @@
 #ifndef MDPLIB_MOPROBLEM_H
 #define MDPLIB_MOPROBLEM_H
 
-#include "../problem.h"
-#include "../state.h"
-#include "../action.h"
+#include "../Problem.h"
+#include "../State.h"
+#include "../Action.h"
 
 #include "../util/general.h"
 

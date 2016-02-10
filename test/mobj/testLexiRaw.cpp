@@ -4,7 +4,7 @@
 #include <sstream>
 #include <unistd.h>
 
-#include "../include/solvers/solver.h"
+#include "../include/solvers/Solver.h"
 #include "../include/solvers/mobj/LexiVISolver.h"
 #include "../include/solvers/mobj/MOLAOStarSolver.h"
 
@@ -14,8 +14,8 @@
 #include "../include/mobj/domains/RawFileMOProblem.h"
 #include "../include/mobj/domains/RawFileMOState.h"
 #include "../include/mobj/domains/RawFileMOAction.h"
-#include "../include/mobj/mobj_problem.h"
-#include "../include/mobj/mobj_state.h"
+#include "../include/mobj/MObjProblem.h"
+#include "../include/mobj/MObjState.h"
 
 using namespace mdplib_mobj_solvers;
 using namespace mlcore;

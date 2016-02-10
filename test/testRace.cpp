@@ -4,7 +4,7 @@
 #include <sstream>
 #include <unistd.h>
 
-#include "../include/solvers/solver.h"
+#include "../include/solvers/Solver.h"
 #include "../include/solvers/VISolver.h"
 #include "../include/solvers/LRTDPSolver.h"
 #include "../include/solvers/UCTSolver.h"
@@ -48,7 +48,7 @@ int main(int argc, char* args[])
     } else if (strcmp(args[2], "lao") == 0) {
         LAOStarSolver lao(problem, tol, 1000000);
         lao.solve(problem->initialState());
-    } else if (strcmp(args[2], "lrtdp") == 0) {
+    } else if (strcmp(args[2], "make[1]: Leaving directory `/home/lpineda/Documents/lrtdp") == 0) {
         LRTDPSolver lrtdp(problem, 1000000000, tol);
         lrtdp.solve(problem->initialState());
     } else if (strcmp(args[2], "vi") == 0) {

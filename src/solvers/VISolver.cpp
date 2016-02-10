@@ -2,9 +2,9 @@
 #include <climits>
 #include <cmath>
 
-#include "../../include/solvers/solver.h"
+#include "../../include/solvers/Solver.h"
 #include "../../include/solvers/VISolver.h"
-#include "../../include/state.h"
+#include "../../include/State.h"
 #include "../../include/util/general.h"
 
 namespace mlsolvers

@@ -70,7 +70,7 @@ int main(int argc, char *args[])
     /* ********************************************************************* */
     if (argc < 3) {
         cerr << "Usage: testconc [algorithm] [domain-name] " <<
-            [problem-instance] [parameters]" << endl;
+            "[problem-instance] [parameters]" << endl;
         return 1;
     }
 
@@ -106,7 +106,7 @@ int main(int argc, char *args[])
         problem->setHeuristic(heuristic);
     } else {
         cerr << "Usage: testconc [algorithm] [domain-name] " <<
-            [problem-instance] [parameters]" << endl;
+            "[problem-instance] [parameters]" << endl;
         return 1;
     }
 
@@ -182,7 +182,6 @@ int main(int argc, char *args[])
             costPlan += (double(time2 - time1) / CLOCKS_PER_SEC) * 1000 / kappa;
         } else {
             a = greedyAction(problem, cur);
-            a = problem
         }
 
         if (a == nullptr) {

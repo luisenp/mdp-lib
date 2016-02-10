@@ -3,10 +3,10 @@
 
 #include <vector>
 
-#include "../state.h"
-#include "../action.h"
+#include "../State.h"
+#include "../Action.h"
 
-#include "../../mobj_problem.h"
+#include "../../MObjProblem.h"
 
 namespace mlmobj
 {

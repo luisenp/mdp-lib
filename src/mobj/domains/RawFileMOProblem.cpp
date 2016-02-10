@@ -2,7 +2,7 @@
 #include <fstream>
 #include <sstream>
 
-#include "../../../include/state.h"
+#include "../../../include/State.h"
 
 #include "../../../include/mobj/domains/RawFileMOProblem.h"
 #include "../../../include/mobj/domains/RawFileMOState.h"

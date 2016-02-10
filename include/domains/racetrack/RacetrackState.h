@@ -3,8 +3,8 @@
 
 #include <functional>
 
-#include "../../state.h"
-#include "../../problem.h"
+#include "../../Problem.h"
+#include "../../State.h"
 
 
 class RacetrackState : public mlcore::State
@@ -42,7 +42,10 @@ public:
     /**
      * Returns a pointer to the successor cache of this state.
      */
-    std::vector<mlcore::SuccessorsList>* allSuccessors() { return &allSuccessors_; }
+    std::vector<mlcore::SuccessorsList>* allSuccessors()
+    {
+        return &allSuccessors_;
+    }
 
     /**
      * Overrides method from State.

@@ -3,9 +3,9 @@
 
 #include <list>
 
-#include "state.h"
-#include "action.h"
-#include "heuristic.h"
+#include "State.h"
+#include "Action.h"
+#include "Heuristic.h"
 
 #include "util/general.h"
 

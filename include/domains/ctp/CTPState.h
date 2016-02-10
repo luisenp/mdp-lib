@@ -5,7 +5,7 @@
 #include <cassert>
 #include <unordered_set>
 
-#include "../../state.h"
+#include "../../State.h"
 
 class CTPProblem;
 

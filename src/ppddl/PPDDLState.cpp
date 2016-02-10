@@ -1,5 +1,5 @@
-#include "../../include/ppddl/ppddl_state.h"
-#include "../../include/ppddl/ppddl_problem.h"
+#include "../../include/ppddl/PPDDLProblem.h"
+#include "../../include/ppddl/PPDDLState.h"
 
 namespace mlppddl
 {

@@ -3,9 +3,9 @@
 
 #include <cassert>
 
-#include "../../problem.h"
-#include "../../state.h"
-#include "../../action.h"
+#include "../../Action.h"
+#include "../../Problem.h"
+#include "../../State.h"
 
 
 /**

@@ -8,7 +8,7 @@
 #include "../include/mobj/domains/MORTrackDetHeuristic.h"
 #include "../include/mobj/domains/MORacetrackProblem.h"
 #include "../include/mobj/domains/MORacetrackState.h"
-#include "../include/solvers/solver.h"
+#include "../include/solvers/Solver.h"
 #include "../include/solvers/mobj/CMDPSolver.h"
 #include "../include/solvers/mobj/CMDPLagrangeSearchSolver.h"
 #include "../include/solvers/mobj/LexiVISolver.h"

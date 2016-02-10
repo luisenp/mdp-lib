@@ -1,8 +1,9 @@
 #ifndef MDPLIB_SAILNOWINDHEUR_H
 #define MDPLIB_SAILNOWINDHEUR_H
 
+#include "../../Heuristic.h"
+
 #include "SailingProblem.h"
-#include "../../heuristic.h"
 
 class SailingProblem;
 class SailingState;

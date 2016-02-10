@@ -1,6 +1,6 @@
 #include <cassert>
 
-#include "../../include/solvers/solver.h"
+#include "../../include/solvers/Solver.h"
 
 namespace mlsolvers
 {

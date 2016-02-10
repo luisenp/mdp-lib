@@ -1,9 +1,10 @@
 #ifndef MDPLIB_CTPPROBLEM_H
 #define MDPLIB_CTPPROBLEM_H
 
-#include "../../problem.h"
-#include "../../util/graph.h"
 #include "../../domains/ctp/CTPState.h"
+#include "../../util/graph.h"
+
+#include "../../Problem.h"
 
 namespace ctp
 {

@@ -6,9 +6,9 @@
 #include <vector>
 #include <mutex>
 
-#include "../heuristic.h"
-#include "../problem.h"
-#include "../state.h"
+#include "../Heuristic.h"
+#include "../Problem.h"
+#include "../State.h"
 #include "../util/general.h"
 
 #define bb_cost first

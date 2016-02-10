@@ -1,4 +1,4 @@
-#include "../../include/ppddl/ppddl_action.h"
+#include "../../include/ppddl/PPDDLAction.h"
 
 namespace mlppddl
 {

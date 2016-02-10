@@ -1,7 +1,7 @@
 #ifndef MPDLIB_GRIDWORLDACTION_H
 #define MPDLIB_GRIDWORLDACTION_H
 
-#include "../../action.h"
+#include "../../Action.h"
 
 class GridWorldAction : public mlcore::Action
 {

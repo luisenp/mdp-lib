@@ -3,8 +3,9 @@
 
 #include <vector>
 
-#include "../state.h"
-#include "mobj_problem.h"
+#include "../State.h"
+
+#include "MObjProblem.h"
 
 namespace mlmobj {
 

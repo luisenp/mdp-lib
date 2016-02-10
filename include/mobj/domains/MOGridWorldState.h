@@ -1,7 +1,7 @@
 #ifndef MDPLIB_MOGRIDWORLDSTATE_H
 #define MDPLIB_MOGRIDWORLDSTATE_H
 
-#include "../mobj_state.h"
+#include "../MObjState.h"
 
 namespace mlmobj
 {

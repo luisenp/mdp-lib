@@ -2,10 +2,11 @@
 #define MDPLIB_PPDDLHEURISTIC_H
 
 #include "mini-gpt/heuristics.h"
-#include "../heuristic.h"
-#include "../state.h"
 
-#include "ppddl_problem.h"
+#include "../Heuristic.h"
+#include "../State.h"
+
+#include "PPDDLProblem.h"
 
 namespace mlppddl
 {

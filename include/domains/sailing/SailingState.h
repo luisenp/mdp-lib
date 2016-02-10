@@ -1,7 +1,7 @@
 #ifndef MDPLIB_SAILINGSTATE_H
 #define MDPLIB_SAILINGSTATE_H
 
-#include "../../state.h"
+#include "../../State.h"
 
 #include "SailingNoWindHeuristic.h"
 
