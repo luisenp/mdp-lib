@@ -14,7 +14,8 @@ bool mdplib_debug = false;
 
 void dsleep(int miliseconds)
 {
-    std::this_thread::sleep_for(std::chrono::milliseconds(miliseconds));
+    if (mdplib_debug)
+      std::this_thread::sleep_for(std::chrono::milliseconds(miliseconds));
 }
 
 bool nextComb(std::vector<int>& comb, int n, int k)

@@ -34,14 +34,17 @@ protected:
 
 public:
     ReducedModel(mlcore::Problem *originalProblem,
-                 ReducedTransitionConfig *config) :
-        originalProblem_(originalProblem), config_(config)
+                 ReducedTransitionConfig *config, int k) :
+        originalProblem_(originalProblem), config_(config), k_(k)
     {
         s0 = new ReducedState(originalProblem_->initialState(), 0);
         this->addState(s0);
+        actions_ = originalProblem->actions();
     }
 
     virtual ~ReducedModel() {}
+
+    void k(int value) { k_ = value; }
 
     /**
      * Implements a reduced transition model for this problem according to
@@ -55,7 +58,8 @@ public:
      */
     virtual bool goal(mlcore::State* s) const
     {
-        return originalProblem_->goal(s);
+        ReducedState* rs = (ReducedState* ) s;
+        return originalProblem_->goal(rs->originalState());
     }
 
     /**
@@ -63,7 +67,8 @@ public:
      */
     virtual double cost(mlcore::State* s, mlcore::Action* a) const
     {
-        return originalProblem_->cost(s, a);
+        ReducedState* rs = (ReducedState* ) s;
+        return originalProblem_->cost(rs->originalState(), a);
     }
 
     /**
@@ -71,7 +76,8 @@ public:
      */
     virtual bool applicable(mlcore::State* s, mlcore::Action* a) const
     {
-        return originalProblem_->applicable(s, a);
+        ReducedState* rs = (ReducedState* ) s;
+        return originalProblem_->applicable(rs->originalState(), a);
     }
 };
 

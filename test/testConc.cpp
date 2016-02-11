@@ -98,9 +98,9 @@ int main(int argc, char *args[])
         problem->setHeuristic(heuristic);
     } else if (strcmp(args[2], "race") == 0) {
         problem = new RacetrackProblem(args[3]);
-        ((RacetrackProblem*) problem)->setPError(0.10);
-        ((RacetrackProblem*) problem)->setPSlip(0.20);
-        ((RacetrackProblem*) problem)->setMDS(-1);
+        ((RacetrackProblem*) problem)->pError(0.10);
+        ((RacetrackProblem*) problem)->pSlip(0.20);
+        ((RacetrackProblem*) problem)->mds(-1);
         problem->generateAll();
         heuristic = new RTrackDetHeuristic(args[3]);
         problem->setHeuristic(heuristic);

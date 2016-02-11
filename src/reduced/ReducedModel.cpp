@@ -9,7 +9,7 @@ std::list<mlcore::Successor>
 ReducedModel::transition(mlcore::State* s, mlcore::Action *a)
 {
     ReducedState* rs = (ReducedState *) s;
-    std::vector<bool>& isPrimary =
+    std::vector<bool> isPrimary =
         config_->isPrimary(rs->originalState(), a);
 
     std::list<mlcore::Successor> successors;
@@ -21,11 +21,11 @@ ReducedModel::transition(mlcore::State* s, mlcore::Action *a)
         mlcore::State* next = nullptr;
         if (isPrimary[i]) {
             totalPrimaryProbability += origSucc.su_prob;
-            next = new ReducedState(origSucc.su_state,
-                                    rs->exceptionCount());
-        } else {
-            next = new ReducedState(origSucc.su_state,
-                                    rs->exceptionCount() + 1);
+            next = addState(new ReducedState(origSucc.su_state,
+                                             rs->exceptionCount()));
+        } else if (rs->exceptionCount() < k_) {
+            next = addState(new ReducedState(origSucc.su_state,
+                                             rs->exceptionCount() + 1));
         }
         if (rs->exceptionCount() < k_ || isPrimary[i]) {
             successors.push_back(mlcore::Successor(next, origSucc.su_prob));

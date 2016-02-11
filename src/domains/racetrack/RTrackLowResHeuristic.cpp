@@ -77,8 +77,8 @@ RTrackLowResHeuristic::RTrackLowResHeuristic(char* filename,
     lowResProblem_->track(lrTrack);
     lowResProblem_->starts(starts);
     lowResProblem_->goals(goals);
-    lowResProblem_->setPSlip(pSlip);
-    lowResProblem_->setPError(pError);
+    lowResProblem_->pSlip(pSlip);
+    lowResProblem_->pError(pError);
     lowResProblem_->generateAll();
 
     mlsolvers::VISolver vi(lowResProblem_, 1000, 0.001);

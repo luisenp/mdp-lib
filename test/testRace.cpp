@@ -28,9 +28,9 @@ int main(int argc, char* args[])
 {
     mdplib_debug = true;
     Problem* problem = new RacetrackProblem(args[1]);
-    ((RacetrackProblem*) problem)->setPError(0.10);
-    ((RacetrackProblem*) problem)->setPSlip(0.20);
-    ((RacetrackProblem*) problem)->setMDS(-1);
+    ((RacetrackProblem*) problem)->pError(0.10);
+    ((RacetrackProblem*) problem)->pSlip(0.20);
+    ((RacetrackProblem*) problem)->mds(-1);
     problem->generateAll();
 
     Heuristic* heuristic = new RTrackDetHeuristic(args[1]);

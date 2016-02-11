@@ -8,11 +8,11 @@
 #include "../../../include/domains/racetrack/RacetrackState.h"
 #include "../../../include/domains/racetrack/RTrackDetHeuristic.h"
 
-RTrackDetHeuristic::RTrackDetHeuristic(char* filename)
+RTrackDetHeuristic::RTrackDetHeuristic(const char* filename)
 {
     detProblem_ = new RacetrackProblem(filename);
-    detProblem_->setPSlip(0.00);
-    detProblem_->setPError(0.00);
+    detProblem_->pSlip(0.00);
+    detProblem_->pError(0.00);
     detProblem_->generateAll();
     mlsolvers::VISolver vi(detProblem_, 1000, 0.001);
     vi.solve();

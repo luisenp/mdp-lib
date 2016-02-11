@@ -86,24 +86,31 @@ public:
     /**
      * Constructs a racetrack problem instance from the given track file.
      */
-    RacetrackProblem(char* filename);
+    RacetrackProblem(const char* filename);
 
     virtual ~RacetrackProblem() {}
 
-    /**
-     * Returns the track.
-     */
     std::vector<std::vector <char> > & track() { return track_; }
 
-    /**
-     * Sets the track.
-     */
-    void track(std::vector<std::vector <char> > theTrack) { track_ = theTrack; }
+    void track(std::vector<std::vector <char> > value) { track_ = value; }
 
-    /**
-     * Sets the start locations.
-     */
+    void mds(int value) { mds_ = value; }
+
+    int mds() { return mds_; }
+
+    void pError(double value) { pError_ = value; }
+
+    double pError() { return pError_; }
+
+    void pSlip(double value) { pSlip_ = value; }
+
+    double pSlip() { return pSlip_; }
+
+    mlcore::State* absorbing() { return absorbing_; }
+
     void starts(IntPairSet theStarts) { starts_ = theStarts; }
+
+    IntPairSet& starts() { return starts_; }
 
     /**
      * Sets the goal locations.
@@ -114,21 +121,6 @@ public:
      * Prints the track.
      */
     void printTrack(std::ostream& os);
-
-    /**
-     * Sets the maximum deterministic speed for this problem.
-     */
-    void setMDS(int mds) { mds_ = mds; }
-
-    /**
-     * Sets the probability of chossing an unintended acceleration.
-     */
-    void setPError(double pError) { pError_ = pError; }
-
-    /**
-     * Sets the probability of slipping.
-     */
-    void setPSlip(double pSlip) { pSlip_ = pSlip; }
 
     /**
      * Overrides method from Problem.

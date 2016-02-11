@@ -10,7 +10,7 @@
 #include "../../../include/domains/racetrack/RacetrackState.h"
 #include "../../../include/domains/racetrack/RacetrackAction.h"
 
-RacetrackProblem::RacetrackProblem(char* filename)
+RacetrackProblem::RacetrackProblem(const char* filename)
 {
     std::ifstream myfile (filename);
     int width, height;
@@ -117,9 +117,9 @@ RacetrackProblem::transition(mlcore::State* s, mlcore::Action* a)
 
     bool isDet = (abs(rts->vx()) + abs(rts->vy())) < mds_;
     bool isErr = track_[rts->x()][rts->y()] == rtrack::error;
-    double p_err = isDet ? 0.0 : pError_*(1 - pSlip_);
+    double p_err = isDet ? 0.0 : pError_ * (1 - pSlip_);
     double p_slip = isDet ? 0.0 : pSlip_;
-    double p_int = isDet ? 1.0 : (1.0 - pSlip_)*(1.0 - pError_);
+    double p_int = isDet ? 1.0 : (1.0 - pSlip_) * (1.0 - pError_);
 
     if (!isErr) {
         p_int = 1.0 - p_slip;
@@ -141,7 +141,8 @@ RacetrackProblem::transition(mlcore::State* s, mlcore::Action* a)
     if (p_err != 0.0) {
         /*
          * "ta" stores how many other actions are within distance 1 of
-         * the current action. */
+         * the current action.
+         */
         int ta = abs(rta->ax()) + abs(rta->ay());
         int cnt = 4;
         if (ta == 1) cnt = 3;

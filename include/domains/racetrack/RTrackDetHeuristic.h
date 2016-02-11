@@ -15,7 +15,7 @@ class RTrackDetHeuristic : public mlcore::Heuristic
 private:
     RacetrackProblem* detProblem_;
 public:
-    RTrackDetHeuristic(char* filename);
+    RTrackDetHeuristic(const char* filename);
     virtual ~RTrackDetHeuristic()
     {
         delete detProblem_;

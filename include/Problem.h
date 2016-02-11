@@ -123,7 +123,7 @@ public:
     /**
     * Generates all states that can be reached from s0 and stores them.
     *
-    * Warning: This method changes the value of the 'bits' variable for all
+    * WARNING: This method changes the value of the 'bits' variable for all
     * states in the state set. Do not call this method while other code is using
     * these values.
     */
@@ -139,12 +139,13 @@ public:
             if (cur->checkBits(mdplib::VISITED))
                 continue;
             cur->setBits(mdplib::VISITED);
+            dprint1(cur);
             for (Action* a : actions_) {
                 if (!applicable(cur, a))
                     continue;
                 std::list<Successor> successors = transition(cur, a);
                 for (Successor sccr : successors) {
-                    queue.push_front(sccr.first);
+                    queue.push_front(sccr.su_state);
                 }
             }
         }

@@ -22,7 +22,7 @@ public:
      * primary or not.
      */
     virtual
-    std::vector<bool>& isPrimary(mlcore::State* s, mlcore::Action *a) const =0;
+    std::vector<bool> isPrimary(mlcore::State* s, mlcore::Action *a) const =0;
 };
 
 }

@@ -55,7 +55,7 @@ public:
 
     virtual int hashValue() const
     {
-        return originalState_->hashValue() + 37*exceptionCount_;
+        return originalState_->hashValue() + 37 * exceptionCount_;
     }
 
 
