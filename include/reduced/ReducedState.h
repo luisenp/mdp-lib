@@ -29,6 +29,8 @@ public:
 
     int exceptionCount() { return exceptionCount_; }
 
+    void exceptionCount(int value) { exceptionCount_ = value; }
+
     virtual mlcore::State& operator=(const mlcore::State& rhs)
     {
         if (this == &rhs)

@@ -174,6 +174,18 @@ public:
     }
 
     /**
+     * Returns a state stored that is equal to the given state, if such a state
+     * has been stored before. Otherwise, it returns a nullptr.
+     */
+    State* getState(State* s)
+    {
+        if (states_.count(s) > 0)
+            return *states_.find(s);
+        return nullptr;
+    }
+
+
+    /**
      * Returns the set containing all states generated so far.
      *
      * @return The states generated so far.

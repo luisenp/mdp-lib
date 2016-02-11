@@ -32,10 +32,19 @@ protected:
      */
     int k_;
 
+
+    /**
+     * If true, the reduced model will use the full transition function.
+     */
+    bool useFullTransition_;
+
 public:
     ReducedModel(mlcore::Problem *originalProblem,
                  ReducedTransitionConfig *config, int k) :
-        originalProblem_(originalProblem), config_(config), k_(k)
+        originalProblem_(originalProblem),
+        config_(config),
+        k_(k),
+        useFullTransition_(false)
     {
         s0 = new ReducedState(originalProblem_->initialState(), 0);
         this->addState(s0);
@@ -45,6 +54,8 @@ public:
     virtual ~ReducedModel() {}
 
     void k(int value) { k_ = value; }
+
+    void useFullTransition(bool value) { useFullTransition_ = value; }
 
     /**
      * Implements a reduced transition model for this problem according to
