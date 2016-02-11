@@ -139,7 +139,6 @@ public:
             if (cur->checkBits(mdplib::VISITED))
                 continue;
             cur->setBits(mdplib::VISITED);
-            dprint1(cur);
             for (Action* a : actions_) {
                 if (!applicable(cur, a))
                     continue;
