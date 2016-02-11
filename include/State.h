@@ -20,6 +20,9 @@ class Problem;
 
 /**
  * Abstract class for states.
+ *
+ * For the planning algorithms to work, it's important that all states have
+ * the variable "problem_" set to the problem they correspond to.
  */
 class State
 {

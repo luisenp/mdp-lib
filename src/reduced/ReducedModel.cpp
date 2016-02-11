@@ -23,10 +23,12 @@ ReducedModel::transition(mlcore::State* s, mlcore::Action *a)
         if (isPrimaryOutcome) {
             totalPrimaryProbability += origSucc.su_prob;
             next = addState(new ReducedState(origSucc.su_state,
-                                             rs->exceptionCount()));
+                                             rs->exceptionCount(),
+                                             this));
         } else if (rs->exceptionCount() < k_) {
             next = addState(new ReducedState(origSucc.su_state,
-                                             rs->exceptionCount() + 1));
+                                             rs->exceptionCount() + 1,
+                                             this));
         }
         if (rs->exceptionCount() < k_ || isPrimaryOutcome) {
             successors.push_back(mlcore::Successor(next, origSucc.su_prob));

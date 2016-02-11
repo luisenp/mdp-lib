@@ -6,6 +6,9 @@
 namespace mlreduced
 {
 
+/**
+ * A class that implements states for a reduced model.
+ */
 class ReducedState : public mlcore::State
 {
 protected:
@@ -20,8 +23,14 @@ protected:
     int exceptionCount_;
 
 public:
-    ReducedState(mlcore::State* originalState, int exceptionCount) :
-        originalState_(originalState), exceptionCount_(exceptionCount) { }
+    ReducedState(mlcore::State* originalState,
+                 int exceptionCount,
+                 mlcore::Problem* problem) :
+        originalState_(originalState),
+        exceptionCount_(exceptionCount)
+    {
+        problem_ = problem;
+    }
 
     virtual ~ReducedState() {}
 
@@ -39,6 +48,7 @@ public:
         ReducedState* rs = (ReducedState *) &rhs;
         originalState_ = rs->originalState_;
         exceptionCount_ = rs->exceptionCount_;
+        problem_ = rs->problem_;
         return *this;
     }
 

@@ -46,7 +46,7 @@ public:
         k_(k),
         useFullTransition_(false)
     {
-        s0 = new ReducedState(originalProblem_->initialState(), 0);
+        s0 = new ReducedState(originalProblem_->initialState(), 0, this);
         this->addState(s0);
         actions_ = originalProblem->actions();
     }

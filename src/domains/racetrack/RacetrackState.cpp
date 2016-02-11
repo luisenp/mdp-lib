@@ -3,7 +3,8 @@
 #include "../../../include/domains/racetrack/RacetrackAction.h"
 
 
-RacetrackState::RacetrackState(int x, int y, int vx, int vy, mlcore::Problem* problem)
+RacetrackState::RacetrackState(int x, int y, int vx, int vy,
+                                mlcore::Problem* problem)
 {
     x_ = x;
     y_ = y;
