@@ -165,9 +165,9 @@ public:
     {
         bool check = states_.insert(s).second;
         State* ret = *states_.find(s);
-        // checking if the pointers point to the same object.
+        // If the the state was found but the object representing it in memory is
+        // different to the given one, delete the given one.
         if ((void *) ret != (void *) s && !check) {
-            // another state was already stored, get rid of the input state.
             delete s;
         }
         return ret;

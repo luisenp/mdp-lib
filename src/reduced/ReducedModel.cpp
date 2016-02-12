@@ -1,3 +1,4 @@
+#include <list>
 #include <vector>
 
 #include "../../include/reduced/ReducedModel.h"
@@ -25,12 +26,17 @@ ReducedModel::transition(mlcore::State* s, mlcore::Action *a)
             next = addState(new ReducedState(origSucc.su_state,
                                              rs->exceptionCount(),
                                              this));
-        } else if (rs->exceptionCount() < k_) {
-            next = addState(new ReducedState(origSucc.su_state,
-                                             rs->exceptionCount() + 1,
-                                             this));
+        } else if (rs->exceptionCount() <= k_) {
+            if (rs->exceptionCount() < k_)
+                next = addState(new ReducedState(origSucc.su_state,
+                                                 rs->exceptionCount() + 1,
+                                                 this));
+            else if (useContPlanEvaluationTransition_)
+                next = addState(new ReducedState(origSucc.su_state, 0, this));
         }
-        if (rs->exceptionCount() < k_ || isPrimaryOutcome) {
+        if (useContPlanEvaluationTransition_ ||
+                rs->exceptionCount() < k_ ||
+                isPrimaryOutcome) {
             successors.push_back(mlcore::Successor(next, origSucc.su_prob));
         }
         i++;
@@ -44,5 +50,62 @@ ReducedModel::transition(mlcore::State* s, mlcore::Action *a)
     return successors;
 }
 
+
+double ReducedModel::evaluateContinualPlan(ReducedModel* reducedModel,
+                                            mlsolvers::Solver* solver)
+{
+    ReducedModel* markovChain = new ReducedModel(reducedModel->originalProblem_,
+                                                 reducedModel->config_,
+                                                 reducedModel->k_);
+
+    // First we generate all states that are reachable in the full model.
+    markovChain->useFullTransition(true);
+    markovChain->generateAll();
+
+    // Then we create copies of all these states for j=1,...,k and add them to the
+    // Markov Chain.
+    std::list<mlcore::State *> statesFullModel(markovChain->states().begin(),
+                                               markovChain->states().end());
+    for (int j = 1; j <= reducedModel->k_; j++) {
+        for (mlcore::State* s : statesFullModel) {
+            ReducedState* rs = (ReducedState* ) s;
+            markovChain->addState(
+                new ReducedState(rs->originalState(), j, markovChain));
+        }
+    }
+    // Finally, we make sure the MC uses the continual planning transition function.
+    markovChain->useContPlanEvaluationTransition(true);
+
+    // Now we compute the expected cost of traversing this Markov Chain.
+    double maxResidual = mdplib::dead_end_cost;
+    while (maxResidual > 1.0e-3) {
+        maxResidual = 0.0;
+        for (mlcore::State* s : markovChain->states()) {
+            if (markovChain->goal(s))
+                continue;
+            ReducedState* rs = (ReducedState *) s;
+            mlcore::State* currentState =
+                reducedModel->addState(new ReducedState(rs->originalState(),
+                                                         rs->exceptionCount(),
+                                                         reducedModel));
+            if (currentState->bestAction() == nullptr)
+                solver->solve(currentState);
+            mlcore::Action *a = currentState->bestAction();
+            double previousCost = s->cost();
+            double currentCost = 0.0;
+            for (mlcore::Successor successor : markovChain->transition(s, a)) {
+                currentCost += successor.su_prob * successor.su_state->cost();
+            }
+            currentCost *= markovChain->gamma();
+            currentCost += markovChain->cost(s, a);
+            double currentResidual = fabs(currentCost - previousCost);
+            if (currentResidual > maxResidual) {
+                maxResidual = currentResidual;
+            }
+            s->setCost(currentCost);
+        }
+    }
+    return markovChain->initialState()->cost();
 }
 
+}

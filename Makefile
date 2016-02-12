@@ -170,7 +170,7 @@ conc: $(ALL_CPP) $(ALL_H)
 	$(CC) $(CFLAGS) $(INCLUDE) -c $(DOM_CPP)
 	mkdir -p test
 	mv *.o test/
-	$(CC) $(CFLAGS) $(INCLUDE) -o testconc $(TD)/testConc.cpp $(TD)/*.o $(LIBS)
+	$(CC) $(CFLAGS) $(INCLUDE) -o testconc.out $(TD)/testConc.cpp $(TD)/*.o $(LIBS)
 	rm test/*.o
 
 # Compiles the Racetrack domain test program #
@@ -178,7 +178,7 @@ race: $(I_H) $(RACE_H) $(RACE_CPP) $(S_CPP) libmdp
 	$(CC) $(CFLAGS) -I$(ID_RACE) -I$(ID) -c $(RACE_CPP)
 	mkdir -p test
 	mv *.o test/
-	$(CC) $(CFLAGS) $(INCLUDE) -o testrace $(TD)/testRace.cpp $(TD)/*.o $(LIBS)
+	$(CC) $(CFLAGS) $(INCLUDE) -o testrace.out $(TD)/testRace.cpp $(TD)/*.o $(LIBS)
 	rm test/*.o
 
 # Compiles the Sailing domain test program #
@@ -186,7 +186,7 @@ sail: $(I_H) $(SAIL_H) $(SAIL_CPP) $(S_CPP) libmdp
 	$(CC) $(CFLAGS) -I$(ID_SAIL) -I$(ID) -c $(SAIL_CPP)
 	mkdir -p test
 	mv *.o test/
-	$(CC) $(CFLAGS) $(INCLUDE) -o testsail $(TD)/testSail.cpp $(TD)/*.o $(LIBS)
+	$(CC) $(CFLAGS) $(INCLUDE) -o testsail.out $(TD)/testSail.cpp $(TD)/*.o $(LIBS)
 	rm test/*.o
 
 # Compiles the Canadian Traveler Problem domain test program #
@@ -194,7 +194,7 @@ ctp: $(CTP_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(CTP_H) libmdp
 	$(CC) $(CFLAGS) -I$(ID_CTP) $(INCLUDE_CORE) -c $(CTP_CPP)
 	mkdir -p test
 	mv *.o test/
-	$(CC) $(CFLAGS) -I$(ID_CTP) $(INCLUDE_CORE) -o testctp $(TD)/testCTP.cpp $(TD)/*.o $(LIBS)
+	$(CC) $(CFLAGS) -I$(ID_CTP) $(INCLUDE_CORE) -o testctp.out $(TD)/testCTP.cpp $(TD)/*.o $(LIBS)
 	rm test/*.o
 
 # Compiles the Gridworld domain test program #
@@ -202,7 +202,7 @@ gw: $(GW_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(GW_H) libmdp
 	$(CC) $(CFLAGS) -I$(ID_GW) -I$(ID) -I$(ID_SOLV) -c $(GW_CPP)
 	mkdir -p test
 	mv *.o test/
-	$(CC) $(CFLAGS) -I$(ID_GW) $(INCLUDE_CORE) -o testgw $(TD)/testGridWorld.cpp $(TD)/*.o $(LIBS)
+	$(CC) $(CFLAGS) -I$(ID_GW) $(INCLUDE_CORE) -o testgw.out $(TD)/testGridWorld.cpp $(TD)/*.o $(LIBS)
 	rm test/*.o
 
 # Compiles a test program for a simple binary tree domain  #
@@ -210,7 +210,7 @@ b2t: $(BT_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(BT_H) libmdp
 	$(CC) $(CFLAGS) -I$(ID_BT) $(INCLUDE_CORE) -c $(BT_CPP)
 	mkdir -p test
 	mv *.o test/
-	$(CC) $(CFLAGS) -I$(ID_BT) $(INCLUDE_CORE) -o testb2t $(TD)/testB2T.cpp $(TD)/*.o $(LIBS)
+	$(CC) $(CFLAGS) -I$(ID_BT) $(INCLUDE_CORE) -o testb2t.out $(TD)/testB2T.cpp $(TD)/*.o $(LIBS)
 	rm test/*.o
 
 # Compiles the mini-gpt library
@@ -225,7 +225,7 @@ ppddl: libmdp src/ppddl/*.cpp include/ppddl/*.h minigpt
 	ar rvs lib/libmdp_ppddl.a *.o
 	mkdir -p $(OD_PPDDL)
 	mv *.o $(OD_PPDDL)
-	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) $(INCLUDE_PPDDL) -o testppddl test/testPPDDL.cpp include/ppddl/mini-gpt/heuristics.cc $(LIBS) lib/libminigpt.a lib/libmdp_ppddl.a
+	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) $(INCLUDE_PPDDL) -o testppddl.out test/testPPDDL.cpp include/ppddl/mini-gpt/heuristics.cc $(LIBS) lib/libminigpt.a lib/libmdp_ppddl.a
 
 # Compiles the reduced model code
 reduced: libmdp $(SD_REDUCED)/*.cpp $(ID_REDUCED)/*.h
@@ -237,7 +237,7 @@ reduced: libmdp $(SD_REDUCED)/*.cpp $(ID_REDUCED)/*.h
 	$(CC) $(CFLAGS) $(INCLUDE) -c $(DOM_CPP)
 	mkdir -p test
 	mv *.o test/
-	$(CC) $(CFLAGS) -I$(ID_REDUCED) $(INCLUDE_CORE) -o testreduced $(TD)/reduced/testReduced.cpp test/*.o $(LIBS) lib/libmdp_reduced.a
+	$(CC) $(CFLAGS) -I$(ID_REDUCED) $(INCLUDE_CORE) -o testreduced.out $(TD)/reduced/testReduced.cpp test/*.o $(LIBS) lib/libmdp_reduced.a
 
 .PHONY: clean
 clean:

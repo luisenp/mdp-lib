@@ -72,14 +72,17 @@ int main(int argc, char* args[])
 
     double totalPlanningTime = 0.0;
     clock_t startTime = clock();
-    LAOStarSolver lao(reducedModel);
+    LAOStarSolver lao(reducedModel, 1.0e-3);
     lao.solve(reducedModel->initialState());
     clock_t endTime = clock();
     totalPlanningTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
 
+    double expCostCP = ReducedModel::evaluateContinualPlan((ReducedModel *) reducedModel, &lao);
+    cout << expCostCP << endl;
+
+    double cost = 0.0;
     State* currentState = reducedModel->initialState();
     ReducedState* rs = (ReducedState *) currentState;
-    double cost = 0.0;
     while (!reducedModel->goal(currentState)) {
         if (verbosity > 100)
             cout << currentState << "  " << currentState->bestAction() << endl;
@@ -130,8 +133,7 @@ int main(int argc, char* args[])
     if (verbosity > 100) {
         cout << "Total cost " << cost << endl;
         cout << "Total planning time " << totalPlanningTime << endl;
-    }
-    else
+    } else
         cout << cost << " " << totalPlanningTime << endl;
 
     return 0;
