@@ -5,7 +5,7 @@
 
 # Compilation flags and variables
 CC = g++
-CFLAGS = -std=c++11 -O3 -DATOM_STATES -pthread
+CFLAGS = -std=c++11 -g -DATOM_STATES -pthread
 
 # Variables for directories
 ID = include
@@ -225,7 +225,7 @@ ppddl: libmdp src/ppddl/*.cpp include/ppddl/*.h minigpt
 	ar rvs lib/libmdp_ppddl.a *.o
 	mkdir -p $(OD_PPDDL)
 	mv *.o $(OD_PPDDL)
-	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) $(INCLUDE_PPDDL) -o testppddl.out $(TD)/testPPDDL.cpp include/ppddl/mini-gpt/heuristics.cc $(LIBS) lib/libminigpt.a lib/libmdp_ppddl.a
+#	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) $(INCLUDE_PPDDL) -o testppddl.out $(TD)/testPPDDL.cpp include/ppddl/mini-gpt/heuristics.cc $(LIBS) lib/libminigpt.a lib/libmdp_ppddl.a
 
 # Compiles the reduced model code
 reduced: libmdp ppddl $(SD_REDUCED)/*.cpp $(ID_REDUCED)/*.h

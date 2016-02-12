@@ -169,8 +169,9 @@ static bool read_file( const char* ppddlFileName )
 bool initPPDDL(string ppddlArgs, problem_t* internalPPDDLProblem)
 {
     size_t pos_equals = ppddlArgs.find(":");
+    cout << ppddlArgs << endl;
     assert(pos_equals != string::npos);
-    string file = ppddlArgs.substr(2, pos_equals - 2);
+    string file = ppddlArgs.substr(0, pos_equals);
     string prob = ppddlArgs.substr(pos_equals + 1, ppddlArgs.size() - pos_equals);
 
     pair<state_t *,Rational> *initial = nullptr;
@@ -216,6 +217,10 @@ int main(int argc, char* args[])
             mds = stoi(flag_value("mds"));
         string trackName = flag_value("problem");
         initRacetrack(trackName, mds);
+    } else if (domainName == "ppddl") {
+        string ppddlArgs = flag_value("problem");
+        problem_t *internalPPDDLProblem = nullptr;
+        initPPDDL(ppddlArgs, internalPPDDLProblem);
     }
 
     if (flag_is_registered("use_full"))
