@@ -10,7 +10,7 @@
 #include "../State.h"
 
 #include "ReducedState.h"
-#include "ReducedTransitionConfig.h"
+#include "ReducedTransition.h"
 
 namespace mlreduced
 {
@@ -27,7 +27,7 @@ protected:
      * An object describing the outcomes to be considered primary for
      * each state, action pair.
      */
-    ReducedTransitionConfig *config_;
+    ReducedTransition *reducedTransition_;
 
     /**
      * The bound on the number of exceptions.
@@ -53,9 +53,9 @@ protected:
 
 public:
     ReducedModel(mlcore::Problem *originalProblem,
-                 ReducedTransitionConfig *config, int k) :
+                 ReducedTransition *reducedTransition, int k) :
         originalProblem_(originalProblem),
-        config_(config),
+        reducedTransition_(reducedTransition),
         k_(k),
         useFullTransition_(false),
         useContPlanEvaluationTransition_(false)
@@ -87,7 +87,7 @@ public:
      * The method receives a solver to compute the continual plan.
      *
      * @param reducedModel the reduced model that induces the plan.
-     * @param solver the algorithm used to generate the plan. It must be
+     * @param solver the MPD solver used to generate the plan. It must be
      *              allocated before calling this function with the
      *              given reduced model.
      * @return the expected cost of the continual plan.
@@ -96,8 +96,25 @@ public:
                                           mlsolvers::Solver* solver);
 
     /**
+     * Finds the best reduced model that can be created for the given problem
+     * out of the list of given reduced transition functions.
+     *
+     * @param originalProblem the problem to be reduced.
+     * @param reducedTransitions the transitions to try.
+     * @param k the bound on the number of exceptions.
+     * @param heuristic the heuristic to use.
+     * @return the best reduced transition function out of the given list.
+     *        The reductions are evaluated using evaluateContinualPlan.
+     */
+    static ReducedTransition* getBestReduction(
+        mlcore::Problem *originalProblem,
+        std::list<ReducedTransition *> reducedTransitions,
+        int k,
+        ReducedHeuristicWrapper* heuristic);
+
+    /**
      * Implements a reduced transition model for this problem according to
-     * the stored configuration.
+     * the stored reduced transition.
      */
     virtual std::list<mlcore::Successor>
     transition(mlcore::State* s, mlcore::Action *a);

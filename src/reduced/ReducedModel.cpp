@@ -1,6 +1,9 @@
 #include <list>
 #include <vector>
 
+#include "../../include/solvers/LAOStarSolver.h"
+
+#include "../../include/reduced/ReducedHeuristicWrapper.h"
 #include "../../include/reduced/ReducedModel.h"
 
 namespace mlreduced
@@ -11,7 +14,7 @@ ReducedModel::transition(mlcore::State* s, mlcore::Action *a)
 {
     ReducedState* rs = (ReducedState *) s;
     std::vector<bool> primaryIndicators =
-        config_->isPrimary(rs->originalState(), a);
+        reducedTransition_->isPrimary(rs->originalState(), a);
 
     std::list<mlcore::Successor> successors;
     std::list<mlcore::Successor> originalSuccessors =
@@ -55,7 +58,7 @@ double ReducedModel::evaluateContinualPlan(ReducedModel* reducedModel,
                                             mlsolvers::Solver* solver)
 {
     ReducedModel* markovChain = new ReducedModel(reducedModel->originalProblem_,
-                                                 reducedModel->config_,
+                                                 reducedModel->reducedTransition_,
                                                  reducedModel->k_);
 
     // First we generate all states that are reachable in the full model.
@@ -108,4 +111,28 @@ double ReducedModel::evaluateContinualPlan(ReducedModel* reducedModel,
     return markovChain->initialState()->cost();
 }
 
+
+ReducedTransition*
+ReducedModel::getBestReduction(mlcore::Problem *originalProblem,
+                               std::list<ReducedTransition *> reducedTransitions,
+                               int k,
+                               ReducedHeuristicWrapper* heuristic)
+{
+    double bestCost = mdplib::dead_end_cost + 1;
+    ReducedTransition* bestReduction = nullptr;
+    for (ReducedTransition* reducedTransition : reducedTransitions) {
+        ReducedModel* reducedModel =
+            new ReducedModel(originalProblem, reducedTransition, k);
+        reducedModel->setHeuristic(heuristic);
+        mlsolvers::LAOStarSolver solver(reducedModel, 1.0e-03);
+        double expectedCostReduction = evaluateContinualPlan(reducedModel, &solver);
+        if (expectedCostReduction < bestCost) {
+            bestCost = expectedCostReduction;
+            bestReduction = reducedTransition;
+        }
+    }
+    return bestReduction;
 }
+
+
+} // namespace mlreduced

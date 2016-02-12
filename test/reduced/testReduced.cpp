@@ -6,10 +6,11 @@
 #include "../../include/domains/racetrack/RacetrackProblem.h"
 #include "../../include/domains/racetrack/RTrackDetHeuristic.h"
 
+#include "../../include/reduced/LeastLikelyOutcomeReduction.h"
 #include "../../include/reduced/RacetrackObviousReduction.h"
 #include "../../include/reduced/ReducedHeuristicWrapper.h"
 #include "../../include/reduced/ReducedModel.h"
-#include "../../include/reduced/ReducedTransitionConfig.h"
+#include "../../include/reduced/ReducedTransition.h"
 
 #include "../../include/solvers/Solver.h"
 #include "../../include/solvers/LAOStarSolver.h"
@@ -55,9 +56,9 @@ int main(int argc, char* args[])
     int k = 0;
     if (flag_is_registered_with_value("k"))
         k = stoi(flag_value("k"));
-    ReducedTransitionConfig* reducedConfig =
+    ReducedTransition* obviousReduction =
         new RacetrackObviousReduction((RacetrackProblem *) problem);
-    Problem* reducedModel = new ReducedModel(problem, reducedConfig, k);
+    Problem* reducedModel = new ReducedModel(problem, obviousReduction, k);
     reducedModel->setHeuristic(reducedHeuristic);
 
     if (flag_is_registered("use_full"))
@@ -77,8 +78,21 @@ int main(int argc, char* args[])
     clock_t endTime = clock();
     totalPlanningTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
 
-    double expCostCP = ReducedModel::evaluateContinualPlan((ReducedModel *) reducedModel, &lao);
+    double expCostCP =
+        ReducedModel::evaluateContinualPlan((ReducedModel *) reducedModel, &lao);
     cout << expCostCP << endl;
+
+    ReducedTransition* lloReduction =
+        new LeastLikelyOutcomeReduction((RacetrackProblem *) problem);
+    std::list<ReducedTransition *> reductions;
+    reductions.push_back(obviousReduction);
+    reductions.push_back(lloReduction);
+    ReducedTransition* bestReduction =
+        ReducedModel::getBestReduction(problem,
+                                       reductions,
+                                       k,
+                                       (ReducedHeuristicWrapper *) reducedHeuristic);
+    assert(bestReduction == obviousReduction);
 
     double cost = 0.0;
     State* currentState = reducedModel->initialState();

@@ -7,15 +7,16 @@
 #include "../domains/racetrack/RacetrackProblem.h"
 #include "../domains/racetrack/RacetrackState.h"
 
-#include "ReducedTransitionConfig.h"
+#include "ReducedTransition.h"
 
 namespace mlreduced
 {
 
-class RacetrackObviousReduction : public ReducedTransitionConfig
+class RacetrackObviousReduction : public ReducedTransition
 {
 private:
     RacetrackProblem* problem_;
+
 public:
     RacetrackObviousReduction(RacetrackProblem* problem) : problem_(problem) { }
 

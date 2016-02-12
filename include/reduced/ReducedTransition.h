@@ -1,5 +1,5 @@
-#ifndef MDPLIB_REDUCEDTRANSITIONCONFIG_H
-#define MDPLIB_REDUCEDTRANSITIONCONFIG_H
+#ifndef MDPLIB_REDUCEDTRANSITION_H
+#define MDPLIB_REDUCEDTRANSITION_H
 
 #include <vector>
 
@@ -9,12 +9,12 @@
 namespace mlreduced
 {
 
-class ReducedTransitionConfig
+class ReducedTransition
 {
 public:
-    ReducedTransitionConfig() {}
+    ReducedTransition() {}
 
-    virtual ~ReducedTransitionConfig() {}
+    virtual ~ReducedTransition() {}
 
     /**
      * This method returns a list of booleans indicating whether the

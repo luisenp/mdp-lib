@@ -7,6 +7,8 @@
 #include "../Problem.h"
 #include "../State.h"
 
+#include "Solver.h"
+
 namespace mlsolvers
 {
     typedef std::unordered_map<mlcore::State*,

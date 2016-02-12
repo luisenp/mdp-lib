@@ -1,6 +1,9 @@
 #ifndef MDPLIB_LAOSTARSOLVER_H
 #define MDPLIB_LAOSTARSOLVER_H
 
+#include "Solver.h"
+
+
 namespace mlsolvers
 {
 
