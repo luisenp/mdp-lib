@@ -1,10 +1,19 @@
 #include <cassert>
 #include <ctime>
+#include <sstream>
 #include <string>
+#include <typeinfo>
 
 #include "../../include/Problem.h"
 #include "../../include/domains/racetrack/RacetrackProblem.h"
 #include "../../include/domains/racetrack/RTrackDetHeuristic.h"
+#include "../../include/ppddl/PPDDLHeuristic.h"
+#include "../../include/ppddl/PPDDLProblem.h"
+#include "../include/ppddl/mini-gpt/states.h"
+#include "../include/ppddl/mini-gpt/problems.h"
+#include "../include/ppddl/mini-gpt/domains.h"
+#include "../include/ppddl/mini-gpt/states.h"
+#include "../include/ppddl/mini-gpt/exceptions.h"
 
 #include "../../include/reduced/LeastLikelyOutcomeReduction.h"
 #include "../../include/reduced/RacetrackObviousReduction.h"
@@ -18,25 +27,32 @@
 #include "../../include/util/flags.h"
 #include "../../include/util/general.h"
 
+
 using namespace std;
 using namespace mdplib;
-using namespace mlcore;
+using namespace mlppddl;
 using namespace mlreduced;
 using namespace mlsolvers;
 
+extern int yyparse();
+extern FILE* yyin;
+string current_file;
+int warning_level = 0;
+
 static int verbosity = 0;
 static int k = 0;
-Problem* problem = nullptr;
-Heuristic* heuristic = nullptr;
-Problem* reducedModel = nullptr;
-Heuristic* reducedHeuristic = nullptr;
+
+mlcore::Problem* problem = nullptr;
+mlcore::Heuristic* heuristic = nullptr;
+mlcore::Problem* reducedModel = nullptr;
+mlcore::Heuristic* reducedHeuristic = nullptr;
 
 
-pair<double, double> simulate(Problem* reducedModel, Solver & solver)
+pair<double, double> simulate(mlcore::Problem* reducedModel, Solver & solver)
 {
     double cost = 0.0;
     double totalPlanningTime = 0.0;
-    State* currentState = reducedModel->initialState();
+    mlcore::State* currentState = reducedModel->initialState();
     ReducedState* rs = (ReducedState *) currentState;
     while (!reducedModel->goal(currentState)) {
         if (verbosity > 100)
@@ -92,7 +108,7 @@ pair<double, double> simulate(Problem* reducedModel, Solver & solver)
 
 void initRacetrack(string trackName, int mds)
 {
-    Problem* problem = new RacetrackProblem(trackName.c_str());
+    mlcore::Problem* problem = new RacetrackProblem(trackName.c_str());
     ((RacetrackProblem*) problem)->pError(0.05);
     ((RacetrackProblem*) problem)->pSlip(0.10);
     ((RacetrackProblem*) problem)->mds(mds);
@@ -111,7 +127,7 @@ void initRacetrack(string trackName, int mds)
     // Testing the code that tries different reductions of the racetrack.
     ReducedTransition* lloReduction =
         new LeastLikelyOutcomeReduction((RacetrackProblem *) problem);
-    std::list<ReducedTransition *> reductions;
+    list<ReducedTransition *> reductions;
     reductions.push_back(obviousReduction);
     reductions.push_back(lloReduction);
     ReducedTransition* bestReduction =
@@ -120,6 +136,61 @@ void initRacetrack(string trackName, int mds)
     assert(bestReduction == obviousReduction);
 
 }
+
+
+/*
+ * Parses the given PPDDL file, and returns true on success.
+ */
+static bool read_file( const char* ppddlFileName )
+{
+    yyin = fopen( ppddlFileName, "r" );
+    if( yyin == NULL ) {
+        cout << "parser:" << ppddlFileName <<
+            ": " << strerror( errno ) << endl;
+        return( false );
+    }
+    else {
+        current_file = ppddlFileName;
+        bool success;
+        try {
+            success = (yyparse() == 0);
+        }
+        catch( Exception exception ) {
+            fclose( yyin );
+            cout << exception << endl;
+            return( false );
+        }
+        fclose( yyin );
+        return( success );
+    }
+}
+
+
+bool initPPDDL(string ppddlArgs, problem_t* internalPPDDLProblem)
+{
+    size_t pos_equals = ppddlArgs.find(":");
+    assert(pos_equals != string::npos);
+    string file = ppddlArgs.substr(2, pos_equals - 2);
+    string prob = ppddlArgs.substr(pos_equals + 1, ppddlArgs.size() - pos_equals);
+
+    pair<state_t *,Rational> *initial = nullptr;
+
+    if( !read_file( file.c_str() ) ) {
+        cerr << "<main>: ERROR: couldn't read problem file `" << file << endl;
+        return false;
+    }
+    internalPPDDLProblem = (problem_t*) problem_t::find( prob.c_str() );
+    if( !internalPPDDLProblem ) {
+        cerr << "<main>: ERROR: problem `" << prob <<
+            "' is not defined in file '" << file << "'" << endl;
+        return false;
+    }
+
+    problem = new PPDDLProblem(internalPPDDLProblem);
+    heuristic = new mlppddl::PPDDLHeuristic((PPDDLProblem*) problem, mlppddl::FF);
+    problem->setHeuristic(heuristic);
+}
+
 
 int main(int argc, char* args[])
 {

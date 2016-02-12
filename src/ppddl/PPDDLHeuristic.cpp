@@ -7,7 +7,7 @@
 namespace mlppddl
 {
 
-PPDDLHeuristic::PPDDLHeuristic(Problem* problem, HeuristicType type, int m)
+PPDDLHeuristic::PPDDLHeuristic(PPDDLProblem* problem, HeuristicType type, int m)
 {
     if (type == atomMin1Forward) {
         pHeuristic_ =
@@ -26,7 +26,7 @@ PPDDLHeuristic::PPDDLHeuristic(Problem* problem, HeuristicType type, int m)
 
 double PPDDLHeuristic::cost(const mlcore::State* s) const
 {
-    State* ppddlState = (State *) s;
+    PPDDLState* ppddlState = (PPDDLState *) s;
     return pHeuristic_->value(*(ppddlState->pState()));
 }
 

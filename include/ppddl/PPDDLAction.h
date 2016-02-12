@@ -10,7 +10,7 @@
 namespace mlppddl
 {
 
-class Action : public mlcore::Action
+class PPDDLAction : public mlcore::Action
 {
 private:
     int index_;
@@ -19,7 +19,7 @@ private:
     virtual std::ostream& print(std::ostream& os) const;
 
 public:
-    Action(const action_t* pAction, int index) :
+    PPDDLAction(const action_t* pAction, int index) :
         pAction_(pAction), index_(index) {}
 
     const action_t* pAction() { return pAction_; }
@@ -32,7 +32,7 @@ public:
         if (this == &rhs)
             return *this;
 
-        Action* action = (Action*)  & rhs;
+        PPDDLAction* action = (PPDDLAction*)  & rhs;
         pAction_ = action->pAction_;
         index_ = action->index_;
         return *this;

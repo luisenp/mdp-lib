@@ -8,7 +8,7 @@
 namespace mlppddl
 {
 
-class State : public mlcore::State
+class PPDDLState : public mlcore::State
 {
 private:
     state_t* pState_;
@@ -17,18 +17,18 @@ private:
 
 public:
 
-    State(mlcore::Problem* problem)
+    PPDDLState(mlcore::Problem* problem)
     {
         mlcore::State::problem_ = problem;
         pState_ = new state_t;
     }
 
-    State(mlcore::Problem* problem, state_t* pState) : pState_(pState)
+    PPDDLState(mlcore::Problem* problem, state_t* pState) : pState_(pState)
     {
         mlcore::State::problem_ = problem;
     }
 
-    virtual ~State()
+    virtual ~PPDDLState()
     {
         delete pState_;
     }
@@ -45,7 +45,7 @@ public:
         if (this == &rhs)
             return *this;
 
-        State* state = (State*)  & rhs;
+        PPDDLState* state = (PPDDLState*)  & rhs;
         pState_ = state->pState_;
         problem_ = state->problem_;
         return *this;
@@ -56,7 +56,7 @@ public:
      */
     virtual bool operator==(const mlcore::State& rhs) const
     {
-        State* state = (State*)  & rhs;
+        PPDDLState* state = (PPDDLState*)  & rhs;
         return *pState_ == *state->pState_;
     }
 
@@ -65,7 +65,7 @@ public:
      */
     virtual bool equals(mlcore::State* rhs) const
     {
-        State* state = (State*)  & rhs;
+        PPDDLState* state = (PPDDLState*)  & rhs;
         return *this == *rhs;
     }
 

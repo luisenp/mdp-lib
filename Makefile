@@ -225,10 +225,10 @@ ppddl: libmdp src/ppddl/*.cpp include/ppddl/*.h minigpt
 	ar rvs lib/libmdp_ppddl.a *.o
 	mkdir -p $(OD_PPDDL)
 	mv *.o $(OD_PPDDL)
-	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) $(INCLUDE_PPDDL) -o testppddl.out test/testPPDDL.cpp include/ppddl/mini-gpt/heuristics.cc $(LIBS) lib/libminigpt.a lib/libmdp_ppddl.a
+	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) $(INCLUDE_PPDDL) -o testppddl.out $(TD)/testPPDDL.cpp include/ppddl/mini-gpt/heuristics.cc $(LIBS) lib/libminigpt.a lib/libmdp_ppddl.a
 
 # Compiles the reduced model code
-reduced: libmdp $(SD_REDUCED)/*.cpp $(ID_REDUCED)/*.h
+reduced: libmdp ppddl $(SD_REDUCED)/*.cpp $(ID_REDUCED)/*.h
 	$(CC) $(CFLAGS) -Iinclude -I$(ID_REDUCED) -c $(SD_REDUCED)/*.cpp
 	mkdir -p test
 	ar rvs lib/libmdp_reduced.a *.o
@@ -237,7 +237,7 @@ reduced: libmdp $(SD_REDUCED)/*.cpp $(ID_REDUCED)/*.h
 	$(CC) $(CFLAGS) $(INCLUDE) -c $(DOM_CPP)
 	mkdir -p test
 	mv *.o test/
-	$(CC) $(CFLAGS) -I$(ID_REDUCED) $(INCLUDE_CORE) -o testreduced.out $(TD)/reduced/testReduced.cpp test/*.o $(LIBS) lib/libmdp_reduced.a
+	$(CC) $(CFLAGS) -I$(ID_REDUCED) $(INCLUDE_CORE) $(INCLUDE_PPDDL) -o testreduced.out $(TD)/reduced/testReduced.cpp test/*.o include/ppddl/mini-gpt/heuristics.cc $(LIBS) lib/libmdp_reduced.a lib/libminigpt.a lib/libmdp_ppddl.a
 
 .PHONY: clean
 clean:

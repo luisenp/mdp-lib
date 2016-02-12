@@ -5,7 +5,7 @@
 namespace mlppddl
 {
 
-Problem::Problem(problem_t* pProblem) : pProblem_(pProblem)
+PPDDLProblem::PPDDLProblem(problem_t* pProblem) : pProblem_(pProblem)
 {
     pProblem_->instantiate_actions();
     pProblem_->flatten();
@@ -16,32 +16,32 @@ Problem::Problem(problem_t* pProblem) : pProblem_(pProblem)
         display_[i].first = new state_t;
 
     pProblem_->initial_states(display_);
-    s0 = new State(this);
-    ((State *) s0)->setPState(*display_[0].first);
+    s0 = new PPDDLState(this);
+    ((PPDDLState *) s0)->setPState(*display_[0].first);
     this->addState(s0);
 
     actionList_t pActions = pProblem_->actionsT();
     for (int i = 0; i < pActions.size(); i++)
-        actions_.push_back(new Action(pActions[i], i));
+        actions_.push_back(new PPDDLAction(pActions[i], i));
 }
 
-bool Problem::goal(mlcore::State* s) const
+bool PPDDLProblem::goal(mlcore::State* s) const
 {
-    State* state = (State *) s;
+    PPDDLState* state = (PPDDLState *) s;
     return pProblem_->goal().holds(*state->pState());
 }
 
-std::list<mlcore::Successor> Problem::transition(mlcore::State* s,
+std::list<mlcore::Successor> PPDDLProblem::transition(mlcore::State* s,
                                                  mlcore::Action* a)
 {
     std::list<mlcore::Successor> successors;
 
-    Action* action = (Action *) a;
-    State* state = (State *) s;
+    PPDDLAction* action = (PPDDLAction *) a;
+    PPDDLState* state = (PPDDLState *) s;
 
     pProblem_->expand(*action->pAction(), *state->pState(), display_);
     for (int i = 0; display_[i].second != Rational(-1); i++) {
-        State* nextState = new State(this);
+        PPDDLState* nextState = new PPDDLState(this);
         nextState->setPState(*display_[i].first);
         successors.push_back(
             mlcore::Successor(this->addState(nextState),
@@ -50,18 +50,18 @@ std::list<mlcore::Successor> Problem::transition(mlcore::State* s,
     return successors;
 }
 
-double Problem::cost(mlcore::State* s, mlcore::Action* a) const
+double PPDDLProblem::cost(mlcore::State* s, mlcore::Action* a) const
 {
-    Action* action = (Action *) a;
-    State* state = (State *) s;
+    PPDDLAction* action = (PPDDLAction *) a;
+    PPDDLState* state = (PPDDLState *) s;
 
     return action->pAction()->cost(*state->pState());
 }
 
-bool Problem::applicable(mlcore::State* s, mlcore::Action* a) const
+bool PPDDLProblem::applicable(mlcore::State* s, mlcore::Action* a) const
 {
-    Action* action = (Action *) a;
-    State* state = (State *) s;
+    PPDDLAction* action = (PPDDLAction *) a;
+    PPDDLState* state = (PPDDLState *) s;
 
     return action->pAction()->enabled(*state->pState());
 }

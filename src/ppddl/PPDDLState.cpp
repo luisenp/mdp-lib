@@ -3,8 +3,8 @@
 
 namespace mlppddl
 {
-    std::ostream& State::print(std::ostream& os) const
+    std::ostream& PPDDLState::print(std::ostream& os) const
     {
-        pState_->full_print(os, ((Problem *) problem_)->pProblem());
+        pState_->full_print(os, ((PPDDLProblem *) problem_)->pProblem());
     }
 }

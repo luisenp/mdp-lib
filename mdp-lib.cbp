@@ -555,6 +555,8 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/ppddl/mini-gpt/types.h" />
 		<Unit filename="include/ppddl/mini-gpt/utils.cc" />
 		<Unit filename="include/ppddl/mini-gpt/utils.h" />
+		<Unit filename="include/reduced/LeastLikelyOutcomeReduction.h" />
+		<Unit filename="include/reduced/PPDDLTaggedReduction.h" />
 		<Unit filename="include/reduced/RacetrackObviousReduction.h" />
 		<Unit filename="include/reduced/ReducedHeuristicWrapper.h" />
 		<Unit filename="include/reduced/ReducedModel.h" />

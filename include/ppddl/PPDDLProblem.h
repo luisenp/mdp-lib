@@ -15,7 +15,7 @@ typedef std::pair<state_t *, Rational> successor_t;
  * A class representing a PPDDL problem. The implementation is based on
  * the mini-gpt library (see http://ldc.usb.ve/~bonet/reports/JAIR-mgpt.pdf).
  */
-class Problem : public mlcore::Problem
+class PPDDLProblem : public mlcore::Problem
 {
 private:
     problem_t* pProblem_;
@@ -23,9 +23,9 @@ private:
     successor_t display_[DISP_SIZE];
 
 public:
-    Problem(problem_t* pProblem);
+    PPDDLProblem(problem_t* pProblem);
 
-    virtual ~Problem()
+    virtual ~PPDDLProblem()
     {
         delete pProblem_;
     }

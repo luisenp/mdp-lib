@@ -26,7 +26,7 @@ private:
     heuristic_t* pHeuristic_;
 
 public:
-    PPDDLHeuristic(Problem* problem, HeuristicType type, int m = 2);
+    PPDDLHeuristic(PPDDLProblem* problem, HeuristicType type, int m = 2);
 
     ~PPDDLHeuristic() { delete pHeuristic_; }
 

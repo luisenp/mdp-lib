@@ -49,6 +49,7 @@ static bool read_file( const char* name )
     }
 }
 
+
 int main(int argc, char **argv)
 {
     std::string file;
@@ -77,7 +78,7 @@ int main(int argc, char **argv)
     }
 
     /* Initializing problem */
-    mlppddl::Problem* MLProblem = new mlppddl::Problem(problem);
+    mlppddl::PPDDLProblem* MLProblem = new mlppddl::PPDDLProblem(problem);
     mlppddl::PPDDLHeuristic* heuristic =
 //        new mlppddl::PPDDLHeuristic(MLProblem, mlppddl::atomMin1Forward);
         new mlppddl::PPDDLHeuristic(MLProblem, mlppddl::atomMinMForward);
