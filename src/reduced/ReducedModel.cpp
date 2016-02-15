@@ -1,7 +1,7 @@
 #include <list>
 #include <vector>
 
-#include "../../include/solvers/LAOStarSolver.h"
+#include "../../include/solvers/VISolver.h"
 
 #include "../../include/reduced/ReducedHeuristicWrapper.h"
 #include "../../include/reduced/ReducedModel.h"
@@ -54,8 +54,7 @@ ReducedModel::transition(mlcore::State* s, mlcore::Action *a)
 }
 
 
-double ReducedModel::evaluateContinualPlan(ReducedModel* reducedModel,
-                                            mlsolvers::Solver* solver)
+double ReducedModel::evaluateContinualPlan(ReducedModel* reducedModel)
 {
     ReducedModel* markovChain =
         new ReducedModel(reducedModel->originalProblem_,
@@ -70,13 +69,24 @@ double ReducedModel::evaluateContinualPlan(ReducedModel* reducedModel,
     // them to the Markov Chain.
     std::list<mlcore::State *> statesFullModel(markovChain->states().begin(),
                                                markovChain->states().end());
-    for (int j = 1; j <= reducedModel->k_; j++) {
+    for (int j = 0; j <= reducedModel->k_; j++) {
         for (mlcore::State* s : statesFullModel) {
             ReducedState* rs = (ReducedState* ) s;
-            markovChain->addState(
-                new ReducedState(rs->originalState(), j, markovChain));
+            if (j > 0) {
+                markovChain->addState(
+                    new ReducedState(rs->originalState(), j, markovChain));
+            }
+            // We need to add a copy also in the reduced model, because some
+            // of these states might be unreachable from its initial state.
+            mlcore::State* aux = reducedModel->addState(
+                new ReducedState(rs->originalState(), j, reducedModel));
         }
     }
+
+    // Computing an universal plan for all of these states in the reduced model.
+    mlsolvers::VISolver solver(reducedModel, 1000000, 1.0e-3);
+    solver.solve();
+
     // Finally, we make sure the MC uses the continual planning
     // transition function.
     markovChain->useContPlanEvaluationTransition(true);
@@ -88,13 +98,16 @@ double ReducedModel::evaluateContinualPlan(ReducedModel* reducedModel,
         for (mlcore::State* s : markovChain->states()) {
             if (markovChain->goal(s))
                 continue;
-            ReducedState* rs = (ReducedState *) s;
+            ReducedState* markovChainState = (ReducedState *) s;
+            // currentState is the state that markovChainState represents in
+            // the reduced model.
             mlcore::State* currentState =
-                reducedModel->addState(new ReducedState(rs->originalState(),
-                                                        rs->exceptionCount(),
-                                                        reducedModel));
-            if (currentState->bestAction() == nullptr)
-                solver->solve(currentState);
+                reducedModel->addState(
+                    new ReducedState(markovChainState->originalState(),
+                                     markovChainState->exceptionCount(),
+                                     reducedModel));
+
+            assert(currentState->bestAction() != nullptr);
             mlcore::Action *a = currentState->bestAction();
             double previousCost = s->cost();
             double currentCost = 0.0;
@@ -128,10 +141,7 @@ ReducedModel::getBestReduction(
         ReducedModel* reducedModel =
             new ReducedModel(originalProblem, reducedTransition, k);
         reducedModel->setHeuristic(heuristic);
-        mlsolvers::LAOStarSolver solver(reducedModel, 1.0e-03);
-        double expectedCostReduction =
-            evaluateContinualPlan(reducedModel, &solver);
-        dprint1(expectedCostReduction);
+        double expectedCostReduction = evaluateContinualPlan(reducedModel);
         if (expectedCostReduction < bestCost) {
             bestCost = expectedCostReduction;
             bestReduction = reducedTransition;

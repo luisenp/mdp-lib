@@ -1,4 +1,5 @@
 #include <cassert>
+#include <list>
 
 #include "../../include/solvers/Solver.h"
 
@@ -199,4 +200,29 @@ double sampleTrial(mlcore::Problem* problem, mlcore::State* s)
     return cost;
 }
 
+
+void getReachableStates(mlcore::Problem* problem,
+                        int horizon,
+                        mlcore::StateSet& reachableStates)
+{
+    std::list< std::pair<mlcore::State *, int> > stateDepthQueue;
+    stateDepthQueue.push_front(std::make_pair(problem->initialState(), 0));
+    while (!stateDepthQueue.empty()) {
+        auto stateDepthPair = stateDepthQueue.back();
+        stateDepthQueue.pop_back();
+        mlcore::State* state = stateDepthPair.first;
+        int depth = stateDepthPair.second;
+        if (reachableStates.count(state) || depth > horizon)
+            continue;
+        reachableStates.insert(state);
+        for (mlcore::Action* a : problem->actions()) {
+            if (!problem->applicable(state, a))
+                continue;
+            for (mlcore::Successor sccr : problem->transition(state, a)) {
+                stateDepthQueue.
+                push_front(std::make_pair(sccr.su_state, depth + 1));
+            }
+        }
+    }
+}
 } // mlsolvers

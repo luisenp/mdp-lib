@@ -3,7 +3,7 @@
 
 namespace mdplib
 {
-    const double dead_end_cost = 10000.0;
+    const double dead_end_cost = 500.0;
     const double epsilon = 1.0e-8;
 
     /* Bitmasks for state bits */

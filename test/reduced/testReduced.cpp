@@ -143,11 +143,14 @@ void initRacetrack(string trackName, int mds)
     reductions.push_back(lloReduction);
     ReducedTransition* bestReduction =
         ReducedModel::getBestReduction(
-            problem,
-            reductions,
-            k,
-            (ReducedHeuristicWrapper *) reducedHeuristic);
+          problem, reductions, k, (ReducedHeuristicWrapper *) reducedHeuristic);
     assert(bestReduction == obviousReduction);
+
+
+    // Testing the reachable states code
+    mlcore::StateSet reachableStates;
+    getReachableStates(problem, 10, reachableStates);
+    cout << reachableStates.size() << endl;
 }
 
 

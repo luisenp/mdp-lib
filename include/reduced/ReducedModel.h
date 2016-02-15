@@ -84,16 +84,10 @@ public:
      *
      *      http://anytime.cs.umass.edu/shlomo/papers/PZicaps14.pdf
      *
-     * The method receives a solver to compute the continual plan.
-     *
      * @param reducedModel the reduced model that induces the plan.
-     * @param solver the MPD solver used to generate the plan. It must be
-     *              allocated before calling this function with the
-     *              given reduced model.
      * @return the expected cost of the continual plan.
      */
-    static double evaluateContinualPlan(ReducedModel* reducedModel,
-                                          mlsolvers::Solver* solver);
+    static double evaluateContinualPlan(ReducedModel* reducedModel);
 
     /**
      * Finds the best reduced model that can be created for the given problem

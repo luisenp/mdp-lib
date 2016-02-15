@@ -25,10 +25,6 @@ namespace mlsolvers
             if (tmp->deadEnd())
                 break;
 
-//            dprint1(tmp);
-//            dprint1(tmp->bestAction());
-//            dsleep(200);
-
             tmp = randomSuccessor(problem_, tmp, tmp->bestAction());
         }
 
