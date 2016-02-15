@@ -1,5 +1,5 @@
-#ifndef LEASTLIKELYOUTCOMEREDUCTION_H
-#define LEASTLIKELYOUTCOMEREDUCTION_H
+#ifndef MOSTLIKELYOUTCOMEREDUCTION_H
+#define MOSTLIKELYOUTCOMEREDUCTION_H
 
 #include <list>
 #include <vector>
@@ -11,37 +11,38 @@
 namespace mlreduced
 {
 
-class LeastLikelyOutcomeReduction : public ReducedTransition
+class MostLikelyOutcomeReduction : public ReducedTransition
 {
 private:
     mlcore::Problem* problem_;
 
 public:
-    LeastLikelyOutcomeReduction(mlcore::Problem* problem) :
+    MostLikelyOutcomeReduction(mlcore::Problem* problem) :
         problem_(problem) { }
 
-    virtual ~LeastLikelyOutcomeReduction() { }
+    virtual ~MostLikelyOutcomeReduction() { }
 
     virtual
     std::vector<bool> isPrimary(mlcore::State* s, mlcore::Action *a) const
     {
         std::list<mlcore::Successor> successors = problem_->transition(s, a);
         std::vector<bool> primaryValues(successors.size(), false);
-        double minimumProbability = 2.0;
+        double maximumProbability = 0.0;
         int i = 0;
-        int indexLeastLikely = 0;
+        int indexMostLikely = 0;
         for (mlcore::Successor successor : successors) {
-            if (successor.su_prob < minimumProbability) {
-                minimumProbability = successor.su_prob;
-                indexLeastLikely = i;
+            if (successor.su_prob > maximumProbability) {
+                maximumProbability = successor.su_prob;
+                indexMostLikely = i;
             }
             i++;
         }
-        primaryValues[indexLeastLikely] = true;
+        primaryValues[indexMostLikely] = true;
         return primaryValues;
     }
 };
 
 }
-#endif // LEASTLIKELYOUTCOMEREDUCTION_H
+#endif // MOSTLIKELYOUTCOMEREDUCTION_H
+
 

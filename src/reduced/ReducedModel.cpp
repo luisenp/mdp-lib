@@ -107,6 +107,13 @@ double ReducedModel::evaluateContinualPlan(ReducedModel* reducedModel)
                                      markovChainState->exceptionCount(),
                                      reducedModel));
 
+            if (currentState->deadEnd()) {
+                // state->deadEnd is set by the solver when there is no
+                // applicable action in state.
+                s->setCost(mdplib::dead_end_cost);
+                continue;
+            }
+
             assert(currentState->bestAction() != nullptr);
             mlcore::Action *a = currentState->bestAction();
             double previousCost = s->cost();

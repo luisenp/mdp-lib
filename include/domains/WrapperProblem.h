@@ -41,7 +41,8 @@ public:
     /**
      * Overrides method from Problem.
      */
-    virtual std::list<mlcore::Successor> transition(mlcore::State* s, mlcore::Action* a);
+    virtual std::list<mlcore::Successor>
+    transition(mlcore::State* s, mlcore::Action* a);
 
     /**
      * Overrides method from Problem.

@@ -556,6 +556,9 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/ppddl/mini-gpt/types.h" />
 		<Unit filename="include/ppddl/mini-gpt/utils.cc" />
 		<Unit filename="include/ppddl/mini-gpt/utils.h" />
+		<Unit filename="include/reduced/LeastLikelyOutcomeReduction.h" />
+		<Unit filename="include/reduced/MostLikelyOutcomeReduction.h" />
+		<Unit filename="include/reduced/PPDDLTaggedReduction.h" />
 		<Unit filename="include/reduced/RacetrackObviousReduction.h" />
 		<Unit filename="include/reduced/ReducedHeuristicWrapper.h" />
 		<Unit filename="include/reduced/ReducedModel.h" />
@@ -576,7 +579,6 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/solvers/mobj/LexiVISolver.h" />
 		<Unit filename="include/solvers/mobj/MOLAOStarSolver.h" />
 		<Unit filename="include/solvers/mobj/MObjSolvers.h" />
-		<Unit filename="include/solvers/solver.h" />
 		<Unit filename="include/util/flags.h" />
 		<Unit filename="include/util/general.h" />
 		<Unit filename="include/util/graph.h" />

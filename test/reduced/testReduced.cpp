@@ -16,6 +16,7 @@
 #include "../include/ppddl/mini-gpt/exceptions.h"
 
 #include "../../include/reduced/LeastLikelyOutcomeReduction.h"
+#include "../../include/reduced/MostLikelyOutcomeReduction.h"
 #include "../../include/reduced/RacetrackObviousReduction.h"
 #include "../../include/reduced/ReducedHeuristicWrapper.h"
 #include "../../include/reduced/ReducedModel.h"
@@ -48,16 +49,17 @@ mlcore::Problem* reducedModel = nullptr;
 mlcore::Heuristic* reducedHeuristic = nullptr;
 
 
-double triggerReplan(mlcore::State* currentState,
-                   ReducedState* reducedState,
-                   Solver& solver)
+double triggerReplan(Solver& solver,
+                     mlcore::State** currentState,
+                     ReducedState** reducedState)
 {
-    reducedState->exceptionCount(0);
-    currentState = reducedModel->addState(reducedState);
+    (*reducedState)->exceptionCount(0);
+    *currentState = reducedModel->addState(*reducedState);
+
     // addState might delete reducedState if it was already there.
-    reducedState = (ReducedState *) currentState;
+    *reducedState = (ReducedState *) *currentState;
     clock_t startTime = clock();
-    solver.solve(currentState);
+    solver.solve(*currentState);
     clock_t endTime = clock();
     return (double(endTime - startTime) / CLOCKS_PER_SEC);
 }
@@ -100,12 +102,13 @@ pair<double, double> simulate(mlcore::Problem* reducedModel, Solver & solver)
             if (verbosity > 100)
                 cout << "No plan for this state. Re-planning." << endl;
             totalPlanningTime +=
-              triggerReplan(currentState, reducedState, solver);
+              triggerReplan(solver, &currentState, &reducedState);
+              assert(currentState != nullptr);
         } else if (reducedState->exceptionCount() == k) {
             if (verbosity > 100)
                 cout << "Pro-active re-planning." << endl;
             totalPlanningTime +=
-              triggerReplan(currentState, reducedState, solver);
+              triggerReplan(solver, &currentState, &reducedState);
         }
     }
 
@@ -135,7 +138,6 @@ void initRacetrack(string trackName, int mds)
             " reduced states." << endl;
 
     // Testing the code that tries different reductions of the racetrack.
-    mdplib_debug = true;
     ReducedTransition* lloReduction =
         new LeastLikelyOutcomeReduction((RacetrackProblem *) problem);
     list<ReducedTransition *> reductions;
@@ -149,7 +151,7 @@ void initRacetrack(string trackName, int mds)
 
     // Testing the reachable states code
     mlcore::StateSet reachableStates;
-    getReachableStates(problem, 10, reachableStates);
+    getReachableStates(problem, 5, reachableStates);
     cout << reachableStates.size() << endl;
 }
 
@@ -185,10 +187,10 @@ static bool read_file( const char* ppddlFileName )
 bool initPPDDL(string ppddlArgs, problem_t* internalPPDDLProblem)
 {
     size_t pos_equals = ppddlArgs.find(":");
-    cout << ppddlArgs << endl;
     assert(pos_equals != string::npos);
     string file = ppddlArgs.substr(0, pos_equals);
-    string prob = ppddlArgs.substr(pos_equals + 1, ppddlArgs.size() - pos_equals);
+    string prob =
+        ppddlArgs.substr(pos_equals + 1, ppddlArgs.size() - pos_equals);
 
     pair<state_t *,Rational> *initial = nullptr;
 
@@ -204,8 +206,25 @@ bool initPPDDL(string ppddlArgs, problem_t* internalPPDDLProblem)
     }
 
     problem = new PPDDLProblem(internalPPDDLProblem);
-    heuristic = new mlppddl::PPDDLHeuristic((PPDDLProblem*) problem, mlppddl::FF);
+    heuristic =
+        new mlppddl::PPDDLHeuristic((PPDDLProblem*) problem,
+                                    mlppddl::atomMin1Forward);
     problem->setHeuristic(heuristic);
+
+    mdplib_debug = true;
+    ReducedTransition* lloReduction =
+        new LeastLikelyOutcomeReduction(problem);
+    ReducedTransition* mloReduction =
+        new MostLikelyOutcomeReduction(problem);
+    list<ReducedTransition *> reductions;
+    reductions.push_back(mloReduction);
+    reductions.push_back(lloReduction);
+    reducedHeuristic = new ReducedHeuristicWrapper(heuristic);
+    ReducedTransition* bestReduction =
+        ReducedModel::getBestReduction(
+          problem, reductions, k, (ReducedHeuristicWrapper *) reducedHeuristic);
+
+    reducedModel = new ReducedModel(problem, bestReduction, k);
 }
 
 

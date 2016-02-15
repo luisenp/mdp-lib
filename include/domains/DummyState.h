@@ -22,7 +22,10 @@ public:
 
     std::list<mlcore::Successor> successors() { return successors_; }
 
-    void setSuccessors(std::list<mlcore::Successor> successors) { successors_ = successors; }
+    void setSuccessors(std::list<mlcore::Successor> successors)
+    {
+        successors_ = successors;
+    }
 
     /**
      * Overrides method from State.
