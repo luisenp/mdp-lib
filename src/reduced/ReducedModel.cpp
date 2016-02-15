@@ -57,16 +57,17 @@ ReducedModel::transition(mlcore::State* s, mlcore::Action *a)
 double ReducedModel::evaluateContinualPlan(ReducedModel* reducedModel,
                                             mlsolvers::Solver* solver)
 {
-    ReducedModel* markovChain = new ReducedModel(reducedModel->originalProblem_,
-                                                 reducedModel->reducedTransition_,
-                                                 reducedModel->k_);
+    ReducedModel* markovChain =
+        new ReducedModel(reducedModel->originalProblem_,
+                         reducedModel->reducedTransition_,
+                         reducedModel->k_);
 
     // First we generate all states that are reachable in the full model.
     markovChain->useFullTransition(true);
     markovChain->generateAll();
 
-    // Then we create copies of all these states for j=1,...,k and add them to the
-    // Markov Chain.
+    // Then we create copies of all these states for j=1,...,k and add
+    // them to the Markov Chain.
     std::list<mlcore::State *> statesFullModel(markovChain->states().begin(),
                                                markovChain->states().end());
     for (int j = 1; j <= reducedModel->k_; j++) {
@@ -76,7 +77,8 @@ double ReducedModel::evaluateContinualPlan(ReducedModel* reducedModel,
                 new ReducedState(rs->originalState(), j, markovChain));
         }
     }
-    // Finally, we make sure the MC uses the continual planning transition function.
+    // Finally, we make sure the MC uses the continual planning
+    // transition function.
     markovChain->useContPlanEvaluationTransition(true);
 
     // Now we compute the expected cost of traversing this Markov Chain.
@@ -89,8 +91,8 @@ double ReducedModel::evaluateContinualPlan(ReducedModel* reducedModel,
             ReducedState* rs = (ReducedState *) s;
             mlcore::State* currentState =
                 reducedModel->addState(new ReducedState(rs->originalState(),
-                                                         rs->exceptionCount(),
-                                                         reducedModel));
+                                                        rs->exceptionCount(),
+                                                        reducedModel));
             if (currentState->bestAction() == nullptr)
                 solver->solve(currentState);
             mlcore::Action *a = currentState->bestAction();
@@ -101,6 +103,7 @@ double ReducedModel::evaluateContinualPlan(ReducedModel* reducedModel,
             }
             currentCost *= markovChain->gamma();
             currentCost += markovChain->cost(s, a);
+            currentCost = std::min(currentCost, mdplib::dead_end_cost);
             double currentResidual = fabs(currentCost - previousCost);
             if (currentResidual > maxResidual) {
                 maxResidual = currentResidual;
@@ -113,10 +116,11 @@ double ReducedModel::evaluateContinualPlan(ReducedModel* reducedModel,
 
 
 ReducedTransition*
-ReducedModel::getBestReduction(mlcore::Problem *originalProblem,
-                               std::list<ReducedTransition *> reducedTransitions,
-                               int k,
-                               ReducedHeuristicWrapper* heuristic)
+ReducedModel::getBestReduction(
+    mlcore::Problem *originalProblem,
+    std::list<ReducedTransition *> reducedTransitions,
+    int k,
+    ReducedHeuristicWrapper* heuristic)
 {
     double bestCost = mdplib::dead_end_cost + 1;
     ReducedTransition* bestReduction = nullptr;
@@ -125,7 +129,9 @@ ReducedModel::getBestReduction(mlcore::Problem *originalProblem,
             new ReducedModel(originalProblem, reducedTransition, k);
         reducedModel->setHeuristic(heuristic);
         mlsolvers::LAOStarSolver solver(reducedModel, 1.0e-03);
-        double expectedCostReduction = evaluateContinualPlan(reducedModel, &solver);
+        double expectedCostReduction =
+            evaluateContinualPlan(reducedModel, &solver);
+        dprint1(expectedCostReduction);
         if (expectedCostReduction < bestCost) {
             bestCost = expectedCostReduction;
             bestReduction = reducedTransition;

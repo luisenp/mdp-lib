@@ -48,17 +48,32 @@ mlcore::Problem* reducedModel = nullptr;
 mlcore::Heuristic* reducedHeuristic = nullptr;
 
 
+double triggerReplan(mlcore::State* currentState,
+                   ReducedState* reducedState,
+                   Solver& solver)
+{
+    reducedState->exceptionCount(0);
+    currentState = reducedModel->addState(reducedState);
+    // addState might delete reducedState if it was already there.
+    reducedState = (ReducedState *) currentState;
+    clock_t startTime = clock();
+    solver.solve(currentState);
+    clock_t endTime = clock();
+    return (double(endTime - startTime) / CLOCKS_PER_SEC);
+}
+
+
 pair<double, double> simulate(mlcore::Problem* reducedModel, Solver & solver)
 {
     double cost = 0.0;
     double totalPlanningTime = 0.0;
     mlcore::State* currentState = reducedModel->initialState();
-    ReducedState* rs = (ReducedState *) currentState;
+    ReducedState* reducedState = (ReducedState *) currentState;
     while (!reducedModel->goal(currentState)) {
         if (verbosity > 100)
             cout << currentState << "  " << currentState->bestAction() << endl;
 
-        int exceptionCount = rs->exceptionCount();
+        int exceptionCount = reducedState->exceptionCount();
 
         // In the simulation we want to use the full transition function.
         // To do this we set the exception counter of the current state to -1
@@ -67,38 +82,30 @@ pair<double, double> simulate(mlcore::Problem* reducedModel, Solver & solver)
         // We don't use reducedModel->useFullTransition(true) because we still
         // want to know if the outcome was an exception or not.
         ReducedState* auxState =
-            new ReducedState(rs->originalState(), -1, reducedModel);
+            new ReducedState(reducedState->originalState(), -1, reducedModel);
         mlcore::Action* bestAction = currentState->bestAction();
-        cost += reducedModel->cost(rs, bestAction);
+        cost += reducedModel->cost(reducedState, bestAction);
         currentState = randomSuccessor(reducedModel, auxState, bestAction);
 
         // Adjusting to the correct the exception count.
-        rs = (ReducedState *) currentState;
-        if (rs->exceptionCount() == -1)
-            rs->exceptionCount(exceptionCount);
+        reducedState = (ReducedState *) currentState;
+        if (reducedState->exceptionCount() == -1)
+            reducedState->exceptionCount(exceptionCount);
         else
-            rs->exceptionCount(exceptionCount + 1);
+            reducedState->exceptionCount(exceptionCount + 1);
         currentState = reducedModel->getState(currentState);
 
         if (currentState == nullptr) {
             assert(k == 0); // Only determinization should reach here.
             if (verbosity > 100)
                 cout << "No plan for this state. Re-planning." << endl;
-            rs->exceptionCount(0);
-            currentState = reducedModel->addState(rs);
-            clock_t startTime = clock();
-            solver.solve(currentState);
-            clock_t endTime = clock();
-            totalPlanningTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
-        } else if (rs->exceptionCount() == k) {
+            totalPlanningTime +=
+              triggerReplan(currentState, reducedState, solver);
+        } else if (reducedState->exceptionCount() == k) {
             if (verbosity > 100)
                 cout << "Pro-active re-planning." << endl;
-            rs->exceptionCount(0);
-            currentState = reducedModel->addState(rs);
-            clock_t startTime = clock();
-            solver.solve(currentState);
-            clock_t endTime = clock();
-            totalPlanningTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
+            totalPlanningTime +=
+              triggerReplan(currentState, reducedState, solver);
         }
     }
 
@@ -123,8 +130,12 @@ void initRacetrack(string trackName, int mds)
     reducedHeuristic = new ReducedHeuristicWrapper(heuristic);
     reducedModel->setHeuristic(reducedHeuristic);
     reducedModel->generateAll();
+    if (verbosity > 100)
+        cout << "Generated " << reducedModel->states().size() <<
+            " reduced states." << endl;
 
     // Testing the code that tries different reductions of the racetrack.
+    mdplib_debug = true;
     ReducedTransition* lloReduction =
         new LeastLikelyOutcomeReduction((RacetrackProblem *) problem);
     list<ReducedTransition *> reductions;
@@ -132,9 +143,11 @@ void initRacetrack(string trackName, int mds)
     reductions.push_back(lloReduction);
     ReducedTransition* bestReduction =
         ReducedModel::getBestReduction(
-            problem, reductions, k, (ReducedHeuristicWrapper *) reducedHeuristic);
+            problem,
+            reductions,
+            k,
+            (ReducedHeuristicWrapper *) reducedHeuristic);
     assert(bestReduction == obviousReduction);
-
 }
 
 

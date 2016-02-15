@@ -20,6 +20,7 @@ tag current version and then change Rational for double in master branch]]>
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-g" />
+					<Add directory="include/reduced" />
 				</Compiler>
 			</Target>
 			<Target title="Release">
@@ -29,6 +30,7 @@ tag current version and then change Rational for double in master branch]]>
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-O2" />
+					<Add directory="include/reduced" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -473,7 +475,6 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/domains/sailing/SailingNoWindHeuristic.h" />
 		<Unit filename="include/domains/sailing/SailingProblem.h" />
 		<Unit filename="include/domains/sailing/SailingState.h" />
-		<Unit filename="include/lib/gurobi_c.h" />
 		<Unit filename="include/mobj/MObjProblem.h" />
 		<Unit filename="include/mobj/MObjState.h" />
 		<Unit filename="include/mobj/domains/MOGWManhattanHeuristic.h" />
@@ -555,13 +556,11 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/ppddl/mini-gpt/types.h" />
 		<Unit filename="include/ppddl/mini-gpt/utils.cc" />
 		<Unit filename="include/ppddl/mini-gpt/utils.h" />
-		<Unit filename="include/reduced/LeastLikelyOutcomeReduction.h" />
-		<Unit filename="include/reduced/PPDDLTaggedReduction.h" />
 		<Unit filename="include/reduced/RacetrackObviousReduction.h" />
 		<Unit filename="include/reduced/ReducedHeuristicWrapper.h" />
 		<Unit filename="include/reduced/ReducedModel.h" />
 		<Unit filename="include/reduced/ReducedState.h" />
-		<Unit filename="include/reduced/ReducedTransition.h" />
+		<Unit filename="include/reduced/ReducedTransitionConfig.h" />
 		<Unit filename="include/solvers/ConcurrentSolver.h" />
 		<Unit filename="include/solvers/DeterministicSolver.h" />
 		<Unit filename="include/solvers/LAOStarSolver.h" />
@@ -577,6 +576,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/solvers/mobj/LexiVISolver.h" />
 		<Unit filename="include/solvers/mobj/MOLAOStarSolver.h" />
 		<Unit filename="include/solvers/mobj/MObjSolvers.h" />
+		<Unit filename="include/solvers/solver.h" />
 		<Unit filename="include/util/flags.h" />
 		<Unit filename="include/util/general.h" />
 		<Unit filename="include/util/graph.h" />
