@@ -4,16 +4,17 @@
 #include <string>
 #include <typeinfo>
 
-#include "../../include/Problem.h"
 #include "../../include/domains/racetrack/RacetrackProblem.h"
 #include "../../include/domains/racetrack/RTrackDetHeuristic.h"
-#include "../../include/ppddl/PPDDLHeuristic.h"
-#include "../../include/ppddl/PPDDLProblem.h"
+
 #include "../include/ppddl/mini-gpt/states.h"
 #include "../include/ppddl/mini-gpt/problems.h"
 #include "../include/ppddl/mini-gpt/domains.h"
 #include "../include/ppddl/mini-gpt/states.h"
 #include "../include/ppddl/mini-gpt/exceptions.h"
+#include "../../include/ppddl/PPDDLHeuristic.h"
+#include "../../include/ppddl/PPDDLProblem.h"
+
 
 #include "../../include/reduced/LeastLikelyOutcomeReduction.h"
 #include "../../include/reduced/MostLikelyOutcomeReduction.h"
@@ -28,6 +29,7 @@
 #include "../../include/util/flags.h"
 #include "../../include/util/general.h"
 
+#include "../../include/Problem.h"
 
 using namespace std;
 using namespace mdplib;
@@ -49,19 +51,17 @@ mlcore::Problem* reducedModel = nullptr;
 mlcore::Heuristic* reducedHeuristic = nullptr;
 
 
-double triggerReplan(Solver& solver,
-                     mlcore::State** currentState,
-                     ReducedState** reducedState)
+double triggerReplan(Solver& solver, ReducedState** nextState, bool proactive)
 {
-    (*reducedState)->exceptionCount(0);
-    *currentState = reducedModel->addState(*reducedState);
 
-    // addState might delete reducedState if it was already there.
-    *reducedState = (ReducedState *) *currentState;
+    (*nextState)->exceptionCount(0);
+    *nextState = (ReducedState *)
+        reducedModel->addState((mlcore::State *) *nextState);
     clock_t startTime = clock();
-    solver.solve(*currentState);
+    solver.solve(*nextState);
     clock_t endTime = clock();
     return (double(endTime - startTime) / CLOCKS_PER_SEC);
+
 }
 
 
@@ -69,47 +69,62 @@ pair<double, double> simulate(mlcore::Problem* reducedModel, Solver & solver)
 {
     double cost = 0.0;
     double totalPlanningTime = 0.0;
-    mlcore::State* currentState = reducedModel->initialState();
-    ReducedState* reducedState = (ReducedState *) currentState;
+    ReducedState* currentState = (ReducedState *) reducedModel->initialState();
+    bool resetExceptionCounter = false;
     while (!reducedModel->goal(currentState)) {
+        cerr << currentState << endl;
+        mlcore::Action* bestAction = currentState->bestAction();
+        cost += reducedModel->cost(currentState, bestAction);
+        int exceptionCount = currentState->exceptionCount();
+
         if (verbosity > 100)
-            cout << currentState << "  " << currentState->bestAction() << endl;
+            cout << currentState << "  " << bestAction << endl;
 
-        int exceptionCount = reducedState->exceptionCount();
-
-        // In the simulation we want to use the full transition function.
-        // To do this we set the exception counter of the current state to -1
-        // so that it's guaranteed to be lower than the exception bound k
-        // and the reduced model is forced to use the full transition.
+        // Simulating the action execution.
+        // Since we want to use the full transition function for this,
+        // set the exception counter of the current state to -1
+        // so that it's guaranteed to be lower than the exception bound k,
+        // forcing the reduced model to use the full transition.
         // We don't use reducedModel->useFullTransition(true) because we still
         // want to know if the outcome was an exception or not.
         ReducedState* auxState =
-            new ReducedState(reducedState->originalState(), -1, reducedModel);
-        mlcore::Action* bestAction = currentState->bestAction();
-        cost += reducedModel->cost(reducedState, bestAction);
-        currentState = randomSuccessor(reducedModel, auxState, bestAction);
+            new ReducedState(currentState->originalState(), -1, reducedModel);
+        ReducedState* nextState = (ReducedState *)
+            randomSuccessor(reducedModel, auxState, bestAction);
 
-        // Adjusting to the correct the exception count.
-        reducedState = (ReducedState *) currentState;
-        if (reducedState->exceptionCount() == -1)
-            reducedState->exceptionCount(exceptionCount);
-        else
-            reducedState->exceptionCount(exceptionCount + 1);
-        currentState = reducedModel->getState(currentState);
+        // Adjusting the result to the current the exception count.
+        if (resetExceptionCounter) {
+            // We reset the exception counter after pro-active re-planning
+            nextState->exceptionCount(0);
+            resetExceptionCounter = false;
+        } else {
+            if (nextState->exceptionCount() == -1)
+                nextState->exceptionCount(exceptionCount);
+            else
+                nextState->exceptionCount(exceptionCount + 1);
+            delete auxState;
+            auxState = (ReducedState *)
+                reducedModel->getState((mlcore::State *) nextState);
+        }
 
-        if (currentState == nullptr) {
-            assert(k == 0); // Only determinization should reach here.
+        // Re-planning
+        if (auxState == nullptr) {
+            // If it reaches this point, then there is no plan for the
+            // successor state.
+            assert(k == 0);  // Only determinization should reach here.
             if (verbosity > 100)
                 cout << "No plan for this state. Re-planning." << endl;
-            totalPlanningTime +=
-              triggerReplan(solver, &currentState, &reducedState);
-              assert(currentState != nullptr);
-        } else if (reducedState->exceptionCount() == k) {
+            totalPlanningTime += triggerReplan(solver, &nextState, false);
+            assert(nextState != nullptr);
+        } else if (nextState->exceptionCount() == k) {
             if (verbosity > 100)
                 cout << "Pro-active re-planning." << endl;
-            totalPlanningTime +=
-              triggerReplan(solver, &currentState, &reducedState);
+            totalPlanningTime += triggerReplan(solver, &nextState, false);
+            resetExceptionCounter = false;
+        } else {
+            nextState = auxState;
         }
+        currentState = nextState;
     }
 
     return make_pair(cost, totalPlanningTime);
