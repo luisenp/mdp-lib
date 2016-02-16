@@ -73,7 +73,7 @@ public:
 
     virtual std::ostream& print(std::ostream& os) const
     {
-        os << "RS:(" << originalState_ << "," << exceptionCount_ << ")";
+        os << "RS:(" << originalState_ << ", " << exceptionCount_ << ")";
         return os;
     }
 
