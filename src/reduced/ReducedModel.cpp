@@ -149,6 +149,7 @@ ReducedModel::getBestReduction(
             new ReducedModel(originalProblem, reducedTransition, k);
         reducedModel->setHeuristic(heuristic);
         double expectedCostReduction = evaluateContinualPlan(reducedModel);
+        dprint1(expectedCostReduction);
         if (expectedCostReduction < bestCost) {
             bestCost = expectedCostReduction;
             bestReduction = reducedTransition;

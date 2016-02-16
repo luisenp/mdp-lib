@@ -203,7 +203,8 @@ double sampleTrial(mlcore::Problem* problem, mlcore::State* s)
 
 void getReachableStates(mlcore::Problem* problem,
                         int horizon,
-                        mlcore::StateSet& reachableStates)
+                        mlcore::StateSet& reachableStates,
+                        mlcore::StateSet& tipStates)
 {
     std::list< std::pair<mlcore::State *, int> > stateDepthQueue;
     stateDepthQueue.push_front(std::make_pair(problem->initialState(), 0));
@@ -215,6 +216,8 @@ void getReachableStates(mlcore::Problem* problem,
         if (reachableStates.count(state) || depth > horizon)
             continue;
         reachableStates.insert(state);
+        if (depth == horizon)
+            tipStates.insert(state);
         for (mlcore::Action* a : problem->actions()) {
             if (!problem->applicable(state, a))
                 continue;

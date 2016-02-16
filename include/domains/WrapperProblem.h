@@ -2,6 +2,8 @@
 #define MDPLIB_WRAPPERPROBLEM_H
 
 #include "../Problem.h"
+#include "../State.h"
+
 #include "DummyState.h"
 
 /**
@@ -16,6 +18,11 @@ private:
 
     mlcore::Problem* problem_;
     mlcore::Action* dummyAction_;
+
+    /*
+     * A set of goals that replace the original goal in problem_.
+     */
+     mlcore::StateSet overrideGoals_;
 
 public:
 
@@ -32,6 +39,18 @@ public:
     DummyState* dummyState() { return dummyState_; }
 
     void setDummyAction(mlcore::Action* action) { dummyAction_ = action; }
+
+    void overrideGoals(mlcore::StateSet& newGoals)
+    {
+        overrideGoals_ = newGoals;
+    }
+
+    void addOverrideGoal(mlcore::State* overrideGoal)
+    {
+        overrideGoals_.insert(overrideGoal);
+    }
+
+    void clearOverrideGoals() { overrideGoals_.clear(); }
 
     /**
      * Overrides method from Problem.

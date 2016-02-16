@@ -4,6 +4,8 @@ bool WrapperProblem::goal(mlcore::State* s) const
 {
     if (s == dummyState_)
         return false;
+    if (!overrideGoals_.empty())
+        return overrideGoals_.count(s) > 0;
     return problem_->goal(s);
 }
 

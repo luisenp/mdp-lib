@@ -52,15 +52,16 @@ static int k = 0;
 mlcore::Problem* problem = nullptr;
 mlcore::Heuristic* heuristic = nullptr;
 mlcore::Problem* reducedModel = nullptr;
-mlcore::Heuristic* reducedHeuristic = nullptr;
+ReducedHeuristicWrapper* reducedHeuristic = nullptr;
 WrapperProblem* wrapperProblem = nullptr;
-
+list<ReducedTransition *> reductions;
 
 /*
  * Triggers re-planning an returns the time spent planning.
  * Proactive re-planning plans for the set of successors of the given state.
  * under the full transition model (with exception counters = 0).
- * More details can be found at
+ * More details can be found in
+ * http://anytime.cs.umass.edu/shlomo/papers/PZicaps14.pdf
  *
  * If proactive is true, the exception counter of next State is unchanged.
  * If proactive is false, it sets the exception counter of nextState to 0.
@@ -124,7 +125,7 @@ pair<double, double> simulate(mlcore::Problem* reducedModel, Solver & solver)
         // Simulating the action execution using the full model.
         // Since we want to use the full transition function for this,
         // set the exception counter of the current state to -1
-        // so that it's guaranteed to be lower than the exception bound k,
+        // so that it's gureducedHeuristicaranteed to be lower than the exception bound k,
         // forcing the reduced model to use the full transition.
         // We don't use reducedModel->useFullTransition(true) because we still
         // want to know if the outcome was an exception or not.
@@ -177,7 +178,7 @@ pair<double, double> simulate(mlcore::Problem* reducedModel, Solver & solver)
 
 void initRacetrack(string trackName, int mds)
 {
-    mlcore::Problem* problem = new RacetrackProblem(trackName.c_str());
+    problem = new RacetrackProblem(trackName.c_str());
     ((RacetrackProblem*) problem)->pError(0.05);
     ((RacetrackProblem*) problem)->pSlip(0.10);
     ((RacetrackProblem*) problem)->mds(mds);
@@ -186,32 +187,9 @@ void initRacetrack(string trackName, int mds)
     if (verbosity > 100)
         cout << "Generated " << problem->states().size() << " states." << endl;
 
-    ReducedTransition* obviousReduction =
-        new RacetrackObviousReduction((RacetrackProblem *) problem);
-    reducedModel = new ReducedModel(problem, obviousReduction, k);
-    reducedHeuristic = new ReducedHeuristicWrapper(heuristic);
-    reducedModel->setHeuristic(reducedHeuristic);
-    reducedModel->generateAll();
-    if (verbosity > 100)
-        cout << "Generated " << reducedModel->states().size() <<
-            " reduced states." << endl;
-
-    // Testing the code that tries different reductions of the racetrack.
-//    ReducedTransition* lloReduction =
-//        new LeastLikelyOutcomeReduction((RacetrackProblem *) problem);
-//    list<ReducedTransition *> reductions;
-//    reductions.push_back(obviousReduction);
-//    reductions.push_back(lloReduction);
-//    ReducedTransition* bestReduction =
-//        ReducedModel::getBestReduction(
-//          problem, reductions, k, (ReducedHeuristicWrapper *) reducedHeuristic);
-//    assert(bestReduction == obviousReduction);
-
-
-    // Testing the reachable states code
-    mlcore::StateSet reachableStates;
-    getReachableStates(problem, 5, reachableStates);
-    cout << reachableStates.size() << endl;
+    reductions.push_back(
+        new RacetrackObviousReduction((RacetrackProblem *) problem));
+    reductions.push_back(new LeastLikelyOutcomeReduction(problem));
 }
 
 
@@ -265,25 +243,11 @@ bool initPPDDL(string ppddlArgs, problem_t* internalPPDDLProblem)
     }
 
     problem = new PPDDLProblem(internalPPDDLProblem);
-    heuristic =
-        new mlppddl::PPDDLHeuristic((PPDDLProblem*) problem,
-                                    mlppddl::atomMin1Forward);
+    heuristic = new mlppddl::PPDDLHeuristic((PPDDLProblem*) problem,
+                                            mlppddl::atomMin1Forward);
     problem->setHeuristic(heuristic);
-
-    mdplib_debug = true;
-    ReducedTransition* lloReduction =
-        new LeastLikelyOutcomeReduction(problem);
-    ReducedTransition* mloReduction =
-        new MostLikelyOutcomeReduction(problem);
-    list<ReducedTransition *> reductions;
-    reductions.push_back(mloReduction);
-    reductions.push_back(lloReduction);
-    reducedHeuristic = new ReducedHeuristicWrapper(heuristic);
-    ReducedTransition* bestReduction =
-        ReducedModel::getBestReduction(
-          problem, reductions, k, (ReducedHeuristicWrapper *) reducedHeuristic);
-
-    reducedModel = new ReducedModel(problem, bestReduction, k);
+    reductions.push_back(new LeastLikelyOutcomeReduction(problem));
+    reductions.push_back(new MostLikelyOutcomeReduction(problem));
 }
 
 
@@ -317,11 +281,39 @@ int main(int argc, char* args[])
         initPPDDL(ppddlArgs, internalPPDDLProblem);
     }
 
-    if (flag_is_registered("use_full"))
-        ((ReducedModel *)reducedModel)->useFullTransition(true);
 
-    // This wrapper is used for the pro-active re-planning approach. It
-    // allows us to plan for the set of successors of a state-action.
+////////////////////////////////////////////////
+    // Testing the reachable states code
+    mdplib_debug = true;
+    // We use this wrapper problem to generate small sub-problems for
+    // learning the best reduced model for the original problem.
+    wrapperProblem = new WrapperProblem(problem);
+    mlcore::StateSet reachableStates, tipStates;
+    getReachableStates(wrapperProblem, 5, reachableStates, tipStates);
+    cout << "reachable " << reachableStates.size() <<
+        " tip " << tipStates.size() << endl;
+    for (mlcore::State* tip : tipStates) {
+        wrapperProblem->addOverrideGoal(tip);
+        dprint2("new goal", tip);
+        break;
+    }
+    wrapperProblem->setHeuristic(nullptr);
+    ReducedTransition* bestReduction =
+        ReducedModel::getBestReduction(
+          wrapperProblem, reductions, k, reducedHeuristic);
+    for (mlcore::State* s : problem->states())
+        s->reset(); // Make sure the stored values/actions are cleared.
+/////////////////////////////////////////////////
+
+    reducedModel = new ReducedModel(problem, bestReduction, k);
+    reducedHeuristic = new ReducedHeuristicWrapper(heuristic);
+    reducedModel->setHeuristic(reducedHeuristic);
+    ((ReducedModel *) reducedModel)->
+        useFullTransition(flag_is_registered("use_full"));
+
+    // This wrapper is used for the pro-active re-planning approach. It will
+    // allow us to plan for the set of successors of a state-action.
+    delete wrapperProblem;
     wrapperProblem = new WrapperProblem(reducedModel);
 
     // Solving reduced model using LAO*
@@ -329,6 +321,7 @@ int main(int argc, char* args[])
     clock_t startTime = clock();
     LAOStarSolver solver(wrapperProblem, 1.0e-3);
     solver.solve(wrapperProblem->initialState());
+    cout << "cost " << wrapperProblem->initialState()->cost() << endl;
     clock_t endTime = clock();
     totalPlanningTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
 
