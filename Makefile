@@ -26,24 +26,25 @@ OD_SOLV_MOBJ = $(OD)/solvers/mobj
 ID_SOLV_MOBJ = $(ID)/solvers/mobj
 SD_SOLV_MOBJ = $(SD)/solvers/mobj
 
-ID_DOM = $(ID)/domains
-SD_DOM = $(SD)/domains
-ID_MODOM = $(ID)/mobj/domains
-SD_MODOM = $(SD)/mobj/domains
-SD_GW = $(SD_DOM)/gridworld
-ID_GW = $(ID_DOM)/gridworld
-SD_CTP = $(SD_DOM)/ctp
-ID_CTP = $(ID_DOM)/ctp
-SD_SAIL = $(SD_DOM)/sailing
-ID_SAIL = $(ID_DOM)/sailing
-SD_BT = $(SD_DOM)/binarytree
-ID_BT = $(ID_DOM)/binarytree
-SD_RACE = $(SD_DOM)/racetrack
-ID_RACE = $(ID_DOM)/racetrack
-OD_MODOM = $(OD)/domains/mobj
+ID_DOMAINS = $(ID)/domains
+SD_DOMAINS = $(SD)/domains
+OD_DOMAINS = $(OD)/domains
+ID_MOBJ_DOMAINS = $(ID)/mobj/domains
+SD_MOBJ_DOMAINS = $(SD)/mobj/domains
+OD_MOBJ_DOMAINS = $(OD)/domains/mobj
+SD_GW = $(SD_DOMAINS)/gridworld
+ID_GW = $(ID_DOMAINS)/gridworld
+SD_CTP = $(SD_DOMAINS)/ctp
+ID_CTP = $(ID_DOMAINS)/ctp
+SD_SAIL = $(SD_DOMAINS)/sailing
+ID_SAIL = $(ID_DOMAINS)/sailing
+SD_BT = $(SD_DOMAINS)/binarytree
+ID_BT = $(ID_DOMAINS)/binarytree
+SD_RACE = $(SD_DOMAINS)/racetrack
+ID_RACE = $(ID_DOMAINS)/racetrack
 
 # Variables for include directives
-INCLUDE_DOM = -I$(ID_GW) -I$(ID_CTP) -I$(ID_SAIL) -I$(ID_DOM) -I$(ID_RACE)
+INCLUDE_DOM = -I$(ID_GW) -I$(ID_CTP) -I$(ID_SAIL) -I$(ID_DOMAINS) -I$(ID_RACE)
 INCLUDE_CORE = -I$(ID_UTIL) -I$(ID)
 INCLUDE_SOLVERS = -I$(ID_SOLV) -I$(ID_SOLV_MOBJ)
 INCLUDE_PPDDL = -I$(ID_PPDDL) -I$(ID_PPDDL)/mini-gpt
@@ -69,7 +70,7 @@ BT_CPP = $(SD_BT)/*.cpp
 BT_H = $(ID_BT)/*.h
 RACE_CPP = $(SD_RACE)/*.cpp
 RACE_H = $(ID_RACE)/*.h
-DOM_CPP = $(GW_CPP) $(CTP_CPP) $(SAIL_CPP) $(RACE_CPP) $(SD_DOM)/*.cpp
+DOM_CPP = $(GW_CPP) $(CTP_CPP) $(SAIL_CPP) $(RACE_CPP) $(SD_DOMAINS)/*.cpp
 DOM_H = $(GW_H) $(CTP_H) $(SAIL_H) $(RACE_H)
 
 ALL_H = $(I_H) $(SOLV_H) $(MOSOLV_H) $(DOM_H) $(UTIL_H)
@@ -85,7 +86,7 @@ LIBS_GUROBI = $(LIBS) -lgurobi60 -Llib
 
 # Compiles the core MDP-LIB library #
 .PHONY: libmdp
-libmdp:
+lib/libmdp.a: $(OD)/core.a $(OD)/solvers.a lib/libmdp.a
 	make $(OD)/core.a
 	make $(OD)/solvers.a
 	ar rvs libmdp.a $(OD)/core/*.o $(OD)/solvers/*.o
@@ -120,50 +121,50 @@ $(OD)/core.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H)
 # Compiles the multi-objective domains and test programs #
 mobj: $(ALL_CPP) $(ALL_H)
 	make $(OD)/mo-solvers.a
-	make $(OD_MODOM)/airplane.a
-	make $(OD_MODOM)/mo-racetrack.a
-	make $(OD_MODOM)/mo-gw.a
-	make $(OD_MODOM)/rawfile.a
-	$(CC) $(CFLAGS) $(INCLUDE) -o testlexirace $(TD)/testLexiRace.cpp $(OD_MODOM)/*.o lib/libmdp_mosolvers.a $(LIBS_GUROBI)
-	$(CC) $(CFLAGS) $(INCLUDE) -o testlexigw $(TD)/testLexiGW.cpp $(OD_MODOM)/*.o lib/libmdp_mosolvers.a $(LIBS_GUROBI)
-	$(CC) $(CFLAGS) $(INCLUDE) -o testlexiraw $(TD)/testLexiRaw.cpp $(OD_MODOM)/*.o lib/libmdp_mosolvers.a $(LIBS_GUROBI)
-	$(CC) $(CFLAGS) $(INCLUDE) -o testairplane $(TD)/testAirplane.cpp $(OD_MODOM)/*.o lib/libmdp_mosolvers.a $(LIBS_GUROBI)
+	make $(OD_MOBJ_DOMAINS)/airplane.a
+	make $(OD_MOBJ_DOMAINS)/mo-racetrack.a
+	make $(OD_MOBJ_DOMAINS)/mo-gw.a
+	make $(OD_MOBJ_DOMAINS)/rawfile.a
+	$(CC) $(CFLAGS) $(INCLUDE) -o testlexirace $(TD)/testLexiRace.cpp $(OD_MOBJ_DOMAINS)/*.o lib/libmdp_mosolvers.a $(LIBS_GUROBI)
+	$(CC) $(CFLAGS) $(INCLUDE) -o testlexigw $(TD)/testLexiGW.cpp $(OD_MOBJ_DOMAINS)/*.o lib/libmdp_mosolvers.a $(LIBS_GUROBI)
+	$(CC) $(CFLAGS) $(INCLUDE) -o testlexiraw $(TD)/testLexiRaw.cpp $(OD_MOBJ_DOMAINS)/*.o lib/libmdp_mosolvers.a $(LIBS_GUROBI)
+	$(CC) $(CFLAGS) $(INCLUDE) -o testairplane $(TD)/testAirplane.cpp $(OD_MOBJ_DOMAINS)/*.o lib/libmdp_mosolvers.a $(LIBS_GUROBI)
 
 # Compiles the airplane domain #
-$(OD_MODOM)/airplane.a: $(ID_MODOM)/airplane/*.h $(SD_MODOM)/airplane/*.cpp
+$(OD_MOBJ_DOMAINS)/airplane.a: $(ID_MOBJ_DOMAINS)/airplane/*.h $(SD_MOBJ_DOMAINS)/airplane/*.cpp
 	rm -f *.o
-	$(CC) $(CFLAGS) $(INCLUDE) -Iinclude/mobj/*.h -I$(ID_MODOM)/*.h \
-	-I$(ID_MODOM)/airplane/*.h -c $(SD_MODOM)/airplane/*.cpp
-	ar rvs $(OD_MODOM)/airplane.a *.o
-	mkdir -p $(OD_MODOM)
-	mv *.o $(OD_MODOM)
+	$(CC) $(CFLAGS) $(INCLUDE) -Iinclude/mobj/*.h -I$(ID_MOBJ_DOMAINS)/*.h \
+	-I$(ID_MOBJ_DOMAINS)/airplane/*.h -c $(SD_MOBJ_DOMAINS)/airplane/*.cpp
+	ar rvs $(OD_MOBJ_DOMAINS)/airplane.a *.o
+	mkdir -p $(OD_MOBJ_DOMAINS)
+	mv *.o $(OD_MOBJ_DOMAINS)
 
 # Compiles the MO-Racetrack domain #
-$(OD_MODOM)/mo-racetrack.a: $(RACE_CPP) $(RACE_H) $(ID_MODOM)/*rack*.h $(SD_MODOM)/*rack*.cpp
+$(OD_MOBJ_DOMAINS)/mo-racetrack.a: $(RACE_CPP) $(RACE_H) $(ID_MOBJ_DOMAINS)/*rack*.h $(SD_MOBJ_DOMAINS)/*rack*.cpp
 	rm -f *.o
-	$(CC) $(CFLAGS) $(INCLUDE) -Iinclude/mobj/*.h -I$(ID_MODOM)/*.h \
-	-I$(ID_MODOM)/*rack*/*.h -c $(SD_MODOM)/*rack*.cpp
-	ar rvs $(OD_MODOM)/mo-racetrack.a *.o
-	mkdir -p $(OD_MODOM)
-	mv *.o $(OD_MODOM)
+	$(CC) $(CFLAGS) $(INCLUDE) -Iinclude/mobj/*.h -I$(ID_MOBJ_DOMAINS)/*.h \
+	-I$(ID_MOBJ_DOMAINS)/*rack*/*.h -c $(SD_MOBJ_DOMAINS)/*rack*.cpp
+	ar rvs $(OD_MOBJ_DOMAINS)/mo-racetrack.a *.o
+	mkdir -p $(OD_MOBJ_DOMAINS)
+	mv *.o $(OD_MOBJ_DOMAINS)
 
 # Compiles the MO-Gridworld domain #
-$(OD_MODOM)/mo-gw.a: $(ID_MODOM)/*.h $(SD_MODOM)/*.cpp $(GW_CPP) $(GW_H)
+$(OD_MOBJ_DOMAINS)/mo-gw.a: $(ID_MOBJ_DOMAINS)/*.h $(SD_MOBJ_DOMAINS)/*.cpp $(GW_CPP) $(GW_H)
 	rm -f *.o
-	$(CC) $(CFLAGS) $(INCLUDE) -Iinclude/mobj/*.h -I$(ID_MODOM)/*.h \
-	-I$(ID_MODOM)/*GridWorld*/*.h -c $(SD_MODOM)/*GridWorld*.cpp $(GW_CPP)
-	ar rvs $(OD_MODOM)/mo-gw.a *.o
-	mkdir -p $(OD_MODOM)
-	mv *.o $(OD_MODOM)
+	$(CC) $(CFLAGS) $(INCLUDE) -Iinclude/mobj/*.h -I$(ID_MOBJ_DOMAINS)/*.h \
+	-I$(ID_MOBJ_DOMAINS)/*GridWorld*/*.h -c $(SD_MOBJ_DOMAINS)/*GridWorld*.cpp $(GW_CPP)
+	ar rvs $(OD_MOBJ_DOMAINS)/mo-gw.a *.o
+	mkdir -p $(OD_MOBJ_DOMAINS)
+	mv *.o $(OD_MOBJ_DOMAINS)
 
 # Compiles the Raw File domain #
-$(OD_MODOM)/rawfile.a: $(ID_MODOM)/*Raw*.h $(SD_MODOM)/*Raw*.cpp
+$(OD_MOBJ_DOMAINS)/rawfile.a: $(ID_MOBJ_DOMAINS)/*Raw*.h $(SD_MOBJ_DOMAINS)/*Raw*.cpp
 	rm -f *.o
-	$(CC) $(CFLAGS) $(INCLUDE) -Iinclude/mobj/*.h -I$(ID_MODOM)/*.h \
-	-I$(ID_MODOM)/*Raw*/*.h -c $(SD_MODOM)/*Raw*.cpp
-	ar rvs $(OD_MODOM)/rawfile.a *.o
-	mkdir -p $(OD_MODOM)
-	mv *.o $(OD_MODOM)
+	$(CC) $(CFLAGS) $(INCLUDE) -Iinclude/mobj/*.h -I$(ID_MOBJ_DOMAINS)/*.h \
+	-I$(ID_MOBJ_DOMAINS)/*Raw*/*.h -c $(SD_MOBJ_DOMAINS)/*Raw*.cpp
+	ar rvs $(OD_MOBJ_DOMAINS)/rawfile.a *.o
+	mkdir -p $(OD_MOBJ_DOMAINS)
+	mv *.o $(OD_MOBJ_DOMAINS)
 
 # Compiles the concurrent planning test program #
 conc: $(ALL_CPP) $(ALL_H)
@@ -213,43 +214,51 @@ b2t: $(BT_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(BT_H) libmdp
 	$(CC) $(CFLAGS) -I$(ID_BT) $(INCLUDE_CORE) -o testb2t.out $(TD)/testB2T.cpp $(TD)/*.o $(LIBS)
 	rm test/*.o
 
+.PHONY: domains
+$(OD_DOMAINS)/libmdp_domains.a: libmdp $(DOM_H) $(DOM_CPP)
+	$(CC) $(CFLAGS) $(INCLUDE) -c $(DOM_CPP)
+	mkdir -p $(OD_DOMAINS)
+	mv *.o $(OD_DOMAINS)
+	ar rvs $(OD_DOMAINS)/libmdp_domains.a $(OD_DOMAINS)/*.o
+
 # Compiles the mini-gpt library
 minigpt:
 	$(MAKE) -C include/ppddl/mini-gpt
 	ar rvs lib/libminigpt.a include/ppddl/mini-gpt/*.o
 
 # Compiles the PPDDL library
-ppddl: libmdp src/ppddl/*.cpp include/ppddl/*.h minigpt
+.PHONY: ppddl
+lib/libmdp_ppddl.a: libmdp src/ppddl/*.cpp include/ppddl/*.h minigpt
 	$(CC) $(CFLAGS) -Iinclude -Iinclude/ppddl -Include/ppddl/mini-gpt -I$(ID_SOLV) -c src/ppddl/*.cpp
-	mkdir -p test
+	mkdir -p $(TD)
 	ar rvs lib/libmdp_ppddl.a *.o
 	mkdir -p $(OD_PPDDL)
 	mv *.o $(OD_PPDDL)
 #	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) $(INCLUDE_PPDDL) -o testppddl.out $(TD)/testPPDDL.cpp include/ppddl/mini-gpt/heuristics.cc $(LIBS) lib/libminigpt.a lib/libmdp_ppddl.a
 
 # Compiles the reduced model code
-reduced: libmdp ppddl $(SD_REDUCED)/*.cpp $(ID_REDUCED)/*.h
+reduced: libmdp domains ppddl $(SD_REDUCED)/*.cpp $(ID_REDUCED)/*.h
 	$(CC) $(CFLAGS) -Iinclude -I$(ID_REDUCED) -c $(SD_REDUCED)/*.cpp
-	mkdir -p test
+	mkdir -p $(TD)
 	ar rvs lib/libmdp_reduced.a *.o
 	mkdir -p $(OD_REDUCED)
 	mv *.o $(OD_REDUCED)
-	$(CC) $(CFLAGS) $(INCLUDE) -c $(DOM_CPP)
-	mkdir -p test
-	mv *.o test/
-	$(CC) $(CFLAGS) -I$(ID_REDUCED) $(INCLUDE_CORE) $(INCLUDE_PPDDL) -o testreduced.out $(TD)/reduced/testReduced.cpp test/*.o include/ppddl/mini-gpt/heuristics.cc $(LIBS) lib/libmdp_reduced.a lib/libminigpt.a lib/libmdp_ppddl.a
+	$(CC) $(CFLAGS) -I$(ID_REDUCED) $(INCLUDE_CORE) $(INCLUDE_PPDDL) \
+	-o testreduced.out $(TD)/reduced/testReduced.cpp $(OD_DOMAINS)/*.o \
+	$(ID_PPDDL)/mini-gpt/heuristics.cc \
+	$(LIBS) lib/libmdp_reduced.a lib/libminigpt.a lib/libmdp_ppddl.a
 
 .PHONY: clean
 clean:
-	rm -f test/*.o
+	rm -f $(TD)/*.o
 	rm -f *.o
-	rm -f obj/*.a
-	rm -f obj/*.o
-	rm -f obj/core/*.o
-	rm -f obj/domains/*.o
-	rm -f obj/domains/*.a
-	rm -f obj/domains/mobj/*
-	rm -f obj/solvers/*.o
-	rm -f obj/solvers/*.a
-	rm -f obj/solvers/mobj/*
-	rm -f include/ppddl/mini-gpt/*.o
+	rm -f $(OD)/*.a
+	rm -f $(OD)/*.o
+	rm -f $(OD)/core/*.o
+	rm -f $(OD)/domains/*.o
+	rm -f $(OD)/domains/*.a
+	rm -f $(OD)/domains/mobj/*
+	rm -f $(OD)/solvers/*.o
+	rm -f $(OD)/solvers/*.a
+	rm -f $(OD)/solvers/mobj/*
+	rm -f $(ID_PPDDL)/mini-gpt/*.o
