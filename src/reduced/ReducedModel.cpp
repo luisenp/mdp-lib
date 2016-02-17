@@ -86,6 +86,11 @@ double ReducedModel::evaluateContinualPlan(ReducedModel* reducedModel)
     // Computing an universal plan for all of these states in the reduced model.
     mlsolvers::VISolver solver(reducedModel, 1000000, 1.0e-3);
     solver.solve();
+                                                                                    for (mlcore::State* xxx : reducedModel->states()) {
+                                                                                        if (reducedModel->goal(xxx))
+                                                                                            continue;
+                                                                                        dprint3("xxxxx", xxx,xxx->bestAction());
+                                                                                    }
 
     // Finally, we make sure the MC uses the continual planning
     // transition function.
@@ -149,7 +154,7 @@ ReducedModel::getBestReduction(
             new ReducedModel(originalProblem, reducedTransition, k);
         reducedModel->setHeuristic(heuristic);
         double expectedCostReduction = evaluateContinualPlan(reducedModel);
-        dprint1(expectedCostReduction);
+                                                                                    dprint2("**************************************", expectedCostReduction);
         if (expectedCostReduction < bestCost) {
             bestCost = expectedCostReduction;
             bestReduction = reducedTransition;

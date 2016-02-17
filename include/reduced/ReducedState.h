@@ -23,6 +23,20 @@ protected:
     int exceptionCount_;
 
 public:
+    ReducedState()
+    {
+        originalState_ = nullptr;
+        problem_ = nullptr;
+        exceptionCount_ = 0;
+    }
+
+    ReducedState(const ReducedState& rhs) :
+        originalState_(rhs.originalState_),
+        exceptionCount_(rhs.exceptionCount_)
+    {
+        problem_ = rhs.problem_;
+    }
+
     ReducedState(mlcore::State* originalState,
                  int exceptionCount,
                  mlcore::Problem* problem) :
@@ -35,6 +49,8 @@ public:
     virtual ~ReducedState() {}
 
     mlcore::State* originalState() { return originalState_; }
+
+    void originalState(mlcore::State* value) { originalState_ = value; }
 
     int exceptionCount() { return exceptionCount_; }
 

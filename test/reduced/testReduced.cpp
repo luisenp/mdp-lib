@@ -1,5 +1,6 @@
 #include <cassert>
 #include <ctime>
+#include <list>
 #include <sstream>
 #include <string>
 #include <typeinfo>
@@ -62,14 +63,11 @@ list<ReducedTransition *> reductions;
  * under the full transition model (with exception counters = 0).
  * More details can be found in
  * http://anytime.cs.umass.edu/shlomo/papers/PZicaps14.pdf
- *
- * If proactive is true, the exception counter of next State is unchanged.
- * If proactive is false, it sets the exception counter of nextState to 0.
  */
-double triggerReplan(Solver& solver, ReducedState** nextState, bool proactive)
+double triggerReplan(Solver& solver, ReducedState* nextState, bool proactive)
 {
     if (proactive) {
-        mlcore::Action* bestAction = (*nextState)->bestAction();
+        mlcore::Action* bestAction = nextState->bestAction();
         // This action can't be null because we are planning proactively.
         assert(bestAction != nullptr);
 
@@ -79,93 +77,99 @@ double triggerReplan(Solver& solver, ReducedState** nextState, bool proactive)
         list<mlcore::Successor> successorsFullModel =
             reducedModel->transition(
                 new ReducedState(
-                    (*nextState)->originalState(), -1, reducedModel),
+                    nextState->originalState(), -1, reducedModel),
                 bestAction);
         list<mlcore::Successor> dummySuccessors;
         for (mlcore::Successor sccr : successorsFullModel) {
-            ReducedState* reducedSccr = (ReducedState *) sccr.su_state;
-            reducedSccr->exceptionCount(0);
-            reducedSccr = (ReducedState *)
-                reducedModel->addState((mlcore::State *) reducedSccr);
+            ReducedState* reducedSccrState = (ReducedState *)
+                reducedModel->addState(new ReducedState(
+                    ((ReducedState *) sccr.su_state)->originalState(),
+                    0,
+                    reducedModel));
             dummySuccessors.push_back(
-                mlcore::Successor(reducedSccr, sccr.su_prob));
+                mlcore::Successor(reducedSccrState, sccr.su_prob));
         }
         wrapperProblem->setDummyAction(bestAction);
         wrapperProblem->dummyState()->setSuccessors(dummySuccessors);
         solver.solve(wrapperProblem->dummyState());
         return 0.0;  // This happens in parallel to action execution.
     } else {
-        (*nextState)->exceptionCount(0);
-        *nextState = (ReducedState *)
-            reducedModel->addState((mlcore::State *) *nextState);
         clock_t startTime = clock();
-        solver.solve(*nextState);
+        solver.solve(nextState);
         clock_t endTime = clock();
         return (double(endTime - startTime) / CLOCKS_PER_SEC);
 
     }
-
 }
 
 
-pair<double, double> simulate(mlcore::Problem* reducedModel, Solver & solver)
+pair<double, double> simulate(Solver & solver)
 {
     double cost = 0.0;
     double totalPlanningTime = 0.0;
     ReducedState* currentState = (ReducedState *) reducedModel->initialState();
     bool resetExceptionCounter = false;
+    ReducedState auxState(*currentState);
     while (!reducedModel->goal(currentState)) {
         mlcore::Action* bestAction = currentState->bestAction();
+
+                                                                                    cerr << currentState << " " << bestAction << endl;
         cost += reducedModel->cost(currentState, bestAction);
         int exceptionCount = currentState->exceptionCount();
 
-        if (verbosity > 100)
-            cout << currentState << "  " << bestAction << endl;
+        if (verbosity > 100) {
+            cerr << currentState << "  ";
+            assert(bestAction != nullptr);
+            cerr << bestAction << endl;
+        }
 
         // Simulating the action execution using the full model.
         // Since we want to use the full transition function for this,
-        // set the exception counter of the current state to -1
-        // so that it's gureducedHeuristicaranteed to be lower than the exception bound k,
-        // forcing the reduced model to use the full transition.
-        // We don't use reducedModel->useFullTransition(true) because we still
-        // want to know if the outcome was an exception or not.
+        // we set the exception counter of the current state to -1
+        // so that it's guaranteed to be lower than the
+        // exception bound k, thus forcing the reduced model to use the full
+        // transition. We don't use reducedModel->useFullTransition(true)
+        // because we still want to know if the outcome was an exception or not.
+        // TODO: Make a method in ReducedModel that does this because this
+        // approach will make reducedModel store the copies with j=-1.
+//        auxState = *currentState;
+        auxState.originalState(currentState->originalState());
+        auxState.exceptionCount(-1);
         ReducedState* nextState = (ReducedState *)
-            randomSuccessor(
-                reducedModel,
-                new ReducedState(
-                    currentState->originalState(), -1, reducedModel),
-                bestAction);
+            randomSuccessor(reducedModel, &auxState, bestAction);
+//        auxState = *nextState;
+        auxState.originalState(nextState->originalState());
+        auxState.exceptionCount(nextState->exceptionCount());
 
         // Adjusting the result to the current exception count.
         if (resetExceptionCounter) {
             // We reset the exception counter after pro-active re-planning.
-            nextState->exceptionCount(0);
+            auxState.exceptionCount(0);
             resetExceptionCounter = false;
         } else {
-            if (nextState->exceptionCount() == -1)
-                nextState->exceptionCount(exceptionCount);
+            if (auxState.exceptionCount() == -1)    // no exception happened.
+                auxState.exceptionCount(exceptionCount);
             else
-                nextState->exceptionCount(exceptionCount + 1);
+                auxState.exceptionCount(exceptionCount + 1);
         }
-
-        // Checking if the state has already been considered during planning.
-        ReducedState* checkState = (ReducedState *)
-            reducedModel->getState((mlcore::State *) nextState);
+        nextState = (ReducedState *) reducedModel->getState(&auxState);
 
         // Re-planning
-        if (checkState == nullptr) {
+        // Checking if the state has already been considered during planning.
+        if (nextState == nullptr) {
             // State wasn't considered before.
             assert(k == 0);  // Only determinization should reach here.
             if (verbosity > 100)
                 cout << "No plan for this state. Re-planning." << endl;
-            totalPlanningTime += triggerReplan(solver, &nextState, false);
+            auxState.exceptionCount(0);
+            nextState = (ReducedState *) reducedModel->addState(&auxState);
+            totalPlanningTime += triggerReplan(solver, nextState, false);
             assert(nextState != nullptr);
         } else {
-            nextState = checkState;
             if (nextState->exceptionCount() == k) {
                 if (verbosity > 100)
                     cout << "Pro-active re-planning." << endl;
-                totalPlanningTime += triggerReplan(solver, &nextState, true);
+                totalPlanningTime += triggerReplan(solver, nextState, true);
                 resetExceptionCounter = true;
             }
         }
@@ -283,8 +287,7 @@ int main(int argc, char* args[])
 
 
 ////////////////////////////////////////////////
-    // Testing the reachable states code
-    mdplib_debug = true;
+    // Testing the code that evaluates the reductions on a small sub-problem
     // We use this wrapper problem to generate small sub-problems for
     // learning the best reduced model for the original problem.
     wrapperProblem = new WrapperProblem(problem);
@@ -298,10 +301,11 @@ int main(int argc, char* args[])
         break;
     }
     wrapperProblem->setHeuristic(nullptr);
-    ReducedTransition* bestReduction =
-        ReducedModel::getBestReduction(
+    mdplib_debug = true;
+    ReducedTransition* bestReduction = ReducedModel::getBestReduction(
           wrapperProblem, reductions, k, reducedHeuristic);
-    for (mlcore::State* s : problem->states())
+    mdplib_debug = false;
+    for (mlcore::State* s : wrapperProblem->states())
         s->reset(); // Make sure the stored values/actions are cleared.
 /////////////////////////////////////////////////
 
@@ -311,10 +315,10 @@ int main(int argc, char* args[])
     ((ReducedModel *) reducedModel)->
         useFullTransition(flag_is_registered("use_full"));
 
-    // This wrapper is used for the pro-active re-planning approach. It will
-    // allow us to plan for the set of successors of a state-action.
-    delete wrapperProblem;
-    wrapperProblem = new WrapperProblem(reducedModel);
+    // We will now use the wrapper for the pro-active re-planning approach. It
+    // will allow us to plan in advance for the set of successors of a
+    // state-action.
+    wrapperProblem->setNewProblem(reducedModel);
 
     // Solving reduced model using LAO*
     double totalPlanningTime = 0.0;
@@ -325,17 +329,23 @@ int main(int argc, char* args[])
     clock_t endTime = clock();
     totalPlanningTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
 
-    // Running a trial of the continual planning approach using the reduced model.
-    pair<double, double> costAndTime = simulate(reducedModel, solver);
+    // Running a trial of the continual planning approach.
+    double expectedCost = 0.0;
+    int nsims = 100;
+    for (int i = 0; i < nsims; i++) {
+        pair<double, double> costAndTime = simulate(solver);
+        expectedCost += costAndTime.first;
 
-    if (verbosity > 100) {
-        cout << "Total cost " << costAndTime.first << endl;
-        cout << "Total planning time " <<
-            costAndTime.second + totalPlanningTime << endl;
-    } else {
-        cout << costAndTime.first << " "
-            << costAndTime.second + totalPlanningTime << endl;
+        if (verbosity > 100) {
+            cout << "Total cost " << costAndTime.first << endl;
+            cout << "Total planning time " <<
+                costAndTime.second + totalPlanningTime << endl;
+        } else {
+//            cout << costAndTime.first << " "
+//                << costAndTime.second + totalPlanningTime << endl;
+        }
     }
+    cout << expectedCost / nsims << endl;
 
     return 0;
 }

@@ -72,8 +72,8 @@ public:
      */
     State() : bits_(0), cost_(mdplib::dead_end_cost + 1),
               gValue_(mdplib::dead_end_cost + 1), hValue_(mdplib::dead_end_cost + 1),
-              bestAction_(nullptr), problem_(nullptr), deadEnd_(false) {
-    }
+              bestAction_(nullptr), problem_(nullptr), deadEnd_(false)
+    { }
 
     virtual ~State() {}
 
@@ -160,12 +160,14 @@ public:
      * Returns an estimate of the optimal expected cost to reach
      * a goal from this state.
      *
-     * @return An estimate of the optimal expected cost to reach a goal from this state.
+     * @return An estimate of the optimal expected cost to reach a goal from
+     * this state.
      */
     double cost() const;
 
     /**
-     * Updates the estimate of the expected cost to reach a goal from this state.
+     * Updates the estimate of the expected cost to reach a goal from this
+     * state.
      *
      * @param c The updated expected cost to reach a goal from this state.
      */
@@ -219,7 +221,8 @@ public:
     }
 
     /**
-     * Updates the estimate of the expected cost to reach a goal from this state.
+     * Updates the estimate of the expected cost to reach a goal from this
+     * state.
      *
      * @param a The updated best action estimate for the state.
      */

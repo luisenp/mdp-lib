@@ -26,12 +26,10 @@ private:
 
 public:
 
-    WrapperProblem(mlcore::Problem* problem) : problem_(problem)
+    WrapperProblem(mlcore::Problem* problem)
     {
         dummyState_ = new DummyState();
-        s0 = problem_->initialState();
-        actions_ = problem->actions();
-        heuristic_ = problem->heuristic();
+        setNewProblem(problem);
     }
 
     virtual ~WrapperProblem() { }
@@ -51,6 +49,14 @@ public:
     }
 
     void clearOverrideGoals() { overrideGoals_.clear(); }
+
+    void setNewProblem(mlcore::Problem* problem)
+    {
+        problem_ = problem;
+        s0 = problem_->initialState();
+        actions_ = problem->actions();
+        heuristic_ = problem->heuristic();
+    }
 
     /**
      * Overrides method from Problem.

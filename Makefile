@@ -85,8 +85,8 @@ LIBS_GUROBI = $(LIBS) -lgurobi60 -Llib
 #########################################################################
 
 # Compiles the core MDP-LIB library #
-.PHONY: libmdp
-lib/libmdp.a: $(OD)/core.a $(OD)/solvers.a lib/libmdp.a
+libmdp: lib/libmdp.a
+lib/libmdp.a: $(OD)/core.a $(OD)/solvers.a
 	make $(OD)/core.a
 	make $(OD)/solvers.a
 	ar rvs libmdp.a $(OD)/core/*.o $(OD)/solvers/*.o
@@ -214,21 +214,22 @@ b2t: $(BT_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(BT_H) libmdp
 	$(CC) $(CFLAGS) -I$(ID_BT) $(INCLUDE_CORE) -o testb2t.out $(TD)/testB2T.cpp $(TD)/*.o $(LIBS)
 	rm test/*.o
 
-.PHONY: domains
-$(OD_DOMAINS)/libmdp_domains.a: libmdp $(DOM_H) $(DOM_CPP)
+domains: $(OD_DOMAINS)/libmdp_domains.a
+$(OD_DOMAINS)/libmdp_domains.a: lib/libmdp.a $(DOM_H) $(DOM_CPP)
 	$(CC) $(CFLAGS) $(INCLUDE) -c $(DOM_CPP)
 	mkdir -p $(OD_DOMAINS)
 	mv *.o $(OD_DOMAINS)
 	ar rvs $(OD_DOMAINS)/libmdp_domains.a $(OD_DOMAINS)/*.o
 
 # Compiles the mini-gpt library
-minigpt:
+minigpt: lib/libminigpt.a
+lib/libminigpt.a:
 	$(MAKE) -C include/ppddl/mini-gpt
 	ar rvs lib/libminigpt.a include/ppddl/mini-gpt/*.o
 
 # Compiles the PPDDL library
-.PHONY: ppddl
-lib/libmdp_ppddl.a: libmdp src/ppddl/*.cpp include/ppddl/*.h minigpt
+ppddl: lib/libmdp_ppddl.a
+lib/libmdp_ppddl.a: lib/libmdp.a src/ppddl/*.cpp include/ppddl/*.h lib/libminigpt.a
 	$(CC) $(CFLAGS) -Iinclude -Iinclude/ppddl -Include/ppddl/mini-gpt -I$(ID_SOLV) -c src/ppddl/*.cpp
 	mkdir -p $(TD)
 	ar rvs lib/libmdp_ppddl.a *.o
@@ -237,7 +238,8 @@ lib/libmdp_ppddl.a: libmdp src/ppddl/*.cpp include/ppddl/*.h minigpt
 #	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) $(INCLUDE_PPDDL) -o testppddl.out $(TD)/testPPDDL.cpp include/ppddl/mini-gpt/heuristics.cc $(LIBS) lib/libminigpt.a lib/libmdp_ppddl.a
 
 # Compiles the reduced model code
-reduced: libmdp domains ppddl $(SD_REDUCED)/*.cpp $(ID_REDUCED)/*.h
+reduced: lib/libmdp_reduced.a
+lib/libmdp_reduced.a: lib/libmdp.a domains ppddl $(SD_REDUCED)/*.cpp $(ID_REDUCED)/*.h
 	$(CC) $(CFLAGS) -Iinclude -I$(ID_REDUCED) -c $(SD_REDUCED)/*.cpp
 	mkdir -p $(TD)
 	ar rvs lib/libmdp_reduced.a *.o
@@ -246,7 +248,7 @@ reduced: libmdp domains ppddl $(SD_REDUCED)/*.cpp $(ID_REDUCED)/*.h
 	$(CC) $(CFLAGS) -I$(ID_REDUCED) $(INCLUDE_CORE) $(INCLUDE_PPDDL) \
 	-o testreduced.out $(TD)/reduced/testReduced.cpp $(OD_DOMAINS)/*.o \
 	$(ID_PPDDL)/mini-gpt/heuristics.cc \
-	$(LIBS) lib/libmdp_reduced.a lib/libminigpt.a lib/libmdp_ppddl.a
+	$(LIBS) lib/libminigpt.a lib/libmdp_reduced.a lib/libmdp_ppddl.a
 
 .PHONY: clean
 clean:
@@ -262,3 +264,4 @@ clean:
 	rm -f $(OD)/solvers/*.a
 	rm -f $(OD)/solvers/mobj/*
 	rm -f $(ID_PPDDL)/mini-gpt/*.o
+	rm -f lib/libmdp*.a
