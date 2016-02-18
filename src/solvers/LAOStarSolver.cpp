@@ -48,7 +48,6 @@ int LAOStarSolver::expand(mlcore::State* s)
 {
     if (!visited.insert(s).second)  // state was already visited.
         return 0;
-
     if (s->deadEnd() || problem_->goal(s))
         return 0;
 

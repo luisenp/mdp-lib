@@ -190,7 +190,7 @@ public:
      *
      * @return The states generated so far.
      */
-    StateSet& states()
+    virtual StateSet& states()
     {
         return states_;
     }

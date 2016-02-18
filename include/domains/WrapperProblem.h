@@ -61,6 +61,11 @@ public:
     /**
      * Overrides method from Problem.
      */
+    virtual mlcore::StateSet& states();
+
+    /**
+     * Overrides method from Problem.
+     */
     virtual bool goal(mlcore::State* s) const;
 
     /**

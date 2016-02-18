@@ -30,7 +30,7 @@ public:
         delete pProblem_;
     }
 
-    problem_t* pProblem() { return pProblem_; }
+    problem_t* pProblem()  { return pProblem_; }
 
     /**
      * Overrides method from Problem.

@@ -25,14 +25,16 @@ PPDDLProblem::PPDDLProblem(problem_t* pProblem) : pProblem_(pProblem)
         actions_.push_back(new PPDDLAction(pActions[i], i));
 }
 
+
 bool PPDDLProblem::goal(mlcore::State* s) const
 {
     PPDDLState* state = (PPDDLState *) s;
     return pProblem_->goal().holds(*state->pState());
 }
 
-std::list<mlcore::Successor> PPDDLProblem::transition(mlcore::State* s,
-                                                 mlcore::Action* a)
+
+std::list<mlcore::Successor>
+    PPDDLProblem::transition(mlcore::State* s, mlcore::Action* a)
 {
     std::list<mlcore::Successor> successors;
 
@@ -50,6 +52,7 @@ std::list<mlcore::Successor> PPDDLProblem::transition(mlcore::State* s,
     return successors;
 }
 
+
 double PPDDLProblem::cost(mlcore::State* s, mlcore::Action* a) const
 {
     PPDDLAction* action = (PPDDLAction *) a;
@@ -57,6 +60,7 @@ double PPDDLProblem::cost(mlcore::State* s, mlcore::Action* a) const
 
     return action->pAction()->cost(*state->pState());
 }
+
 
 bool PPDDLProblem::applicable(mlcore::State* s, mlcore::Action* a) const
 {

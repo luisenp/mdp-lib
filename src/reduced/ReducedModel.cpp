@@ -19,7 +19,7 @@ ReducedModel::transition(mlcore::State* s, mlcore::Action *a)
     std::list<mlcore::Successor> successors;
     std::list<mlcore::Successor> originalSuccessors =
         originalProblem_->transition(rs->originalState(), a);
-    double totalPrimaryProbability = 0.0;
+    double totalProbability = 0.0;
     int i = 0;
     for (mlcore::Successor origSucc : originalSuccessors) {
         mlcore::State* next = nullptr;
@@ -32,7 +32,6 @@ ReducedModel::transition(mlcore::State* s, mlcore::Action *a)
                                  this));
         } else {
             if (isPrimaryOutcome) {
-                totalPrimaryProbability += origSucc.su_prob;
                 next = addState(new ReducedState(origSucc.su_state,
                                                  rs->exceptionCount(),
                                                  this));
@@ -42,15 +41,14 @@ ReducedModel::transition(mlcore::State* s, mlcore::Action *a)
                                                  this));
             }
         }
-        if (next != nullptr)
+        if (next != nullptr) {
             successors.push_back(mlcore::Successor(next, origSucc.su_prob));
+            totalProbability += origSucc.su_prob;
+        }
         i++;
     }
-
-    if (rs->exceptionCount() == k_ && !useContPlanEvaluationTransition_) {
-        for (mlcore::Successor successor : successors) {
-            successor.su_prob /= totalPrimaryProbability;
-        }
+    for (mlcore::Successor successor : successors) {
+        successor.su_prob /= totalProbability;
     }
     return successors;
 }
@@ -70,10 +68,10 @@ double ReducedModel::evaluateContinualPlan(ReducedModel* reducedModel)
     // Then we create copies of all these states for j=1,...,k and add
     // them to the Markov Chain.
     std::list<mlcore::State*> statesFullModel(markovChain->states().begin(),
-                                               markovChain->states().end());
+                                              markovChain->states().end());
     for (int j = 0; j <= reducedModel->k_; j++) {
         for (mlcore::State* s : statesFullModel) {
-            ReducedState* rs = (ReducedState* ) s;
+            ReducedState* rs = static_cast<ReducedState*>(s);
             if (j > 0) {
                 markovChain->addState(
                     new ReducedState(rs->originalState(), j, markovChain));
@@ -89,24 +87,36 @@ double ReducedModel::evaluateContinualPlan(ReducedModel* reducedModel)
     mlsolvers::VISolver solver(reducedModel, 1000000, 1.0e-3);
     solver.solve();
 
+                                                                                    for (mlcore::State * cur : reducedModel->states()) {
+                                                                                      dprint2("state:", cur);
+                                                                                      for (mlcore::Action* action : reducedModel->actions()) {
+                                                                                        if (!reducedModel->applicable(cur, action))
+                                                                                          continue;
+                                                                                        dprint2("action:", action);
+//                                                                                        dprint2("qvalue:", mlsolvers::qvalue(reducedModel, cur, action));
+                                                                                        for (mlcore::Successor su : reducedModel->transition(cur, action)) {
+                                                                                          dprint2("successor:", su.su_state);
+                                                                                          dprint2("prob:", su.su_prob);
+                                                                                        }
+                                                                                      }
+                                                                                    }
     // Finally, we make sure the MC uses the continual planning
     // transition function.
     markovChain->useContPlanEvaluationTransition(true);
-
-                                                                                    std::list<mlcore::State*> stateQ;
-                                                                                    stateQ.push_front(markovChain->initialState());
-                                                                                    mlcore::StateSet visited;
-                                                                                    while (!stateQ.empty()) {
-                                                                                      mlcore::State* cur = stateQ.back(); stateQ.pop_back();
-                                                                                      if (!visited.insert(cur).second || markovChain->goal(cur))
-                                                                                        continue;
-                                                                                      mlcore::Action *besta = reducedModel->getState(cur)->bestAction();
-                                                                                      dprint2(cur, besta);
-                                                                                      for (mlcore::Successor su : markovChain->transition(cur, besta)) {
-                                                                                        dprint2("   ", su.su_state);
-                                                                                        stateQ.push_front(su.su_state);
-                                                                                      }
-                                                                                    }
+//                                                                                    std::list<mlcore::State*> stateQ;
+//                                                                                    stateQ.push_front(markovChain->initialState());
+//                                                                                    mlcore::StateSet visited;
+//                                                                                    while (!stateQ.empty()) {
+//                                                                                      mlcore::State* cur = stateQ.back(); stateQ.pop_back();
+//                                                                                      if (!visited.insert(cur).second || markovChain->goal(cur))
+//                                                                                        continue;
+//                                                                                      mlcore::Action *besta = reducedModel->getState(cur)->bestAction();
+//                                                                                      dprint2(cur, besta);
+//                                                                                      for (mlcore::Successor su : markovChain->transition(cur, besta)) {
+//                                                                                        dprint2("   ", su.su_state);
+//                                                                                        stateQ.push_front(su.su_state);
+//                                                                                      }
+//                                                                                    }
 
     // Now we compute the expected cost of traversing this Markov Chain.
     double maxResidual = mdplib::dead_end_cost;
@@ -166,7 +176,7 @@ ReducedModel::getBestReduction(
             new ReducedModel(originalProblem, reducedTransition, k);
         reducedModel->setHeuristic(heuristic);
         double expectedCostReduction = evaluateContinualPlan(reducedModel);
-                                                                                    dprint2("**************************************", expectedCostReduction);
+                                                                                  dprint1(expectedCostReduction);
         if (expectedCostReduction < bestCost) {
             bestCost = expectedCostReduction;
             bestReduction = reducedTransition;
