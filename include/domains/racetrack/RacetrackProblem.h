@@ -92,30 +92,30 @@ public:
 
     std::vector<std::vector <char> > & track() { return track_; }
 
-    void track(std::vector<std::vector <char> > value) { track_ = value; }
+    void track(const std::vector<std::vector <char> > value) { track_ = value; }
 
-    void mds(int value) { mds_ = value; }
+    void mds(const int value) { mds_ = value; }
 
-    int mds() { return mds_; }
+    int mds() const { return mds_; }
 
-    void pError(double value) { pError_ = value; }
+    void pError(const double value) { pError_ = value; }
 
-    double pError() { return pError_; }
+    double pError() const { return pError_; }
 
-    void pSlip(double value) { pSlip_ = value; }
+    void pSlip(const double value) { pSlip_ = value; }
 
-    double pSlip() { return pSlip_; }
+    double pSlip() const { return pSlip_; }
 
-    mlcore::State* absorbing() { return absorbing_; }
+    mlcore::State* absorbing() const { return absorbing_; }
 
-    void starts(IntPairSet theStarts) { starts_ = theStarts; }
+    void starts(const IntPairSet theStarts) { starts_ = theStarts; }
 
     IntPairSet& starts() { return starts_; }
 
     /**
      * Sets the goal locations.
      */
-    void goals(IntPairSet theGoals) { goals_ = theGoals; }
+    void goals(const IntPairSet theGoals) { goals_ = theGoals; }
 
     /**
      * Prints the track.

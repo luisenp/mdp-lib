@@ -17,9 +17,10 @@ SailingNoWindHeuristic::SailingNoWindHeuristic(SailingProblem* problem)
 
 double SailingNoWindHeuristic::cost(const mlcore::State* s) const
 {
-    SailingState* state = (SailingState* ) s;
+    const SailingState* state = static_cast<const SailingState*> (s);
     if (state->x() < 0
-        || (state->x() == problem_->goalX_ && state->y() == problem_->goalY_))   // absorbing state
+        || (state->x() == problem_->goalX_ &&
+                state->y() == problem_->goalY_))   // absorbing state
         return 0.0;
 
     int x = state->x_;
@@ -29,7 +30,7 @@ double SailingNoWindHeuristic::cost(const mlcore::State* s) const
     tmp_->wind_ = state->wind_;
     double heuristicValue = mdplib::dead_end_cost + 1;
     for (mlcore::Action* a : problem_->actions()) {
-        SailingAction* sa = (SailingAction*) a;
+        SailingAction* sa = static_cast<SailingAction*> (a);
         double cost = problem_->cost(tmp_, a);
         short dx[] = {0, 1, 1,  1,  0, -1, -1, -1};
         short dy[] = {1, 1, 0, -1, -1, -1,  0,  1};

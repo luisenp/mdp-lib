@@ -12,7 +12,7 @@ namespace mlreduced
 std::list<mlcore::Successor>
 ReducedModel::transition(mlcore::State* s, mlcore::Action *a)
 {
-    ReducedState* rs = (ReducedState *) s;
+    ReducedState* rs = static_cast<ReducedState*>(s);
     std::vector<bool> primaryIndicators =
         reducedTransition_->isPrimary(rs->originalState(), a);
 
@@ -69,7 +69,7 @@ double ReducedModel::evaluateContinualPlan(ReducedModel* reducedModel)
 
     // Then we create copies of all these states for j=1,...,k and add
     // them to the Markov Chain.
-    std::list<mlcore::State *> statesFullModel(markovChain->states().begin(),
+    std::list<mlcore::State*> statesFullModel(markovChain->states().begin(),
                                                markovChain->states().end());
     for (int j = 0; j <= reducedModel->k_; j++) {
         for (mlcore::State* s : statesFullModel) {
@@ -115,7 +115,7 @@ double ReducedModel::evaluateContinualPlan(ReducedModel* reducedModel)
         for (mlcore::State* s : markovChain->states()) {
             if (markovChain->goal(s))
                 continue;
-            ReducedState* markovChainState = (ReducedState *) s;
+            ReducedState* markovChainState = static_cast<ReducedState*>(s);
             // currentState is the state that markovChainState represents in
             // the reduced model.
             mlcore::State* currentState =
@@ -155,7 +155,7 @@ double ReducedModel::evaluateContinualPlan(ReducedModel* reducedModel)
 ReducedTransition*
 ReducedModel::getBestReduction(
     mlcore::Problem *originalProblem,
-    std::list<ReducedTransition *> reducedTransitions,
+    std::list<ReducedTransition*> reducedTransitions,
     int k,
     ReducedHeuristicWrapper* heuristic)
 {

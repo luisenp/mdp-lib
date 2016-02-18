@@ -20,7 +20,7 @@ RTrackDetHeuristic::RTrackDetHeuristic(const char* filename)
 
 double RTrackDetHeuristic::cost(const mlcore::State* s) const
 {
-    RacetrackState* rts = (RacetrackState*) s;
+    const RacetrackState* rts = static_cast<const RacetrackState*>(s);
     RacetrackState* tmp = new RacetrackState(rts->x(),
                                              rts->y(),
                                              rts->vx(),

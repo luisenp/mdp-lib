@@ -33,11 +33,11 @@ public:
 
     virtual ~SailingState() {}
 
-    short x() { return x_; }
+    short x() const { return x_; }
 
-    short y() { return y_; }
+    short y() const { return y_; }
 
-    short wind() { return wind_; }
+    short wind() const { return wind_; }
 
     /**
      * Overrides method from State.
@@ -47,7 +47,7 @@ public:
         if (this == &rhs)
             return *this;
 
-        SailingState* state = (SailingState*)  & rhs;
+        const SailingState* state = static_cast<const SailingState*> (&rhs);
         x_ =  state->x_;
         y_ =  state->y_;
         wind_ = state->wind_;
@@ -60,7 +60,7 @@ public:
      */
     virtual bool operator==(const mlcore::State& rhs) const
     {
-        SailingState* state = (SailingState*)  & rhs;
+        const SailingState* state = static_cast<const SailingState*> (&rhs);
         return x_ == state->x_
                 && y_ == state->y_
                 && wind_ == state->wind_;
@@ -71,7 +71,7 @@ public:
      */
     virtual bool equals(mlcore::State* other) const
     {
-        SailingState* state = (SailingState*) other;
+        SailingState* state = static_cast<SailingState*> (other);
         return *this ==  *state;
     }
 

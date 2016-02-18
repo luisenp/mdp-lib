@@ -14,7 +14,7 @@ BinaryTreeProblem::BinaryTreeProblem(int levels) : levels_(levels)
 
 bool BinaryTreeProblem::goal(mlcore::State* s) const
 {
-    BinaryTreeState* bts = (BinaryTreeState*) s;
+    BinaryTreeState* bts = static_cast<BinaryTreeState*> (s);
     return bts->level() == (levels_ - 1);
 }
 
@@ -26,8 +26,8 @@ BinaryTreeProblem::transition(mlcore::State* s, mlcore::Action* a)
         successors.push_front(mlcore::Successor(absorbing_, 1.0));
         return successors;
     }
-    BinaryTreeState* bts = (BinaryTreeState *) s;
-    BinaryTreeAction* bta = (BinaryTreeAction *) a;
+    BinaryTreeState* bts = static_cast<BinaryTreeState*> (s);
+    BinaryTreeAction* bta = static_cast<BinaryTreeAction*> (a);
     mlcore::State* next =
         new BinaryTreeState(bts->level() + 1,
                             2*bts->index() + ( 1 - bta->left()));
@@ -38,8 +38,8 @@ BinaryTreeProblem::transition(mlcore::State* s, mlcore::Action* a)
 
 double BinaryTreeProblem::cost(mlcore::State* s, mlcore::Action* a) const
 {
-    BinaryTreeState* bts = (BinaryTreeState *) s;
-    BinaryTreeAction* bta = (BinaryTreeAction *) a;
+    BinaryTreeState* bts = static_cast<BinaryTreeState*> (s);
+    BinaryTreeAction* bta = static_cast<BinaryTreeAction*> (a);
     if (bts->level() != levels_ - 2)
         return 0.0;
     if (bts->index() != 0)

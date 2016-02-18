@@ -24,9 +24,11 @@ void CTPProblem::init()
     actions_.push_back(new CTPAction(-1,-1));
 }
 
-CTPProblem::CTPProblem(Graph* roads, std::vector< std::vector <double> >& probs,
-                       int start, int goal)
-                       : roads_(roads), probs_(probs), start_(start), goal_(goal)
+CTPProblem::CTPProblem(Graph* roads,
+                       std::vector< std::vector <double> >& probs,
+                       int start,
+                       int goal)
+   : roads_(roads), probs_(probs), start_(start), goal_(goal)
 {
     init();
 }
@@ -63,13 +65,14 @@ CTPProblem::CTPProblem(char* filename)
 
 bool CTPProblem::goal(mlcore::State* s) const
 {
-    CTPState* ctps = (CTPState*) s;
+    CTPState* ctps = static_cast<CTPState*>(s);
     if (ctps->badWeather())
         return true;
     return goal_ == ctps->location() ;
 }
 
-std::list<mlcore::Successor> CTPProblem::transition(mlcore::State* s, mlcore::Action* a)
+std::list<mlcore::Successor>
+CTPProblem::transition(mlcore::State* s, mlcore::Action* a)
 {
     assert(applicable(s, a));
 
@@ -84,8 +87,8 @@ std::list<mlcore::Successor> CTPProblem::transition(mlcore::State* s, mlcore::Ac
         return successors;
     }
 
-    CTPState* ctps = (CTPState *) s;
-    CTPAction* ctpa = (CTPAction *) a;
+    CTPState* ctps = static_cast<CTPState*>(s);
+    CTPAction* ctpa = static_cast<CTPAction*>(a);
     int from = ctpa->from();
     int to = ctpa->to();
 
@@ -104,7 +107,9 @@ std::list<mlcore::Successor> CTPProblem::transition(mlcore::State* s, mlcore::Ac
         for (int j = 0; j < nadj; j++) {
             assert(ctps->status()[to][neighbors[j]] == ctp::UNKNOWN);
             unsigned char st = (i & (1<<j)) ? ctp::OPEN : ctp::BLOCKED;
-            p *= (st == ctp::BLOCKED) ? 1.0 - probs_[to][neighbors[j]] : probs_[to][neighbors[j]];
+            p *= (st == ctp::BLOCKED) ?
+                    1.0 - probs_[to][neighbors[j]] :
+                    probs_[to][neighbors[j]];
             next->setStatus(to, neighbors[j], st);
             next->setStatus(neighbors[j], to, st);
         }
@@ -120,15 +125,15 @@ double CTPProblem::cost(mlcore::State* s, mlcore::Action* a) const
     if (s == absorbing_ || goal(s)) {
         return 0.0;
     }
-    CTPState* ctps = (CTPState *) s;
-    CTPAction* ctpa = (CTPAction *) a;
+    CTPState* ctps = static_cast<CTPState*>(s);
+    CTPAction* ctpa = static_cast<CTPAction*>(a);
     return ctps->distanceOpen(ctpa->to());
 }
 
 bool CTPProblem::applicable(mlcore::State* s, mlcore::Action* a) const
 {
-    CTPState* ctps = (CTPState *) s;
-    CTPAction* ctpa = (CTPAction *) a;
+    CTPState* ctps = static_cast<CTPState*>(s);
+    CTPAction* ctpa = static_cast<CTPAction*>(a);
     if (s == absorbing_ || goal(s))
         return ctpa->from() == -1;
     if (ctps->location() != ctpa->from())
@@ -136,6 +141,7 @@ bool CTPProblem::applicable(mlcore::State* s, mlcore::Action* a) const
     if (!ctps->reachable(ctpa->to()))
         return false;
 
-    /* Checking if the state was previously explored. If so, no need to explore it again */
+    // Checking if the state was previously explored.
+    // If so, no need to explore it again.
     return ( ctps->explored().find(ctpa->to())  == ctps->explored().end() );
 }

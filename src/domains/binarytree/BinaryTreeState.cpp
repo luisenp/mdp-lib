@@ -9,7 +9,7 @@ std::ostream& BinaryTreeState::print(std::ostream& os) const
 
 bool BinaryTreeState::equals(State* other) const
 {
-    BinaryTreeState* bts = (BinaryTreeState*) other;
+    BinaryTreeState* bts = static_cast<BinaryTreeState*> (other);
     return *this ==  *bts;
 }
 

@@ -94,7 +94,7 @@ GridWorldProblem::GridWorldProblem(int width, int height,
 
 bool GridWorldProblem::gridGoal(mlcore::State* s) const
 {
-    GridWorldState* gws = (GridWorldState *) s;
+    GridWorldState* gws = static_cast<GridWorldState *> (s);
     std::pair<int,int> pos(gws->x(),gws->y());
     return goals_->find(pos) != goals_->end();
 }
@@ -107,8 +107,8 @@ bool GridWorldProblem::goal(mlcore::State* s) const
 std::list<mlcore::Successor>
 GridWorldProblem::transition(mlcore::State *s, mlcore::Action *a)
 {
-    GridWorldState* state = (GridWorldState *) s;
-    GridWorldAction* action = (GridWorldAction *) a;
+    GridWorldState* state = static_cast<GridWorldState *> (s);
+    GridWorldAction* action = static_cast<GridWorldAction *> (a);
 
     std::list<mlcore::Successor> successors;
 
@@ -162,7 +162,7 @@ double GridWorldProblem::cost(mlcore::State* s, mlcore::Action* a) const
     if (s == absorbing)
         return 0.0;
     if (gridGoal(s)) {
-        GridWorldState* gws = (GridWorldState *) s;
+        GridWorldState* gws = static_cast<GridWorldState *> (s);
         std::pair<int,int> pos(gws->x(),gws->y());
         return (*goals_)[pos];
     }

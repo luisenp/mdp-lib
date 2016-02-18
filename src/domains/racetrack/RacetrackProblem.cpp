@@ -67,7 +67,7 @@ void RacetrackProblem::printTrack(std::ostream& os)
 
 bool RacetrackProblem::goal(mlcore::State* s) const
 {
-    RacetrackState* rts = (RacetrackState*) s;
+    RacetrackState* rts = static_cast<RacetrackState*>(s);
     std::pair<int, int> pos(rts->x(), rts->y());
     return goals_.find(pos) != goals_.end();
 }
@@ -95,8 +95,8 @@ RacetrackProblem::transition(mlcore::State* s, mlcore::Action* a)
         return successors;
     }
 
-    RacetrackState* rts = (RacetrackState*) s;
-    RacetrackAction* rta = (RacetrackAction*) a;
+    RacetrackState* rts = static_cast<RacetrackState*>(s);
+    RacetrackAction* rta = static_cast<RacetrackAction*>(a);
 
     int idAction = rta->hashValue();
     std::vector<mlcore::SuccessorsList>* allSuccessors = rts->allSuccessors();
@@ -148,7 +148,7 @@ RacetrackProblem::transition(mlcore::State* s, mlcore::Action* a)
         if (ta == 1) cnt = 3;
         if (ta == 2) cnt = 2;
         for (mlcore::Action* a2 : actions_) {
-            RacetrackAction* rtaE = (RacetrackAction*) a2;
+            RacetrackAction* rtaE = static_cast<RacetrackAction*>(a2);
             int dist =
                 abs(rtaE->ax() - rta->ax()) + abs(rtaE->ay() - rta->ay());
             if (dist == 0 || dist > 1)
@@ -171,7 +171,7 @@ double RacetrackProblem::cost(mlcore::State* s, mlcore::Action* a) const
     if (s == s0 || s == absorbing_ || goal(s))
         return 0.0;
 
-    RacetrackState* rts = (RacetrackState*) s;
+    RacetrackState* rts = static_cast<RacetrackState*>(s);
     if (track_[rts->x()][rts->y()] == rtrack::wall)
         return 10.0;
 
@@ -180,8 +180,8 @@ double RacetrackProblem::cost(mlcore::State* s, mlcore::Action* a) const
 
 bool RacetrackProblem::applicable(mlcore::State* s, mlcore::Action* a) const
 {
-    RacetrackState* rts = (RacetrackState*) s;
-    RacetrackAction* rta = (RacetrackAction*) a;
+    RacetrackState* rts = static_cast<RacetrackState*>(s);
+    RacetrackAction* rta = static_cast<RacetrackAction*>(a);
 
     if (s == s0 || s == absorbing_)
         return true;

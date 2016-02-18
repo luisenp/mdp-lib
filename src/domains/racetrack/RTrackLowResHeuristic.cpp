@@ -94,14 +94,14 @@ RTrackLowResHeuristic::~RTrackLowResHeuristic()
 
 double RTrackLowResHeuristic::cost(const mlcore::State* s) const
 {
-    RacetrackState* rts = (RacetrackState*) s;
+    const RacetrackState* rts = static_cast<const RacetrackState*>(s);
     RacetrackState* tmp = new RacetrackState(rts->x() / resolution_ + 1,
                                              rts->y() / resolution_ + 1,
                                              rts->vx() / resolution_,
                                              rts->vy() / resolution_,
                                              lowResProblem_);
     mlcore::StateSet::const_iterator it =
-        lowResProblem_->states().find((mlcore::State *) tmp);
+        lowResProblem_->states().find(static_cast<mlcore::State*>(tmp));
     if (it == lowResProblem_->states().end())
         return 0.0;
     delete tmp;

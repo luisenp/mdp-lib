@@ -32,9 +32,9 @@ private:
 
     double* windTransition_;
 
-    int tack(SailingState* state, SailingAction* action) const;
+    int tack(const SailingState* state, const SailingAction* action) const;
 
-    bool inLake(short x, short y);
+    bool inLake(const short x, const short y) const;
 
     mlcore::State* absorbing_;
 
@@ -55,7 +55,8 @@ public:
     /**
      * Overrides method from Problem.
      */
-    virtual std::list<mlcore::Successor> transition(mlcore::State* s, mlcore::Action* a);
+    virtual std::list<mlcore::Successor>
+    transition(mlcore::State* s, mlcore::Action* a);
 
     /**
      * Overrides method from Problem.

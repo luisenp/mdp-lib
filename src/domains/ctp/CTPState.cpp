@@ -61,14 +61,14 @@ std::ostream& CTPState::print(std::ostream& os) const
 
 bool CTPState::equals(State* other) const
 {
-    CTPState* ctps = (CTPState*) other;
+    CTPState* ctps = static_cast<CTPState*>(other);
     return *this ==  *ctps;
 }
 
 int CTPState::hashValue() const
 {
     int hash = location_;
-    CTPProblem* ctpp = (CTPProblem* ) problem_;
+    CTPProblem* ctpp = static_cast<CTPProblem*>(problem_);
     int n = ctpp->roads()->numVertices();
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
@@ -80,9 +80,10 @@ int CTPState::hashValue() const
 
 void CTPState::initAllUnkown()
 {
-    CTPProblem* pr = (CTPProblem *) problem_;
+    CTPProblem* pr = static_cast<CTPProblem*>(problem_);
     for (int i = 0; i < pr->roads()->numVertices(); i++) {
-        status_.push_back(std::vector<unsigned char> (pr->roads()->numVertices()));
+        status_.push_back(
+            std::vector<unsigned char> (pr->roads()->numVertices()));
         for (int j = 0; j < pr->roads()->numVertices(); j++) {
             status_[i][j] = ctp::UNKNOWN;
         }
@@ -100,7 +101,7 @@ bool CTPState::reachable(int v)
 {
     if (location_ == v)
         return true;
-    Graph* g = ((CTPProblem *) problem_)->roads();
+    Graph* g = static_cast<CTPProblem*>(problem_)->roads();
     std::list<int> Q;
     Q.push_front(location_);
     std::unordered_set<int> visited;
@@ -127,7 +128,7 @@ bool CTPState::potentiallyReachable(int v)
 {
     if (location_ == v)
         return true;
-    Graph* g = ((CTPProblem *) problem_)->roads();
+    Graph* g = static_cast<CTPProblem*>(problem_)->roads();
     std::list<int> Q;
     Q.push_front(location_);
     std::unordered_set<int> visited;
@@ -154,16 +155,20 @@ bool CTPState::badWeather()
 {
     if (badWeather_ != ctp::UNKNOWN)
         return (badWeather_ == ctp::TRUE) ? true : false;
-    bool reachable = potentiallyReachable(((CTPProblem *) problem_)->goalLocation());
+    bool reachable =
+        potentiallyReachable(
+            static_cast<CTPProblem*>(problem_)->goalLocation());
     badWeather_ = reachable ? false : true;
     return !reachable;
 }
 
 double CTPState::distanceOpen(int v)
 {
-    Graph* g = ((CTPProblem *) problem_)->roads();
+    Graph* g = static_cast<CTPProblem*>(problem_)->roads();
     std::vector<double> distances(g->numVertices(), gr_infinity);
-    std::priority_queue<vertexCost, std::vector<vertexCost>, cmpVertexDijkstra> Q;
+    std::priority_queue<vertexCost,
+                        std::vector<vertexCost>,
+                        cmpVertexDijkstra> Q;
     Q.push(vertexCost(location_, 0.0));
     std::unordered_set<int> closed;
     while (!Q.empty()) {
@@ -185,9 +190,11 @@ double CTPState::distanceOpen(int v)
 
 double CTPState::distanceOptimistic(int v)
 {
-    Graph* g = ((CTPProblem *) problem_)->roads();
+    Graph* g = static_cast<CTPProblem*>(problem_)->roads();
     std::vector<double> distances(g->numVertices(), gr_infinity);
-    std::priority_queue<vertexCost, std::vector<vertexCost>, cmpVertexDijkstra> Q;
+    std::priority_queue<vertexCost,
+                        std::vector<vertexCost>,
+                        cmpVertexDijkstra> Q;
     Q.push(vertexCost(location_, 0.0));
     std::unordered_set<int> closed;
     while (!Q.empty()) {

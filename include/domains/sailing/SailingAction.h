@@ -20,7 +20,7 @@ public:
 
     virtual ~SailingAction() {}
 
-    short dir() { return dir_; }
+    short dir() const { return dir_; }
 
     /**
      * Overriding method from Action.
@@ -30,7 +30,7 @@ public:
         if (this == &rhs)
             return *this;
 
-        SailingAction* action = (SailingAction*)  & rhs;
+        const SailingAction* action = static_cast<const SailingAction*> (&rhs);
         dir_ =  action->dir_;
         return *this;
     }
