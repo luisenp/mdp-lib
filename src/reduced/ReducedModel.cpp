@@ -24,28 +24,30 @@ ReducedModel::transition(mlcore::State* s, mlcore::Action *a)
     for (mlcore::Successor origSucc : originalSuccessors) {
         mlcore::State* next = nullptr;
         bool isPrimaryOutcome = primaryIndicators[i] || useFullTransition_;
-        if (isPrimaryOutcome) {
-            totalPrimaryProbability += origSucc.su_prob;
-            next = addState(new ReducedState(origSucc.su_state,
-                                             rs->exceptionCount(),
-                                             this));
-        } else if (rs->exceptionCount() <= k_) {
-            if (rs->exceptionCount() < k_)
+        if (useContPlanEvaluationTransition_) {
+            int add = isPrimaryOutcome && rs->exceptionCount() != k_ ? 0 : 1;
+            next = addState(
+                new ReducedState(origSucc.su_state,
+                                 (rs->exceptionCount() + add) % (k_ + 1),
+                                 this));
+        } else {
+            if (isPrimaryOutcome) {
+                totalPrimaryProbability += origSucc.su_prob;
+                next = addState(new ReducedState(origSucc.su_state,
+                                                 rs->exceptionCount(),
+                                                 this));
+            } else if (rs->exceptionCount() < k_) {
                 next = addState(new ReducedState(origSucc.su_state,
                                                  rs->exceptionCount() + 1,
                                                  this));
-            else if (useContPlanEvaluationTransition_)
-                next = addState(new ReducedState(origSucc.su_state, 0, this));
+            }
         }
-        if (useContPlanEvaluationTransition_ ||
-                rs->exceptionCount() < k_ ||
-                isPrimaryOutcome) {
+        if (next != nullptr)
             successors.push_back(mlcore::Successor(next, origSucc.su_prob));
-        }
         i++;
     }
 
-    if (rs->exceptionCount() == k_) {
+    if (rs->exceptionCount() == k_ && !useContPlanEvaluationTransition_) {
         for (mlcore::Successor successor : successors) {
             successor.su_prob /= totalPrimaryProbability;
         }
@@ -86,15 +88,25 @@ double ReducedModel::evaluateContinualPlan(ReducedModel* reducedModel)
     // Computing an universal plan for all of these states in the reduced model.
     mlsolvers::VISolver solver(reducedModel, 1000000, 1.0e-3);
     solver.solve();
-                                                                                    for (mlcore::State* xxx : reducedModel->states()) {
-                                                                                        if (reducedModel->goal(xxx))
-                                                                                            continue;
-                                                                                        dprint3("xxxxx", xxx,xxx->bestAction());
-                                                                                    }
 
     // Finally, we make sure the MC uses the continual planning
     // transition function.
     markovChain->useContPlanEvaluationTransition(true);
+
+                                                                                    std::list<mlcore::State*> stateQ;
+                                                                                    stateQ.push_front(markovChain->initialState());
+                                                                                    mlcore::StateSet visited;
+                                                                                    while (!stateQ.empty()) {
+                                                                                      mlcore::State* cur = stateQ.back(); stateQ.pop_back();
+                                                                                      if (!visited.insert(cur).second || markovChain->goal(cur))
+                                                                                        continue;
+                                                                                      mlcore::Action *besta = reducedModel->getState(cur)->bestAction();
+                                                                                      dprint2(cur, besta);
+                                                                                      for (mlcore::Successor su : markovChain->transition(cur, besta)) {
+                                                                                        dprint2("   ", su.su_state);
+                                                                                        stateQ.push_front(su.su_state);
+                                                                                      }
+                                                                                    }
 
     // Now we compute the expected cost of traversing this Markov Chain.
     double maxResidual = mdplib::dead_end_cost;

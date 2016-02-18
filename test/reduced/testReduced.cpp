@@ -193,7 +193,7 @@ void initRacetrack(string trackName, int mds)
 
     reductions.push_back(
         new RacetrackObviousReduction((RacetrackProblem *) problem));
-    reductions.push_back(new LeastLikelyOutcomeReduction(problem));
+//    reductions.push_back(new LeastLikelyOutcomeReduction(problem));
 }
 
 
@@ -331,7 +331,7 @@ int main(int argc, char* args[])
 
     // Running a trial of the continual planning approach.
     double expectedCost = 0.0;
-    int nsims = 100;
+    int nsims = 1000;
     for (int i = 0; i < nsims; i++) {
         pair<double, double> costAndTime = simulate(solver);
         expectedCost += costAndTime.first;

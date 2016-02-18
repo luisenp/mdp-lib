@@ -75,6 +75,9 @@ public:
     void useContPlanEvaluationTransition(bool value)
     {
         useContPlanEvaluationTransition_ = value;
+        if (value)
+            useFullTransition_ = false;
+
     }
 
     /**
