@@ -298,16 +298,17 @@ int main(int argc, char* args[])
     // learning the best reduced model for the original problem.
     wrapperProblem = new WrapperProblem(problem);
     mlcore::StateSet reachableStates, tipStates;
-    getReachableStates(wrapperProblem, 2, reachableStates, tipStates);
+    getReachableStates(wrapperProblem, 5, reachableStates, tipStates);
     cout << "reachable " << reachableStates.size() <<
         " tip " << tipStates.size() << endl;
     wrapperProblem->overrideStates(reachableStates);
     for (mlcore::State* tip : tipStates) {
         wrapperProblem->addOverrideGoal(tip);
-        cerr << "new goal " << tip << endl;
-        break;
+//        cerr << "new goal " << tip << endl;
+//        break;
     }
     wrapperProblem->setHeuristic(nullptr);
+                                                                                    mdplib_debug = true;
     ReducedTransition* bestReduction = ReducedModel::getBestReduction(
           wrapperProblem, reductions, k, reducedHeuristic);
     for (mlcore::State* s : wrapperProblem->states())
@@ -316,6 +317,7 @@ int main(int argc, char* args[])
 
     reducedModel = new ReducedModel(problem, bestReduction, k);
     reducedHeuristic = new ReducedHeuristicWrapper(heuristic);
+    reducedModel->setHeuristic(reducedHeuristic);
     static_cast<ReducedModel*>(reducedModel)->
         useFullTransition(flag_is_registered("use_full"));
 
@@ -329,20 +331,30 @@ int main(int argc, char* args[])
     clock_t startTime = clock();
     LAOStarSolver solver(wrapperProblem);
     solver.solve(wrapperProblem->initialState());
-    cout << "cost " << wrapperProblem->initialState()->cost() << endl;
     clock_t endTime = clock();
     totalPlanningTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
+    cout << "cost " << wrapperProblem->initialState()->cost() <<
+        " time " << totalPlanningTime << endl;
 
     // Running a trial of the continual planning approach.
-    pair<double, double> costAndTime = simulate(solver);
-    if (verbosity > 100) {
-        cout << "Total cost " << costAndTime.first << endl;
-        cout << "Total planning time " <<
-            costAndTime.second + totalPlanningTime << endl;
-    } else {
-        cout << costAndTime.first << " "
-            << costAndTime.second + totalPlanningTime << endl;
+    double expectedCost = 0.0;
+    int nsims = 1000;
+    for (int i = 0; i < nsims; i++) {
+        pair<double, double> costAndTime =
+            static_cast<ReducedModel*>(reducedModel)->
+                trial(solver, wrapperProblem);
+        //simulate(solver);
+        expectedCost += costAndTime.first;
     }
+    cerr << expectedCost / nsims << endl;
+//    if (verbosity > 100) {
+//        cout << "Total cost " << costAndTime.first << endl;
+//        cout << "Total planning time " <<
+//            costAndTime.second + totalPlanningTime << endl;
+//    } else {
+//        cout << costAndTime.first << " "
+//            << costAndTime.second + totalPlanningTime << endl;
+//    }
 
     return 0;
 }

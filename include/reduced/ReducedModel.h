@@ -3,6 +3,8 @@
 
 #include <list>
 
+#include "../domains/WrapperProblem.h"
+
 #include "../solvers/Solver.h"
 
 #include "../Action.h"
@@ -17,6 +19,32 @@ namespace mlreduced
 
 class ReducedModel : public mlcore::Problem
 {
+private:
+
+    /*
+     * Triggers a re-planning computation using this reduced model
+     * an returns the time spent planning.
+     * Proactive re-planning plans for the set of successors of the given
+     * state under the full transition model, with exception counters
+     * set to 0.
+     * More details can be found in
+     * http://anytime.cs.umass.edu/shlomo/papers/PZicaps14.pdf
+     *
+     * @param solver The MDP solver used for re-planning.
+     * @param nextState The state that triggered re-planning.
+     * @param proactive If true, then the plan will be created for the
+     *                 successors of nextState with j=0. Otherwise the
+     *                 plan is found for nextState directly.
+     * @param wrapperProblem A WrapperProblem object used for setting new
+     *                      successors for the pro-active planning approach.
+     * @return The time spent planning.
+     *
+     */
+    double triggerReplan(mlsolvers::Solver& solver,
+                                        ReducedState* nextState,
+                                        bool proactive,
+                                        WrapperProblem* wrapperProblem);
+
 protected:
     /**
      * The problem for which the reduced model is constructed.
@@ -81,6 +109,22 @@ public:
     }
 
     /**
+     * Computes the cost of executing a trial of the continual planning
+     * approach based on this reduced model.
+     *
+     * @param solver An MDP solver to compute the online policy.
+     * @param wrapperProblem A WrapperProblem for the reduced model, to be
+     *                      used for setting new successors during
+     *                      re-planning. The internal problem of this wrapper
+     *                      must correspond to the reduced model.
+     * @return A pair that contains the cost of the trial and the time
+     *        spent planning (not-concurrently with execution)
+     *        during this trial.
+     */
+    std::pair<double, double>
+    trial(mlsolvers::Solver & solver, WrapperProblem* wrapperProblem);
+
+    /**
      * Computes the true expected cost of the continual planning approach
      * that replans after k exceptions according to the given reduced model.
      * The cost is computed as in:
@@ -90,7 +134,16 @@ public:
      * @param reducedModel the reduced model that induces the plan.
      * @return the expected cost of the continual plan.
      */
-    static double evaluateContinualPlan(ReducedModel* reducedModel);
+    static double evaluateMarkovChain(ReducedModel* reducedModel);
+
+    /**
+     * Computes the true expected cost of the continual planning approach
+     * implied by this reduced model, using Monte Carlo evaluation.
+     *
+     * @param numSims The number of trials to use for computing the expected
+     *               cost.
+     */
+    double evaluateMonteCarlo(int numTrials);
 
     /**
      * Finds the best reduced model that can be created for the given problem

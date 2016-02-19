@@ -1,6 +1,8 @@
 #ifndef MDPLIB_WRAPPERPROBLEM_H
 #define MDPLIB_WRAPPERPROBLEM_H
 
+#include <cassert>
+
 #include "../Problem.h"
 #include "../State.h"
 
@@ -14,10 +16,20 @@ class WrapperProblem : public mlcore::Problem
 {
 private:
 
+    /*
+     * A state whose successors can be changed on-the-fly.
+     */
     DummyState* dummyState_;
 
-    mlcore::Problem* problem_;
+    /*
+     * The only applicable action in the dummy state.
+     */
     mlcore::Action* dummyAction_;
+
+    /*
+     * The internal problem this is wrapping.
+     */
+    mlcore::Problem* problem_;
 
     /*
      * A set of states that replace the original states in problem_.
@@ -29,28 +41,76 @@ private:
      */
      mlcore::StateSet overrideGoals_;
 
+     /*
+      * If true, then the destructor can be called safely.
+      */
+      bool clean;
+
 public:
 
-    WrapperProblem(mlcore::Problem* problem)
+    WrapperProblem(mlcore::Problem* problem) : clean(false)
     {
         dummyState_ = new DummyState();
         setNewProblem(problem);
     }
 
-    virtual ~WrapperProblem() { }
+    virtual ~WrapperProblem()
+    {
+        // Method free up must be called before the destructor.
+        assert(clean);
+        // No need to delete dummy because the parent constructor will delete it.
+    }
+
+    mlcore::Problem* problem() { return problem_; }
 
     DummyState* dummyState() { return dummyState_; }
 
     void setDummyAction(mlcore::Action* action) { dummyAction_ = action; }
 
-    void overrideGoals(mlcore::StateSet& newGoals)
-        { overrideGoals_ = newGoals; }
+    /**
+     * This method makes sure the destructor doesn't destroy the
+     * states of the original problem.
+     */
+    void cleanup()
+    {
+        overrideStates_.clear();
+        overrideStates_.insert(dummyState_);
+        actions_ = std::list<mlcore::Action*> ();
+        clean = true;
+    }
 
+    /**
+     * Adds a set of goals that override the goal of the original problem.
+     * The original goals remain unchanged, but they are not used as long
+     * as there are override goals.
+     *
+     * @param newGoals The set of goals that will override the previous one.
+     */
+    void overrideGoals(mlcore::StateSet& newGoals)
+    {
+        overrideGoals_ = newGoals;
+    }
+
+    /**
+     * Adds a goal to the set of override goals.
+     * The original goals remain unchanged, but they are not used as long
+     * as there are override goals.
+     *
+     * @param overrideGoal The goal to add.
+     */
     void addOverrideGoal(mlcore::State* overrideGoal)
         { overrideGoals_.insert(overrideGoal); }
 
+    /**
+     * Clears the set of override goals.
+     */
     void clearOverrideGoals() { overrideGoals_.clear(); }
 
+    /**
+     * Changes the problem this wrapper is wrapping.
+     *
+     * @param problem The new problem to wrap.
+     */
     void setNewProblem(mlcore::Problem* problem)
     {
         problem_ = problem;
@@ -61,7 +121,17 @@ public:
         overrideGoals_.clear();
     }
 
-    void overrideStates(mlcore::StateSet& value) { overrideStates_ = value; }
+    /**
+     * Adds a set of states that override the states of the original problem.
+     * The original states remain unchanged, but they are not used as long
+     * as there are override states.
+     *
+     * @param newStates The set of states that will override the previous ones.
+     */
+    void overrideStates(mlcore::StateSet& newStates)
+    {
+        overrideStates_ = newStates;
+    }
 
     /**
      * Overrides method from Problem.
