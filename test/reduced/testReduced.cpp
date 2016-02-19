@@ -200,7 +200,7 @@ void initRacetrack(string trackName, int mds)
 
     reductions.push_back(
         new RacetrackObviousReduction(static_cast<RacetrackProblem*>(problem)));
-//    reductions.push_back(new LeastLikelyOutcomeReduction(problem));
+    reductions.push_back(new LeastLikelyOutcomeReduction(problem));
 }
 
 
@@ -292,23 +292,22 @@ int main(int argc, char* args[])
         initPPDDL(ppddlArgs, internalPPDDLProblem);
     }
 
-
 ////////////////////////////////////////////////
     // Testing the code that evaluates the reductions on a small sub-problem
     // We use this wrapper problem to generate small sub-problems for
     // learning the best reduced model for the original problem.
     wrapperProblem = new WrapperProblem(problem);
     mlcore::StateSet reachableStates, tipStates;
-    getReachableStates(wrapperProblem, 1000, reachableStates, tipStates);
+    getReachableStates(wrapperProblem, 2, reachableStates, tipStates);
     cout << "reachable " << reachableStates.size() <<
         " tip " << tipStates.size() << endl;
+    wrapperProblem->overrideStates(reachableStates);
     for (mlcore::State* tip : tipStates) {
         wrapperProblem->addOverrideGoal(tip);
-        dprint2("new goal", tip);
+        cerr << "new goal " << tip << endl;
         break;
     }
     wrapperProblem->setHeuristic(nullptr);
-                                                                                    mdplib_debug = true;
     ReducedTransition* bestReduction = ReducedModel::getBestReduction(
           wrapperProblem, reductions, k, reducedHeuristic);
     for (mlcore::State* s : wrapperProblem->states())
@@ -317,7 +316,6 @@ int main(int argc, char* args[])
 
     reducedModel = new ReducedModel(problem, bestReduction, k);
     reducedHeuristic = new ReducedHeuristicWrapper(heuristic);
-    reducedModel->setHeuristic(nullptr);
     static_cast<ReducedModel*>(reducedModel)->
         useFullTransition(flag_is_registered("use_full"));
 
@@ -329,50 +327,22 @@ int main(int argc, char* args[])
     // Solving reduced model using LAO*
     double totalPlanningTime = 0.0;
     clock_t startTime = clock();
-    wrapperProblem->generateAll();
     LAOStarSolver solver(wrapperProblem);
     solver.solve(wrapperProblem->initialState());
-//                                                                                    dprint1("***************************************");
-//                                                                                    dprint2(wrapperProblem->states().size(), reducedModel->states().size());
-//                                                                                    std::list<mlcore::State*> stateQ;
-//                                                                                    stateQ.push_front(reducedModel->initialState());
-//                                                                                    mlcore::StateSet visited;
-//                                                                                    while (!stateQ.empty()) {
-//                                                                                      mlcore::State* cur = stateQ.back(); stateQ.pop_back();
-//                                                                                      if (!visited.insert(cur).second || wrapperProblem->goal(cur))
-//                                                                                        continue;
-//                                                                                      mlcore::Action *besta = reducedModel->getState(cur)->bestAction();
-//                                                                                      if (besta == nullptr)
-//                                                                                        continue;
-//                                                                                      dprint2("state:", cur);
-//                                                                                      dprint2("action:", besta);
-//                                                                                      dprint2("qvalue:", mlsolvers::qvalue(reducedModel, cur, besta));
-//                                                                                      for (mlcore::Successor su : reducedModel->transition(cur, besta)) {
-//                                                                                        dprint2("successor:", su.su_state);
-//                                                                                        stateQ.push_front(su.su_state);
-//                                                                                      }
-//                                                                                    }
     cout << "cost " << wrapperProblem->initialState()->cost() << endl;
     clock_t endTime = clock();
     totalPlanningTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
 
     // Running a trial of the continual planning approach.
-    double expectedCost = 0.0;
-    int nsims = 10;
-    for (int i = 0; i < nsims; i++) {
-        pair<double, double> costAndTime = simulate(solver);
-        expectedCost += costAndTime.first;
-
-        if (verbosity > 100) {
-            cout << "Total cost " << costAndTime.first << endl;
-            cout << "Total planning time " <<
-                costAndTime.second + totalPlanningTime << endl;
-        } else {
-//            cout << costAndTime.first << " "
-//                << costAndTime.second + totalPlanningTime << endl;
-        }
+    pair<double, double> costAndTime = simulate(solver);
+    if (verbosity > 100) {
+        cout << "Total cost " << costAndTime.first << endl;
+        cout << "Total planning time " <<
+            costAndTime.second + totalPlanningTime << endl;
+    } else {
+        cout << costAndTime.first << " "
+            << costAndTime.second + totalPlanningTime << endl;
     }
-    cout << expectedCost / nsims << endl;
 
     return 0;
 }

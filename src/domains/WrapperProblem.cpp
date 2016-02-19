@@ -37,5 +37,7 @@ bool WrapperProblem::applicable(mlcore::State* s, mlcore::Action* a) const
 
 mlcore::StateSet& WrapperProblem::states()
 {
+    if (!overrideStates_.empty())
+        return overrideStates_;
     return problem_->states();
 }

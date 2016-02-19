@@ -20,6 +20,11 @@ private:
     mlcore::Action* dummyAction_;
 
     /*
+     * A set of states that replace the original states in problem_.
+     */
+     mlcore::StateSet overrideStates_;
+
+    /*
      * A set of goals that replace the original goal in problem_.
      */
      mlcore::StateSet overrideGoals_;
@@ -39,14 +44,10 @@ public:
     void setDummyAction(mlcore::Action* action) { dummyAction_ = action; }
 
     void overrideGoals(mlcore::StateSet& newGoals)
-    {
-        overrideGoals_ = newGoals;
-    }
+        { overrideGoals_ = newGoals; }
 
     void addOverrideGoal(mlcore::State* overrideGoal)
-    {
-        overrideGoals_.insert(overrideGoal);
-    }
+        { overrideGoals_.insert(overrideGoal); }
 
     void clearOverrideGoals() { overrideGoals_.clear(); }
 
@@ -56,7 +57,11 @@ public:
         s0 = problem_->initialState();
         actions_ = problem->actions();
         heuristic_ = problem->heuristic();
+        overrideStates_.clear();
+        overrideGoals_.clear();
     }
+
+    void overrideStates(mlcore::StateSet& value) { overrideStates_ = value; }
 
     /**
      * Overrides method from Problem.
