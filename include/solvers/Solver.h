@@ -193,15 +193,17 @@ double sampleTrial(mlcore::Problem* problem, mlcore::State* s);
 
 
 /**
- * Gets all reachable states in problem up to the given horizon
- * and stores them in the set reachableStates.
+ * Gets all reachable states starting from initialState in problem,
+ * up to the given horizon. The states are stored in the set reachableStates.
  *
- * @param problem the problem describing the state space to traverse.
+ * @param problem The problem describing the state space to traverse.
+ * @param initialState The initial state for the search.
  * @param horizon the horizon limit for the search.
  * @param reachableStates A set to store the reachable states in.
  * @param tipStates A set to store the tip states in.
  */
 void getReachableStates(mlcore::Problem* problem,
+                        mlcore::State* initialState,
                         int horizon,
                         mlcore::StateSet& reachableStates,
                         mlcore::StateSet& tipStates);

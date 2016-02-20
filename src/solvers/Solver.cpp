@@ -87,7 +87,7 @@ double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s, double weight)
         hasAction = true;
         std::pair<double, double> gh = weightedQvalue(problem, s, a);
         double qAction = std::min(mdplib::dead_end_cost,
-                                  gh.first + weight * gh.second);
+                                   gh.first + weight * gh.second);
         if (qAction <= bestQ) {
             bestQ = qAction;
             bestG = gh.first;
@@ -99,6 +99,8 @@ double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s, double weight)
     if (!hasAction && bestQ == mdplib::dead_end_cost)
         s->markDeadEnd();
 
+    bestG = std::min(bestG, mdplib::dead_end_cost);
+    bestH = std::min(bestH, mdplib::dead_end_cost);
     bellman_mutex.lock();
     s->setCost(bestQ);
     s->gValue(bestG);
@@ -202,12 +204,13 @@ double sampleTrial(mlcore::Problem* problem, mlcore::State* s)
 
 
 void getReachableStates(mlcore::Problem* problem,
+                        mlcore::State* initialState,
                         int horizon,
                         mlcore::StateSet& reachableStates,
                         mlcore::StateSet& tipStates)
 {
     std::list< std::pair<mlcore::State *, int> > stateDepthQueue;
-    stateDepthQueue.push_front(std::make_pair(problem->initialState(), 0));
+    stateDepthQueue.push_front(std::make_pair(initialState, 0));
     while (!stateDepthQueue.empty()) {
         auto stateDepthPair = stateDepthQueue.back();
         stateDepthQueue.pop_back();
@@ -216,6 +219,8 @@ void getReachableStates(mlcore::Problem* problem,
         if (reachableStates.count(state) || depth > horizon)
             continue;
         reachableStates.insert(state);
+        if (problem->goal(state))
+            continue;
         if (depth == horizon)
             tipStates.insert(state);
         for (mlcore::Action* a : problem->actions()) {
@@ -228,4 +233,5 @@ void getReachableStates(mlcore::Problem* problem,
         }
     }
 }
+
 } // mlsolvers

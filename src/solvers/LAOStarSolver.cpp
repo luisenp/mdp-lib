@@ -18,7 +18,6 @@ mlcore::Action* LAOStarSolver::solve(mlcore::State* s0)
         do {
             visited.clear();
             countExpanded = expand(s0);
-                                                                                dprint2(s0->cost(), countExpanded);
             totalExpanded += countExpanded;
             clock_t currentTime = clock();
             if ((0.001 * (currentTime - startTime)) /
@@ -86,13 +85,8 @@ double LAOStarSolver::testConvergence(mlcore::State* s)
     }
 
     error = std::max(error, bellmanUpdate(problem_, s, weight_));
-    if (prevAction == s->bestAction())                                          {
-                                                                                if (error >= 1.0) {
-                                                                                    dprint3(s, error, s->cost());
-                                                                                    dsleep(100);
-                                                                                }
+    if (prevAction == s->bestAction())
         return error;
-                                                                                }
     // it hasn't converged because the best action changed.
     return mdplib::dead_end_cost + 1;
 }

@@ -86,7 +86,6 @@ double ReducedModel::evaluateMarkovChain(ReducedModel* reducedModel)
     }
 
     // Computing an universal plan for all of these states in the reduced model.
-                                                                                  dprint2("size", reducedModel->states().size());
     mlsolvers::VISolver solver(reducedModel, 1000000, 1.0e-3);
     solver.solve();
 
@@ -138,8 +137,7 @@ double ReducedModel::evaluateMarkovChain(ReducedModel* reducedModel)
 }
 
 
-ReducedTransition*
-ReducedModel::getBestReduction(
+ReducedTransition* ReducedModel::getBestReduction(
     mlcore::Problem *originalProblem,
     std::list<ReducedTransition*> reducedTransitions,
     int k,
@@ -151,11 +149,7 @@ ReducedModel::getBestReduction(
         ReducedModel* reducedModel =
             new ReducedModel(originalProblem, reducedTransition, k);
         reducedModel->setHeuristic(heuristic);
-                                                                                  mdplib_debug = true;
-//        double expectedCostReduction = evaluateContinualPlan(reducedModel);
         double expectedCostReduction = reducedModel->evaluateMonteCarlo(1000);
-                                                                                  dprint2("reduction", expectedCostReduction);
-                                                                                  mdplib_debug = false;
         if (expectedCostReduction < bestCost) {
             bestCost = expectedCostReduction;
             bestReduction = reducedTransition;
@@ -296,5 +290,9 @@ double ReducedModel::triggerReplan(mlsolvers::Solver& solver,
     }
 }
 
+void dfs()
+{
+
+}
 
 } // namespace mlreduced

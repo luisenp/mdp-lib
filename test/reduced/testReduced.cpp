@@ -298,17 +298,18 @@ int main(int argc, char* args[])
     // learning the best reduced model for the original problem.
     wrapperProblem = new WrapperProblem(problem);
     mlcore::StateSet reachableStates, tipStates;
-    getReachableStates(wrapperProblem, 5, reachableStates, tipStates);
+    getReachableStates(wrapperProblem,
+                       wrapperProblem->initialState(),
+                       5,
+                       reachableStates,
+                       tipStates);
     cout << "reachable " << reachableStates.size() <<
         " tip " << tipStates.size() << endl;
     wrapperProblem->overrideStates(reachableStates);
     for (mlcore::State* tip : tipStates) {
         wrapperProblem->addOverrideGoal(tip);
-//        cerr << "new goal " << tip << endl;
-//        break;
     }
     wrapperProblem->setHeuristic(nullptr);
-                                                                                    mdplib_debug = true;
     ReducedTransition* bestReduction = ReducedModel::getBestReduction(
           wrapperProblem, reductions, k, reducedHeuristic);
     for (mlcore::State* s : wrapperProblem->states())
