@@ -165,11 +165,14 @@ public:
     {
         bool check = states_.insert(s).second;
         State* ret = *states_.find(s);
-        // If the the state was found but the object representing it in memory is
-        // different to the given one, delete the given one.
+//                                                                                dprint2("addstate", s);
+//                                                                                dprint2((void *) s, (void *) ret);
+        // If the the state was found but the object representing it in
+        // memory is different to the given one, delete the given one.
         if ((void *) ret != (void *) s && !check) {
             delete s;
         }
+//                                                                                dprint1("afterdelete");
         return ret;
     }
 

@@ -150,6 +150,7 @@ ReducedTransition* ReducedModel::getBestReduction(
             new ReducedModel(originalProblem, reducedTransition, k);
         reducedModel->setHeuristic(heuristic);
         double expectedCostReduction = reducedModel->evaluateMonteCarlo(1000);
+                                                                                dprint1(expectedCostReduction);
         if (expectedCostReduction < bestCost) {
             bestCost = expectedCostReduction;
             bestReduction = reducedTransition;
@@ -182,7 +183,8 @@ std::pair<double, double> ReducedModel::trial(
     ReducedState* currentState =
         static_cast<ReducedState*>(this->initialState());
     bool resetExceptionCounter = false;
-    ReducedState auxState(*currentState);
+    ReducedState* auxState = new ReducedState(*currentState);
+//                                                                                dprint1("start trial");
     while (!this->goal(currentState)) {
         mlcore::Action* bestAction = currentState->bestAction();
         cost += this->cost(currentState, bestAction);
@@ -197,41 +199,45 @@ std::pair<double, double> ReducedModel::trial(
         // because we still want to know if the outcome was an exception or not.
         // TODO: Make a method in ReducedModel that does this because this
         // approach will make reducedModel store the copies with j=-1.
-//        auxState = *currentState;
-        auxState.originalState(currentState->originalState());
-        auxState.exceptionCount(-1);
+        auxState->originalState(currentState->originalState());
+        auxState->exceptionCount(-1);
         ReducedState* nextState = static_cast<ReducedState*>(
-            mlsolvers::randomSuccessor(this, &auxState, bestAction));
-//        auxState = *nextState;
-        auxState.originalState(nextState->originalState());
-        auxState.exceptionCount(nextState->exceptionCount());
+            mlsolvers::randomSuccessor(this, auxState, bestAction));
+        auxState->originalState(nextState->originalState());
+        auxState->exceptionCount(nextState->exceptionCount());
+
+        if (currentState->deadEnd()) {
+            cost = mdplib::dead_end_cost;
+            break;
+        }
 
         // Adjusting the result to the current exception count.
         if (resetExceptionCounter) {
             // We reset the exception counter after pro-active re-planning.
-            auxState.exceptionCount(0);
+            auxState->exceptionCount(0);
             resetExceptionCounter = false;
         } else {
-            if (auxState.exceptionCount() == -1)    // no exception happened.
-                auxState.exceptionCount(exceptionCount);
+            if (auxState->exceptionCount() == -1)    // no exception happened.
+                auxState->exceptionCount(exceptionCount);
             else
-                auxState.exceptionCount(exceptionCount + 1);
+                auxState->exceptionCount(exceptionCount + 1);
         }
+//                                                                                dprint2(auxState, auxState->hashValue());
         nextState =
-            static_cast<ReducedState*>(this->getState(&auxState));
+            static_cast<ReducedState*>(this->getState(auxState));
 
         // Re-planning
         // Checking if the state has already been considered during planning.
-        if (nextState == nullptr) {
+        if (nextState == nullptr || nextState->bestAction() == nullptr) {
             // State wasn't considered before.
             assert(this->k_ == 0);  // Only determinization should reach here.
-            auxState.exceptionCount(0);
-            nextState =
-                static_cast<ReducedState*>(this->addState(&auxState));
+            auxState->exceptionCount(0);
+            nextState = static_cast<ReducedState*>(
+                this->addState(new ReducedState(*auxState)));
             totalPlanningTime +=
                 triggerReplan(solver, nextState, false, wrapperProblem);
             assert(nextState != nullptr);
-        } else {
+        } else if (!this->useFullTransition_) {
             if (nextState->exceptionCount() == this->k_) {
                 totalPlanningTime +=
                     triggerReplan(solver, nextState, true, wrapperProblem);
@@ -240,7 +246,9 @@ std::pair<double, double> ReducedModel::trial(
         }
         currentState = nextState;
     }
-
+    if (auxState != nullptr)
+        delete auxState;
+//                                                                                dprint1("end trial");
     return std::make_pair(cost, totalPlanningTime);
 }
 

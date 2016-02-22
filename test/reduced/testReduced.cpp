@@ -305,9 +305,12 @@ int main(int argc, char* args[])
                        tipStates);
     cout << "reachable " << reachableStates.size() <<
         " tip " << tipStates.size() << endl;
+                                                                                mdplib_debug = true;
     wrapperProblem->overrideStates(reachableStates);
     for (mlcore::State* tip : tipStates) {
+                                                                                dprint1(tip);
         wrapperProblem->addOverrideGoal(tip);
+        break;
     }
     wrapperProblem->setHeuristic(nullptr);
     ReducedTransition* bestReduction = ReducedModel::getBestReduction(
