@@ -216,19 +216,19 @@ void getReachableStates(mlcore::Problem* problem,
         auto stateDepthPair = stateDepthQueue.back();
         stateDepthQueue.pop_back();
         mlcore::State* state = stateDepthPair.first;
-                                                                                if (problem->goal(state))
-                                                                                    dprint1("GOAL!");
         int depth = stateDepthPair.second;
+                                                                                if (problem->goal(state))
+                                                                                    dprint2("GOAL!", depth);
                                                                                 if (i++ % 100000 == 0) {
                                                                                     dprint2(i, depth);
                                                                                 }
-        if (reachableStates.count(state) || depth > horizon)
+        if (!reachableStates.insert(state).second || problem->goal(state))
             continue;
-        reachableStates.insert(state);
-        if (problem->goal(state))
-            continue;
-        if (depth == horizon)
+        if (depth == horizon) {
             tipStates.insert(state);
+                                                                                dprint2("tip", state);
+            continue;
+        }
         for (mlcore::Action* a : problem->actions()) {
             if (!problem->applicable(state, a))
                 continue;

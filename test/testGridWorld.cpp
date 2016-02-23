@@ -1,10 +1,12 @@
 #include <iostream>
 
+#include "../include/solvers/EpicSolver.h"
+#include "../include/solvers/LAOStarSolver.h"
+#include "../include/solvers/LRTDPSolver.h"
 #include "../include/solvers/Solver.h"
 #include "../include/solvers/VISolver.h"
-#include "../include/solvers/LRTDPSolver.h"
-#include "../include/solvers/LAOStarSolver.h"
 
+#include "../include/util/flags.h"
 #include "../include/util/general.h"
 
 #include "../include/domains/gridworld/GridWorldState.h"
@@ -13,39 +15,60 @@
 #include "../include/domains/gridworld/GWManhattanHeuristic.h"
 
 using namespace std;
+using namespace mdplib;
 using namespace mlcore;
 using namespace mlsolvers;
 
 int main(int argc, char* args[])
 {
-    PairDoubleMap goals;
-    goals.insert(make_pair(pair<int,int> (4, 4), 0.0));
+    register_flags(argc, args);
 
-    Problem* problem = new GridWorldProblem(5, 5, 0, 0, &goals, 1.0);
+    assert(flag_is_registered_with_value("problem"));
+
+    PairDoubleMap goals;
+    Problem* problem =
+        new GridWorldProblem(flag_value("problem").c_str(), &goals, 1.0);
+
     GridWorldState* gws = (GridWorldState *) problem->initialState();
     Heuristic* heuristic = new GWManhattanHeuristic((GridWorldProblem*) problem);
     problem->setHeuristic(heuristic);
 
-    problem->generateAll();
-    StateSet states = problem->states();
-
+    assert(flag_is_registered_with_value("algo"));
+    string algo = flag_value("algo");
     double tol = 1.0e-6;
-    if (strcmp(args[1], "wlao") == 0) {
+    if (algo == "wlao") {
         LAOStarSolver wlao(problem, tol, 1000000, atof(args[2]));
         wlao.solve(problem->initialState());
-    } else if (strcmp(args[1], "lao") == 0) {
+    } else if (algo == "lao") {
         LAOStarSolver lao(problem, tol, 1000000);
         lao.solve(problem->initialState());
-    } else if (strcmp(args[1], "lrtdp") == 0) {
+    } else if (algo == "lrtdp") {
         LRTDPSolver lrtdp(problem, 1000000000, tol);
         lrtdp.solve(problem->initialState());
-    } else if (strcmp(args[1], "vi") == 0) {
+    } else if (algo == "vi") {
+        problem->generateAll();
         VISolver vi(problem, 1000000000, tol);
         vi.solve();
     }
 
+    StateSet states = problem->states();
+    cout << problem->states().size() << endl;
     cout << problem->initialState()->cost() << endl;
 
+    StateSet reachableStates;
+    StateSet tipStates;
+    getReachableStates(problem,
+                       problem->initialState(),
+                       4,
+                       reachableStates,
+                       tipStates);
+
+    cout << problem->initialState() << " " << endl;
+    cout << "reachable " << reachableStates.size() <<
+        " " << tipStates.size() << endl;
+    EpicSolver epic(problem);
+    StateDoubleMap probTerminals =
+        epic.computeProbabilityTerminals(problem->initialState(), tipStates);
 
     delete heuristic;
     delete problem;
