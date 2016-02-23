@@ -145,17 +145,25 @@ ReducedTransition* ReducedModel::getBestReduction(
 {
     double bestCost = mdplib::dead_end_cost + 1;
     ReducedTransition* bestReduction = nullptr;
+                                                                                std::vector<double> ecosts;
     for (ReducedTransition* reducedTransition : reducedTransitions) {
         ReducedModel* reducedModel =
             new ReducedModel(originalProblem, reducedTransition, k);
         reducedModel->setHeuristic(heuristic);
-        double expectedCostReduction = reducedModel->evaluateMonteCarlo(1000);
-                                                                                dprint1(expectedCostReduction);
+                                                                                mlcore::StateSet reachableStates, tipStates;
+                                                                                mlsolvers::getReachableStates(reducedModel,
+                                                                                                               reducedModel->initialState(),
+                                                                                                               100,
+                                                                                                               reachableStates,
+                                                                                                               tipStates);
+        double expectedCostReduction = reducedModel->evaluateMonteCarlo(50);
+                                                                                ecosts.push_back(expectedCostReduction);
         if (expectedCostReduction < bestCost) {
             bestCost = expectedCostReduction;
             bestReduction = reducedTransition;
         }
     }
+                                                                                dprint2(ecosts[0], ecosts[1]);
     return bestReduction;
 }
 
@@ -167,6 +175,7 @@ double ReducedModel::evaluateMonteCarlo(int numTrials)
     solver.solve(wrapper.initialState());
     double expectedCost = 0.0;
     for (int i = 0; i < numTrials; i++) {
+        dprint1(i);
         expectedCost += trial(solver, &wrapper).first;
     }
     wrapper.cleanup();
@@ -184,8 +193,16 @@ std::pair<double, double> ReducedModel::trial(
         static_cast<ReducedState*>(this->initialState());
     bool resetExceptionCounter = false;
     ReducedState* auxState = new ReducedState(*currentState);
-//                                                                                dprint1("start trial");
-    while (!this->goal(currentState)) {
+    while (true) {
+//                                                                                dprint1(currentState);
+        if (currentState->deadEnd() || cost >= mdplib::dead_end_cost) {
+            cost = mdplib::dead_end_cost;
+            break;
+        }
+        if (this->goal(currentState)) {
+                                                                                dprint1("GOAL!");
+            break;
+        }
         mlcore::Action* bestAction = currentState->bestAction();
         cost += this->cost(currentState, bestAction);
         int exceptionCount = currentState->exceptionCount();
@@ -206,11 +223,6 @@ std::pair<double, double> ReducedModel::trial(
         auxState->originalState(nextState->originalState());
         auxState->exceptionCount(nextState->exceptionCount());
 
-        if (currentState->deadEnd()) {
-            cost = mdplib::dead_end_cost;
-            break;
-        }
-
         // Adjusting the result to the current exception count.
         if (resetExceptionCounter) {
             // We reset the exception counter after pro-active re-planning.
@@ -222,7 +234,6 @@ std::pair<double, double> ReducedModel::trial(
             else
                 auxState->exceptionCount(exceptionCount + 1);
         }
-//                                                                                dprint2(auxState, auxState->hashValue());
         nextState =
             static_cast<ReducedState*>(this->getState(auxState));
 
@@ -248,7 +259,6 @@ std::pair<double, double> ReducedModel::trial(
     }
     if (auxState != nullptr)
         delete auxState;
-//                                                                                dprint1("end trial");
     return std::make_pair(cost, totalPlanningTime);
 }
 

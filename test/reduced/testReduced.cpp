@@ -257,7 +257,7 @@ bool initPPDDL(string ppddlArgs, problem_t* internalPPDDLProblem)
     heuristic = new mlppddl::PPDDLHeuristic(static_cast<PPDDLProblem*>(problem),
                                             mlppddl::atomMin1Forward);
     problem->setHeuristic(heuristic);
-    reductions.push_back(new LeastLikelyOutcomeReduction(problem));
+//    reductions.push_back(new LeastLikelyOutcomeReduction(problem));
     reductions.push_back(new MostLikelyOutcomeReduction(problem));
 }
 
@@ -298,23 +298,31 @@ int main(int argc, char* args[])
     // learning the best reduced model for the original problem.
     wrapperProblem = new WrapperProblem(problem);
     mlcore::StateSet reachableStates, tipStates;
-    getReachableStates(wrapperProblem,
-                       wrapperProblem->initialState(),
-                       5,
-                       reachableStates,
-                       tipStates);
-    cout << "reachable " << reachableStates.size() <<
-        " tip " << tipStates.size() << endl;
                                                                                 mdplib_debug = true;
-    wrapperProblem->overrideStates(reachableStates);
-    for (mlcore::State* tip : tipStates) {
-                                                                                dprint1(tip);
-        wrapperProblem->addOverrideGoal(tip);
-        break;
-    }
+//    getReachableStates(wrapperProblem,
+//                       wrapperProblem->initialState(),
+//                       10,
+//                       reachableStates,
+//                       tipStates);
+//    cout << "reachable " << reachableStates.size() <<
+//        " tip " << tipStates.size() << endl;
+//    wrapperProblem->overrideStates(reachableStates);
+//    int i = 0;
+//    for (mlcore::State* tip : tipStates) {
+//        if (i++ == stoi(flag_value("stop"))) {
+//                                                                                dprint1(tip);
+//            wrapperProblem->addOverrideGoal(tip);
+//            break;
+//        }
+//    }
+                                                                                reducedHeuristic = new ReducedHeuristicWrapper(heuristic);
+                                                                                wrapperProblem->setHeuristic(reducedHeuristic);
     wrapperProblem->setHeuristic(nullptr);
+                                                                                clock_t startTime1 = clock();
     ReducedTransition* bestReduction = ReducedModel::getBestReduction(
           wrapperProblem, reductions, k, reducedHeuristic);
+                                                                                clock_t endTime1 = clock();
+                                                                                dprint1(double(endTime1 - startTime1) / CLOCKS_PER_SEC);
     for (mlcore::State* s : wrapperProblem->states())
         s->reset(); // Make sure the stored values/actions are cleared.
 /////////////////////////////////////////////////
@@ -340,14 +348,14 @@ int main(int argc, char* args[])
     cout << "cost " << wrapperProblem->initialState()->cost() <<
         " time " << totalPlanningTime << endl;
 
+//                                                                                mdplib_debug = true;
     // Running a trial of the continual planning approach.
     double expectedCost = 0.0;
-    int nsims = 1000;
+    int nsims = 30;
     for (int i = 0; i < nsims; i++) {
         pair<double, double> costAndTime =
             static_cast<ReducedModel*>(reducedModel)->
                 trial(solver, wrapperProblem);
-        //simulate(solver);
         expectedCost += costAndTime.first;
     }
     cerr << expectedCost / nsims << endl;

@@ -46,7 +46,7 @@
   )
 )
 
-(define (problem bw_5_p01)
+(define (p01)
   (:domain blocks-domain)
   (:objects b1 b2 b3 b4 b5 - block)
   (:init (emptyhand) (on-table b1) (on-table b2) (on b3 b5) (on b4 b1) (on-table b5) (clear b2) (clear b3) (clear b4))

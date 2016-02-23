@@ -211,11 +211,17 @@ void getReachableStates(mlcore::Problem* problem,
 {
     std::list< std::pair<mlcore::State *, int> > stateDepthQueue;
     stateDepthQueue.push_front(std::make_pair(initialState, 0));
+                                                                                int i = 0;
     while (!stateDepthQueue.empty()) {
         auto stateDepthPair = stateDepthQueue.back();
         stateDepthQueue.pop_back();
         mlcore::State* state = stateDepthPair.first;
+                                                                                if (problem->goal(state))
+                                                                                    dprint1("GOAL!");
         int depth = stateDepthPair.second;
+                                                                                if (i++ % 100000 == 0) {
+                                                                                    dprint2(i, depth);
+                                                                                }
         if (reachableStates.count(state) || depth > horizon)
             continue;
         reachableStates.insert(state);
@@ -232,6 +238,7 @@ void getReachableStates(mlcore::Problem* problem,
             }
         }
     }
+                                                                                dprint1(i);
 }
 
 } // mlsolvers

@@ -31,7 +31,7 @@ public:
         int i = 0;
         int indexLeastLikely = 0;
         for (mlcore::Successor successor : successors) {
-            if (successor.su_prob < minimumProbability) {
+            if (successor.su_prob <= minimumProbability) {
                 minimumProbability = successor.su_prob;
                 indexLeastLikely = i;
             }
