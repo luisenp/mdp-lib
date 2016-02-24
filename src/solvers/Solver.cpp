@@ -39,7 +39,7 @@ weightedQvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
 
 
 std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem,
-                                                 mlcore::State* s)
+                                                  mlcore::State* s)
 {
     double bestQ = problem->goal(s) ? 0.0 : mdplib::dead_end_cost;
     bool hasAction = false;
@@ -203,42 +203,46 @@ double sampleTrial(mlcore::Problem* problem, mlcore::State* s)
 }
 
 
-void getReachableStates(mlcore::Problem* problem,
-                        mlcore::State* initialState,
-                        int horizon,
+bool getReachableStates(mlcore::Problem* problem,
                         mlcore::StateSet& reachableStates,
-                        mlcore::StateSet& tipStates)
+                        mlcore::StateSet& tipStates,
+                        int horizon)
 {
     std::list< std::pair<mlcore::State *, int> > stateDepthQueue;
-    stateDepthQueue.push_front(std::make_pair(initialState, 0));
-                                                                                int i = 0;
+    if (reachableStates.empty()) {
+        stateDepthQueue.push_front(std::make_pair(problem->initialState(), 0));
+    } else {
+        for (auto const & state : reachableStates)
+            stateDepthQueue.push_front(std::make_pair(state, 0));
+    }
+    bool goalSeen = false;
+    tipStates.clear();
     while (!stateDepthQueue.empty()) {
         auto stateDepthPair = stateDepthQueue.back();
         stateDepthQueue.pop_back();
         mlcore::State* state = stateDepthPair.first;
         int depth = stateDepthPair.second;
-                                                                                if (problem->goal(state))
-                                                                                    dprint2("GOAL!", depth);
-                                                                                if (i++ % 100000 == 0) {
-                                                                                    dprint2(i, depth);
-                                                                                }
-        if (!reachableStates.insert(state).second || problem->goal(state))
+        if (problem->goal(state)) {
+            tipStates.insert(state);
+            goalSeen = true;
             continue;
+        }
         if (depth == horizon) {
             tipStates.insert(state);
-                                                                                dprint2("tip", state);
             continue;
         }
         for (mlcore::Action* a : problem->actions()) {
             if (!problem->applicable(state, a))
                 continue;
             for (mlcore::Successor sccr : problem->transition(state, a)) {
-                stateDepthQueue.
-                push_front(std::make_pair(sccr.su_state, depth + 1));
+                if (reachableStates.insert(sccr.su_state).second)
+                    stateDepthQueue.
+                        push_front(std::make_pair(sccr.su_state, depth + 1));
             }
         }
     }
-                                                                                dprint1(i);
+    return goalSeen;
 }
+
 
 } // mlsolvers

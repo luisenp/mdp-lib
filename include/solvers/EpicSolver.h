@@ -19,7 +19,7 @@ public:
 
     virtual ~EpicSolver() { }
 
-    virtual mlcore::Action* solve(mlcore::State* s0) {}
+    virtual mlcore::Action* solve(mlcore::State* s0);
 
     /**
      * Computes the probability of reaching the given set of terminal states,
@@ -36,6 +36,7 @@ public:
      */
     mlcore::StateDoubleMap computeProbabilityTerminals(
         mlcore::State* start, mlcore::StateSet& terminals);
+
 };
 
 }
