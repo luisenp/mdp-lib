@@ -13,7 +13,8 @@ namespace mlsolvers
 {
 
 StateDoubleMap
-EpicSolver::computeProbabilityTerminals(State* start,
+EpicSolver::computeProbabilityTerminals(Problem* problem,
+                                        State* start,
                                         StateSet& terminals)
 {
     StateSet visited;
@@ -32,7 +33,7 @@ EpicSolver::computeProbabilityTerminals(State* start,
             if (!visited.insert(currentState).second)
                 continue;
             if (terminals.count(currentState) > 0 ||
-                    problem_->goal(currentState) ||
+                    problem->goal(currentState) ||
                     currentState->deadEnd()) {
                 (*nextProbabilities)[currentState] +=
                     (*previousProbabilities)[currentState];
@@ -40,7 +41,7 @@ EpicSolver::computeProbabilityTerminals(State* start,
             }
 
             for (auto const & successor :
-                    problem_->transition(currentState,
+                    problem->transition(currentState,
                                          currentState->bestAction())) {
                 (*nextProbabilities)[successor.su_state] +=
                     (*previousProbabilities)[currentState] * successor.su_prob;
@@ -95,19 +96,44 @@ Action* EpicSolver::solve(State* start)
         currentState = visitedStack.front();
         visitedStack.pop_front();
         if (goalTargets.count(currentState) > 0)
-            continue;
+            continue; // This state has already been solved.
         bool containsGoal = false;
         reachableStates.clear();
         wrapper->setNewInitialState(currentState);
         int horizon = 0;
+        // We first find all states up to the depth where a solved state
+        // can be found.
         while (!containsGoal) {
             containsGoal =
                 getReachableStates(wrapper, reachableStates, tipStates, 1);
             horizon++;
         }
+        // Here for debugging, I think this should always be true.
+        assert(horizon <= 2);
+
+        // TODO: change this method so that it only returns the terminals.
+        StateDoubleMap probs =
+            computeProbabilityTerminals(wrapper, currentState, tipStates);
+        double total = 0.0;
+        for (auto const & stateProbPair : probs) {
+            if (wrapper->goal(stateProbPair.first))
+                total += stateProbPair.second;
+        }
+        dprint2("total prob", total);
+
+
+        // We now find the best way to reach one of the previously solved
+        // states. Note that all states that were previously solved were also
+        // added to the set of goals of the problem. WrapperProblem is
+        // implemented so that these states transition to an absorbing state
+        // at a cost equal to their previously computed cost.
         goalTargets.insert(tipStates.begin(), tipStates.end());
         viSolver.solve();
+        // And finally we augment the set of goals with all states that were
+        // solved during this iteration.
         goalTargets.insert(reachableStates.begin(), reachableStates.end());
+
+
         wrapper->overrideGoals(nullptr);
         wrapper->overrideGoals(&goalTargets);
     }

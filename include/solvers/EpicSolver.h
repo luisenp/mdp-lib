@@ -30,12 +30,14 @@ public:
      * even if not present in the given set.
      *
      * @param start The initial state.
-     * @param terminals The set of terminal states whose probability of reaching
-     *                  will be computed.
+     * @param terminals The set of terminal states whose probability of
+     *                 reaching will be computed.
      * @return A map from state to doubles storing the computed probabilities.
      */
-    mlcore::StateDoubleMap computeProbabilityTerminals(
-        mlcore::State* start, mlcore::StateSet& terminals);
+    static mlcore::StateDoubleMap
+    computeProbabilityTerminals(mlcore::Problem* problem,
+                                mlcore::State* start,
+                                mlcore::StateSet& terminals);
 
 };
 

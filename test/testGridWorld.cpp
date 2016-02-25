@@ -86,7 +86,9 @@ int main(int argc, char* args[])
     // increase the envelope by one.
 //    getReachableStates(problem, reachableStates, tipStates, 1);
 //    StateDoubleMap probTerminals =
-//        epic.computeProbabilityTerminals(wrapper->initialState(), tipStates);
+//        EpicSolver::computeProbabilityTerminals(wrapper,
+////                                              wrapper->initialState(),
+//                                                tipStates);
 //    for (auto const & stateProbPair : probTerminals) {
 //        if (problem->goal(stateProbPair.first))
 //            dprint2("probability goal", stateProbPair.second);
