@@ -150,23 +150,7 @@ ReducedTransition* ReducedModel::getBestReduction(
     for (ReducedTransition* reducedTransition : reducedTransitions) {
         ReducedModel reducedModel(originalProblem, reducedTransition, k);
         reducedModel.setHeuristic(heuristic);
-//                                                                                mlcore::StateSet reachableStates, tipStates;
-//                                                                                bool goalIsReachable =
-//                                                                                  mlsolvers::getReachableStates(reducedModel,
-//                                                                                                                reducedModel.initialState(),
-//                                                                                                                100,
-//                                                                                                                reachableStates,
-//                                                                                                                tipStates);
-//                                                                                dprint2("reachable ", reachableStates.size());
-//                                                                                if (!goalIsReachable) {
-//                                                                                  dprint1("GOAL IS NOT REACHABLE!");
-//                                                                                  for (mlcore::State* s : reachableStates)
-//                                                                                    dprint1(s);
-//                                                                                }
-
-
         double expectedCostReduction = reducedModel.evaluateMonteCarlo(100);
-                                                                                dprint1(expectedCostReduction);
         if (expectedCostReduction < bestCost) {
             bestCost = expectedCostReduction;
             bestReduction = reducedTransition;
@@ -320,7 +304,6 @@ double ReducedModel::triggerReplan(mlsolvers::Solver& solver,
     } else {
         clock_t startTime = clock();
         solver.solve(nextState);
-                                                                                dprint1(nextState->cost());
         clock_t endTime = clock();
         return (double(endTime - startTime) / CLOCKS_PER_SEC);
 

@@ -18,7 +18,7 @@
 #include "../../include/ppddl/PPDDLHeuristic.h"
 #include "../../include/ppddl/PPDDLProblem.h"
 
-
+#include "../../include/reduced/BestDeterminizationReduction.h"
 #include "../../include/reduced/LeastLikelyOutcomeReduction.h"
 #include "../../include/reduced/MostLikelyOutcomeReduction.h"
 #include "../../include/reduced/RacetrackObviousReduction.h"
@@ -188,13 +188,18 @@ int main(int argc, char* args[])
             " tip " << tipStates.size() << endl;
         wrapperProblem->overrideGoals(&tipStates);
 
-        wrapperProblem->setHeuristic(nullptr);
-        clock_t startTimeReduction = clock();
-        bestReduction = ReducedModel::getBestReduction(
-              wrapperProblem, reductions, k, nullptr);
-        clock_t endTimeReduction = clock();
-        totalReductionTime =
-            double(endTimeReduction - startTimeReduction) / CLOCKS_PER_SEC;
+
+      wrapperProblem->overrideStates(&reachableStates);
+      BestDeterminizationReduction* best =
+          new BestDeterminizationReduction(wrapperProblem);
+
+//        wrapperProblem->setHeuristic(nullptr);
+//        clock_t startTimeReduction = clock();
+//        bestReduction = ReducedModel::getBestReduction(
+//              wrapperProblem, reductions, k, nullptr);
+//        clock_t endTimeReduction = clock();
+//        totalReductionTime =
+//            double(endTimeReduction - startTimeReduction) / CLOCKS_PER_SEC;
 
         for (mlcore::State* s : wrapperProblem->states())
             s->reset(); // Make sure the stored values/actions are cleared.

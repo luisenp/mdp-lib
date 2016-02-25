@@ -22,6 +22,9 @@ public:
 
     virtual ~RacetrackObviousReduction() { }
 
+    /**
+     * Overrides method from ReducedTransition.
+     */
     virtual void setPrimary(mlcore::State* s,
                             mlcore::Action *a,
                             std::vector<bool>& primaryIndicators) const

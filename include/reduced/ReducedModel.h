@@ -98,6 +98,8 @@ public:
         this->addState(s0);
         actions_ = originalProblem->actions();
         gamma_ = originalProblem_->gamma();
+        if (reducedTransition_ == nullptr)
+            useFullTransition_ = true;
     }
 
     virtual ~ReducedModel()
@@ -113,7 +115,10 @@ public:
 
     void k(int value) { k_ = value; }
 
-    void useFullTransition(bool value) { useFullTransition_ = value; }
+    void useFullTransition(bool value)
+    {
+        useFullTransition_ = value | (reducedTransition_ == nullptr);
+    }
 
     void useContPlanEvaluationTransition(bool value)
     {
