@@ -17,12 +17,13 @@ public:
     virtual ~ReducedTransition() {}
 
     /**
-     * This method returns a list of booleans indicating whether the
+     * This method fills a list of booleans indicating whether the
      * outcomes s' of the transition T(s'|s,a) should be considered
      * primary or not.
      */
-    virtual
-    std::vector<bool> isPrimary(mlcore::State* s, mlcore::Action *a) const =0;
+    virtual void setPrimary(mlcore::State* s,
+                            mlcore::Action *a,
+                            std::vector<bool>& primaryIndicator) const =0;
 };
 
 }

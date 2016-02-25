@@ -22,6 +22,11 @@ private:
     DummyState* dummyState_;
 
     /*
+     * An abosrbing state that transitions to itself at a cost of 0.
+     */
+    mlcore::State* absorbing_;
+
+    /*
      * The only applicable action in the dummy state.
      */
     mlcore::Action* dummyAction_;
@@ -34,31 +39,52 @@ private:
     /*
      * A set of states that replace the original states in problem_.
      */
-     mlcore::StateSet overrideStates_;
+     mlcore::StateSet* overrideStates_ = nullptr;
 
     /*
      * A set of goals that replace the original goal in problem_.
      */
-     mlcore::StateSet overrideGoals_;
+     mlcore::StateSet* overrideGoals_ = nullptr;
 
      /*
       * If true, then the destructor can be called safely.
       */
-      bool clean;
+      bool clean_ = false;
 
 public:
 
-    WrapperProblem(mlcore::Problem* problem) : clean(false)
+    WrapperProblem(mlcore::Problem* problem) : clean_(false)
     {
         dummyState_ = new DummyState();
+        absorbing_ = new DummyState();
+        this->addState(dummyState_);
+        this->addState(absorbing_);
         setNewProblem(problem);
     }
 
     virtual ~WrapperProblem()
     {
         // Method free up must be called before the destructor.
-        assert(clean);
+        assert(clean_);
         // No need to delete dummy because the parent constructor will delete it.
+    }
+
+    /**
+     * Changes the problem this wrapper is wrapping.
+     *
+     * @param problem The new problem to wrap.
+     */
+    void setNewProblem(mlcore::Problem* problem)
+    {
+        problem_ = problem;
+        s0 = problem_->initialState();
+        actions_ = problem->actions();
+        dummyAction_ = actions_.front();
+        heuristic_ = problem->heuristic();
+        if (overrideStates_ != nullptr)
+            overrideStates_->clear();
+        if (overrideGoals_ != nullptr)
+            overrideGoals_->clear();
     }
 
     mlcore::Problem* problem() { return problem_; }
@@ -73,10 +99,12 @@ public:
      */
     void cleanup()
     {
-        overrideStates_.clear();
-        overrideStates_.insert(dummyState_);
+        if (overrideStates_ != nullptr) {
+            overrideStates_->clear();
+            overrideStates_->insert(dummyState_);
+        }
         actions_ = std::list<mlcore::Action*> ();
-        clean = true;
+        clean_ = true;
     }
 
     /**
@@ -86,10 +114,16 @@ public:
      *
      * @param newGoals The set of goals that will override the previous one.
      */
-    void overrideGoals(mlcore::StateSet& newGoals)
+    void overrideGoals(mlcore::StateSet* newGoals)
     {
         overrideGoals_ = newGoals;
     }
+
+    /**
+     * Returns the set of goals that override the goal of the original
+     * problem.
+     */
+    mlcore::StateSet* overrideGoals() { return overrideGoals_; }
 
     /**
      * Adds a goal to the set of override goals.
@@ -99,26 +133,19 @@ public:
      * @param overrideGoal The goal to add.
      */
     void addOverrideGoal(mlcore::State* overrideGoal)
-        { overrideGoals_.insert(overrideGoal); }
+        { overrideGoals_->insert(overrideGoal); }
 
     /**
      * Clears the set of override goals.
      */
-    void clearOverrideGoals() { overrideGoals_.clear(); }
+    void clearOverrideGoals() { overrideGoals_->clear(); }
 
     /**
-     * Changes the problem this wrapper is wrapping.
-     *
-     * @param problem The new problem to wrap.
+     * Sets the given state as the initial state of the problem.
      */
-    void setNewProblem(mlcore::Problem* problem)
+    void setNewInitialState(mlcore::State* newInitialState)
     {
-        problem_ = problem;
-        s0 = problem_->initialState();
-        actions_ = problem->actions();
-        heuristic_ = problem->heuristic();
-        overrideStates_.clear();
-        overrideGoals_.clear();
+        s0 = newInitialState;
     }
 
     /**
@@ -128,7 +155,7 @@ public:
      *
      * @param newStates The set of states that will override the previous ones.
      */
-    void overrideStates(mlcore::StateSet& newStates)
+    void overrideStates(mlcore::StateSet* newStates)
     {
         overrideStates_ = newStates;
     }

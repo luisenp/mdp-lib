@@ -22,23 +22,23 @@ public:
 
     virtual ~MostLikelyOutcomeReduction() { }
 
-    virtual
-    std::vector<bool> isPrimary(mlcore::State* s, mlcore::Action *a) const
+    virtual void setPrimary(mlcore::State* s,
+                            mlcore::Action *a,
+                            std::vector<bool>& primaryIndicators) const
     {
         std::list<mlcore::Successor> successors = problem_->transition(s, a);
-        std::vector<bool> primaryValues(successors.size(), false);
         double maximumProbability = 0.0;
         int i = 0;
         int indexMostLikely = 0;
         for (mlcore::Successor successor : successors) {
+            primaryIndicators.push_back(false);
             if (successor.su_prob > maximumProbability) {
                 maximumProbability = successor.su_prob;
                 indexMostLikely = i;
             }
             i++;
         }
-        primaryValues[indexMostLikely] = true;
-        return primaryValues;
+        primaryIndicators[indexMostLikely] = true;
     }
 };
 

@@ -203,32 +203,30 @@ double sampleTrial(mlcore::Problem* problem, mlcore::State* s)
 }
 
 
-void getReachableStates(mlcore::Problem* problem,
+bool getReachableStates(mlcore::Problem* problem,
                         mlcore::State* initialState,
                         int horizon,
                         mlcore::StateSet& reachableStates,
                         mlcore::StateSet& tipStates)
 {
+    bool containsGoal = false;
     std::list< std::pair<mlcore::State *, int> > stateDepthQueue;
     stateDepthQueue.push_front(std::make_pair(initialState, 0));
-                                                                                int i = 0;
     while (!stateDepthQueue.empty()) {
         auto stateDepthPair = stateDepthQueue.back();
         stateDepthQueue.pop_back();
         mlcore::State* state = stateDepthPair.first;
-                                                                                if (problem->goal(state))
-                                                                                    dprint1("GOAL!");
         int depth = stateDepthPair.second;
-                                                                                if (i++ % 100000 == 0) {
-                                                                                    dprint2(i, depth);
-                                                                                }
-        if (reachableStates.count(state) || depth > horizon)
+        if (!reachableStates.insert(state).second)
             continue;
-        reachableStates.insert(state);
-        if (problem->goal(state))
+        if (problem->goal(state)) {
+            containsGoal = true;
             continue;
-        if (depth == horizon)
+        }
+        if (depth == horizon) {
             tipStates.insert(state);
+            continue;
+        }
         for (mlcore::Action* a : problem->actions()) {
             if (!problem->applicable(state, a))
                 continue;
@@ -238,7 +236,29 @@ void getReachableStates(mlcore::Problem* problem,
             }
         }
     }
-                                                                                dprint1(i);
+    return containsGoal;
+}
+
+
+void getBestPartialSolutionGraph(mlcore::Problem* problem,
+                                 mlcore::State* initialState,
+                                 mlcore::StateSet& bpsg)
+{
+    std::list<mlcore::State *> stateStack;
+    stateStack.push_front(initialState);
+    while (!stateStack.empty()) {
+        mlcore::State* state = stateStack.front();
+        stateStack.pop_front();
+        if (!bpsg.insert(state).second)
+            continue;
+        if (problem->goal(state))
+            continue;
+        mlcore::Action* a = greedyAction(problem, state);
+        for (mlcore::Successor sccr : problem->transition(state, a)) {
+            stateStack.
+            push_front(sccr.su_state);
+        }
+    }
 }
 
 } // mlsolvers

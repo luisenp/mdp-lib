@@ -195,18 +195,34 @@ double sampleTrial(mlcore::Problem* problem, mlcore::State* s);
 /**
  * Gets all reachable states starting from initialState in problem,
  * up to the given horizon. The states are stored in the set reachableStates.
+ * Returns a boolean variable that is true if a goal is reachable, false
+ * otherwise.
  *
  * @param problem The problem describing the state space to traverse.
  * @param initialState The initial state for the search.
  * @param horizon the horizon limit for the search.
  * @param reachableStates A set to store the reachable states in.
  * @param tipStates A set to store the tip states in.
+ * @return true if a goal is reachable, false otherwise.
  */
-void getReachableStates(mlcore::Problem* problem,
+bool getReachableStates(mlcore::Problem* problem,
                         mlcore::State* initialState,
                         int horizon,
                         mlcore::StateSet& reachableStates,
                         mlcore::StateSet& tipStates);
+
+/**
+ * Gets all reachable states starting from initialState in problem by following
+ * the greedy policy on the state values (i.e., the current best partial
+ * solution graph). The states are stored in the set bpsg.
+ *
+ * @param problem The problem describing the state space to traverse.
+ * @param initialState The initial state for the search.
+ * @param bpsg A set to store the best partial solution graph.
+ */
+void getBestPartialSolutionGraph(mlcore::Problem* problem,
+                                 mlcore::State* initialState,
+                                 mlcore::StateSet& bpsg);
 
 } // mlsolvers
 

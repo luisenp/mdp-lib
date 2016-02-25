@@ -15,8 +15,10 @@ std::list<mlcore::Successor>
 ReducedModel::transition(mlcore::State* s, mlcore::Action *a)
 {
     ReducedState* rs = static_cast<ReducedState*>(s);
-    std::vector<bool> primaryIndicators =
-        reducedTransition_->isPrimary(rs->originalState(), a);
+    std::vector<bool> primaryIndicators;
+    if (!useFullTransition_)
+        reducedTransition_->
+            setPrimary(rs->originalState(), a, primaryIndicators);
 
     std::list<mlcore::Successor> successors;
     std::list<mlcore::Successor> originalSuccessors =
@@ -25,7 +27,7 @@ ReducedModel::transition(mlcore::State* s, mlcore::Action *a)
     int i = 0;
     for (mlcore::Successor const & origSucc : originalSuccessors) {
         mlcore::State* next = nullptr;
-        bool isPrimaryOutcome = primaryIndicators[i] || useFullTransition_;
+        bool isPrimaryOutcome = useFullTransition_ || primaryIndicators[i];
         if (useContPlanEvaluationTransition_) {
             int add = isPrimaryOutcome && rs->exceptionCount() != k_ ? 0 : 1;
             next = addState(
@@ -145,25 +147,34 @@ ReducedTransition* ReducedModel::getBestReduction(
 {
     double bestCost = mdplib::dead_end_cost + 1;
     ReducedTransition* bestReduction = nullptr;
-                                                                                std::vector<double> ecosts;
     for (ReducedTransition* reducedTransition : reducedTransitions) {
-        ReducedModel* reducedModel =
-            new ReducedModel(originalProblem, reducedTransition, k);
-        reducedModel->setHeuristic(heuristic);
-                                                                                mlcore::StateSet reachableStates, tipStates;
-                                                                                mlsolvers::getReachableStates(reducedModel,
-                                                                                                               reducedModel->initialState(),
-                                                                                                               100,
-                                                                                                               reachableStates,
-                                                                                                               tipStates);
-        double expectedCostReduction = reducedModel->evaluateMonteCarlo(50);
-                                                                                ecosts.push_back(expectedCostReduction);
+        ReducedModel reducedModel(originalProblem, reducedTransition, k);
+        reducedModel.setHeuristic(heuristic);
+//                                                                                mlcore::StateSet reachableStates, tipStates;
+//                                                                                bool goalIsReachable =
+//                                                                                  mlsolvers::getReachableStates(reducedModel,
+//                                                                                                                reducedModel.initialState(),
+//                                                                                                                100,
+//                                                                                                                reachableStates,
+//                                                                                                                tipStates);
+//                                                                                dprint2("reachable ", reachableStates.size());
+//                                                                                if (!goalIsReachable) {
+//                                                                                  dprint1("GOAL IS NOT REACHABLE!");
+//                                                                                  for (mlcore::State* s : reachableStates)
+//                                                                                    dprint1(s);
+//                                                                                }
+
+
+        double expectedCostReduction = reducedModel.evaluateMonteCarlo(100);
+                                                                                dprint1(expectedCostReduction);
         if (expectedCostReduction < bestCost) {
             bestCost = expectedCostReduction;
             bestReduction = reducedTransition;
         }
+        for (mlcore::State* s : reducedModel.states())
+            s->reset();     // make sure stored values are cleared.
+        reducedModel.cleanup();
     }
-                                                                                dprint2(ecosts[0], ecosts[1]);
     return bestReduction;
 }
 
@@ -175,7 +186,6 @@ double ReducedModel::evaluateMonteCarlo(int numTrials)
     solver.solve(wrapper.initialState());
     double expectedCost = 0.0;
     for (int i = 0; i < numTrials; i++) {
-        dprint1(i);
         expectedCost += trial(solver, &wrapper).first;
     }
     wrapper.cleanup();
@@ -187,22 +197,23 @@ std::pair<double, double> ReducedModel::trial(
     mlsolvers::Solver & solver, WrapperProblem* wrapperProblem)
 {
     assert(wrapperProblem->problem() == this);
+
     double cost = 0.0;
     double totalPlanningTime = 0.0;
     ReducedState* currentState =
         static_cast<ReducedState*>(this->initialState());
-    bool resetExceptionCounter = false;
+    if (currentState->deadEnd())
+        return std::make_pair(mdplib::dead_end_cost, 0.0);
+    if (this->goal(currentState))
+        return std::make_pair(0.0, 0.0);
+
+    // This state will be used to simulate the full transition function by
+    // making it a copy of the current state and adjusting the exception counter
+    // accordingly.
     ReducedState* auxState = new ReducedState(*currentState);
+
+    bool resetExceptionCounter = false;
     while (true) {
-//                                                                                dprint1(currentState);
-        if (currentState->deadEnd() || cost >= mdplib::dead_end_cost) {
-            cost = mdplib::dead_end_cost;
-            break;
-        }
-        if (this->goal(currentState)) {
-                                                                                dprint1("GOAL!");
-            break;
-        }
         mlcore::Action* bestAction = currentState->bestAction();
         cost += this->cost(currentState, bestAction);
         int exceptionCount = currentState->exceptionCount();
@@ -236,6 +247,15 @@ std::pair<double, double> ReducedModel::trial(
         }
         nextState =
             static_cast<ReducedState*>(this->getState(auxState));
+
+        if ((nextState != nullptr && nextState->deadEnd()) ||
+                cost >= mdplib::dead_end_cost) {
+            cost = mdplib::dead_end_cost;
+            break;
+        }
+        if (nextState != nullptr && this->goal(nextState)) {
+            break;
+        }
 
         // Re-planning
         // Checking if the state has already been considered during planning.
@@ -278,11 +298,9 @@ double ReducedModel::triggerReplan(mlsolvers::Solver& solver,
         // We plan for all successors of the nextState under the full
         // model. The -1 is used to get the full model transition (see comment
         // above in the trial function).
+        ReducedState tmp(nextState->originalState(), -1, this);
         std::list<mlcore::Successor> successorsFullModel =
-            this->transition(
-                new ReducedState(
-                    nextState->originalState(), -1, this),
-                bestAction);
+            this->transition(&tmp, bestAction);
         std::list<mlcore::Successor> dummySuccessors;
         for (mlcore::Successor const & sccr : successorsFullModel) {
             ReducedState* reducedSccrState =
@@ -302,15 +320,11 @@ double ReducedModel::triggerReplan(mlsolvers::Solver& solver,
     } else {
         clock_t startTime = clock();
         solver.solve(nextState);
+                                                                                dprint1(nextState->cost());
         clock_t endTime = clock();
         return (double(endTime - startTime) / CLOCKS_PER_SEC);
 
     }
-}
-
-void dfs()
-{
-
 }
 
 } // namespace mlreduced

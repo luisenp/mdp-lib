@@ -22,19 +22,19 @@ public:
 
     virtual ~RacetrackObviousReduction() { }
 
-    virtual
-    std::vector<bool> isPrimary(mlcore::State* s, mlcore::Action *a) const
+    virtual void setPrimary(mlcore::State* s,
+                            mlcore::Action *a,
+                            std::vector<bool>& primaryIndicators) const
     {
-        std::vector<bool> primaryValues;
         if (s == problem_->initialState()) {
             for (std::pair<int,int> start : problem_->starts())
-                primaryValues.push_back(true);
-            return primaryValues;
+                primaryIndicators.push_back(true);
+            return;
         }
 
         if (s == problem_->absorbing() || problem_->goal(s)) {
-            primaryValues.push_back(true);
-            return primaryValues;
+            primaryIndicators.push_back(true);
+            return;
         }
 
         RacetrackState* rts = (RacetrackState *) s;
@@ -42,8 +42,8 @@ public:
         std::vector<std::vector <char> > & track = problem_->track();
 
         if (track[rts->x()][rts->y()] == rtrack::wall) {
-            primaryValues.push_back(true);
-            return primaryValues;
+            primaryIndicators.push_back(true);
+            return;
         }
 
         int mds = problem_->mds();
@@ -62,10 +62,10 @@ public:
         }
 
         if (p_slip != 0.0)
-            primaryValues.push_back(false);
+            primaryIndicators.push_back(false);
 
         if (p_int != 0.0)
-            primaryValues.push_back(true);
+            primaryIndicators.push_back(true);
 
         if (p_err != 0.0) {
             int ta = abs(rta->ax()) + abs(rta->ay());
@@ -73,10 +73,8 @@ public:
             if (ta == 1) cnt = 3;
             if (ta == 2) cnt = 2;
             for (int i = 0; i < cnt; i++)
-                primaryValues.push_back(false);
+                primaryIndicators.push_back(false);
         }
-
-        return primaryValues;
     }
 };
 
