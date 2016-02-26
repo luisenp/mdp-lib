@@ -27,7 +27,7 @@ public:
 
     virtual ~PPDDLProblem()
     {
-        delete pProblem_;
+        problem_t::unregister_use(pProblem_);
     }
 
     problem_t* pProblem()  { return pProblem_; }

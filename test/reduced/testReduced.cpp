@@ -105,7 +105,7 @@ static bool read_file( const char* ppddlFileName )
 }
 
 
-bool initPPDDL(string ppddlArgs, problem_t* internalPPDDLProblem)
+bool initPPDDL(string ppddlArgs)
 {
     size_t pos_equals = ppddlArgs.find(":");
     assert(pos_equals != string::npos);
@@ -119,7 +119,8 @@ bool initPPDDL(string ppddlArgs, problem_t* internalPPDDLProblem)
         cerr << "<main>: ERROR: couldn't read problem file `" << file << endl;
         return false;
     }
-    internalPPDDLProblem = (problem_t *)(problem_t::find(prob.c_str()));
+    problem_t* internalPPDDLProblem =
+        (problem_t *)(problem_t::find(prob.c_str()));
     if( !internalPPDDLProblem ) {
         cerr << "<main>: ERROR: problem `" << prob <<
             "' is not defined in file '" << file << "'" << endl;
@@ -162,8 +163,6 @@ int main(int argc, char* args[])
         initRacetrack(trackName, mds);
     } else if (domainName == "ppddl") {
         string ppddlArgs = flag_value("problem");
-        problem_t *internalPPDDLProblem = nullptr;
-        initPPDDL(ppddlArgs, internalPPDDLProblem);
     }
 
     bool useFullTransition = flag_is_registered("use_full");
