@@ -112,7 +112,23 @@ int main(int argc, char* args[])
     initPPDDL(ppddlArgs);
 
     mdplib_debug = true;
-    dprint1(problem->initialState());
+
+    ostringstream oss;
+    oss << problem->initialState();
+    dprint1(oss.str());
+
+    string state = oss.str();
+    string init = "";
+    for (int i = 0; i < state.size(); i++) {
+        if (state[i] == ':') {
+            i++;
+            do {
+                init += state[i];
+            } while (state[i++] != ')');
+            init += " ";
+        }
+    }
+    dprint1(init);
 
     delete problem;
     return 0;
