@@ -163,6 +163,7 @@ int main(int argc, char* args[])
         initRacetrack(trackName, mds);
     } else if (domainName == "ppddl") {
         string ppddlArgs = flag_value("problem");
+        initPPDDL(ppddlArgs);
     }
 
     bool useFullTransition = flag_is_registered("use_full");
