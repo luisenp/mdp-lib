@@ -5,7 +5,7 @@
 
 # Compilation flags and variables
 CC = g++
-CFLAGS = -std=c++11 -O3 -DATOM_STATES -pthread
+CFLAGS = -std=c++11 -g -DATOM_STATES -pthread
 
 # Variables for directories
 ID = include
@@ -223,7 +223,7 @@ $(OD_DOMAINS)/libmdp_domains.a: lib/libmdp.a $(DOM_H) $(DOM_CPP)
 
 # Compiles the mini-gpt library
 minigpt: lib/libminigpt.a
-lib/libminigpt.a:
+lib/libminigpt.a: include/ppddl/mini-gpt/*
 	$(MAKE) -C include/ppddl/mini-gpt
 	ar rvs lib/libminigpt.a include/ppddl/mini-gpt/*.o
 
@@ -245,8 +245,12 @@ lib/libmdp_reduced.a: lib/libmdp.a domains ppddl $(SD_REDUCED)/*.cpp $(ID_REDUCE
 	ar rvs lib/libmdp_reduced.a *.o
 	mkdir -p $(OD_REDUCED)
 	mv *.o $(OD_REDUCED)
+#	$(CC) $(CFLAGS) -I$(ID_REDUCED) $(INCLUDE_CORE) $(INCLUDE_PPDDL) \
+#	-o testreduced.out $(TD)/reduced/testReduced.cpp $(OD_DOMAINS)/*.o \
+#	$(ID_PPDDL)/mini-gpt/heuristics.cc \
+#	$(LIBS) lib/libminigpt.a lib/libmdp_reduced.a lib/libmdp_ppddl.a
 	$(CC) $(CFLAGS) -I$(ID_REDUCED) $(INCLUDE_CORE) $(INCLUDE_PPDDL) \
-	-o testreduced.out $(TD)/reduced/testReduced.cpp $(OD_DOMAINS)/*.o \
+	-o testFF.out $(TD)/reduced/testFF.cpp $(OD_DOMAINS)/*.o \
 	$(ID_PPDDL)/mini-gpt/heuristics.cc \
 	$(LIBS) lib/libminigpt.a lib/libmdp_reduced.a lib/libmdp_ppddl.a
 
