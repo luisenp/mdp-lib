@@ -279,12 +279,14 @@ typedef std::unordered_map<State*, int, StateHash, StateEqual> StateIntMap;
 /**
  * A map of states to doubles.
  */
-typedef std::unordered_map<State*, double, StateHash, StateEqual> StateDoubleMap;
+typedef
+std::unordered_map<State*, double, StateHash, StateEqual> StateDoubleMap;
 
 /**
  * A map of states to actions.
  */
-typedef std::unordered_map<State*, Action*, StateHash, StateEqual> StateActionMap;
+typedef
+std::unordered_map<State*, Action*, StateHash, StateEqual> StateActionMap;
 
 /**
  * A list of successors.
