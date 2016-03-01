@@ -39,7 +39,6 @@ EpicSolver::computeProbabilityTerminals(Problem* problem,
                     (*previousProbabilities)[currentState];
                 continue;
             }
-
             for (auto const & successor :
                     problem->transition(currentState,
                                          currentState->bestAction())) {
@@ -95,31 +94,18 @@ Action* EpicSolver::solve(State* start)
     while (!visitedStack.empty()) {
         currentState = visitedStack.front();
         visitedStack.pop_front();
-        if (goalTargets.count(currentState) > 0)
-            continue; // This state has already been solved.
-        bool containsGoal = false;
-        reachableStates.clear();
-        wrapper->setNewInitialState(currentState);
-        int horizon = 0;
-        // We first find all states up to the depth where a solved state
-        // can be found.
-        while (!containsGoal) {
-            containsGoal =
-                getReachableStates(wrapper, reachableStates, tipStates, 1);
-            horizon++;
+        if (goalTargets.count(currentState) > 0) {
+            continue; // This state has already been worked on.
         }
-        // Here for debugging, I think this should always be true.
-        assert(horizon <= 2);
 
-        // TODO: change this method so that it only returns the terminals.
-        StateDoubleMap probs =
-            computeProbabilityTerminals(wrapper, currentState, tipStates);
-        double total = 0.0;
-        for (auto const & stateProbPair : probs) {
-            if (wrapper->goal(stateProbPair.first))
-                total += stateProbPair.second;
-        }
-        dprint2("total prob", total);
+        // We first find all states up to a predetermined horizon.
+        wrapper->setNewInitialState(currentState);
+        reachableStates.clear();
+        int horizon = 3;
+        bool containsGoal =
+            getReachableStates(wrapper, reachableStates, tipStates, horizon);
+        getReachableStates(wrapper, reachableStates, tipStates, 2);
+        assert(containsGoal);
 
 
         // We now find the best way to reach one of the previously solved
@@ -129,13 +115,26 @@ Action* EpicSolver::solve(State* start)
         // at a cost equal to their previously computed cost.
         goalTargets.insert(tipStates.begin(), tipStates.end());
         viSolver.solve();
+                                                                                dprint4("current", currentState, currentState->bestAction(), currentState->cost());
+
+        // TODO: change this method so that it only returns the terminals.
+        StateDoubleMap probs =
+            computeProbabilityTerminals(wrapper, currentState, tipStates);
+        double total = 0.0;
+        for (auto const & stateProbPair : probs) {
+                                                                                dprint3("prob", stateProbPair.first, stateProbPair.second);
+            if (wrapper->goal(stateProbPair.first))
+                total += stateProbPair.second;
+        }
+                                                                                dprint2("total prob", total);
+
         // And finally we augment the set of goals with all states that were
         // solved during this iteration.
         goalTargets.insert(reachableStates.begin(), reachableStates.end());
 
-
         wrapper->overrideGoals(nullptr);
         wrapper->overrideGoals(&goalTargets);
+                                                                                dprint1("--------------------------------------------------------------");
     }
 
     wrapper->cleanup();

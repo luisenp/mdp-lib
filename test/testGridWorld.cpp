@@ -94,6 +94,7 @@ int main(int argc, char* args[])
 //            dprint2("probability goal", stateProbPair.second);
 //    }
 
+                                                                                dprint2("initial", wrapper->initialState());
     epic.solve(wrapper->initialState());
 
 

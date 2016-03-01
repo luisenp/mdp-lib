@@ -211,6 +211,7 @@ bool getReachableStates(mlcore::Problem* problem,
     std::list< std::pair<mlcore::State *, int> > stateDepthQueue;
     if (reachableStates.empty()) {
         stateDepthQueue.push_front(std::make_pair(problem->initialState(), 0));
+        reachableStates.insert(problem->initialState());
     } else {
         for (auto const & state : reachableStates)
             stateDepthQueue.push_front(std::make_pair(state, 0));
