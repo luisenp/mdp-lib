@@ -64,81 +64,77 @@ EpicSolver::computeProbabilityTerminals(Problem* problem,
 }
 
 
-Action* EpicSolver::solve(State* start)
+void EpicSolver::trial(State* state)
 {
-    State* currentState = start;
+    State* currentState = state;
     list<State*> visitedStack;
-    StateSet tmp;
     while (true) {
         if (problem_->goal(currentState))
             break;
         visitedStack.push_front(currentState);
-        tmp.insert(currentState);
-
         bellmanUpdate(problem_, currentState);
-
         if (currentState->deadEnd())
             break;
-
         currentState =
             randomSuccessor(problem_, currentState, currentState->bestAction());
     }
-    dprint2("different visited states ", tmp.size());
-    dprint2("size of the visited stack", visitedStack.size());
 
     WrapperProblem* wrapper = new WrapperProblem(problem_);
-    VISolver viSolver(wrapper);
-    StateSet reachableStates, tipStates, goalTargets;
+    StateSet reachableStates, goalTargets;
     wrapper->overrideStates(&reachableStates);
     wrapper->overrideGoals(&goalTargets);
     while (!visitedStack.empty()) {
         currentState = visitedStack.front();
         visitedStack.pop_front();
-        if (goalTargets.count(currentState) > 0) {
-            continue; // This state has already been worked on.
-        }
-
-        // We first find all states up to a predetermined horizon.
-        wrapper->setNewInitialState(currentState);
-        reachableStates.clear();
-        int horizon = 3;
-        bool containsGoal =
-            getReachableStates(wrapper, reachableStates, tipStates, horizon);
-        getReachableStates(wrapper, reachableStates, tipStates, 2);
-        assert(containsGoal);
-
-
-        // We now find the best way to reach one of the previously solved
-        // states. Note that all states that were previously solved were also
-        // added to the set of goals of the problem. WrapperProblem is
-        // implemented so that these states transition to an absorbing state
-        // at a cost equal to their previously computed cost.
-        goalTargets.insert(tipStates.begin(), tipStates.end());
-        viSolver.solve();
-                                                                                dprint4("current", currentState, currentState->bestAction(), currentState->cost());
-
-        // TODO: change this method so that it only returns the terminals.
-        StateDoubleMap probs =
-            computeProbabilityTerminals(wrapper, currentState, tipStates);
-        double total = 0.0;
-        for (auto const & stateProbPair : probs) {
-                                                                                dprint3("prob", stateProbPair.first, stateProbPair.second);
-            if (wrapper->goal(stateProbPair.first))
-                total += stateProbPair.second;
-        }
-                                                                                dprint2("total prob", total);
-
-        // And finally we augment the set of goals with all states that were
-        // solved during this iteration.
-        goalTargets.insert(reachableStates.begin(), reachableStates.end());
-
-        wrapper->overrideGoals(nullptr);
-        wrapper->overrideGoals(&goalTargets);
-                                                                                dprint1("--------------------------------------------------------------");
+        solveDepthLimited(currentState, wrapper);
     }
-
     wrapper->cleanup();
     delete wrapper;
+}
+
+
+// Below we use the term "solved" loosely. The values computed are only an
+// admissible heuristic, not necessarily the optimal values.
+void EpicSolver::solveDepthLimited(State* state, WrapperProblem* wrapper)
+{
+    VISolver viSolver(wrapper);
+    StateSet tipStates;
+
+    if (wrapper->overrideGoals()->count(state) > 0) {
+        return; // This state has already been solved.
+    }
+
+    // We first find all states reachable up to a predetermined horizon and the
+    // corresponding tip states (states that were solved before or that are at
+    // the horizon). Note that states that have already been solved have also
+    // been added to wrapper->overrideGoals(), so they will be considered
+    // tip states by getReachableStates().
+    wrapper->setNewInitialState(state);
+    wrapper->overrideStates()->clear();
+    assert(getReachableStates(wrapper,
+                              *wrapper->overrideStates(),
+                              tipStates,
+                              horizon_));
+
+
+    // We now find the best way to reach one of the previously solved
+    // states. WrapperProblem is implemented so that states in
+    // wrapper->overrideGoals_transition to an absorbing state
+    // with a cost equal to their estimated cost so far.
+    wrapper->overrideGoals()->insert(tipStates.begin(), tipStates.end());
+    viSolver.solve();
+
+    // And finally we add to the set of goals all states that were
+    // solved during this iteration.
+    wrapper->overrideGoals()->insert(wrapper->overrideStates()->begin(),
+                                     wrapper->overrideStates()->end());
+}
+
+
+Action* EpicSolver::solve(State* start)
+{
+    trial(start);
+    return start->bestAction();
 }
 
 } //namespace mlsolvers

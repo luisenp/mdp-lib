@@ -161,6 +161,12 @@ public:
     }
 
     /**
+     * Returns the set of states that override the state of the original
+     * problem.
+     */
+    mlcore::StateSet* overrideStates() { return overrideStates_; }
+
+    /**
      * Overrides method from Problem.
      */
     virtual mlcore::StateSet& states();

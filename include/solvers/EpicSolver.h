@@ -1,8 +1,11 @@
 #ifndef MDPLIB_EPICSOLVER_H
 #define MDPLIB_EPICSOLVER_H
 
+
 #include "../Problem.h"
 #include "../State.h"
+
+#include "../domains/WrapperProblem.h"
 
 #include "Solver.h"
 
@@ -13,6 +16,22 @@ class EpicSolver : public Solver
 {
 private:
     mlcore::Problem* problem_;
+
+    /*
+     * Runs a trial of the greedy policy starting in state.
+     */
+    void trial(mlcore::State* start);
+
+    /*
+     * Performs depth-limited Value Iteration on the given state.
+     * The WrapperProblem is used to add arbitrary sets of goals
+     */
+    void solveDepthLimited(mlcore::State* state, WrapperProblem* wrapper);
+
+    /*
+     * Depth for the depth-limited Value Iteration.
+     */
+    int horizon_ = 3;
 
 public:
     EpicSolver(mlcore::Problem* problem) : problem_(problem) { }
