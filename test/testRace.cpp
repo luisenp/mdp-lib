@@ -4,12 +4,13 @@
 #include <sstream>
 #include <unistd.h>
 
-#include "../include/solvers/Solver.h"
-#include "../include/solvers/VISolver.h"
-#include "../include/solvers/LRTDPSolver.h"
-#include "../include/solvers/UCTSolver.h"
-#include "../include/solvers/LAOStarSolver.h"
 #include "../include/solvers/DeterministicSolver.h"
+#include "../include/solvers/EpicSolver.h"
+#include "../include/solvers/LAOStarSolver.h"
+#include "../include/solvers/LRTDPSolver.h"
+#include "../include/solvers/Solver.h"
+#include "../include/solvers/UCTSolver.h"
+#include "../include/solvers/VISolver.h"
 
 #include "../include/util/flags.h"
 #include "../include/util/general.h"
@@ -68,15 +69,19 @@ int main(int argc, char* args[])
     } else if (algorithm == "vi") {
         VISolver vi(problem, 1000000000, tol);
         vi.solve();
+    } else if (algorithm == "epic") {
+        EpicSolver epic(problem, 3);
+        epic.solve(problem->initialState());
     } else if (algorithm != "det") {
         cerr << "Unknown algorithm: " << algorithm << endl;
         return -1;
     }
     clock_t endTime = clock();
 
+    double actionsPerSecond = 4.0;
     cerr << "Estimated cost " << problem->initialState()->cost() << endl;
-    double costTime = (double(endTime - startTime) / CLOCKS_PER_SEC) * 4.0;
-    cerr << "Planning Time: " <<  costTime / 4.0 << endl;
+    double totalTime = (double(endTime - startTime) / CLOCKS_PER_SEC);
+    cerr << "Planning Time: " <<  totalTime << endl;
 
     if (algorithm == "vi") {
         for (State* s : problem->states()) {
@@ -95,6 +100,7 @@ int main(int argc, char* args[])
         verbosity = stoi(flag_value("v"));
 
     double expectedCost = 0.0;
+    double expectedTime = 0.0;
     for (int i = 0; i < nsims; i++) {
         if (verbosity >= 10) {
             cerr << "Starting simulation " << i << endl;
@@ -106,18 +112,14 @@ int main(int argc, char* args[])
         }
         while (!problem->goal(tmp)) {
             Action* a = tmp->bestAction();
-//            if (algorithm == "det") {
             if (a == nullptr) {
-                assert(algorithm == "det");
+                if (algorithm != "det" && algorithm != "epic")
+                    dprint1(tmp);
                 startTime = clock();
                 a = det.solve(tmp);
                 endTime = clock();
-                costTime +=
-                    (double(endTime - startTime) / CLOCKS_PER_SEC) * 4.0;
+                expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
             }
-//            else {
-//                a = greedyAction(problem, tmp);
-//            }
             expectedCost += problem->cost(tmp, a);
             tmp = randomSuccessor(problem, tmp, a);
             if (verbosity > 100) {
@@ -128,9 +130,13 @@ int main(int argc, char* args[])
         if (verbosity > 100)
             cerr << endl;
     }
+    expectedCost /= nsims;
+    expectedTime /= nsims;
 
-    cerr << "Avg. Exec cost " << expectedCost / nsims << endl;
-    cerr << "Avg.Total cost " << expectedCost / nsims + costTime << endl;
+    cerr << "Avg. Exec cost " << expectedCost << endl;
+    cerr << "Total time " << totalTime + expectedTime << endl;
+    double expectedCostTime = actionsPerSecond * (totalTime + expectedTime);
+    cerr << "Avg. Total cost " << expectedCost + expectedCostTime << endl;
 
     delete problem;
     delete ((RTrackDetHeuristic*) heuristic);

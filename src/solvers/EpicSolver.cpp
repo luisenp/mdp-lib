@@ -128,8 +128,8 @@ void EpicSolver::trial(State* start)
 //        solveDepthLimited(currentState, wrapper);
 //    }
 
-                                                                                double probGoal = computeProbabilityGoalMonteCarlo(problem_, start);
-                                                                                dprint2("prob", probGoal);
+//                                                                                double probGoal = computeProbabilityGoalMonteCarlo(problem_, start);
+//                                                                                dprint2("prob", probGoal);
 
 //    wrapper->cleanup();
 //    delete wrapper;
@@ -196,7 +196,7 @@ void EpicSolver::solveDepthLimited(State* state, WrapperProblem* wrapper)
 Action* EpicSolver::solve(State* start)
 {
 //                                                                                clock_t startTime = clock();
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 1000; i++) {
         trial(start);
 //                                                                                double elapsed = double(clock() - startTime) / CLOCKS_PER_SEC;
 //                                                                                dprint1(elapsed);
