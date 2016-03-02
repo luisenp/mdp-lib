@@ -29,7 +29,6 @@ lib/*
 *.lp
 *.txt
 *.lp.*
-data/*
 experiments/*
 scripts/*.track
 mdp-lib.layout

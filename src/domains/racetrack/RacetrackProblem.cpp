@@ -10,6 +10,7 @@
 #include "../../../include/domains/racetrack/RacetrackState.h"
 #include "../../../include/domains/racetrack/RacetrackAction.h"
 
+
 RacetrackProblem::RacetrackProblem(const char* filename)
 {
     std::ifstream myfile (filename);
@@ -18,7 +19,6 @@ RacetrackProblem::RacetrackProblem(const char* filename)
         std::string line;
         int x = 0, y;
 
-
         std::getline(myfile, line);
         std::istringstream iss(line);
         iss >> x;
@@ -26,21 +26,23 @@ RacetrackProblem::RacetrackProblem(const char* filename)
         iss.str(line); iss.clear();
         iss >> y;
 
-        track_ = std::vector <std::vector<char> > (x, std::vector<char> (y));
+        track_ =
+            std::vector <std::vector<char> > (x + 2,
+                                              std::vector<char> (y + 2, 'X'));
 
         while ( std::getline (myfile, line) ) {
-            y--;
             for (int i = 0; i < line.size(); i++) {
                 if (!rtrack::checkValid(line.at(i)))
                     continue;
-                track_[i][y] = line.at(i);
+                track_[i + 1][y] = line.at(i);
                 if (line.at(i) == rtrack::start) {
-                    starts_.insert(std::pair<int,int> (i, y));
+                    starts_.insert(std::pair<int,int> (i + 1, y));
                 }
                 if (line.at(i) == rtrack::goal) {
-                    goals_.insert(std::pair<int,int> (i, y));
+                    goals_.insert(std::pair<int,int> (i + 1, y));
                 }
             }
+            y--;
         }
         myfile.close();
     }

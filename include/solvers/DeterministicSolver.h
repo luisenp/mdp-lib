@@ -9,12 +9,12 @@
 namespace mlsolvers
 {
 
-    const int det_most_likely = 0;
+const int det_most_likely = 0;
 
 /**
  * Implements a deterministic solver based on the A* algorithm. It simplifies
  * the MDP's transition function by picking a single outcome, resulting in
- * a determinisitic problem based on the original one.
+ * a determinisitic version of the original problem.
  *
  * The choice of determinisitc outcome can be specified in the constructor.
  */
@@ -22,10 +22,15 @@ class DeterministicSolver : public Solver
 {
 private:
 
-    /* Indicates the choice of deterministic outcome (e.g. most-likely, least-likely) */
+    /*
+     * Indicates the choice of deterministic outcome
+     * (e.g. most-likely, least-likely).
+     */
     int choice_;
 
-    /* The heuristic to use */
+    /*
+     * The heuristic to use.
+     */
     mlcore::Heuristic* heuristic_;
 
     mlcore::Problem* problem_;

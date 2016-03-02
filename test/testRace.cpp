@@ -11,6 +11,7 @@
 #include "../include/solvers/LAOStarSolver.h"
 #include "../include/solvers/DeterministicSolver.h"
 
+#include "../include/util/flags.h"
 #include "../include/util/general.h"
 #include "../include/util/graph.h"
 
@@ -20,42 +21,55 @@
 #include "../include/domains/racetrack/RTrackDetHeuristic.h"
 #include "../include/domains/racetrack/RTrackLowResHeuristic.h"
 
+
+using namespace mdplib;
 using namespace mlcore;
 using namespace mlsolvers;
 using namespace std;
 
+
 int main(int argc, char* args[])
 {
+    register_flags(argc, args);
+
+    assert(flag_is_registered_with_value("track"));
+    string trackName = flag_value("track");
+
     mdplib_debug = true;
-    Problem* problem = new RacetrackProblem(args[1]);
+    Problem* problem = new RacetrackProblem(trackName.c_str());
     ((RacetrackProblem*) problem)->pError(0.10);
     ((RacetrackProblem*) problem)->pSlip(0.20);
     ((RacetrackProblem*) problem)->mds(-1);
     problem->generateAll();
 
-    Heuristic* heuristic = new RTrackDetHeuristic(args[1]);
+    cerr << problem->states().size() << " states" << endl;
+
+    Heuristic* heuristic = new RTrackDetHeuristic(trackName.c_str());
 
     problem->setHeuristic(heuristic);
-
-    cerr << problem->states().size() << " states" << endl;
 
     DeterministicSolver det(problem, mlsolvers::det_most_likely, heuristic);
     clock_t startTime = clock();
     double tol = 1.0e-6;
-    if (strcmp(args[2], "wlao") == 0) {
-        LAOStarSolver wlao(problem, tol, 1000000, atof(args[4]));
+    assert(flag_is_registered_with_value("algorithm"));
+    string algorithm = flag_value("algorithm");
+    if (algorithm == "wlao") {
+        double weight = 1.0;
+        if (flag_is_registered_with_value("weight"))
+            weight = stof(flag_value("weight"));
+        LAOStarSolver wlao(problem, tol, 1000000, weight);
         wlao.solve(problem->initialState());
-    } else if (strcmp(args[2], "lao") == 0) {
+    } else if (algorithm == "lao") {
         LAOStarSolver lao(problem, tol, 1000000);
         lao.solve(problem->initialState());
-    } else if (strcmp(args[2], "make[1]: Leaving directory `/home/lpineda/Documents/lrtdp") == 0) {
+    } else if (algorithm == "lrtdp") {
         LRTDPSolver lrtdp(problem, 1000000000, tol);
         lrtdp.solve(problem->initialState());
-    } else if (strcmp(args[2], "vi") == 0) {
+    } else if (algorithm == "vi") {
         VISolver vi(problem, 1000000000, tol);
         vi.solve();
-    } else if (strcmp(args[2], "det") != 0) {
-        cerr << "Unknown algorithm: " << args[2] << endl;
+    } else if (algorithm != "det") {
+        cerr << "Unknown algorithm: " << algorithm << endl;
         return -1;
     }
     clock_t endTime = clock();
@@ -64,7 +78,7 @@ int main(int argc, char* args[])
     double costTime = (double(endTime - startTime) / CLOCKS_PER_SEC) * 4.0;
     cerr << "Planning Time: " <<  costTime / 4.0 << endl;
 
-    if (strcmp(args[2], "vi") == 0) {
+    if (algorithm == "vi") {
         for (State* s : problem->states()) {
             if (s->cost() < heuristic->cost(s)) {
                 cerr << "Error: " << s << " " << s->cost() <<
@@ -73,26 +87,37 @@ int main(int argc, char* args[])
         }
     }
 
-    int nsims = argc > 3 ? atoi(args[3]) : 10000;
-    int verbosity = argc > 4 ? atoi(args[4]) : 0;
+    int nsims = 10000;
+    if (flag_is_registered_with_value("n"))
+        nsims = stoi(flag_value("n"));
+    int verbosity = 0;
+    if (flag_is_registered_with_value("v"))
+        verbosity = stoi(flag_value("v"));
+
     double expectedCost = 0.0;
     for (int i = 0; i < nsims; i++) {
+        if (verbosity >= 10) {
+            cerr << "Starting simulation " << i << endl;
+        }
         State* tmp = problem->initialState();
-        if (verbosity > 100) {
+        if (verbosity >= 100) {
             cerr << " ********* Simulation Starts ********* " << endl;
             cerr << tmp << " ";
         }
         while (!problem->goal(tmp)) {
-            Action* a;
-            if (strcmp(args[2], "det") == 0) {
+            Action* a = tmp->bestAction();
+//            if (algorithm == "det") {
+            if (a == nullptr) {
+                assert(algorithm == "det");
                 startTime = clock();
                 a = det.solve(tmp);
                 endTime = clock();
                 costTime +=
                     (double(endTime - startTime) / CLOCKS_PER_SEC) * 4.0;
-            } else {
-                a = greedyAction(problem, tmp);
             }
+//            else {
+//                a = greedyAction(problem, tmp);
+//            }
             expectedCost += problem->cost(tmp, a);
             tmp = randomSuccessor(problem, tmp, a);
             if (verbosity > 100) {

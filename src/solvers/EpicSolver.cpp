@@ -1,3 +1,4 @@
+#include <ctime>
 #include <list>
 #include <utility>
 
@@ -11,6 +12,37 @@ using namespace mlcore;
 
 namespace mlsolvers
 {
+
+
+double
+EpicSolver::computeProbabilityGoalMonteCarlo(Problem* problem, State* start)
+{
+    State* currentState = nullptr;
+    int numSims = 1000;
+    int countSuccesses = 0;
+    for (int i = 0; i < numSims; i++) {
+        int steps = 0;
+        bool goalSeen = false;
+        currentState = start;
+        while (steps++ < mdplib::dead_end_cost) {
+            if (problem->goal(currentState)) {
+                goalSeen = true;
+                break;
+            }
+            if (currentState->bestAction() == nullptr) {
+                break;
+            }
+            currentState = randomSuccessor(problem,
+                                           currentState,
+                                           currentState->bestAction());
+        }
+
+        if (goalSeen)
+            countSuccesses++;
+    }
+    return double(countSuccesses) / numSims;
+}
+
 
 StateDoubleMap
 EpicSolver::computeProbabilityTerminals(Problem* problem,
@@ -56,7 +88,6 @@ EpicSolver::computeProbabilityTerminals(Problem* problem,
         }
         if (maxDiff < 0.01)
             break;
-                                                                                dprint2(maxDiff, visited.size());
         swap(previousProbabilities, nextProbabilities);
         nextProbabilities->clear();
         visited.clear();
@@ -80,27 +111,45 @@ void EpicSolver::trial(State* start)
             randomSuccessor(problem_, currentState, currentState->bestAction());
     }
 
-    WrapperProblem* wrapper = new WrapperProblem(problem_);
-    StateSet reachableStates, goalTargets;
-    wrapper->overrideStates(&reachableStates);
-    wrapper->overrideGoals(&goalTargets);
+    visited_.clear();
     while (!visitedStack.empty()) {
         currentState = visitedStack.front();
         visitedStack.pop_front();
-        solveDepthLimited(currentState, wrapper);
+        expandDepthLimited(currentState, 0);
     }
-                                                                                StateDoubleMap probabilitiesMap =
-                                                                                    computeProbabilityTerminals(problem_, start, *wrapper->overrideGoals());
-                                                                                wrapper->overrideGoals(nullptr);
-                                                                                dprint2("size", probabilitiesMap.size());
-                                                                                for (auto const & probabilityEntry : probabilitiesMap) {
-                                                                                    if (wrapper->goal(probabilityEntry.first)) {
-                                                                                        dprint2("prob", probabilityEntry.second);
-                                                                                    }
-                                                                                }
-                                                                                dprint1("done trial! -------- ");
-    wrapper->cleanup();
-    delete wrapper;
+
+//    WrapperProblem* wrapper = new WrapperProblem(problem_);
+//    StateSet reachableStates, goalTargets;
+//    wrapper->overrideStates(&reachableStates);
+//    wrapper->overrideGoals(&goalTargets);
+//    while (!visitedStack.empty()) {
+//        currentState = visitedStack.front();
+//        visitedStack.pop_front();
+//        solveDepthLimited(currentState, wrapper);
+//    }
+
+                                                                                double probGoal = computeProbabilityGoalMonteCarlo(problem_, start);
+                                                                                dprint2("prob", probGoal);
+
+//    wrapper->cleanup();
+//    delete wrapper;
+}
+
+
+void EpicSolver::expandDepthLimited(State* state, int depth) {
+    if (!visited_.insert(state).second ||
+            state->deadEnd() ||
+            problem_->goal(state))
+        return;
+    if (depth == 0) {
+        bellmanUpdate(problem_, state);
+        return;
+    }
+    Action* action = greedyAction(problem_, state);
+    for (auto const & successors : problem_->transition(state, action)) {
+        expandDepthLimited(successors.su_state, depth + 1);
+    }
+    bellmanUpdate(problem_, state);
 }
 
 
@@ -133,7 +182,9 @@ void EpicSolver::solveDepthLimited(State* state, WrapperProblem* wrapper)
     // wrapper->overrideGoals_transition to an absorbing state
     // with a cost equal to their estimated cost so far.
     wrapper->overrideGoals()->insert(tipStates.begin(), tipStates.end());
-    viSolver.solve();
+//    viSolver.solve();
+
+                                                                                bellmanUpdate(wrapper, state);
 
     // And finally we add to the set of goals all states that were
     // solved during this iteration.
@@ -144,8 +195,12 @@ void EpicSolver::solveDepthLimited(State* state, WrapperProblem* wrapper)
 
 Action* EpicSolver::solve(State* start)
 {
-    for (int i = 0; i < 10; i++)
+//                                                                                clock_t startTime = clock();
+    for (int i = 0; i < 100; i++) {
         trial(start);
+//                                                                                double elapsed = double(clock() - startTime) / CLOCKS_PER_SEC;
+//                                                                                dprint1(elapsed);
+    }
     return start->bestAction();
 }
 

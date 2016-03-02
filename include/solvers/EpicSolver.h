@@ -33,8 +33,18 @@ private:
      */
     int horizon_ = 3;
 
+    double
+    computeProbabilityGoalMonteCarlo(mlcore::Problem* problem,
+                                     mlcore::State* start);
+
+
+    mlcore::StateSet visited_;
+
+    void expandDepthLimited(mlcore::State* state, int depth);
+
 public:
-    EpicSolver(mlcore::Problem* problem) : problem_(problem) { }
+    EpicSolver(mlcore::Problem* problem, int horizon) :
+        problem_(problem), horizon_(horizon) { }
 
     virtual ~EpicSolver() { }
 

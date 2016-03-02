@@ -32,7 +32,8 @@ int main(int argc, char* args[])
         new GridWorldProblem(flag_value("problem").c_str(), &goals, 1.0);
 
     GridWorldState* gws = (GridWorldState *) problem->initialState();
-    Heuristic* heuristic = new GWManhattanHeuristic((GridWorldProblem*) problem);
+    Heuristic* heuristic =
+        new GWManhattanHeuristic((GridWorldProblem*) problem);
     problem->setHeuristic(heuristic);
 
     assert(flag_is_registered_with_value("algo"));
@@ -44,7 +45,7 @@ int main(int argc, char* args[])
         wlao.solve(problem->initialState());
     } else if (algo == "lao") {
         LAOStarSolver lao(problem, tol, 1000000);
-//        lao.solve(problem->initialState());
+        lao.solve(problem->initialState());
     } else if (algo == "lrtdp") {
         LRTDPSolver lrtdp(problem, 1000000000, tol);
         lrtdp.solve(problem->initialState());
@@ -52,55 +53,20 @@ int main(int argc, char* args[])
         problem->generateAll();
         VISolver vi(problem, 1000000000, tol);
         vi.solve();
+    } else if (algo == "epic") {
+      int horizon = 0;
+      if (flag_is_registered_with_value("horizon"))
+          horizon = stoi(flag_value("horizon"));
+      EpicSolver epic(problem, horizon);
+      epic.solve(problem->initialState());
     }
     clock_t endTime = clock();
 
     StateSet states = problem->states();
     cout << problem->states().size() << endl;
     cout << problem->initialState()->cost() << endl;
-    cout << double(endTime - startTime) / CLOCKS_PER_SEC << endl;
-
-
-    ////////////////////////// TESTING EPIC ///////////////////////////////
-    StateSet reachableStates;
-    StateSet tipStates;
-    bool check = false;
-    while (check == false) {
-        check = getReachableStates(problem, reachableStates, tipStates, 1);
-        dprint2(reachableStates.size(), tipStates.size());
-    }
-
-    Problem* problem2 =
-        new GridWorldProblem(flag_value("problem").c_str(), &goals, 1.0);
-    WrapperProblem* wrapper = new WrapperProblem(problem2);
-//    wrapper->overrideGoals(&tipStates);
-    EpicSolver epic(wrapper);
-    LAOStarSolver lao2(wrapper);
-    startTime = clock();
-//    lao2.solve(wrapper->initialState());
-    endTime = clock();
-    cout << "solving within envelope " <<
-        wrapper->initialState()->cost() << " " <<
-        "time " << double(endTime - startTime) / CLOCKS_PER_SEC << endl;
-
-    // increase the envelope by one.
-//    getReachableStates(problem, reachableStates, tipStates, 1);
-//    StateDoubleMap probTerminals =
-//        EpicSolver::computeProbabilityTerminals(wrapper,
-////                                              wrapper->initialState(),
-//                                                tipStates);
-//    for (auto const & stateProbPair : probTerminals) {
-//        if (problem->goal(stateProbPair.first))
-//            dprint2("probability goal", stateProbPair.second);
-//    }
-
-                                                                                dprint2("initial", wrapper->initialState());
-    epic.solve(wrapper->initialState());
-
+    cout << "solved in " << double(endTime - startTime) / CLOCKS_PER_SEC << endl;
 
     delete heuristic;
     delete problem;
-    wrapper->cleanup();
-    delete wrapper;
-    delete problem2;
 }
