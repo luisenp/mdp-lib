@@ -15,7 +15,7 @@ namespace mlsolvers
 StateDoubleMap
 EpicSolver::computeProbabilityTerminals(Problem* problem,
                                         State* start,
-                                        StateSet& terminals)
+                                        StateSet& envelope)
 {
     StateSet visited;
     StateDoubleMap sdMap1, sdMap2;
@@ -32,7 +32,7 @@ EpicSolver::computeProbabilityTerminals(Problem* problem,
             queue.pop_back();
             if (!visited.insert(currentState).second)
                 continue;
-            if (terminals.count(currentState) > 0 ||
+            if (envelope.count(currentState) == 0 ||
                     problem->goal(currentState) ||
                     currentState->deadEnd()) {
                 (*nextProbabilities)[currentState] +=
@@ -41,7 +41,7 @@ EpicSolver::computeProbabilityTerminals(Problem* problem,
             }
             for (auto const & successor :
                     problem->transition(currentState,
-                                         currentState->bestAction())) {
+                                        currentState->bestAction())) {
                 (*nextProbabilities)[successor.su_state] +=
                     (*previousProbabilities)[currentState] * successor.su_prob;
                 queue.push_front(successor.su_state);
@@ -54,8 +54,9 @@ EpicSolver::computeProbabilityTerminals(Problem* problem,
                               (*previousProbabilities)[s]));
 
         }
-        if (maxDiff < mdplib::epsilon)
+        if (maxDiff < 0.01)
             break;
+                                                                                dprint2(maxDiff, visited.size());
         swap(previousProbabilities, nextProbabilities);
         nextProbabilities->clear();
         visited.clear();
@@ -64,9 +65,9 @@ EpicSolver::computeProbabilityTerminals(Problem* problem,
 }
 
 
-void EpicSolver::trial(State* state)
+void EpicSolver::trial(State* start)
 {
-    State* currentState = state;
+    State* currentState = start;
     list<State*> visitedStack;
     while (true) {
         if (problem_->goal(currentState))
@@ -88,6 +89,16 @@ void EpicSolver::trial(State* state)
         visitedStack.pop_front();
         solveDepthLimited(currentState, wrapper);
     }
+                                                                                StateDoubleMap probabilitiesMap =
+                                                                                    computeProbabilityTerminals(problem_, start, *wrapper->overrideGoals());
+                                                                                wrapper->overrideGoals(nullptr);
+                                                                                dprint2("size", probabilitiesMap.size());
+                                                                                for (auto const & probabilityEntry : probabilitiesMap) {
+                                                                                    if (wrapper->goal(probabilityEntry.first)) {
+                                                                                        dprint2("prob", probabilityEntry.second);
+                                                                                    }
+                                                                                }
+                                                                                dprint1("done trial! -------- ");
     wrapper->cleanup();
     delete wrapper;
 }
@@ -133,7 +144,8 @@ void EpicSolver::solveDepthLimited(State* state, WrapperProblem* wrapper)
 
 Action* EpicSolver::solve(State* start)
 {
-    trial(start);
+    for (int i = 0; i < 10; i++)
+        trial(start);
     return start->bestAction();
 }
 

@@ -41,22 +41,18 @@ public:
     virtual mlcore::Action* solve(mlcore::State* s0);
 
     /**
-     * Computes the probability of reaching the given set of terminal states,
-     * starting at the given initial state, using the greedy policy for the
-     * states in the problem.
-     *
-     * Goals and dead-ends will be also be included in the set of terminals,
-     * even if not present in the given set.
+     * Computes the probability of reaching states outside a set of
+     * envelope states, starting at the given initial state, using
+     * the greedy policy for the states in the problem.
      *
      * @param start The initial state.
-     * @param terminals The set of terminal states whose probability of
-     *                 reaching will be computed.
+     * @param envelope A set of states.
      * @return A map from state to doubles storing the computed probabilities.
      */
     static mlcore::StateDoubleMap
     computeProbabilityTerminals(mlcore::Problem* problem,
                                 mlcore::State* start,
-                                mlcore::StateSet& terminals);
+                                mlcore::StateSet& envelope);
 
 };
 
