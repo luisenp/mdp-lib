@@ -70,7 +70,10 @@ int main(int argc, char* args[])
         VISolver vi(problem, 1000000000, tol);
         vi.solve();
     } else if (algorithm == "epic") {
-        EpicSolver epic(problem, 3);
+        int horizon = 0;
+        if (flag_is_registered_with_value("horizon"))
+            horizon = stoi(flag_value("horizon"));
+        EpicSolver epic(problem, horizon);
         epic.solve(problem->initialState());
     } else if (algorithm != "det") {
         cerr << "Unknown algorithm: " << algorithm << endl;

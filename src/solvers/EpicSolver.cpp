@@ -115,7 +115,7 @@ void EpicSolver::trial(State* start)
     while (!visitedStack.empty()) {
         currentState = visitedStack.front();
         visitedStack.pop_front();
-        expandDepthLimited(currentState, 0);
+        expandDepthLimited(currentState, horizon_);
     }
 
 //    WrapperProblem* wrapper = new WrapperProblem(problem_);
@@ -147,7 +147,7 @@ void EpicSolver::expandDepthLimited(State* state, int depth) {
     }
     Action* action = greedyAction(problem_, state);
     for (auto const & successors : problem_->transition(state, action)) {
-        expandDepthLimited(successors.su_state, depth + 1);
+        expandDepthLimited(successors.su_state, depth - 1);
     }
     bellmanUpdate(problem_, state);
 }
