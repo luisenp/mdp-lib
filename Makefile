@@ -2,7 +2,6 @@
 #                                VARIABLES                              #
 #########################################################################
 
-
 # Compilation flags and variables
 CC = g++
 CFLAGS = -std=c++11 -g -DATOM_STATES -pthread
