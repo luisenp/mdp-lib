@@ -13,17 +13,18 @@
 
 namespace rtrack
 {
-	const char wall = 'X';
-	const char goal = 'G';
-	const char start = 'S';
-	const char blank = ' ';
-	const char error = 'o';
+    const char wall = 'X';
+    const char goal = 'G';
+    const char start = 'S';
+    const char blank = ' ';
+    const char error = 'o';
+    const char pothole = 'P';
 
     /* Checks if the character is one of the valid track characters */
     inline bool checkValid(char c)
     {
-        char valid[] = {wall, goal, start, blank, error};
-        for (int i = 0; i < 5; i++)
+        char valid[] = {wall, goal, start, blank, error, pothole};
+        for (int i = 0; i < 6; i++)
             if (c == valid[i])
                 return true;
         return false;

@@ -115,7 +115,8 @@ void EpicSolver::trial(State* start)
     while (!visitedStack.empty()) {
         currentState = visitedStack.front();
         visitedStack.pop_front();
-        expandDepthLimited(currentState, horizon_);
+        for (int i = 0; i < expansions_; i++)
+            expandDepthLimited(currentState, horizon_);
     }
 
 //    WrapperProblem* wrapper = new WrapperProblem(problem_);
@@ -195,13 +196,48 @@ void EpicSolver::solveDepthLimited(State* state, WrapperProblem* wrapper)
 
 Action* EpicSolver::solve(State* start)
 {
-//                                                                                clock_t startTime = clock();
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < 100; i++) {
         trial(start);
-//                                                                                double elapsed = double(clock() - startTime) / CLOCKS_PER_SEC;
-//                                                                                dprint1(elapsed);
     }
+
+//    StateIntMap indices, low;
+//    list<State*> stateStack;
+//    strongConnect(start, indices, low, stateStack);
+//    dprint2("size bpsg", low.size());
+//    for (auto const & stateLowPair: low) {
+//        if (stateLowPair.second != 0)
+//            dprint2("can't reach goal", stateLowPair.first);
+//    }
+
     return start->bestAction();
+}
+
+
+void EpicSolver::strongConnect(State* state,
+                               StateIntMap& indices,
+                               StateIntMap& low,
+                               list<State*>& stateStack)
+{
+    static int index = 0;
+    indices[state] = index++;
+    stateStack.push_back(state);
+    state->setBits(mdplib::CLOSED);
+
+    if (problem_->goal(state)) {
+        low[state] = 0;
+        return;
+    }
+
+    mlcore::Action* action = greedyAction(problem_, state);
+    for (auto const & successor : problem_->transition(state, action)) {
+        State* next = successor.su_state;
+        if (indices.count(next) == 0) {
+            strongConnect(next, indices, low, stateStack);
+            low[state] = min(low[state], low[next]);
+        } else if (next->checkBits(mdplib::CLOSED)) {
+            low[state] = min(low[state], indices[next]);
+        }
+    }
 }
 
 } //namespace mlsolvers

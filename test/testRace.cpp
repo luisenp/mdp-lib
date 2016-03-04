@@ -43,13 +43,13 @@ int main(int argc, char* args[])
     ((RacetrackProblem*) problem)->mds(-1);
     problem->generateAll();
 
-    cerr << problem->states().size() << " states" << endl;
+//    cerr << problem->states().size() << " states" << endl;
 
     Heuristic* heuristic = new RTrackDetHeuristic(trackName.c_str());
 
     problem->setHeuristic(heuristic);
 
-    DeterministicSolver det(problem, mlsolvers::det_most_likely, heuristic);
+    Solver* solver;
     clock_t startTime = clock();
     double tol = 1.0e-6;
     assert(flag_is_registered_with_value("algorithm"));
@@ -58,33 +58,36 @@ int main(int argc, char* args[])
         double weight = 1.0;
         if (flag_is_registered_with_value("weight"))
             weight = stof(flag_value("weight"));
-        LAOStarSolver wlao(problem, tol, 1000000, weight);
-        wlao.solve(problem->initialState());
+        solver = new LAOStarSolver(problem, tol, 1000000, weight);
     } else if (algorithm == "lao") {
-        LAOStarSolver lao(problem, tol, 1000000);
-        lao.solve(problem->initialState());
+        solver = new LAOStarSolver(problem, tol, 1000000);
     } else if (algorithm == "lrtdp") {
-        LRTDPSolver lrtdp(problem, 1000000000, tol);
-        lrtdp.solve(problem->initialState());
+        solver = new LRTDPSolver(problem, 1000000000, tol);
     } else if (algorithm == "vi") {
-        VISolver vi(problem, 1000000000, tol);
-        vi.solve();
+        solver = new VISolver(problem, 1000000000, tol);
     } else if (algorithm == "epic") {
-        int horizon = 0;
+        int horizon = 0, expansions = 1;
         if (flag_is_registered_with_value("horizon"))
             horizon = stoi(flag_value("horizon"));
-        EpicSolver epic(problem, horizon);
-        epic.solve(problem->initialState());
-    } else if (algorithm != "det") {
+        if (flag_is_registered_with_value("expansions"))
+            horizon = stoi(flag_value("expansions"));
+        solver = new EpicSolver(problem, horizon, expansions);
+    } else if (algorithm == "det") {
+        solver = new DeterministicSolver(problem,
+                                         mlsolvers::det_most_likely,
+                                         heuristic);
+    } else {
         cerr << "Unknown algorithm: " << algorithm << endl;
         return -1;
     }
+    solver->solve(problem->initialState());
     clock_t endTime = clock();
 
     double actionsPerSecond = 4.0;
-    cerr << "Estimated cost " << problem->initialState()->cost() << endl;
     double totalTime = (double(endTime - startTime) / CLOCKS_PER_SEC);
-    cerr << "Planning Time: " <<  totalTime << endl;
+
+//    cerr << "Estimated cost " << problem->initialState()->cost() << endl;
+//    cerr << "Planning Time: " <<  totalTime << endl;
 
     if (algorithm == "vi") {
         for (State* s : problem->states()) {
@@ -104,6 +107,7 @@ int main(int argc, char* args[])
 
     double expectedCost = 0.0;
     double expectedTime = 0.0;
+    StateSet statesSeen;
     for (int i = 0; i < nsims; i++) {
         if (verbosity >= 10) {
             cerr << "Starting simulation " << i << endl;
@@ -114,15 +118,15 @@ int main(int argc, char* args[])
             cerr << tmp << " ";
         }
         while (!problem->goal(tmp)) {
-            Action* a = tmp->bestAction();
-            if (a == nullptr) {
-                if (algorithm != "det" && algorithm != "epic")
-                    dprint1(tmp);
-                startTime = clock();
-                a = det.solve(tmp);
-                endTime = clock();
-                expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
-            }
+            statesSeen.insert(tmp);
+//            Action* a = tmp->bestAction();
+            Action* a = greedyAction(problem, tmp);
+//            if (a == nullptr) {
+//                startTime = clock();
+//                a = solver->solve(tmp);
+//                endTime = clock();
+//                expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
+//            }
             expectedCost += problem->cost(tmp, a);
             tmp = randomSuccessor(problem, tmp, a);
             if (verbosity > 100) {
@@ -136,10 +140,11 @@ int main(int argc, char* args[])
     expectedCost /= nsims;
     expectedTime /= nsims;
 
-    cerr << "Avg. Exec cost " << expectedCost << endl;
-    cerr << "Total time " << totalTime + expectedTime << endl;
+    cerr << "Avg. Exec cost " << expectedCost << " ";
+    cerr << "Total time " << totalTime + expectedTime << " ";
     double expectedCostTime = actionsPerSecond * (totalTime + expectedTime);
-    cerr << "Avg. Total cost " << expectedCost + expectedCostTime << endl;
+    cerr << "Avg. Total cost " << expectedCost + expectedCostTime << " ";
+    cerr << "States seen " << statesSeen.size() << endl;
 
     delete problem;
     delete ((RTrackDetHeuristic*) heuristic);

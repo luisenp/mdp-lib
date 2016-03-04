@@ -57,6 +57,7 @@ RacetrackProblem::RacetrackProblem(const char* filename)
         actions_.push_back(new RacetrackAction(ax, ay));
 }
 
+
 void RacetrackProblem::printTrack(std::ostream& os)
 {
     for (int i = 0; i < track_.size(); i++) {
@@ -67,12 +68,14 @@ void RacetrackProblem::printTrack(std::ostream& os)
     }
 }
 
+
 bool RacetrackProblem::goal(mlcore::State* s) const
 {
     RacetrackState* rts = static_cast<RacetrackState*>(s);
     std::pair<int, int> pos(rts->x(), rts->y());
     return goals_.find(pos) != goals_.end();
 }
+
 
 std::list<mlcore::Successor>
 RacetrackProblem::transition(mlcore::State* s, mlcore::Action* a)
@@ -108,7 +111,8 @@ RacetrackProblem::transition(mlcore::State* s, mlcore::Action* a)
     }
 
     /* At walls the car can deterministically move to the track again */
-    if (track_[rts->x()][rts->y()] == rtrack::wall) {
+    if (track_[rts->x()][rts->y()] == rtrack::wall ||
+            track_[rts->x()][rts->y()] == rtrack::pothole) {
         int x = rts->x(), y = rts->y();
         int ax = rta->ax(), ay = rta->ay();
         mlcore::State* next =
@@ -168,6 +172,7 @@ RacetrackProblem::transition(mlcore::State* s, mlcore::Action* a)
     return allSuccessors->at(idAction);
 }
 
+
 double RacetrackProblem::cost(mlcore::State* s, mlcore::Action* a) const
 {
     if (s == s0 || s == absorbing_ || goal(s))
@@ -177,8 +182,12 @@ double RacetrackProblem::cost(mlcore::State* s, mlcore::Action* a) const
     if (track_[rts->x()][rts->y()] == rtrack::wall)
         return 10.0;
 
+    if (track_[rts->x()][rts->y()] == rtrack::pothole)
+        return 100.0;
+
     return 1.0;
 }
+
 
 bool RacetrackProblem::applicable(mlcore::State* s, mlcore::Action* a) const
 {
@@ -196,9 +205,13 @@ bool RacetrackProblem::applicable(mlcore::State* s, mlcore::Action* a) const
     if (track_[rts->x()][rts->y()] == rtrack::wall &&
             track_[x][y] == rtrack::wall)
         return false;
+    if (track_[rts->x()][rts->y()] == rtrack::pothole &&
+            track_[x][y] == rtrack::pothole)
+    return false;
 
     return true;
 }
+
 
 RacetrackState*
 RacetrackProblem::resultingState(RacetrackState* rts, int ax, int ay)
@@ -214,7 +227,8 @@ RacetrackProblem::resultingState(RacetrackState* rts, int ax, int ay)
     for (int d = 0; d <= m; d++) {
         int x2 = round(x1 + (double) (d * vx) / m);
         int y2 = round(y1 + (double) (d * vy) / m);
-        if (track_[x2][y2] == rtrack::wall) {
+        if (track_[x2][y2] == rtrack::wall ||
+                track_[x2][y2] == rtrack::pothole) {
             return new RacetrackState(x2, y2, 0, 0, this);
         }
         if (track_[x2][y2] == rtrack::goal) {

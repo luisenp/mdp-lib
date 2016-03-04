@@ -33,6 +33,12 @@ private:
      */
     int horizon_ = 3;
 
+
+    /*
+     * Number of depth-limited expansions to do for each state.
+     */
+    int expansions_ = 1;
+
     double
     computeProbabilityGoalMonteCarlo(mlcore::Problem* problem,
                                      mlcore::State* start);
@@ -42,9 +48,14 @@ private:
 
     void expandDepthLimited(mlcore::State* state, int depth);
 
+    void strongConnect(mlcore::State* state,
+                       mlcore::StateIntMap& indices,
+                       mlcore::StateIntMap& low,
+                       std::list<mlcore::State*>& stateStack);
+
 public:
-    EpicSolver(mlcore::Problem* problem, int horizon) :
-        problem_(problem), horizon_(horizon) { }
+    EpicSolver(mlcore::Problem* problem, int horizon = 2, int expansions = 1) :
+        problem_(problem), horizon_(horizon), expansions_(expansions) { }
 
     virtual ~EpicSolver() { }
 
