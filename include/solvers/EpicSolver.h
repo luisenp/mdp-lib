@@ -33,11 +33,26 @@ private:
      */
     int horizon_ = 3;
 
-
     /*
      * Number of depth-limited expansions to do for each state.
      */
     int expansions_ = 1;
+
+    /*
+     * Number of trials to perform.
+     */
+    int trials_ = 1000;
+
+    /*
+     * Index used for the strongly connected component code.
+     */
+    int index_ = 0;
+
+    /*
+     * Store the states that have a non-zero probability of reaching a goal
+     * using the greedy policy on the current values.
+     */
+    mlcore::StateSet statesCanReachGoal;
 
     double
     computeProbabilityGoalMonteCarlo(mlcore::Problem* problem,
@@ -48,18 +63,32 @@ private:
 
     void expandDepthLimited(mlcore::State* state, int depth);
 
-    void strongConnect(mlcore::State* state,
+    bool strongConnect(mlcore::State* state,
                        mlcore::StateIntMap& indices,
                        mlcore::StateIntMap& low,
                        std::list<mlcore::State*>& stateStack);
 
 public:
-    EpicSolver(mlcore::Problem* problem, int horizon = 2, int expansions = 1) :
-        problem_(problem), horizon_(horizon), expansions_(expansions) { }
+    EpicSolver(mlcore::Problem* problem,
+               int horizon = 2,
+               int expansions = 1,
+               int trials = 1000) :
+        problem_(problem), horizon_(horizon),
+        expansions_(expansions),
+        trials_(trials) { }
 
     virtual ~EpicSolver() { }
 
     virtual mlcore::Action* solve(mlcore::State* s0);
+
+    /**
+     * Returns true if the current greedy policy has a non-zero probability of
+     * reaching the goal from the given state, and false otherwise.
+     */
+    bool canReachGoal(mlcore::State* state)
+    {
+        return (statesCanReachGoal.count(state) != 0);
+    }
 
     /**
      * Computes the probability of reaching states outside a set of

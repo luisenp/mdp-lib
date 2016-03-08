@@ -30,11 +30,12 @@ GridWorldProblem::GridWorldProblem() :
 }
 
 
-GridWorldProblem::GridWorldProblem(
-    const char* filename, PairDoubleMap* goals, double actionCost)
+GridWorldProblem::GridWorldProblem(const char* filename, double actionCost)
 {
     mdplib_debug = true;
     std::ifstream myfile (filename);
+
+    goals_ = new PairDoubleMap();
 
     // Once the file is finished parsing, these will have correct values
     width_ = 0, height_ = 0;
@@ -45,7 +46,7 @@ GridWorldProblem::GridWorldProblem(
                 if (line.at(width_) == 'x') {
                     walls.insert(std::pair<int, int>(width_, height_));
                 } else if (line.at(width_) == 'G') {
-                    goals->insert(
+                    goals_->insert(
                         std::make_pair(
                             std::pair<int,int> (width_, height_), 0.0));
                 } else if (line.at(width_) == 'S') {
@@ -58,8 +59,10 @@ GridWorldProblem::GridWorldProblem(
             height_++;
         }
         myfile.close();
+    } else {
+        std::cerr << "Invalid file " << filename << std::endl;
+        exit(-1);
     }
-    goals_ = goals;
     actionCost_ = actionCost;
     s0 = new GridWorldState(this, x0_, y0_);
     absorbing = new GridWorldState(this, -1, -1);
@@ -73,8 +76,11 @@ GridWorldProblem::GridWorldProblem(
     int width, int height, int x0, int y0,
     PairDoubleMap* goals, double actionCost) :
         width_(width), height_(height), x0_(x0), y0_(y0),
-        goals_(goals), actionCost_(actionCost)
+        actionCost_(actionCost)
 {
+    goals_ = new PairDoubleMap();
+    for (auto const & goalEntry : *goals)
+        (*goals_)[goalEntry.first] = goalEntry.second;
     s0 = new GridWorldState(this, x0_, y0_);
     absorbing = new GridWorldState(this, -1, -1);
     this->addState(s0);
@@ -86,8 +92,11 @@ GridWorldProblem::GridWorldProblem(int width, int height,
                                    int x0, int y0,
                                    PairDoubleMap* goals, mlcore::Heuristic* h)
                                    : width_(width), height_(height),
-                                      x0_(x0), y0_(y0), goals_(goals)
+                                     x0_(x0), y0_(y0)
 {
+    goals_ = new PairDoubleMap();
+    for (auto const & goalEntry : *goals)
+        (*goals_)[goalEntry.first] = goalEntry.second;
     s0 = new GridWorldState(this, x0_, y0_);
     absorbing = new GridWorldState(this, -1, -1);
     this->addState(s0);

@@ -111,12 +111,12 @@ void EpicSolver::trial(State* start)
             randomSuccessor(problem_, currentState, currentState->bestAction());
     }
 
-    visited_.clear();
     while (!visitedStack.empty()) {
         currentState = visitedStack.front();
         visitedStack.pop_front();
-        for (int i = 0; i < expansions_; i++)
+        for (int i = 0; i < expansions_; i++) {
             expandDepthLimited(currentState, horizon_);
+        }
     }
 
 //    WrapperProblem* wrapper = new WrapperProblem(problem_);
@@ -138,9 +138,8 @@ void EpicSolver::trial(State* start)
 
 
 void EpicSolver::expandDepthLimited(State* state, int depth) {
-    if (!visited_.insert(state).second ||
-            state->deadEnd() ||
-            problem_->goal(state))
+    visited_.insert(state);
+    if (state->deadEnd() || problem_->goal(state))
         return;
     if (depth == 0) {
         bellmanUpdate(problem_, state);
@@ -196,48 +195,63 @@ void EpicSolver::solveDepthLimited(State* state, WrapperProblem* wrapper)
 
 Action* EpicSolver::solve(State* start)
 {
-    for (int i = 0; i < 100; i++) {
+    visited_.clear();
+    for (int i = 0; i < trials_; i++) {
         trial(start);
     }
 
-//    StateIntMap indices, low;
-//    list<State*> stateStack;
-//    strongConnect(start, indices, low, stateStack);
-//    dprint2("size bpsg", low.size());
-//    for (auto const & stateLowPair: low) {
-//        if (stateLowPair.second != 0)
-//            dprint2("can't reach goal", stateLowPair.first);
-//    }
-
+    StateIntMap indices, low;
+    list<State*> stateStack;
+    index_ = 0;
+    statesCanReachGoal.clear();
+    strongConnect(start, indices, low, stateStack);
     return start->bestAction();
 }
 
 
-void EpicSolver::strongConnect(State* state,
+bool EpicSolver::strongConnect(State* state,
                                StateIntMap& indices,
                                StateIntMap& low,
                                list<State*>& stateStack)
 {
-    static int index = 0;
-    indices[state] = index++;
+    indices[state] = index_;
+    low[state] = index_++;
     stateStack.push_back(state);
     state->setBits(mdplib::CLOSED);
 
+    // Only consider states observed during the expansions.
+    if (visited_.count(state) == 0)
+        return false;
+
     if (problem_->goal(state)) {
         low[state] = 0;
-        return;
+        return true;
     }
 
+    bool goalSeen = false;
     mlcore::Action* action = greedyAction(problem_, state);
     for (auto const & successor : problem_->transition(state, action)) {
         State* next = successor.su_state;
         if (indices.count(next) == 0) {
-            strongConnect(next, indices, low, stateStack);
+            goalSeen |= strongConnect(next, indices, low, stateStack);
             low[state] = min(low[state], low[next]);
         } else if (next->checkBits(mdplib::CLOSED)) {
             low[state] = min(low[state], indices[next]);
         }
     }
+
+    if (low[state] == indices[state]) {
+        while (true) {
+            State* cur = stateStack.back();
+            stateStack.pop_back();
+            cur->clearBits(mdplib::CLOSED);
+            if (goalSeen)
+                statesCanReachGoal.insert(cur);
+            if (cur == state)
+                break;
+        }
+    }
+    return goalSeen;
 }
 
 } //namespace mlsolvers

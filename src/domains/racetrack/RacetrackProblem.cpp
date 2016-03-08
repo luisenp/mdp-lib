@@ -45,6 +45,9 @@ RacetrackProblem::RacetrackProblem(const char* filename)
             y--;
         }
         myfile.close();
+    } else {
+        std::cerr << "Invalid file " << filename << std::endl;
+        exit(-1);
     }
 
     s0 = new RacetrackState(-1, -1, -1, -1, this);

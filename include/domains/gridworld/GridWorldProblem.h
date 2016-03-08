@@ -60,11 +60,10 @@ public:
 
     /**
      * Constructs a grid world from a string file representation
-     * stored at the given filename. The constructor receives a
-     * PairDoubleMap to store the goals, and the cost of the actions.
+     * stored at the given filename. The constructor also receives
+     * the cost of the actions.
      */
-    GridWorldProblem(
-        const char* filename, PairDoubleMap* goals, double actionCost = 1.0);
+    GridWorldProblem(const char* filename, double actionCost = 1.0);
 
     /**
      * Constructs a grid world with the specified width, height,
@@ -80,6 +79,11 @@ public:
      */
     GridWorldProblem(int width, int height, int x0, int y0,
                      PairDoubleMap* goals, mlcore::Heuristic* h);
+
+    ~GridWorldProblem()
+    {
+        delete goals_;
+    }
 
     /**
      * Overrides method from Problem.

@@ -77,7 +77,7 @@ ALL_H = $(I_H) $(SOLV_H) $(MOSOLV_H) $(DOM_H) $(UTIL_H)
 ALL_CPP = $(DOM_CPP) $(SOLV_CPP) $(MOSOLV_CPP) $(UTIL_CPP)
 
 # Libraries
-LIBS = lib/libmdp.a -Llib
+LIBS = lib/libmdp.a lib/libmdp_domains.a -Llib
 LIBS_GUROBI = $(LIBS) -lgurobi60 -Llib
 
 #########################################################################
@@ -214,12 +214,15 @@ b2t: $(BT_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(BT_H) libmdp
 	$(CC) $(CFLAGS) -I$(ID_BT) $(INCLUDE_CORE) -o testb2t.out $(TD)/testB2T.cpp $(TD)/*.o $(LIBS)
 	rm test/*.o
 
-domains: $(OD_DOMAINS)/libmdp_domains.a
-$(OD_DOMAINS)/libmdp_domains.a: lib/libmdp.a $(DOM_H) $(DOM_CPP)
+domains: lib/libmdp_domains.a
+lib/libmdp_domains.a: lib/libmdp.a $(DOM_H) $(DOM_CPP)
 	$(CC) $(CFLAGS) $(INCLUDE) -c $(DOM_CPP)
 	mkdir -p $(OD_DOMAINS)
 	mv *.o $(OD_DOMAINS)
-	ar rvs $(OD_DOMAINS)/libmdp_domains.a $(OD_DOMAINS)/*.o
+	ar rvs lib/libmdp_domains.a $(OD_DOMAINS)/*.o
+
+testsolver.out: lib/libmdp.a domains
+	$(CC) $(CFLAGS) $(INCLUDE) -o testsolver.out $(TD)/testSolver.cpp $(LIBS)
 
 # Compiles the mini-gpt library
 minigpt: lib/libminigpt.a
