@@ -66,7 +66,8 @@ private:
     bool strongConnect(mlcore::State* state,
                        mlcore::StateIntMap& indices,
                        mlcore::StateIntMap& low,
-                       std::list<mlcore::State*>& stateStack);
+                       std::list<mlcore::State*>& stateStack,
+                       double& maxResidual);
 
 public:
     EpicSolver(mlcore::Problem* problem,

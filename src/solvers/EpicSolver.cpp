@@ -196,15 +196,25 @@ void EpicSolver::solveDepthLimited(State* state, WrapperProblem* wrapper)
 Action* EpicSolver::solve(State* start)
 {
     visited_.clear();
+                                                                                double total_time = 0.0;
+    StateIntMap indices, low;
+                                                                                double maxResidual = 0.0;
     for (int i = 0; i < trials_; i++) {
         trial(start);
+        list<State*> stateStack;
+        index_ = 0;
+        statesCanReachGoal.clear();
+        indices.clear();
+        low.clear();
+                                                                                clock_t startTime = clock();
+                                                                                maxResidual = 0.0;
+        bool goalSeen = strongConnect(start, indices, low, stateStack, maxResidual);
+                                                                                total_time += (clock() - startTime) / CLOCKS_PER_SEC;
+                                                                                dprint4("residual", maxResidual,"goal", goalSeen);
     }
+                                                                                dprint3("size", statesCanReachGoal.size(), low.size());
+                                                                                dprint2("time", total_time);
 
-    StateIntMap indices, low;
-    list<State*> stateStack;
-    index_ = 0;
-    statesCanReachGoal.clear();
-    strongConnect(start, indices, low, stateStack);
     return start->bestAction();
 }
 
@@ -212,16 +222,16 @@ Action* EpicSolver::solve(State* start)
 bool EpicSolver::strongConnect(State* state,
                                StateIntMap& indices,
                                StateIntMap& low,
-                               list<State*>& stateStack)
+                               list<State*>& stateStack,
+                               double& maxResidual)
 {
     indices[state] = index_;
     low[state] = index_++;
-    stateStack.push_back(state);
-    state->setBits(mdplib::CLOSED);
-
-    // Only consider states observed during the expansions.
+    // Only states observed during the trials should be added to the stack.
     if (visited_.count(state) == 0)
         return false;
+    stateStack.push_back(state);
+    state->setBits(mdplib::CLOSED);
 
     if (problem_->goal(state)) {
         low[state] = 0;
@@ -233,7 +243,8 @@ bool EpicSolver::strongConnect(State* state,
     for (auto const & successor : problem_->transition(state, action)) {
         State* next = successor.su_state;
         if (indices.count(next) == 0) {
-            goalSeen |= strongConnect(next, indices, low, stateStack);
+            goalSeen |=
+                strongConnect(next, indices, low, stateStack, maxResidual);
             low[state] = min(low[state], low[next]);
         } else if (next->checkBits(mdplib::CLOSED)) {
             low[state] = min(low[state], indices[next]);
@@ -245,8 +256,15 @@ bool EpicSolver::strongConnect(State* state,
             State* cur = stateStack.back();
             stateStack.pop_back();
             cur->clearBits(mdplib::CLOSED);
-            if (goalSeen)
+            assert(visited_.count(cur) != 0);
+            // This is the connected component of the start state.
+            if (low[state] == 0 && goalSeen) {
                 statesCanReachGoal.insert(cur);
+                if (residual(problem_, cur) > maxResidual) {
+                    dprint3("   residual", state, residual(problem_, cur));
+                }
+                maxResidual = max(maxResidual, residual(problem_, cur));
+            }
             if (cur == state)
                 break;
         }

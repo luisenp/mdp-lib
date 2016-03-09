@@ -162,6 +162,7 @@ int main(int argc, char* args[])
             cerr << " ********* Simulation Starts ********* " << endl;
             cerr << tmp << " ";
         }
+        double costTrial = 0.0;
         while (!problem->goal(tmp)) {
             statesSeen.insert(tmp);
             Action* a;
@@ -183,13 +184,18 @@ int main(int argc, char* args[])
                 }
                 a = greedyAction(problem, tmp);
             }
-            expectedCost += problem->cost(tmp, a);
+            costTrial += problem->cost(tmp, a);
+            if (costTrial >= mdplib::dead_end_cost) {
+                                                                                exit(-1);
+                break;
+            }
             tmp = randomSuccessor(problem, tmp, a);
             if (verbosity >= 1000) {
                 cerr << a << " " << endl;
                 cerr << tmp << " ";
             }
         }
+        expectedCost += costTrial;
         if (verbosity >= 100)
             cerr << endl;
     }
