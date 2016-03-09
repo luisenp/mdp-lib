@@ -54,6 +54,9 @@ private:
      */
     mlcore::StateSet statesCanReachGoal;
 
+                                                                                mlcore::StateIntMap seenTrial;
+                                                                                int trialIndex_;
+
     double
     computeProbabilityGoalMonteCarlo(mlcore::Problem* problem,
                                      mlcore::State* start);
