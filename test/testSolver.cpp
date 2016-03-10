@@ -75,7 +75,7 @@ void setupProblem()
 
 void initSolver()
 {
-    double tol = 1.0e-6;
+    double tol = 1.0e-3;
     assert(flag_is_registered_with_value("algorithm"));
     string algorithm = flag_value("algorithm");
     if (algorithm == "wlao") {
