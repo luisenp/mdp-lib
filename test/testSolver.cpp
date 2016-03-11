@@ -94,7 +94,7 @@ void initSolver()
         if (flag_is_registered_with_value("horizon"))
             horizon = stoi(flag_value("horizon"));
         if (flag_is_registered_with_value("expansions"))
-            horizon = stoi(flag_value("expansions"));
+            expansions = stoi(flag_value("expansions"));
         if (flag_is_registered_with_value("trials"))
             trials = stoi(flag_value("trials"));
         solver = new EpicSolver(problem, horizon, expansions, trials);

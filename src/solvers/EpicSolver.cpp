@@ -90,20 +90,27 @@ Action* EpicSolver::solve(State* start)
         low.clear();
                                                                                 clock_t startTime = clock();
                                                                                 maxResidual = 0.0;
+                                                                                mdplib_debug = false;
         bool goalSeen = strongConnect(start, indices, low, stateStack, maxResidual);
-                                                                                prob = computeProbabilityGoalMonteCarlo(problem_, start);
+//        prob = computeProbabilityGoalMonteCarlo(problem_, start);
+                                                                                mdplib_debug = true;
                                                                                 total_time += double(clock() - startTime) / CLOCKS_PER_SEC;
-//                                                                                dprint4("residual", maxResidual,"goal", goalSeen);
-//                                                                                dprint2("prob", prob);
+//                                                                                dprint4("res,goal,prob =", maxResidual, goalSeen, prob);
 
-        if (goalSeen && prob < 0.01)
-            break;
+//        if (goalSeen && prob > 0.90)
+//            break;
     }
-                                                                                if (trialIndex_ >= trials_) {
-                                                                                  dprint1(start);
-                                                                                  dprint4("time", total_time, "trials", trialIndex_);
-                                                                                  dprint4("prob", prob, "residual", maxResidual);
-                                                                                }
+//                                                                                dprint1(start);
+//                                                                                  maxResidual = 0.0;
+//                                                                                  list<State*> stateStack;
+//                                                                                  index_ = 0;
+//                                                                                  statesCanReachGoal.clear();
+//                                                                                  indices.clear();
+//                                                                                  low.clear();
+//                                                                                  strongConnect(start, indices, low, stateStack, maxResidual);
+//                                                                                  computeProbabilityGoalMonteCarlo(problem_, start);
+//                                                                                  dprint4("time", total_time, "trials", trialIndex_);
+//                                                                                  dprint4("prob", prob, "residual", maxResidual);
 
     return start->bestAction();
 }
@@ -132,6 +139,8 @@ bool EpicSolver::strongConnect(State* state,
     mlcore::Action* action = greedyAction(problem_, state);
     for (auto const & successor : problem_->transition(state, action)) {
         State* next = successor.su_state;
+//                                                                                dprint4("    succ", next, "par", state);
+//                                                                                dprint2(action, successor.su_prob);
         if (indices.count(next) == 0) {
             goalSeen |=
                 strongConnect(next, indices, low, stateStack, maxResidual);
@@ -219,8 +228,10 @@ EpicSolver::computeProbabilityGoalMonteCarlo(Problem* problem, State* start)
                 goalSeen = true;
                 break;
             }
-            if (residual(problem, currentState) > 1.0e-3)
+            if (residual(problem, currentState) > 1.0e-3) {
+//                                                                                dprint3("oops", currentState, residual(problem, currentState));
                 break;
+            }
             if (currentState->bestAction() == nullptr) {
                 break;
             }
@@ -232,8 +243,8 @@ EpicSolver::computeProbabilityGoalMonteCarlo(Problem* problem, State* start)
         if (goalSeen)
             countSuccesses++;
 
-                                                                                if (i - countSuccesses > 0.1 * numSims)
-                                                                                    break;
+//                                                                                if (i - countSuccesses > 0.1 * numSims)
+//                                                                                    break;
     }
     return double(countSuccesses) / numSims;
 }
