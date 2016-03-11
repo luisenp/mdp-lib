@@ -86,7 +86,10 @@ void initSolver()
     } else if (algorithm == "lao") {
         solver = new LAOStarSolver(problem, tol, 1000000);
     } else if (algorithm == "lrtdp") {
-        solver = new LRTDPSolver(problem, 1000000000, tol);
+        int trials = 10000000;
+        if (flag_is_registered_with_value("trials"))
+            trials = stoi(flag_value("trials"));
+        solver = new LRTDPSolver(problem, trials, tol);
     } else if (algorithm == "vi") {
         solver = new VISolver(problem, 1000000000, tol);
     } else if (algorithm == "epic") {
