@@ -49,11 +49,11 @@ private:
      /*
       * If true, then the destructor can be called safely.
       */
-      bool clean_ = false;
+      bool clean;
 
 public:
 
-    WrapperProblem(mlcore::Problem* problem) : clean_(false)
+    WrapperProblem(mlcore::Problem* problem) : clean(false)
     {
         dummyState_ = new DummyState();
         absorbing_ = new DummyState();
@@ -65,7 +65,7 @@ public:
     virtual ~WrapperProblem()
     {
         // Method free up must be called before the destructor.
-        assert(clean_);
+        assert(clean);
         // No need to delete dummy because the parent constructor will delete it.
     }
 
@@ -104,7 +104,7 @@ public:
             overrideStates_->insert(dummyState_);
         }
         actions_ = std::list<mlcore::Action*> ();
-        clean_ = true;
+        clean = true;
     }
 
     /**
@@ -159,6 +159,12 @@ public:
     {
         overrideStates_ = newStates;
     }
+
+    /**
+     * Returns the set of states that override the state of the original
+     * problem.
+     */
+    mlcore::StateSet* overrideStates() { return overrideStates_; }
 
     /**
      * Overrides method from Problem.
