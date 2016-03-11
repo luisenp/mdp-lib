@@ -31,6 +31,7 @@ lib/*
 *.lp.*
 experiments/*
 scripts/*.track
+data/ppddl/reduced*
 mdp-lib.layout
 *683*
 *gurobi*
