@@ -5,12 +5,9 @@ namespace mlsolvers
 
 LRTDPSolver::LRTDPSolver(mlcore::Problem* problem,
                          int maxTrials,
-                         double epsilon)
-{
-    problem_ = problem;
-    maxTrials_ = maxTrials;
-    epsilon_ = epsilon;
-}
+                         double epsilon) :
+    problem_(problem), maxTrials_(maxTrials), epsilon_(epsilon)
+{ }
 
 
 void LRTDPSolver::trial(mlcore::State* s)

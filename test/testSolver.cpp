@@ -8,6 +8,7 @@
 #include "../include/solvers/EpicSolver.h"
 #include "../include/solvers/LAOStarSolver.h"
 #include "../include/solvers/LRTDPSolver.h"
+#include "../include/solvers/MLRTDPSolver.h"
 #include "../include/solvers/Solver.h"
 #include "../include/solvers/UCTSolver.h"
 #include "../include/solvers/VISolver.h"
@@ -78,6 +79,15 @@ void initSolver()
     double tol = 1.0e-3;
     assert(flag_is_registered_with_value("algorithm"));
     string algorithm = flag_value("algorithm");
+
+    int horizon = 0, expansions = 1, trials = 1000;
+    if (flag_is_registered_with_value("horizon"))
+        horizon = stoi(flag_value("horizon"));
+    if (flag_is_registered_with_value("expansions"))
+        expansions = stoi(flag_value("expansions"));
+    if (flag_is_registered_with_value("trials"))
+        trials = stoi(flag_value("trials"));
+
     if (algorithm == "wlao") {
         double weight = 1.0;
         if (flag_is_registered_with_value("weight"))
@@ -86,20 +96,12 @@ void initSolver()
     } else if (algorithm == "lao") {
         solver = new LAOStarSolver(problem, tol, 1000000);
     } else if (algorithm == "lrtdp") {
-        int trials = 10000000;
-        if (flag_is_registered_with_value("trials"))
-            trials = stoi(flag_value("trials"));
         solver = new LRTDPSolver(problem, trials, tol);
+    }  else if (algorithm == "mlrtdp") {
+        solver = new MLRTDPSolver(problem, trials, tol, horizon);
     } else if (algorithm == "vi") {
         solver = new VISolver(problem, 1000000000, tol);
     } else if (algorithm == "epic") {
-        int horizon = 0, expansions = 1, trials = 1000;
-        if (flag_is_registered_with_value("horizon"))
-            horizon = stoi(flag_value("horizon"));
-        if (flag_is_registered_with_value("expansions"))
-            expansions = stoi(flag_value("expansions"));
-        if (flag_is_registered_with_value("trials"))
-            trials = stoi(flag_value("trials"));
         solver = new EpicSolver(problem, horizon, expansions, trials);
     } else if (algorithm == "det") {
         solver = new DeterministicSolver(problem,
@@ -163,6 +165,8 @@ int main(int argc, char* args[])
         State* tmp = problem->initialState();
         if (verbosity >= 100) {
             cerr << " ********* Simulation Starts ********* " << endl;
+            cerr << "Estimated cost " <<
+                problem->initialState()->cost() << endl;
             cerr << tmp << " ";
         }
         double costTrial = 0.0;
