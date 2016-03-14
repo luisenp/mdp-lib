@@ -9,7 +9,7 @@
 namespace mlsolvers
 {
     /**
-     * A SSPP solver using the Labeled RTDP algorithm.
+     * A SSP solver using the Labeled RTDP algorithm.
      *
      * See http://www.aaai.org/Papers/ICAPS/2003/ICAPS03-002.pdf
      */

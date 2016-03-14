@@ -1,0 +1,74 @@
+#ifndef MDPLIB_SSIPPSOLVER_H
+#define MDPLIB_SSIPPSOLVER_H
+
+#include "Solver.h"
+
+namespace mlsolvers
+{
+
+enum class SSiPPAlgo {
+    Original,
+    Labeled
+};
+
+/**
+ * An implementation of the Short-Sighted Probabilistic Planner
+ * described in (AI'14).
+ *
+ * http://felipe.trevizan.org/papers/trevizan14:depth.pdf
+ */
+class SSiPPSolver : public Solver
+{
+private:
+    /* The problem to solve. */
+    mlcore::Problem* problem_;
+
+    /* The error tolerance. */
+    double epsilon_;
+
+    /* The horizon for the Short-sighted SSP. */
+    int t_;
+
+    /* The SSiPP algorithm version to use. */
+    SSiPPAlgo algorithm_;
+
+    /*
+     * Solves using the original depth-based SSiPP solver from ICAPS'12.
+     * http://www.cs.cmu.edu/~mmv/papers/12icaps-TrevizanVeloso.pdf
+     */
+    mlcore::Action* solveOriginal(mlcore::State* s0);
+
+    /*
+     * Solves using the labeled version from AI'14.
+     * http://felipe.trevizan.org/papers/trevizan14:depth.pdf
+     */
+    mlcore::Action* solveLabeled(mlcore::State* s0);
+
+    /* A procedure that checks for solved states and labels them. */
+    bool checkSolved(mlcore::State* s);
+
+public:
+    /**
+     * Creates a new SSiPP solver for the given problem. The constructor
+     * specifies the error tolerance (epsilon) and the horizon for the
+     * short-sighted SSPs (t).
+     */
+    SSiPPSolver(mlcore::Problem* problem,
+                double epsilon = 1.0e-6,
+                int t = 3,
+                SSiPPAlgo algorithm = SSiPPAlgo::Original) :
+        problem_(problem), epsilon_(epsilon), t_(t), algorithm_(algorithm) { }
+
+    virtual ~SSiPPSolver() { }
+
+    /**
+     * Solves the associated problem using the Labeled RTDP algorithm.
+     *
+     * @param s0 The state to start the search at.
+     */
+    virtual mlcore::Action* solve(mlcore::State* s0);
+};
+
+}  // namespace mlsolvers
+
+#endif // MDPLIB_SSIPPSOLVER_H

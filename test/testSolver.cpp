@@ -10,6 +10,7 @@
 #include "../include/solvers/LRTDPSolver.h"
 #include "../include/solvers/MLRTDPSolver.h"
 #include "../include/solvers/Solver.h"
+#include "../include/solvers/SSiPPSolver.h"
 #include "../include/solvers/UCTSolver.h"
 #include "../include/solvers/VISolver.h"
 
@@ -82,7 +83,7 @@ bool mustReplan(State* s) {
       return !(static_cast<EpicSolver*>(solver)->canReachGoal(s));
   }
   if (algorithm == "mlrtdp") {
-      return !(s->checkBits(mdplib::SOLVED));
+      return !(s->checkBits(mdplib::SOLVED_MLRTDP));
   }
   return false;
 }
@@ -116,6 +117,10 @@ void initSolver()
         solver = new VISolver(problem, 1000000000, tol);
     } else if (algorithm == "epic") {
         solver = new EpicSolver(problem, horizon, expansions, trials);
+    } else if (algorithm == "ssipp") {
+        solver = new SSiPPSolver(problem, tol, horizon);
+    } else if (algorithm == "labeled-ssipp") {
+        solver = new SSiPPSolver(problem, tol, horizon, SSiPPAlgo::Labeled);
     } else if (algorithm == "det") {
         solver = new DeterministicSolver(problem,
                                          mlsolvers::det_most_likely,

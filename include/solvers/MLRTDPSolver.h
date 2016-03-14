@@ -9,14 +9,18 @@
 namespace mlsolvers
 {
     /**
-     * A SSPP solver using the Myopic LRTDP algorithm.
+     * A SSP solver using the Myopic LRTDP algorithm.
      */
     class MLRTDPSolver : public Solver
     {
     private:
-
+        /* The problem to solve. */
         mlcore::Problem* problem_;
+
+        /* The maximum number of trials. */
         int maxTrials_;
+
+
         double epsilon_;
 
         /* Performs a single trial */
@@ -25,6 +29,7 @@ namespace mlsolvers
         /* Checks if the state has been solved. */
         bool checkSolved(mlcore::State* s);
 
+        /* The max depth for the checkSolved procedure */
         int horizon_;
 
     public:

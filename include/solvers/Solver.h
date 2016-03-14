@@ -193,16 +193,16 @@ double sampleTrial(mlcore::Problem* problem, mlcore::State* s);
 
 
 /**
-     * Computes all states that are reachable from the given set of states,
-     * up to the given horizon, and adds them to the set. If the set is empty
-     * the search will start at problem->initialState(). The method also
-     * stores the tip states (those at depth equal to the horizon).
-     *
-     * @param problem The problem describing the state space.
-     * @param reachableStates The set storing the reachable states.
-     * @param tipStates A set for storing the tip states.
-     * @param horizon The depth limit for the search.
-     */
+ * Computes all states that are reachable from the given set of states,
+ * up to the given horizon, and adds them to the set. If the set is empty
+ * the search will start at problem->initialState(). The method also
+ * stores the tip states (those at depth equal to the horizon).
+ *
+ * @param problem The problem describing the state space.
+ * @param reachableStates The set storing the reachable states.
+ * @param tipStates A set for storing the tip states.
+ * @param horizon The depth limit for the search.
+ */
 bool getReachableStates(mlcore::Problem* problem,
                         mlcore::StateSet& reachableStates,
                         mlcore::StateSet& tipStates,
