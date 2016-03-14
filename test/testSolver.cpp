@@ -74,6 +74,19 @@ void setupProblem()
 }
 
 
+bool mustReplan(State* s) {
+  if (flag_is_registered("online"))
+      return true;
+  string algorithm = flag_value("algorithm");
+  if (algorithm == "epic") {
+      return !(static_cast<EpicSolver*>(solver)->canReachGoal(s));
+  }
+  if (algorithm == "mlrtdp") {
+      return !(s->checkBits(mdplib::SOLVED));
+  }
+  return false;
+}
+
 void initSolver()
 {
     double tol = 1.0e-3;
@@ -128,20 +141,9 @@ int main(int argc, char* args[])
     problem->setHeuristic(heuristic);
 
     if (verbosity > 100)
-        cerr << problem->states().size() << " states" << endl;
+        cout << problem->states().size() << " states" << endl;
 
     initSolver();
-//    clock_t startTime = clock();
-//    solver->solve(problem->initialState());
-//    clock_t endTime = clock();
-
-//    double actionsPerSecond = 4.0;
-//    double totalTime = (double(endTime - startTime) / CLOCKS_PER_SEC);
-
-//    if (verbosity >= 1) {
-//        cerr << "Estimated cost " << problem->initialState()->cost() << endl;
-//        cerr << "Planning Time: " <<  totalTime << endl;
-//    }
 
     int nsims = 100;
     if (flag_is_registered_with_value("n"))
@@ -151,6 +153,16 @@ int main(int argc, char* args[])
     double expectedCost = 0.0;
     double expectedTime = 0.0;
     StateSet statesSeen;
+
+    if (nsims == 0) {
+      clock_t startTime = clock();
+      solver->solve(problem->initialState());
+      clock_t endTime = clock();
+      expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
+      expectedCost += problem->initialState()->cost();
+      cout << expectedCost << " " << expectedTime << " " << endl;
+    }
+
     for (int i = 0; i < nsims; i++) {
         for (State* s : problem->states())
             s->reset();
@@ -160,65 +172,51 @@ int main(int argc, char* args[])
         expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
 
         if (verbosity >= 10) {
-            cerr << "Starting simulation " << i << endl;
+            cout << "Starting simulation " << i << endl;
         }
         State* tmp = problem->initialState();
         if (verbosity >= 100) {
-            cerr << " ********* Simulation Starts ********* " << endl;
-            cerr << "Estimated cost " <<
+            cout << " ********* Simulation Starts ********* " << endl;
+            cout << "Estimated cost " <<
                 problem->initialState()->cost() << endl;
-            cerr << tmp << " ";
+            cout << tmp << " ";
         }
         double costTrial = 0.0;
         while (!problem->goal(tmp)) {
             statesSeen.insert(tmp);
             Action* a;
-            if (flag_is_registered("online")) {
+            if (mustReplan(tmp)) {
                 startTime = clock();
                 a = solver->solve(tmp);
                 endTime = clock();
                 expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
-            } else {
-                if (flag_value("algorithm") == "epic") {
-                    if (!(static_cast<EpicSolver*>(solver)->
-                            canReachGoal(tmp))) {
-                        startTime = clock();
-                        solver->solve(tmp);
-                        endTime = clock();
-                        expectedTime +=
-                            (double(endTime - startTime) / CLOCKS_PER_SEC);
-                    }
-                }
-                a = greedyAction(problem, tmp);
             }
+            a = greedyAction(problem, tmp);
             costTrial += problem->cost(tmp, a);
             if (costTrial >= mdplib::dead_end_cost) {
-                                                                                exit(-1);
                 break;
             }
             tmp = randomSuccessor(problem, tmp, a);
             if (verbosity >= 1000) {
-                cerr << a << " " << endl;
-                cerr << tmp << " ";
+                cout << a << " " << endl;
+                cout << tmp << " ";
             }
         }
         expectedCost += costTrial;
         if (verbosity >= 100)
-            cerr << endl;
+            cout << endl;
     }
-    expectedCost /= nsims;
-    expectedTime /= nsims;
+    if (nsims > 0) {
+        expectedCost /= nsims;
+        expectedTime /= nsims;
+    }
 
     if (verbosity >= 1) {
-        cerr << "Avg. Exec cost " << expectedCost << " ";
-        cerr << "Total time " << expectedTime << " " << endl;
-//        double expectedCostTime = actionsPerSecond * (totalTime + expectedTime);
-//        cerr << "Avg. Total cost " << expectedCost + expectedCostTime << " ";
-        cerr << "States seen " << statesSeen.size() << endl;
+        cout << "Avg. Exec cost " << expectedCost << " ";
+        cout << "Total time " << expectedTime << " " << endl;
+        cout << "States seen " << statesSeen.size() << endl;
     } else {
-        cerr << expectedCost << " " << expectedTime << " " << endl;
-//        double expectedCostTime = actionsPerSecond * (totalTime + expectedTime);
-//        cerr << expectedCost + expectedCostTime << endl;
+        cout << expectedCost << " " << expectedTime << " " << endl;
     }
 
     delete problem;

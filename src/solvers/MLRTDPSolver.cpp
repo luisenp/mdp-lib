@@ -78,7 +78,7 @@ bool MLRTDPSolver::checkSolved(State* s)
             State* next = su.su_state;
             if (!next->checkBits(mdplib::SOLVED) &&
                 !next->checkBits(mdplib::CLOSED) &&
-                depth <= horizon_) {
+                depth <= 2 * horizon_) {
                 open.push_front(make_pair(next, depth + 1));
                 next->setBits(mdplib::CLOSED);
             }
@@ -87,7 +87,7 @@ bool MLRTDPSolver::checkSolved(State* s)
 
     if (rv) {
         for (auto const & pp : closed) {
-            if (pp.second <= horizon_ / 2)
+            if (pp.second <= horizon_)
                 pp.first->setBits(mdplib::SOLVED);
         }
     } else {
