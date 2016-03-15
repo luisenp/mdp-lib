@@ -199,14 +199,12 @@ int main(int argc, char* args[])
             a = greedyAction(problem, tmp);
             costTrial += problem->cost(tmp, a);
             if (costTrial >= mdplib::dead_end_cost) {
-                                                                                exit(0);
                 break;
             }
             tmp = randomSuccessor(problem, tmp, a);
             if (verbosity >= 1000) {
                 cout << a << " " << endl;
                 cout << tmp << " ";
-                                                                                cout << tmp->checkBits(mdplib::SOLVED_SSiPP) << " ";
             }
         }
         expectedCost += costTrial;

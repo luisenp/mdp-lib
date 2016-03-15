@@ -47,7 +47,11 @@ private:
     /* A procedure that checks for solved states and labels them. */
     bool checkSolved(mlcore::State* s);
 
+
+
 public:
+    /* An optimal solver to use for the short-sighted SSPs. */
+    void optimalSolver(mlcore::Problem* problem, mlcore::State* s0);
     /**
      * Creates a new SSiPP solver for the given problem. The constructor
      * specifies the error tolerance (epsilon) and the horizon for the
