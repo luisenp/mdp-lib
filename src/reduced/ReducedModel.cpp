@@ -152,10 +152,9 @@ ReducedTransition* ReducedModel::getBestReduction(
         reducedModel->setHeuristic(heuristic);
                                                                                 mlcore::StateSet reachableStates, tipStates;
                                                                                 mlsolvers::getReachableStates(reducedModel,
-                                                                                                               reducedModel->initialState(),
-                                                                                                               100,
-                                                                                                               reachableStates,
-                                                                                                               tipStates);
+                                                                                                              reachableStates,
+                                                                                                              tipStates,
+                                                                                                              100);
         double expectedCostReduction = reducedModel->evaluateMonteCarlo(50);
                                                                                 ecosts.push_back(expectedCostReduction);
         if (expectedCostReduction < bestCost) {

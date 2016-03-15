@@ -67,8 +67,15 @@ double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s)
     std::pair<double, mlcore::Action*> best = bellmanBackup(problem, s);
     double residual = s->cost() - best.bb_cost;
     bellman_mutex.lock();
+                                                                                if (s->checkBits(mdplib::SOLVED_SSiPP)) {
+                                                                                  if (s->bestAction() != best.bb_action) {
+                                                                                    dprint4("weird", s, s->cost(), best.bb_cost);
+                                                                                  }
+                                                                                }
+                                                                                if (!s->checkBits(mdplib::SOLVED_SSiPP)) {
     s->setCost(best.bb_cost);
     s->setBestAction(best.bb_action);
+                                                                                }
     bellman_mutex.unlock();
     return fabs(residual);
 }
@@ -76,6 +83,9 @@ double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s)
 
 double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s, double weight)
 {
+    if (weight == 1.0) {
+        return bellmanUpdate(problem, s);
+    }
     double bestQ = problem->goal(s) ? 0.0 : mdplib::dead_end_cost;
     double bestG = bestQ, bestH = bestQ;
     bool hasAction = false;

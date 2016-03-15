@@ -34,6 +34,9 @@ Action* SSiPPSolver::solveLabeled(State* s0)
         State* currentState = s0;
         list<State*> visited;
         while (!currentState->checkBits(mdplib::SOLVED_SSiPP)) {
+//                                                                                dprint3(currentState,
+//                                                                                        problem_->goal(currentState),
+//                                                                                        currentState->deadEnd());
             visited.push_front(currentState);
             if (problem_->goal(currentState))
                 break;
@@ -49,20 +52,26 @@ Action* SSiPPSolver::solveLabeled(State* s0)
 
             // We use LAO* to avoid labeling states as solved when solving
             // another Short-Sighted SSP.
-            bellmanUpdate(problem_, currentState);
-//            LAOStarSolver solver(&wrapper);
-//            solver.solve(currentState);
+//            bellmanUpdate(problem_, currentState);
+            LAOStarSolver solver(&wrapper);
+            solver.solve(currentState);
+//                                                                                dprint3(currentState->cost(),
+//                                                                                        currentState->bestAction(),
+//                                                                                        currentState->checkBits(mdplib::SOLVED_SSiPP));
 
             if (currentState->deadEnd())
                 break;
 
             currentState = randomSuccessor(problem_,
                                            currentState,
-                                           currentState->bestAction());
+                                           greedyAction(problem_,
+                                                        currentState));
+//                                                                                dprint3("  ",
+//                                                                                        currentState,
+//                                                                                        currentState->checkBits(mdplib::SOLVED_SSiPP));
 
             wrapper.cleanup();
         }
-
         while (!visited.empty()) {
             currentState = visited.front();
             visited.pop_front();
@@ -90,9 +99,12 @@ bool SSiPPSolver::checkSolved(mlcore::State* s)
         closed.push_front(tmp);
 
         mlcore::Action* a = greedyAction(problem_, tmp);
+        tmp->setBestAction(a);
 
-        if (problem_->goal(tmp))
+        if (problem_->goal(tmp)) {
+//                                                                                dprint2("goal", tmp);
             continue;
+        }
 
         if (tmp->deadEnd()) {
             rv = false;
@@ -114,6 +126,7 @@ bool SSiPPSolver::checkSolved(mlcore::State* s)
 
     if (rv) {
         for (mlcore::State* sc : closed) {
+//                                                                                dprint2("solved", sc);
             sc->setBits(mdplib::SOLVED_SSiPP);
         }
     } else {

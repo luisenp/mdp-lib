@@ -169,6 +169,8 @@ int main(int argc, char* args[])
     }
 
     for (int i = 0; i < nsims; i++) {
+        if (verbosity >= 100)
+            cout << " ********* Simulation Starts ********* " << endl;
         for (State* s : problem->states())
             s->reset();
         clock_t startTime = clock();
@@ -181,10 +183,8 @@ int main(int argc, char* args[])
         }
         State* tmp = problem->initialState();
         if (verbosity >= 100) {
-            cout << " ********* Simulation Starts ********* " << endl;
             cout << "Estimated cost " <<
-                problem->initialState()->cost() << endl;
-            cout << tmp << " ";
+                problem->initialState()->cost() << endl << tmp << " ";
         }
         double costTrial = 0.0;
         while (!problem->goal(tmp)) {
@@ -199,12 +199,14 @@ int main(int argc, char* args[])
             a = greedyAction(problem, tmp);
             costTrial += problem->cost(tmp, a);
             if (costTrial >= mdplib::dead_end_cost) {
+                                                                                exit(0);
                 break;
             }
             tmp = randomSuccessor(problem, tmp, a);
             if (verbosity >= 1000) {
                 cout << a << " " << endl;
                 cout << tmp << " ";
+                                                                                cout << tmp->checkBits(mdplib::SOLVED_SSiPP) << " ";
             }
         }
         expectedCost += costTrial;
