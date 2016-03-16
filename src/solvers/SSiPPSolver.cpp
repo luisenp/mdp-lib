@@ -9,9 +9,6 @@
 #include "../../include/solvers/SSiPPSolver.h"
 
 
-                                                                                #include "../../include/domains/racetrack/RacetrackState.h"
-
-
 using namespace mlcore;
 using namespace std;
 
@@ -37,7 +34,6 @@ Action* SSiPPSolver::solveLabeled(State* s0)
     while (!s0->checkBits(mdplib::SOLVED_SSiPP)) {
         State* currentState = s0;
         list<State*> visited;
-//                                                                                dprint1(s0->cost());
         while (!currentState->checkBits(mdplib::SOLVED_SSiPP)) {
             visited.push_front(currentState);
             if (problem_->goal(currentState))
@@ -52,9 +48,7 @@ Action* SSiPPSolver::solveLabeled(State* s0)
             wrapper.overrideStates(&reachableStates);
             wrapper.overrideGoals(&tipStates);
 
-//                                                                                dprint1(currentState);
             optimalSolver(&wrapper, currentState);
-//            bellmanUpdate(problem_, currentState);
 
             if (currentState->deadEnd())
                 break;
@@ -66,7 +60,6 @@ Action* SSiPPSolver::solveLabeled(State* s0)
 
             wrapper.cleanup();
         }
-//                                                                                dprint1("************");
         while (!visited.empty()) {
             currentState = visited.front();
             visited.pop_front();
@@ -74,8 +67,6 @@ Action* SSiPPSolver::solveLabeled(State* s0)
                 break;
         }
     }
-//                                                                                dprint1("DONE!!");
-//                                                                                dsleep(500);
 }
 
 
@@ -103,26 +94,6 @@ bool SSiPPSolver::checkSolved(State* s)
         }
         if (residual(problem_, tmp) > epsilon_) {
             rv = false;
-                                                                                RacetrackState* rts = static_cast<RacetrackState*>(s);
-                                                                                if (rts->x() == 27 && rts->y() == 9 && rts->vx() == 1) {
-                                                                                    dprint4("checksolved",
-                                                                                            rts,
-                                                                                            rts->bestAction(),
-                                                                                            greedyAction(problem_, rts));
-                                                                                }
-//                                                                                StateSet reachableStates, tipStates;
-//                                                                                // This makes getReachableStates start the search at currentState.
-//                                                                                reachableStates.insert(s);
-//                                                                                getReachableStates(problem_, reachableStates, tipStates, t_);
-//
-//                                                                                WrapperProblem wrapper(problem_);
-//                                                                                wrapper.overrideStates(&reachableStates);
-//                                                                                wrapper.overrideGoals(&tipStates);
-//                                                                                dprint4("bad",
-//                                                                                        tmp,
-//                                                                                        residual(problem_, tmp),
-//                                                                                        residual(&wrapper, tmp));
-//                                                                                wrapper.cleanup();
         }
         for (Successor su : problem_->transition(tmp, a)) {
             State* next = su.su_state;
@@ -133,7 +104,6 @@ bool SSiPPSolver::checkSolved(State* s)
             }
         }
     }
-//                                                                                dprint1("********");
     if (rv) {
         for (State* sc : closed) {
             sc->setBits(mdplib::SOLVED_SSiPP);
@@ -144,9 +114,6 @@ bool SSiPPSolver::checkSolved(State* s)
             closed.pop_front();
             tmp->clearBits(mdplib::CLOSED_SSiPP);
             bellmanUpdate(problem_, tmp);
-//                                                                                dprint3("improved",
-//                                                                                        tmp,
-//                                                                                        residual(problem_, tmp));
         }
     }
     return rv;
@@ -162,7 +129,7 @@ Action* SSiPPSolver::solve(State* s0)
 }
 
 
-void SSiPPSolver::optimalSolver(Problem* problem, State* s0)
+void SSiPPSolver::optimalSolver(WrapperProblem* problem, State* s0)
 {
     // This is a stack based implementation of LAO*.
     // We don't use the existing library implementation so that we can take
@@ -180,7 +147,10 @@ void SSiPPSolver::optimalSolver(Problem* problem, State* s0)
                 stateStack.pop_back();
                 if (!visited.insert(s).second)  // state was already visited.
                     continue;
-                if (s->deadEnd() || problem->goal(s))
+                if (s->deadEnd() ||
+                        problem->goal(s) ||
+                        s->checkBits(mdplib::SOLVED_SSiPP) ||
+                        problem->overrideGoals()->count(s) > 0)
                     continue;
                 int cnt = 0;
                 if (s->bestAction() == nullptr) {
@@ -195,18 +165,9 @@ void SSiPPSolver::optimalSolver(Problem* problem, State* s0)
                 }
                 if (!s->checkBits(mdplib::SOLVED_SSiPP)) {
                     bellmanUpdate(problem, s);
-                                                                                RacetrackState* rts = static_cast<RacetrackState*>(s);
-                                                                                if (rts->x() == 27 && rts->y() == 9 && rts->vx() == 1) {
-                                                                                    dprint5(rts,
-                                                                                            greedyAction(problem, rts),
-                                                                                            s0,
-                                                                                            s0->cost(),
-                                                                                            problem->goal(s));
-                                                                                }
                 }
             }
         } while (countExpanded != 0);
-
         while (true) {
             visited.clear();
             list<State*> stateStack;
@@ -217,7 +178,8 @@ void SSiPPSolver::optimalSolver(Problem* problem, State* s0)
                 stateStack.pop_back();
                 if (s->deadEnd() ||
                         problem->goal(s) ||
-                        s->checkBits(mdplib::SOLVED_SSiPP))
+                        s->checkBits(mdplib::SOLVED_SSiPP ||
+                        problem->overrideGoals()->count(s) > 0))
                     continue;
                 if (!visited.insert(s).second)
                     continue;
