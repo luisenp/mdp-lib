@@ -1,5 +1,5 @@
-#ifndef MDPLIB_LRTDPSOLVER_H
-#define MDPLIB_LRTDPSOLVER_H
+#ifndef MDPLIB_MLRTDPSOLVER_H
+#define MDPLIB_MLRTDPSOLVER_H
 
 #include "../Problem.h"
 #include "../Heuristic.h"
@@ -9,33 +9,42 @@
 namespace mlsolvers
 {
     /**
-     * A SSP solver using the Labeled RTDP algorithm.
-     *
-     * See http://www.aaai.org/Papers/ICAPS/2003/ICAPS03-002.pdf
+     * A SSP solver using the Myopic LRTDP algorithm.
      */
-    class LRTDPSolver : public Solver
+    class MLRTDPSolver : public Solver
     {
     private:
-
+        /* The problem to solve. */
         mlcore::Problem* problem_;
+
+        /* The maximum number of trials. */
         int maxTrials_;
+
+
         double epsilon_;
 
-        /* Performs a single LRTDP trial */
+        /* Performs a single trial */
         void trial(mlcore::State* s);
 
         /* Checks if the state has been solved. */
         bool checkSolved(mlcore::State* s);
 
+        /* The max depth for the checkSolved procedure */
+        int horizon_;
+
     public:
         /**
-         * Creates a LRTDP solver for the given problem.
+         * Creates a Myopic LRTDP solver for the given problem.
          *
          * @param problem The problem to be solved.
          * @param maxTrials The maximum number of trials to perform.
          * @param epsilon The error tolerance.
+         * @param horizon_ The maximum depth for checkSolved.
          */
-        LRTDPSolver(mlcore::Problem* problem, int maxTrials, double epsilon);
+        MLRTDPSolver(mlcore::Problem* problem,
+                     int maxTrials,
+                     double epsilon,
+                     int horizon_);
 
         /**
          * Solves the associated problem using the Labeled RTDP algorithm.
@@ -46,4 +55,4 @@ namespace mlsolvers
     };
 }
 
-#endif // MDPLIB_LRTDPSOLVER_H
+#endif // MDPLIB_MLRTDPSOLVER_H

@@ -178,11 +178,11 @@ int main(int argc, char* args[])
     // learning the best reduced model for the original problem.
     if (!useFullTransition) {
                                                                                 mdplib_debug = true;
+        reachableStates.insert(wrapperProblem->initialState());
         getReachableStates(wrapperProblem,
-                           wrapperProblem->initialState(),
-                           5,
                            reachableStates,
-                           tipStates);
+                           tipStates,
+                           5);
 
         cout << "reachable " << reachableStates.size() <<
             " tip " << tipStates.size() << endl;

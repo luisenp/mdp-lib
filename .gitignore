@@ -29,9 +29,10 @@ lib/*
 *.lp
 *.txt
 *.lp.*
-data/*
 experiments/*
 scripts/*.track
+data/ppddl/reduced*
 mdp-lib.layout
 *683*
 *gurobi*
+*borra*

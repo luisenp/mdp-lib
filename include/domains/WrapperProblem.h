@@ -184,6 +184,8 @@ public:
 
     /**
      * Overrides method from Problem.
+     * If a state is part of overrideGoals_, this method will return the
+     * current estimated cost of the state as the cost of the action.
      */
     virtual double cost(mlcore::State* s, mlcore::Action* a) const;
 
