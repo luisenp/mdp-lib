@@ -32,7 +32,10 @@ public:
      * Constructs a Canadian Traveler problem instances with the given roads,
      * bad weather probabilities, start state and goal.
      */
-    CTPProblem(Graph* roads, std::vector< std::vector <double> >& probs, int start, int goal);
+    CTPProblem(Graph* roads,
+               std::vector< std::vector <double> >& probs,
+               int start,
+               int goal);
 
     ~CTPProblem()
     {
@@ -40,12 +43,12 @@ public:
     }
 
     /**
-     * Reads a CTP problem from a file and constructs a problem instance representing
-     * this problem.
+     * Reads a CTP problem from a file and constructs a problem instance
+     * representing this problem.
      *
      * @param filename the name of the file describing the problem.
      */
-    CTPProblem(char* filename);
+    CTPProblem(const char* filename);
 
     /**
      * Returns a graph structure containing all roads in the problem and their
@@ -72,7 +75,8 @@ public:
     /**
      * Overrides method from Problem.
      */
-    virtual std::list<mlcore::Successor> transition(mlcore::State* s, mlcore::Action* a);
+    virtual std::list<mlcore::Successor>
+    transition(mlcore::State* s, mlcore::Action* a);
 
     /**
      * Overrides method from Problem.
