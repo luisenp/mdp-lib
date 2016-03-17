@@ -20,8 +20,14 @@ namespace mlsolvers
         /* The maximum number of trials. */
         int maxTrials_;
 
-
+        /* The error tolerance */
         double epsilon_;
+
+        /* The max depth for the checkSolved procedure */
+        int horizon_;
+
+        /* Stores all states that have been solved to the latest horizon. */
+        mlcore::StateSet depthSolved_;
 
         /* Performs a single trial */
         void trial(mlcore::State* s);
@@ -29,8 +35,17 @@ namespace mlsolvers
         /* Checks if the state has been solved. */
         bool checkSolved(mlcore::State* s);
 
-        /* The max depth for the checkSolved procedure */
-        int horizon_;
+        /* Checks if the state has already been labeled as solved. */
+        bool labeledSolved(mlcore::State* s);
+
+        /*
+         * Checks if the set of states labeled as solved forms a closed policy.
+         */
+        bool isClosedPolicy(mlcore::State* s0);
+
+        /* Finds an optimal policy for the problem. */
+        mlcore::Action* solveOptimally(mlcore::State* s0);
+
 
     public:
         /**

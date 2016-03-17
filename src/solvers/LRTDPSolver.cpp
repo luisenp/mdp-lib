@@ -43,7 +43,6 @@ bool LRTDPSolver::checkSolved(mlcore::State* s)
     mlcore::State* tmp = s;
     if (!tmp->checkBits(mdplib::SOLVED)) {
         open.push_front(s);
-        s->setBits(mdplib::CLOSED);
     }
 
     bool rv = true;
@@ -51,6 +50,7 @@ bool LRTDPSolver::checkSolved(mlcore::State* s)
         tmp = open.front();
         open.pop_front();
         closed.push_front(tmp);
+        tmp->setBits(mdplib::CLOSED);
 
         mlcore::Action* a = greedyAction(problem_, tmp);
 
@@ -70,7 +70,6 @@ bool LRTDPSolver::checkSolved(mlcore::State* s)
             if (!next->checkBits(mdplib::SOLVED) &&
                 !next->checkBits(mdplib::CLOSED)) {
                 open.push_front(next);
-                next->setBits(mdplib::CLOSED);
             }
         }
     }
