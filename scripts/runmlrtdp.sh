@@ -18,6 +18,6 @@ for track in ${tracks[@]}; do
     let "horizon *= 2"
     echo "${track}|mlrtdp|hor=${horizon}"
       ../testsolver.out --track=../data/tracks/$track.track \
-      --algorithm=mlrtdp --horizon=$horizon --v=0 --n=$nsims
+      --algorithm=mlrtdp --horizon=$horizon --v=0 --n=$nsims --no-initial-plan
   done
 done

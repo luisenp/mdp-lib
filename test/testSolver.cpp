@@ -262,7 +262,6 @@ int main(int argc, char* args[])
             statesSeen.insert(tmp);
             Action* a;
             if (mustReplan(tmp)) {
-                dprint1("replanning");
                 startTime = clock();
                 a = solver->solve(tmp);
                 endTime = clock();

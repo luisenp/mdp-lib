@@ -65,7 +65,7 @@ bool MLRTDPSolver::checkSolved(State* s)
     else return true;
 
     bool rv = true;
-    bool subgraphWithinSearchHorizon = true;
+    bool subgraphWithinSearchHorizon = optimal_ & true;
     while (!open.empty()) {
         pair<State*, int> pp = open.front();
         open.pop_front();
@@ -110,7 +110,7 @@ bool MLRTDPSolver::checkSolved(State* s)
             pp.first->clearBits(mdplib::CLOSED);
             if (subgraphWithinSearchHorizon) {
                 depthSolved_.insert(pp.first);
-//                pp.first->setBits(mdplib::SOLVED);
+                pp.first->setBits(mdplib::SOLVED);
             } else if (pp.second <= horizon_) {
                 depthSolved_.insert(pp.first);
             }
@@ -142,7 +142,6 @@ Action* MLRTDPSolver::solveApproximate(State* s0)
     int trials = 0;
     while (!labeledSolved(s0) && trials++ < maxTrials_)
         trial(s0);
-    dprint2(trials, depthSolved_.size());
     return s0->bestAction();
 }
 
