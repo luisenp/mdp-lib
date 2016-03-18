@@ -11,11 +11,13 @@ namespace mlsolvers
 MLRTDPSolver::MLRTDPSolver(Problem* problem,
                          int maxTrials,
                          double epsilon,
-                         int horizon) :
+                         int horizon,
+                         bool optimal) :
     problem_(problem),
     maxTrials_(maxTrials),
     epsilon_(epsilon),
-    horizon_(horizon)
+    horizon_(horizon),
+    optimal_(optimal)
 { }
 
 
@@ -74,10 +76,9 @@ bool MLRTDPSolver::checkSolved(State* s)
             subgraphWithinSearchHorizon = false;
             continue;
         }
-//                                                                                dprint3("  ", currentState, s);
 
         closed.push_front(pp);
-        currentState->setBits(mdplib::CLOSED_MLRTDP);
+        currentState->setBits(mdplib::CLOSED);
 
         Action* a = greedyAction(problem_, currentState);
 
@@ -94,18 +95,11 @@ bool MLRTDPSolver::checkSolved(State* s)
 
         for (Successor su : problem_->transition(currentState, a)) {
             State* next = su.su_state;
-//                                                                                dprint5("    next",
-//                                                                                        next,
-//                                                                                        currentState,
-//                                                                                        next->checkBits(mdplib::CLOSED_MLRTDP),
-//                                                                                        next->bits());
             if (!labeledSolved(next) &&
-                    !next->checkBits(mdplib::CLOSED_MLRTDP)) {
-//                                                                                dprint1("    will-recurse");
+                    !next->checkBits(mdplib::CLOSED)) {
                 open.push_front(make_pair(next, depth + 1));
             } else if (depthSolved_.count(next) > 0 &&
                           !next->checkBits(mdplib::SOLVED)) {
-//                                                                                dprint2("    labeled but not opt", next);
                 subgraphWithinSearchHorizon = false;
             }
         }
@@ -113,24 +107,12 @@ bool MLRTDPSolver::checkSolved(State* s)
 
     if (rv) {
         for (auto const & pp : closed) {
-            pp.first->clearBits(mdplib::CLOSED_MLRTDP);
+            pp.first->clearBits(mdplib::CLOSED);
             if (subgraphWithinSearchHorizon) {
                 depthSolved_.insert(pp.first);
-                pp.first->setBits(mdplib::SOLVED);
-
-//                                                                                StateSet reach, tips;
-//                                                                                getBestPartialSolutionGraph(problem_, pp.first, reach);
-//                                                                                dprint5("    solved", pp.first, "size", reach.size(), s);
-//                                                                                dprint2("    solved", pp.first);
-//                                                                                for (auto foo : reach) {
-//                                                                                    if (residual(problem_, foo) > epsilon_) {
-//                                                                                        dprint2("shouldnt have been cuz of", foo);
-//                                                                                        exit(-1);
-//                                                                                    }
-//                                                                                }
+//                pp.first->setBits(mdplib::SOLVED);
             } else if (pp.second <= horizon_) {
                 depthSolved_.insert(pp.first);
-//                                                                                dprint2("depth solved", pp.first);
             }
         }
     } else {
@@ -138,7 +120,7 @@ bool MLRTDPSolver::checkSolved(State* s)
             pair<State*, int> pp;
             pp = closed.front();
             closed.pop_front();
-            pp.first->clearBits(mdplib::CLOSED_MLRTDP);
+            pp.first->clearBits(mdplib::CLOSED);
             bellmanUpdate(problem_, pp.first);
         }
     }
@@ -149,13 +131,19 @@ bool MLRTDPSolver::checkSolved(State* s)
 
 Action* MLRTDPSolver::solve(State* s0)
 {
-    return solveOptimally(s0);
-//    int trials = 0;
-//    while (!labeledSolved(s0) && trials++ < maxTrials_) {
-//        trial(s0);
-//    }
-//    isClosedPolicy(s0);
-//    return s0->bestAction();
+    if (optimal_)
+        return solveOptimally(s0);
+    return solveApproximate(s0);
+}
+
+
+Action* MLRTDPSolver::solveApproximate(State* s0)
+{
+    int trials = 0;
+    while (!labeledSolved(s0) && trials++ < maxTrials_)
+        trial(s0);
+    dprint2(trials, depthSolved_.size());
+    return s0->bestAction();
 }
 
 
@@ -172,37 +160,7 @@ Action* MLRTDPSolver::solveOptimally(State* s0)
         horizon_ = 2 * horizon_ + 1;
         depthSolved_.clear();
     }
-                                                                                dprint3("horizon, solved-size", horizon_, depthSolved_.size());
     return s0->bestAction();
-}
-
-
-bool MLRTDPSolver::isClosedPolicy(State* s0)
-{
-    int cnt = 0;
-    list<State *> stateQueue;
-    stateQueue.push_front(s0);
-    StateSet visited;
-    bool isClosed = true;
-    while (!stateQueue.empty()) {
-        State* state = stateQueue.back();
-        stateQueue.pop_back();
-        if (!visited.insert(state).second)
-            continue;
-        if (problem_->goal(state))
-            continue;
-        if (!labeledSolved(state)) {
-            cnt++;
-            isClosed = false;
-            break;
-        }
-        Action* a = greedyAction(problem_, state);
-        for (Successor& sccr : problem_->transition(state, a)) {
-            stateQueue.push_front(sccr.su_state);
-        }
-    }
-    dprint2("NOT SOLVED", double(cnt) / visited.size());
-    return isClosed;
 }
 
 }

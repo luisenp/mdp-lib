@@ -11,10 +11,8 @@ namespace mdplib
     const unsigned long SOLVED = 1ul<<1;
     const unsigned long CLOSED = 1ul<<2;
     const unsigned long VISITED_ASTAR = 1ul<<3;
-    const unsigned long SOLVED_MLRTDP = 1ul<<4;
-    const unsigned long CLOSED_MLRTDP = 1ul<<5;
-    const unsigned long SOLVED_SSiPP = 1ul<<6;
-    const unsigned long CLOSED_SSiPP = 1ul<<7;
+    const unsigned long SOLVED_SSiPP = 1ul<<4;
+    const unsigned long CLOSED_SSiPP = 1ul<<5;
 }
 
 #endif // MDPLIB_MDPLIB_H

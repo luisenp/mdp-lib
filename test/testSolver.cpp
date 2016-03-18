@@ -1,6 +1,7 @@
-#include <iostream>
+#include <cmath>
 #include <ctime>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 #include <unistd.h>
 
@@ -148,7 +149,7 @@ bool mustReplan(State* s) {
       return true;
   string algorithm = flag_value("algorithm");
   if (algorithm == "mlrtdp") {
-//      return !(s->checkBits(mdplib::SOLVED_MLRTDP));
+      return !(static_cast<MLRTDPSolver*>(solver)->solved(s));
   }
   return false;
 }
@@ -177,7 +178,8 @@ void initSolver()
     } else if (algorithm == "lrtdp") {
         solver = new LRTDPSolver(problem, trials, tol);
     }  else if (algorithm == "mlrtdp") {
-        solver = new MLRTDPSolver(problem, trials, tol, horizon);
+        bool optimal = flag_is_registered("optimal");
+        solver = new MLRTDPSolver(problem, trials, tol, horizon, optimal);
     } else if (algorithm == "vi") {
         solver = new VISolver(problem, 1000000000, tol);
     } else if (algorithm == "ssipp") {
@@ -192,6 +194,14 @@ void initSolver()
         cerr << "Unknown algorithm: " << algorithm << endl;
         assert(false);
     }
+}
+
+
+void updateStatistics(double cost, int n, double& mean, double& M2)
+{
+    double delta = cost - mean;
+    mean += delta / n;
+    M2 += delta * (cost - mean);
 }
 
 
@@ -220,17 +230,9 @@ int main(int argc, char* args[])
 
     // Running simulations to evaluate the solver's performance.
     double expectedCost = 0.0;
+    double variance = 0.0;
     double expectedTime = 0.0;
     StateSet statesSeen;
-
-    if (nsims == 0) {
-      clock_t startTime = clock();
-      solver->solve(problem->initialState());
-      clock_t endTime = clock();
-      expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
-      expectedCost += problem->initialState()->cost();
-      cout << expectedCost << " " << expectedTime << " " << endl;
-    }
 
     int cnt = 0;
     int numDecisions = 0;
@@ -260,6 +262,7 @@ int main(int argc, char* args[])
             statesSeen.insert(tmp);
             Action* a;
             if (mustReplan(tmp)) {
+                dprint1("replanning");
                 startTime = clock();
                 a = solver->solve(tmp);
                 endTime = clock();
@@ -280,29 +283,29 @@ int main(int argc, char* args[])
         if (flag_is_registered("ctp")) {
             CTPState* ctps = static_cast<CTPState*>(tmp);
             if (!ctps->badWeather()) {
-                expectedCost += costTrial;
                 cnt++;
+                updateStatistics(costTrial, cnt, expectedCost, variance);
             }
         } else {
-            expectedCost += costTrial;
             cnt++;
+            updateStatistics(costTrial, cnt, expectedCost, variance);
         }
         if (verbosity >= 100)
             cout << endl;
     }
-    if (nsims > 0) {
-        expectedCost;
-        expectedTime;
-    }
 
     if (verbosity >= 1) {
-        cout << "Avg. Exec cost " << expectedCost / cnt << " ";
+        cout << "Estimated cost " << problem->initialState()->cost() << " ";
+        cout << "Avg. Exec cost " << expectedCost << " ";
+        cout << "Std. Dev. " << sqrt(variance / (cnt - 1)) << " ";
         cout << "Total time " << expectedTime / cnt << " " << endl;
         cout << "States seen " << statesSeen.size() << endl;
         cout << "Avg. time per decision " <<
             expectedTime / numDecisions << endl;
     } else {
-        cout << expectedCost / cnt << " " << expectedTime / cnt << " " << endl;
+        cout << problem->initialState()->cost() << " ";
+        cout << expectedCost << " " << sqrt(variance / (cnt - 1)) << " " <<
+            expectedTime / cnt << " " << expectedTime / numDecisions << endl;
     }
 
     delete problem;
