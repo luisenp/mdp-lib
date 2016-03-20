@@ -6,6 +6,7 @@
 
 #include "../include/solvers/DeterministicSolver.h"
 #include "../include/solvers/EpicSolver.h"
+#include "../include/solvers/HDPSolver.h"
 #include "../include/solvers/LAOStarSolver.h"
 #include "../include/solvers/LRTDPSolver.h"
 #include "../include/solvers/MLRTDPSolver.h"
@@ -111,8 +112,10 @@ void initSolver()
         solver = new LAOStarSolver(problem, tol, 1000000);
     } else if (algorithm == "lrtdp") {
         solver = new LRTDPSolver(problem, trials, tol);
-    }  else if (algorithm == "mlrtdp") {
+    } else if (algorithm == "mlrtdp") {
         solver = new MLRTDPSolver(problem, trials, tol, horizon);
+    } else if (algorithm == "hdp") {
+        solver = new HDPSolver(problem, tol);
     } else if (algorithm == "vi") {
         solver = new VISolver(problem, 1000000000, tol);
     } else if (algorithm == "epic") {
