@@ -116,7 +116,8 @@ double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s, double weight)
 
 mlcore::State* randomSuccessor(mlcore::Problem* problem,
                                mlcore::State* s,
-                               mlcore::Action* a)
+                               mlcore::Action* a,
+                               double* prob)
 {
     double pick = dis(gen);
 
@@ -126,10 +127,14 @@ mlcore::State* randomSuccessor(mlcore::Problem* problem,
     double acc = 0.0;
     for (mlcore::Successor sccr : problem->transition(s, a)) {
         acc += sccr.su_prob;
-        if (acc >= pick)
+        if (acc >= pick) {
+            if (prob != nullptr)
+                *prob = sccr.su_prob;
             return sccr.su_state;
+        }
     }
-
+    if (prob != nullptr)
+        *prob = 1.0;
     return s;
 }
 

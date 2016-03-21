@@ -131,11 +131,15 @@ double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s, double weight);
  * @param problem The problem that defines the transition function.
  * @param s The state for which the sucessor state will be sampled.
  * @param a The action that generates the successors.
+ * @param prob A pointer to a variable to store the probability of the
+ *            returned successor.
  * @return A successor sampled from the transition function corresponding to the
  *        state and action pair.
  */
-mlcore::State*
-randomSuccessor(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a);
+mlcore::State* randomSuccessor(mlcore::Problem* problem,
+                               mlcore::State* s,
+                               mlcore::Action* a,
+                               double* prob = nullptr);
 
 
 /**
@@ -153,7 +157,8 @@ randomSuccessor(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a);
  * @param s The state for which the action will be computed.
  * @return The action with minimum Q-value.
  */
-mlcore::Action* greedyAction(mlcore::Problem* problem, mlcore::State* s);
+mlcore::Action*
+greedyAction(mlcore::Problem* problem, mlcore::State* s);
 
 
 /**

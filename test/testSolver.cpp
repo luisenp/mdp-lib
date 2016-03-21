@@ -1,6 +1,7 @@
-#include <iostream>
 #include <ctime>
+#include <climits>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 #include <unistd.h>
 
@@ -76,7 +77,7 @@ void setupProblem()
 }
 
 
-bool mustReplan(State* s) {
+bool mustReplan(State* s, int plausTrial) {
   if (flag_is_registered("online"))
       return true;
   string algorithm = flag_value("algorithm");
@@ -85,6 +86,18 @@ bool mustReplan(State* s) {
   }
   if (algorithm == "mlrtdp") {
       return !(s->checkBits(mdplib::SOLVED_MLRTDP));
+  }
+  if (algorithm == "hdp") {
+      if (flag_is_registered("i")) {
+          int j = INT_MAX;
+          if (flag_is_registered_with_value("j")) {
+              j = stoi(flag_value("j"));
+          }
+          if (plausTrial >= j) {
+              static_cast<HDPSolver*>(solver)->clearLabels();
+              return true;
+          }
+      }
   }
   return false;
 }
@@ -115,7 +128,11 @@ void initSolver()
     } else if (algorithm == "mlrtdp") {
         solver = new MLRTDPSolver(problem, trials, tol, horizon);
     } else if (algorithm == "hdp") {
-        solver = new HDPSolver(problem, tol);
+        int plaus;
+        if (flag_is_registered_with_value("i"))
+            solver = new HDPSolver(problem, tol, stoi(flag_value("i")));
+        else
+            solver = new HDPSolver(problem, tol);
     } else if (algorithm == "vi") {
         solver = new VISolver(problem, 1000000000, tol);
     } else if (algorithm == "epic") {
@@ -190,10 +207,11 @@ int main(int argc, char* args[])
                 problem->initialState()->cost() << endl << tmp << " ";
         }
         double costTrial = 0.0;
+        int plausTrial = 0;
         while (!problem->goal(tmp)) {
             statesSeen.insert(tmp);
             Action* a;
-            if (mustReplan(tmp)) {
+            if (mustReplan(tmp, plausTrial)) {
                 startTime = clock();
                 a = solver->solve(tmp);
                 endTime = clock();
@@ -204,7 +222,17 @@ int main(int argc, char* args[])
             if (costTrial >= mdplib::dead_end_cost) {
                 break;
             }
-            tmp = randomSuccessor(problem, tmp, a);
+            double prob = 0.0;
+            State* aux = randomSuccessor(problem, tmp, a, &prob);
+            if (flag_value("algorithm") == "hdp") {
+                double maxProb = 0.0;
+                for (auto const & sccr : problem->transition(tmp, a))
+                    maxProb = std::max(maxProb, sccr.su_prob);
+                plausTrial +=
+                    static_cast<HDPSolver*>(solver)->kappa(prob, maxProb);
+            }
+            tmp = aux;
+
             if (verbosity >= 1000) {
                 cout << a << " " << endl;
                 cout << tmp << " ";
