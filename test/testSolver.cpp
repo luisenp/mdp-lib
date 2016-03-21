@@ -192,6 +192,9 @@ void initSolver()
         solver = new LAOStarSolver(problem, tol, 1000000);
     } else if (algorithm == "lrtdp") {
         solver = new LRTDPSolver(problem, trials, tol);
+    } else if (algorithm == "mlrtdp") {
+        bool optimal = flag_is_registered("optimal");
+        solver = new MLRTDPSolver(problem, trials, tol, horizon, optimal);
     } else if (algorithm == "hdp") {
         int plaus;
         if (flag_is_registered_with_value("i"))
