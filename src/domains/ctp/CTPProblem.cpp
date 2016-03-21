@@ -33,7 +33,7 @@ CTPProblem::CTPProblem(Graph* roads,
     init();
 }
 
-CTPProblem::CTPProblem(char* filename)
+CTPProblem::CTPProblem(const char* filename)
 {
     int nvertices, nedges;
     std::ifstream myfile (filename);
@@ -56,6 +56,9 @@ CTPProblem::CTPProblem(char* filename)
             roads_->connect(v - 1, u - 1, w);
         }
         myfile.close();
+    } else {
+        std::cerr << "Invalid file " << filename << std::endl;
+        exit(-1);
     }
     start_ = 0;
     goal_ = nvertices - 1;

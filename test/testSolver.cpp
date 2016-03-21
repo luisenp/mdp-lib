@@ -20,11 +20,18 @@
 #include "../include/util/general.h"
 #include "../include/util/graph.h"
 
+#include "../include/domains/ctp/CTPOptimisticHeuristic.h"
+#include "../include/domains/ctp/CTPProblem.h"
+#include "../include/domains/ctp/CTPState.h"
+
 #include "../include/domains/gridworld/GridWorldProblem.h"
 #include "../include/domains/gridworld/GWManhattanHeuristic.h"
 
 #include "../include/domains/racetrack/RacetrackProblem.h"
 #include "../include/domains/racetrack/RTrackDetHeuristic.h"
+
+#include "../include/domains/sailing/SailingNoWindHeuristic.h"
+#include "../include/domains/sailing/SailingProblem.h"
 
 
 using namespace mdplib;
@@ -44,6 +51,8 @@ bool useOnline = false;
 void setupRacetrack()
 {
     string trackName = flag_value("track");
+    if (verbosity > 100)
+        cout << "Setting up racetrack " << trackName << endl;
     problem = new RacetrackProblem(trackName.c_str());
     ((RacetrackProblem*) problem)->pError(0.10);
     ((RacetrackProblem*) problem)->pSlip(0.20);
@@ -62,6 +71,62 @@ void setupGridWorld()
 }
 
 
+void setupSailingDomain()
+{
+    static vector<double> costs;
+    costs.push_back(1);
+    costs.push_back(2);
+    costs.push_back(5);
+    costs.push_back(10);
+    costs.push_back(mdplib::dead_end_cost + 1);
+
+    static double windTransition[] = {
+        0.20, 0.20, 0.20, 0.00, 0.00, 0.00, 0.20, 0.20,
+        0.20, 0.20, 0.20, 0.20, 0.00, 0.00, 0.00, 0.20,
+        0.20, 0.20, 0.20, 0.20, 0.20, 0.00, 0.00, 0.00,
+        0.00, 0.20, 0.20, 0.20, 0.20, 0.20, 0.00, 0.00,
+        0.00, 0.00, 0.20, 0.20, 0.20, 0.20, 0.20, 0.00,
+        0.00, 0.00, 0.00, 0.20, 0.20, 0.20, 0.20, 0.20,
+        0.20, 0.00, 0.00, 0.00, 0.20, 0.20, 0.20, 0.20,
+        0.20, 0.20, 0.00, 0.00, 0.00, 0.20, 0.20, 0.20};
+
+    if (!flag_is_registered_with_value("sailing-goal")) {
+        cerr << "Must specify sailing-goal argument flag" << endl;
+        exit(-1);
+    }
+
+    int sizeSailing = atoi(flag_value("sailing-size").c_str());
+    int goalSailing = atoi(flag_value("sailing-goal").c_str());
+
+    if (verbosity > 100)
+        cout << "Setting up sailing domain with size " << sizeSailing <<
+            " with goal " << goalSailing << endl;
+
+    problem =
+        new SailingProblem(0, 0, 0,
+                           goalSailing, goalSailing,
+                           sizeSailing, sizeSailing,
+                           costs,
+                           windTransition);
+    heuristic =
+        new SailingNoWindHeuristic(static_cast<SailingProblem*>(problem));
+    problem->setHeuristic(heuristic);
+}
+
+
+void setupCTP()
+{
+    if (verbosity > 100) {
+        cout << "Setting up Canadian Traveler Problem " <<
+            flag_value("ctp") << endl;
+    }
+    problem = new CTPProblem(flag_value("ctp").c_str());
+    heuristic =
+        new CTPOptimisticHeuristic(static_cast<CTPProblem*> (problem));
+    problem->setHeuristic(heuristic);
+}
+
+
 void setupProblem()
 {
     if (verbosity > 100)
@@ -70,6 +135,10 @@ void setupProblem()
         setupRacetrack();
     } else if (flag_is_registered_with_value("grid")) {
         setupGridWorld();
+    } else if (flag_is_registered_with_value("sailing-size")) {
+        setupSailingDomain();
+    } else if (flag_is_registered_with_value("ctp")) {
+        setupCTP();
     } else {
         cerr << "Invalid problem." << endl;
         exit(-1);
@@ -162,7 +231,8 @@ int main(int argc, char* args[])
 
     mdplib_debug = true;
     setupProblem();
-    problem->generateAll();
+    if (!flag_is_registered("dont-generate"))
+        problem->generateAll();
     problem->setHeuristic(heuristic);
 
     if (verbosity > 100)
@@ -188,16 +258,21 @@ int main(int argc, char* args[])
       cout << expectedCost << " " << expectedTime << " " << endl;
     }
 
+    int cnt = 0;
+    int numDecisions = 0;
     for (int i = 0; i < nsims; i++) {
         if (verbosity >= 100)
             cout << " ********* Simulation Starts ********* " << endl;
-        for (State* s : problem->states())
-            s->reset();
-        clock_t startTime = clock();
-        solver->solve(problem->initialState());
-        clock_t endTime = clock();
-        expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
-
+        clock_t startTime, endTime;
+        if (i == 0 || !flag_is_registered("no-initial-plan")) {
+            for (State* s : problem->states())
+                s->reset();
+            startTime = clock();
+            solver->solve(problem->initialState());
+            endTime = clock();
+            expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
+            numDecisions++;
+        }
         if (verbosity >= 10) {
             cout << "Starting simulation " << i << endl;
         }
@@ -216,6 +291,7 @@ int main(int argc, char* args[])
                 a = solver->solve(tmp);
                 endTime = clock();
                 expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
+                numDecisions++;
             }
             a = greedyAction(problem, tmp);
             costTrial += problem->cost(tmp, a);
@@ -238,21 +314,32 @@ int main(int argc, char* args[])
                 cout << tmp << " ";
             }
         }
-        expectedCost += costTrial;
+        if (flag_is_registered("ctp")) {
+            CTPState* ctps = static_cast<CTPState*>(tmp);
+            if (!ctps->badWeather()) {
+                expectedCost += costTrial;
+                cnt++;
+            }
+        } else {
+            expectedCost += costTrial;
+            cnt++;
+        }
         if (verbosity >= 100)
             cout << endl;
     }
     if (nsims > 0) {
-        expectedCost /= nsims;
-        expectedTime /= nsims;
+        expectedCost;
+        expectedTime;
     }
 
     if (verbosity >= 1) {
-        cout << "Avg. Exec cost " << expectedCost << " ";
-        cout << "Total time " << expectedTime << " " << endl;
+        cout << "Avg. Exec cost " << expectedCost / cnt << " ";
+        cout << "Total time " << expectedTime / cnt << " " << endl;
         cout << "States seen " << statesSeen.size() << endl;
+        cout << "Avg. time per decision " <<
+            expectedTime / numDecisions << endl;
     } else {
-        cout << expectedCost << " " << expectedTime << " " << endl;
+        cout << expectedCost / cnt << " " << expectedTime / cnt << " " << endl;
     }
 
     delete problem;
