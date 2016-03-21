@@ -22,8 +22,7 @@ namespace mlsolvers
             double maxResidual = 0.0;
             for (mlcore::State* s : problem_->states()) {
                 double residual = bellmanUpdate(problem_, s);
-                if (residual > maxResidual)
-                    maxResidual = residual;
+                maxResidual = std::max(residual, maxResidual);
             }
             if (maxResidual < tol_)
                 return nullptr;

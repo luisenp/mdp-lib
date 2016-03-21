@@ -96,7 +96,7 @@ bellmanBackup(mlcore::Problem* problem, mlcore::State* s);
 
 
 /**
- * Performs a Bellman backup of a state, and the￼n updates the state with
+ * Performs a Bellman backup of a state, and then updates the state with
  * the resulting expected cost and greedy action.
  *
  * @param problem The problem that contains the given state.

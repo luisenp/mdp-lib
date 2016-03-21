@@ -8,6 +8,7 @@
 
 #include "../include/solvers/DeterministicSolver.h"
 #include "../include/solvers/HDPSolver.h"
+#include "../include/solvers/HMinHeuristic.h"
 #include "../include/solvers/LAOStarSolver.h"
 #include "../include/solvers/LRTDPSolver.h"
 #include "../include/solvers/MLRTDPSolver.h"
@@ -57,7 +58,9 @@ void setupRacetrack()
     ((RacetrackProblem*) problem)->pError(0.10);
     ((RacetrackProblem*) problem)->pSlip(0.20);
     ((RacetrackProblem*) problem)->mds(-1);
-    heuristic = new RTrackDetHeuristic(trackName.c_str());
+    if (!flag_is_registered_with_value("heuristic") ||
+            flag_value("heuristic") == "domain")
+        heuristic = new RTrackDetHeuristic(trackName.c_str());
 }
 
 
@@ -67,7 +70,9 @@ void setupGridWorld()
     if (verbosity > 100)
         cout << "Setting up grid world " << grid << endl;
     problem = new GridWorldProblem(grid.c_str(), 1.0);
-    heuristic = new GWManhattanHeuristic((GridWorldProblem*) problem);
+    if (!flag_is_registered_with_value("heuristic") ||
+            flag_value("heuristic") == "domain")
+        heuristic = new GWManhattanHeuristic((GridWorldProblem*) problem);
 }
 
 
@@ -108,9 +113,11 @@ void setupSailingDomain()
                            sizeSailing, sizeSailing,
                            costs,
                            windTransition);
-    heuristic =
-        new SailingNoWindHeuristic(static_cast<SailingProblem*>(problem));
-    problem->setHeuristic(heuristic);
+
+    if (!flag_is_registered_with_value("heuristic") ||
+            flag_value("heuristic") == "domain")
+        heuristic =
+            new SailingNoWindHeuristic(static_cast<SailingProblem*>(problem));
 }
 
 
@@ -121,9 +128,10 @@ void setupCTP()
             flag_value("ctp") << endl;
     }
     problem = new CTPProblem(flag_value("ctp").c_str());
-    heuristic =
-        new CTPOptimisticHeuristic(static_cast<CTPProblem*> (problem));
-    problem->setHeuristic(heuristic);
+    if (!flag_is_registered_with_value("heuristic") ||
+            flag_value("heuristic") == "domain")
+        heuristic =
+            new CTPOptimisticHeuristic(static_cast<CTPProblem*> (problem));
 }
 
 
@@ -238,6 +246,17 @@ int main(int argc, char* args[])
     setupProblem();
     if (!flag_is_registered("dont-generate"))
         problem->generateAll();
+    if (flag_is_registered_with_value("heuristic") &&
+            flag_value("heuristic") == "hmin") {
+        clock_t startTime = clock();
+        heuristic = new HMinHeuristic(problem);
+        clock_t endTime = clock();
+        if (verbosity > 100) {
+            cout << "Heuristic took " <<
+                (double(endTime - startTime) / CLOCKS_PER_SEC) <<
+                " seconds."  << endl;
+        }
+    }
     problem->setHeuristic(heuristic);
 
     if (verbosity > 100)
