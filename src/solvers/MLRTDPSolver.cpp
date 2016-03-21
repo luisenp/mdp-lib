@@ -30,10 +30,9 @@ void MLRTDPSolver::trial(State* s)
         if (problem_->goal(currentState))
             break;
 
-        bellmanUpdate(problem_, currentState);
-
         if (currentState->deadEnd())
             break;
+        bellmanUpdate(problem_, currentState);
 
         currentState = randomSuccessor(problem_,
                                        currentState,
@@ -81,8 +80,6 @@ bool MLRTDPSolver::checkSolved(State* s)
         closed.push_front(pp);
         currentState->setBits(mdplib::CLOSED);
 
-        Action* a = greedyAction(problem_, currentState);
-
         if (problem_->goal(currentState))
             continue;
 
@@ -90,6 +87,8 @@ bool MLRTDPSolver::checkSolved(State* s)
             rv = false;
             continue;
         }
+
+        Action* a = greedyAction(problem_, currentState);
 
         if (residual(problem_, currentState) > epsilon_)
             rv = false;

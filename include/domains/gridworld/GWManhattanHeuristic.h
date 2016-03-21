@@ -21,7 +21,7 @@ public:
         problem_ = problem;
     }
 
-    virtual double cost(const mlcore::State* s) const
+    virtual double cost(const mlcore::State* s)
     {
         GridWorldState* gws = (GridWorldState*) s;
         double cost_ = mdplib::dead_end_cost;

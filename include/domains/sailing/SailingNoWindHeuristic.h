@@ -19,7 +19,7 @@ public:
 
     SailingNoWindHeuristic(SailingProblem* problem);
 
-    virtual double cost(const mlcore::State* s) const;
+    virtual double cost(const mlcore::State* s);
 };
 
 #endif // MDPLIB_SAILNOWINDHEUR_H

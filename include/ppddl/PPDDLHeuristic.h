@@ -30,7 +30,7 @@ public:
 
     ~PPDDLHeuristic() { delete pHeuristic_; }
 
-    virtual double cost(const mlcore::State* s) const;
+    virtual double cost(const mlcore::State* s);
 };
 
 } // namespace mlppddl

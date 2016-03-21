@@ -19,7 +19,7 @@ public:
     {
         problem_ = problem;
     }
-    virtual double cost(const mlcore::State* s) const
+    virtual double cost(const mlcore::State* s)
     {
         CTPState* ctps = (CTPState* ) s;
         if (ctps->location() < 0)   // absorbing state

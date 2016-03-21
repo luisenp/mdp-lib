@@ -24,7 +24,7 @@ PPDDLHeuristic::PPDDLHeuristic(PPDDLProblem* problem, HeuristicType type, int m)
     }
 }
 
-double PPDDLHeuristic::cost(const mlcore::State* s) const
+double PPDDLHeuristic::cost(const mlcore::State* s)
 {
     PPDDLState* ppddlState = (PPDDLState *) s;
     return pHeuristic_->value(*(ppddlState->pState()));

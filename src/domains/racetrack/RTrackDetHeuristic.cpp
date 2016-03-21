@@ -18,7 +18,7 @@ RTrackDetHeuristic::RTrackDetHeuristic(const char* filename)
     vi.solve();
 }
 
-double RTrackDetHeuristic::cost(const mlcore::State* s) const
+double RTrackDetHeuristic::cost(const mlcore::State* s)
 {
     const RacetrackState* rts = static_cast<const RacetrackState*>(s);
     RacetrackState* tmp = new RacetrackState(rts->x(),

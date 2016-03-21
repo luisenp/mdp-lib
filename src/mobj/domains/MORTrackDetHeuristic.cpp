@@ -22,7 +22,7 @@ MORTrackDetHeuristic::MORTrackDetHeuristic(char* filename, bool useSafety)
     vi.solve();
 }
 
-double MORTrackDetHeuristic::cost(const mlcore::State* s) const
+double MORTrackDetHeuristic::cost(const mlcore::State* s)
 {
     MORacetrackState* rts = (MORacetrackState*) s;
     MORacetrackState* tmp =

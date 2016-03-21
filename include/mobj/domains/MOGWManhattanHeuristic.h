@@ -24,7 +24,7 @@ public:
         costDown_ = costDown;
     }
 
-    virtual double cost(const mlcore::State* s) const
+    virtual double cost(const mlcore::State* s)
     {
         MOGridWorldState* gws = (MOGridWorldState*) s;
         double cost_ = mdplib::dead_end_cost;

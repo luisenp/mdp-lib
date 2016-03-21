@@ -15,7 +15,7 @@ SailingNoWindHeuristic::SailingNoWindHeuristic(SailingProblem* problem)
     tmp_ = new SailingState(-2, -2, -2, problem_);
 }
 
-double SailingNoWindHeuristic::cost(const mlcore::State* s) const
+double SailingNoWindHeuristic::cost(const mlcore::State* s)
 {
     const SailingState* state = static_cast<const SailingState*> (s);
     if (state->x() < 0

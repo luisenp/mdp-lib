@@ -24,7 +24,7 @@ public:
         delete detProblem_;
     }
 
-    virtual double cost(const mlcore::State* s) const;
+    virtual double cost(const mlcore::State* s);
 };
 
 }
