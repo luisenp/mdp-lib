@@ -13,11 +13,16 @@ for track in ${tracks[@]}; do
   ../testsolver.out --track=../data/tracks/$track.track \
   --algorithm=mlrtdp --v=0 --n=1 --optimal
   
+  
+  echo "${track}|mlrtdp|hor=0"
+  ../testsolver.out --track=../data/tracks/$track.track \
+  --algorithm=mlrtdp --horizon=0 --v=0 --n=$nsims
+      
   horizon=1
-  for i in `seq 0 4`; do
-    let "horizon *= 2"
+  for i in `seq 0 3`; do
     echo "${track}|mlrtdp|hor=${horizon}"
       ../testsolver.out --track=../data/tracks/$track.track \
-      --algorithm=mlrtdp --horizon=$horizon --v=0 --n=$nsims --no-initial-plan
+      --algorithm=mlrtdp --horizon=$horizon --v=0 --n=$nsims
+    let "horizon *= 2"
   done
 done
