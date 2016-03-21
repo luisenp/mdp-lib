@@ -51,7 +51,8 @@ void MLRTDPSolver::trial(State* s)
 
 bool MLRTDPSolver::labeledSolved(State* s)
 {
-    return (s->checkBits(mdplib::SOLVED) || (depthSolved_.count(s) > 0));
+    return (s->checkBits(mdplib::SOLVED) ||
+        s->checkBits(mdplib::SOLVED_MLRTDP));
 }
 
 
@@ -98,7 +99,7 @@ bool MLRTDPSolver::checkSolved(State* s)
             if (!labeledSolved(next) &&
                     !next->checkBits(mdplib::CLOSED)) {
                 open.push_front(make_pair(next, depth + 1));
-            } else if (depthSolved_.count(next) > 0 &&
+            } else if (next->checkBits(mdplib::SOLVED_MLRTDP) &&
                           !next->checkBits(mdplib::SOLVED)) {
                 subgraphWithinSearchHorizon = false;
             }
@@ -109,9 +110,11 @@ bool MLRTDPSolver::checkSolved(State* s)
         for (auto const & pp : closed) {
             pp.first->clearBits(mdplib::CLOSED);
             if (subgraphWithinSearchHorizon) {
-                depthSolved_.insert(pp.first);
+                pp.first->setBits(mdplib::SOLVED_MLRTDP);
                 pp.first->setBits(mdplib::SOLVED);
+                depthSolved_.insert(pp.first);
             } else if (pp.second <= horizon_) {
+                pp.first->setBits(mdplib::SOLVED_MLRTDP);
                 depthSolved_.insert(pp.first);
             }
         }
@@ -157,6 +160,8 @@ Action* MLRTDPSolver::solveOptimally(State* s0)
         if (s0->checkBits(mdplib::SOLVED))
             break;
         horizon_ = 2 * horizon_ + 1;
+        for (State* tmp : depthSolved_)
+            tmp->clearBits(mdplib::SOLVED_MLRTDP);
         depthSolved_.clear();
     }
     return s0->bestAction();

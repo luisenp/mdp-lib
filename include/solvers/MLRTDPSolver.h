@@ -64,22 +64,14 @@ public:
                  int horizon_,
                  bool optimal = false);
 
-
-    /**
-     * Returns true if the state was labeled as solved, false otherwise.
-     * @param s0 The state whose label will be checked.
-     */
-    bool solved(mlcore::State* s0)
-    {
-        return (depthSolved_.count(s0) > 0);
-    }
-
     /**
      * Solves the associated problem using the Labeled RTDP algorithm.
      *
      * @param s0 The state to start the search at.
      */
     virtual mlcore::Action* solve(mlcore::State* s0);
+
+    void cleanup() { depthSolved_.clear(); }
     };
 }
 

@@ -149,10 +149,11 @@ bool mustReplan(State* s) {
       return true;
   string algorithm = flag_value("algorithm");
   if (algorithm == "mlrtdp") {
-      return !(static_cast<MLRTDPSolver*>(solver)->solved(s));
+      return !s->checkBits(mdplib::SOLVED_MLRTDP);
   }
   return false;
 }
+
 
 void initSolver()
 {
