@@ -45,6 +45,11 @@ private:
                                         bool proactive,
                                         WrapperProblem* wrapperProblem);
 
+    /*
+     * If true, then the destructor can be called safely.
+     */
+    bool clean_ = false;
+
 protected:
     /**
      * The problem for which the reduced model is constructed.
@@ -86,19 +91,34 @@ public:
         reducedTransition_(reducedTransition),
         k_(k),
         useFullTransition_(false),
-        useContPlanEvaluationTransition_(false)
+        useContPlanEvaluationTransition_(false),
+        clean_(false)
     {
         s0 = new ReducedState(originalProblem_->initialState(), 0, this);
         this->addState(s0);
         actions_ = originalProblem->actions();
         gamma_ = originalProblem_->gamma();
+        if (reducedTransition_ == nullptr)
+            useFullTransition_ = true;
     }
 
-    virtual ~ReducedModel() {}
+    virtual ~ReducedModel()
+    {
+        assert(clean_);
+    }
+
+    void cleanup()
+    {
+        actions_ = std::list<mlcore::Action*> ();
+        clean_ = true;
+    }
 
     void k(int value) { k_ = value; }
 
-    void useFullTransition(bool value) { useFullTransition_ = value; }
+    void useFullTransition(bool value)
+    {
+        useFullTransition_ = value | (reducedTransition_ == nullptr);
+    }
 
     void useContPlanEvaluationTransition(bool value)
     {

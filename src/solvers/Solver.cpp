@@ -215,6 +215,7 @@ bool getReachableStates(mlcore::Problem* problem,
                         mlcore::StateSet& tipStates,
                         int horizon)
 {
+    bool containsGoal = false;
     std::list< std::pair<mlcore::State *, int> > stateDepthQueue;
     if (reachableStates.empty()) {
         stateDepthQueue.push_front(std::make_pair(problem->initialState(), 0));
@@ -230,9 +231,10 @@ bool getReachableStates(mlcore::Problem* problem,
         stateDepthQueue.pop_back();
         mlcore::State* state = stateDepthPair.first;
         int depth = stateDepthPair.second;
+        if (!reachableStates.insert(state).second)
+            continue;
         if (problem->goal(state)) {
-            tipStates.insert(state);
-            goalSeen = true;
+            containsGoal = true;
             continue;
         }
         if (depth == horizon) {
@@ -252,5 +254,26 @@ bool getReachableStates(mlcore::Problem* problem,
     return goalSeen;
 }
 
+
+void getBestPartialSolutionGraph(mlcore::Problem* problem,
+                                 mlcore::State* initialState,
+                                 mlcore::StateSet& bpsg)
+{
+    std::list<mlcore::State *> stateStack;
+    stateStack.push_front(initialState);
+    while (!stateStack.empty()) {
+        mlcore::State* state = stateStack.front();
+        stateStack.pop_front();
+        if (!bpsg.insert(state).second)
+            continue;
+        if (problem->goal(state))
+            continue;
+        mlcore::Action* a = greedyAction(problem, state);
+        for (mlcore::Successor sccr : problem->transition(state, a)) {
+            stateStack.
+            push_front(sccr.su_state);
+        }
+    }
+}
 
 } // mlsolvers

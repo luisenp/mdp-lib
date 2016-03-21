@@ -213,6 +213,19 @@ bool getReachableStates(mlcore::Problem* problem,
                         mlcore::StateSet& tipStates,
                         int horizon);
 
+/**
+ * Gets all reachable states starting from initialState in problem by following
+ * the greedy policy on the state values (i.e., the current best partial
+ * solution graph). The states are stored in the set bpsg.
+ *
+ * @param problem The problem describing the state space to traverse.
+ * @param initialState The initial state for the search.
+ * @param bpsg A set to store the best partial solution graph.
+ */
+void getBestPartialSolutionGraph(mlcore::Problem* problem,
+                                 mlcore::State* initialState,
+                                 mlcore::StateSet& bpsg);
+
 } // mlsolvers
 
 
