@@ -116,7 +116,8 @@ double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s, double weight)
 
 mlcore::State* randomSuccessor(mlcore::Problem* problem,
                                mlcore::State* s,
-                               mlcore::Action* a)
+                               mlcore::Action* a,
+                               double* prob)
 {
     double pick = dis(gen);
 
@@ -126,10 +127,14 @@ mlcore::State* randomSuccessor(mlcore::Problem* problem,
     double acc = 0.0;
     for (mlcore::Successor sccr : problem->transition(s, a)) {
         acc += sccr.su_prob;
-        if (acc >= pick)
+        if (acc >= pick) {
+            if (prob != nullptr)
+                *prob = sccr.su_prob;
             return sccr.su_state;
+        }
     }
-
+    if (prob != nullptr)
+        *prob = 1.0;
     return s;
 }
 
@@ -210,6 +215,7 @@ bool getReachableStates(mlcore::Problem* problem,
                         mlcore::StateSet& tipStates,
                         int horizon)
 {
+    bool containsGoal = false;
     std::list< std::pair<mlcore::State *, int> > stateDepthQueue;
     if (reachableStates.empty()) {
         stateDepthQueue.push_front(std::make_pair(problem->initialState(), 0));
@@ -225,9 +231,10 @@ bool getReachableStates(mlcore::Problem* problem,
         stateDepthQueue.pop_back();
         mlcore::State* state = stateDepthPair.first;
         int depth = stateDepthPair.second;
+        if (!reachableStates.insert(state).second)
+            continue;
         if (problem->goal(state)) {
-            tipStates.insert(state);
-            goalSeen = true;
+            containsGoal = true;
             continue;
         }
         if (depth == horizon) {

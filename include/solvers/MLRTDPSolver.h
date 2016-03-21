@@ -9,6 +9,7 @@
 namespace mlsolvers
 {
 
+
 /**
  * A SSP solver using the Myopic LRTDP algorithm.
  */
@@ -48,7 +49,6 @@ private:
     /* Finds an approximate policy for the problem. */
     mlcore::Action* solveApproximate(mlcore::State* s0);
 
-
 public:
     /**
      * Creates a Myopic LRTDP solver for the given problem.
@@ -72,7 +72,8 @@ public:
     virtual mlcore::Action* solve(mlcore::State* s0);
 
     void cleanup() { depthSolved_.clear(); }
-    };
+};
+
 }
 
 #endif // MDPLIB_MLRTDPSOLVER_H

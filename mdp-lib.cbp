@@ -565,7 +565,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/reduced/ReducedHeuristicWrapper.h" />
 		<Unit filename="include/reduced/ReducedModel.h" />
 		<Unit filename="include/reduced/ReducedState.h" />
-		<Unit filename="include/reduced/ReducedTransitionConfig.h" />
+		<Unit filename="include/reduced/ReducedTransition.h" />
 		<Unit filename="include/solvers/ConcurrentSolver.h" />
 		<Unit filename="include/solvers/DeterministicSolver.h" />
 		<Unit filename="include/solvers/EpicSolver.h" />
@@ -589,6 +589,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/util/graph.h" />
 		<Unit filename="include/util/rational.h" />
 		<Unit filename="src/Action.cpp" />
+		<Unit filename="src/MDPLib.cpp" />
 		<Unit filename="src/State.cpp" />
 		<Unit filename="src/domains/DummyState.cpp" />
 		<Unit filename="src/domains/WrapperProblem.cpp" />
