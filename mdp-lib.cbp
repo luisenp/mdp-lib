@@ -569,6 +569,8 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/solvers/ConcurrentSolver.h" />
 		<Unit filename="include/solvers/DeterministicSolver.h" />
 		<Unit filename="include/solvers/EpicSolver.h" />
+		<Unit filename="include/solvers/HDPSolver.h" />
+		<Unit filename="include/solvers/HMinHeuristic.h" />
 		<Unit filename="include/solvers/LAOStarSolver.h" />
 		<Unit filename="include/solvers/LRTDPSolver.h" />
 		<Unit filename="include/solvers/MLRTDPSolver.h" />
@@ -624,7 +626,8 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="src/reduced/ReducedModel.cpp" />
 		<Unit filename="src/solvers/ConcurrentSolver.cpp" />
 		<Unit filename="src/solvers/DeterministicSolver.cpp" />
-		<Unit filename="src/solvers/EpicSolver.cpp" />
+		<Unit filename="src/solvers/HDPSolver.cpp" />
+		<Unit filename="src/solvers/HMinHeuristic.cpp" />
 		<Unit filename="src/solvers/LAOStarSolver.cpp" />
 		<Unit filename="src/solvers/LRTDPSolver.cpp" />
 		<Unit filename="src/solvers/MLRTDPSolver.cpp" />

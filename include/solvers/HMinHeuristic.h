@@ -40,6 +40,12 @@ public:
 
     virtual ~HMinHeuristic() { }
 
+    void reset()
+    {
+        bestActions_.clear();
+        costs_.clear();
+    }
+
     virtual double cost(const mlcore::State* s);
 };
 

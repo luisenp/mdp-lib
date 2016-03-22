@@ -283,6 +283,10 @@ int main(int argc, char* args[])
         if (i == 0 || !flag_is_registered("no-initial-plan")) {
             for (State* s : problem->states())
                 s->reset();
+            if (flag_is_registered_with_value("heuristic") &&
+                    flag_value("heuristic") == "hmin") {
+                static_cast<HMinHeuristic*>(heuristic)->reset();
+            }
             startTime = clock();
             solver->solve(problem->initialState());
             endTime = clock();
