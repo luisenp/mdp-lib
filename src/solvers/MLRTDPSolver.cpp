@@ -26,12 +26,11 @@ void MLRTDPSolver::trial(State* s)
     State* currentState = s;
     list<State*> visited;
     while (!labeledSolved(currentState)) {
-        visited.push_front(currentState);
         if (problem_->goal(currentState))
             break;
-
         if (currentState->deadEnd())
             break;
+	visited.push_front(currentState);
         bellmanUpdate(problem_, currentState);
 
         currentState = randomSuccessor(problem_,

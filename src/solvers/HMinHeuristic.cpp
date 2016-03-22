@@ -59,6 +59,8 @@ double HMinHeuristic::cost(const State* s)
     auto it = costs_.find(const_cast<State*> (s));
     if (it != costs_.end())
         return it->second;
+    if (problem_->goal(const_cast<State*>(s)))
+	return 0.0;
 
     State* currentState = nullptr;
     while (true) {
