@@ -30,7 +30,10 @@ GridWorldProblem::GridWorldProblem() :
 }
 
 
-GridWorldProblem::GridWorldProblem(const char* filename, double actionCost)
+GridWorldProblem::GridWorldProblem(const char* filename,
+                                   double actionCost,
+                                   double holeCost,
+                                   bool allDirections)
 {
     mdplib_debug = true;
     std::ifstream myfile (filename);
@@ -45,6 +48,8 @@ GridWorldProblem::GridWorldProblem(const char* filename, double actionCost)
             for (width_ = 0; width_ < line.size(); width_++) {
                 if (line.at(width_) == 'x') {
                     walls.insert(std::pair<int, int>(width_, height_));
+                } else if (line.at(width_) == '@') {
+                    holes.insert(std::pair<int, int>(width_, height_));
                 } else if (line.at(width_) == 'G') {
                     goals_->insert(
                         std::make_pair(
@@ -64,6 +69,8 @@ GridWorldProblem::GridWorldProblem(const char* filename, double actionCost)
         exit(-1);
     }
     actionCost_ = actionCost;
+    holeCost_ = holeCost;
+    allDirections_ = allDirections;
     s0 = new GridWorldState(this, x0_, y0_);
     absorbing = new GridWorldState(this, -1, -1);
     this->addState(s0);
@@ -106,9 +113,8 @@ GridWorldProblem::GridWorldProblem(int width, int height,
 }
 
 
-bool GridWorldProblem::gridGoal(mlcore::State* s) const
+bool GridWorldProblem::gridGoal(GridWorldState* gws) const
 {
-    GridWorldState* gws = static_cast<GridWorldState *> (s);
     std::pair<int,int> pos(gws->x(),gws->y());
     return goals_->find(pos) != goals_->end();
 }
@@ -128,47 +134,70 @@ GridWorldProblem::transition(mlcore::State *s, mlcore::Action *a)
 
     std::list<mlcore::Successor> successors;
 
-    if (s == absorbing || gridGoal(s)) {
+    if (s == absorbing || gridGoal(state)) {
         successors.push_front(mlcore::Successor(absorbing, 1.0));
         return successors;
     }
 
+    double probForward = 0.8;
+    int numSuccessors = allDirections_ ? 3 : 2;
+    double probSides = 0.2 / numSuccessors;
     if (action->dir() == gridworld::UP) {
         addSuccessor(state, successors, height_ - 1, state->y(),
-                     state->x(), state->y() + 1, 0.8);
+                     state->x(), state->y() + 1, probForward);
 
         addSuccessor(state, successors, state->x(), 0,
-                     state->x() - 1, state->y(), 0.1);
+                     state->x() - 1, state->y(), probSides);
 
         addSuccessor(state, successors, width_ - 1, state->x(),
-                     state->x() + 1, state->y(), 0.1);
+                     state->x() + 1, state->y(), probSides);
+
+        if (allDirections_) {
+            addSuccessor(state, successors, state->y(), 0,
+                         state->x(), state->y() - 1, probSides);
+        }
     } else if (action->dir() == gridworld::DOWN) {
         addSuccessor(state, successors, state->y(), 0,
-                     state->x(), state->y() - 1, 0.8);
+                     state->x(), state->y() - 1, probForward);
 
         addSuccessor(state, successors, state->x(), 0,
-                     state->x() - 1, state->y(), 0.1);
+                     state->x() - 1, state->y(), probSides);
 
         addSuccessor(state, successors, width_ - 1, state->x(),
-                     state->x() + 1, state->y(), 0.1);
+                     state->x() + 1, state->y(), probSides);
+
+        if (allDirections_) {
+            addSuccessor(state, successors, height_ - 1, state->y(),
+                         state->x(), state->y() + 1, probSides);
+        }
     } else if (action->dir() == gridworld::LEFT) {
         addSuccessor(state, successors, state->x(), 0,
-                     state->x() - 1, state->y(), 0.8);
+                     state->x() - 1, state->y(), probForward);
 
         addSuccessor(state, successors, state->y(), 0,
-                     state->x(), state->y() - 1, 0.1);
+                     state->x(), state->y() - 1, probSides);
 
         addSuccessor(state, successors, height_ - 1, state->y(),
-                     state->x(), state->y() + 1, 0.1);
+                     state->x(), state->y() + 1, probSides);
+
+        if (allDirections_) {
+            addSuccessor(state, successors, width_ - 1, state->x(),
+                         state->x() + 1, state->y(), probSides);
+        }
     } else if (action->dir() == gridworld::RIGHT) {
         addSuccessor(state, successors, width_ - 1, state->x(),
-                     state->x() + 1, state->y(), 0.8);
+                     state->x() + 1, state->y(), probForward);
 
         addSuccessor(state, successors, state->y(), 0,
-                     state->x(), state->y() - 1, 0.1);
+                     state->x(), state->y() - 1, probSides);
 
         addSuccessor(state, successors, height_ - 1, state->y(),
-                     state->x(), state->y() + 1, 0.1);
+                     state->x(), state->y() + 1, probSides);
+
+        if (allDirections_) {
+            addSuccessor(state, successors, state->x(), 0,
+                         state->x() - 1, state->y(), probSides);
+        }
     }
     return successors;
 }
@@ -178,11 +207,13 @@ double GridWorldProblem::cost(mlcore::State* s, mlcore::Action* a) const
 {
     if (s == absorbing)
         return 0.0;
-    if (gridGoal(s)) {
-        GridWorldState* gws = static_cast<GridWorldState *> (s);
+    GridWorldState* gws = static_cast<GridWorldState *> (s);
+    if (gridGoal(gws)) {
         std::pair<int,int> pos(gws->x(),gws->y());
         return (*goals_)[pos];
     }
+    if (holes.count(std::pair<int, int> (gws->x(), gws->y())) != 0)
+        return holeCost_ * actionCost_;
     return actionCost_;
 }
 

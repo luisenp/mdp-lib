@@ -22,7 +22,15 @@ namespace gridworld
 
 /**
  * A class representing a grid world problem as described
- * in AIAMA 3rd Edition.
+ * in AIAMA 3rd Edition, with some additional variants.
+ *
+ * Problems can be read from a file with the following notation:
+ *
+ *   - A '.' character represents an empty cell.
+ *   - A 'x' character represents a wall (can't be traversed).
+ *   - A '@' character represents a hole (can be traversed at a larger cost).
+ *   - A 'S' character represents the start cell.
+ *   - A 'G' character represents a goal cell (multiple goals are allowed).
  */
 class GridWorldProblem : public mlcore::Problem
 {
@@ -34,9 +42,12 @@ private:
     int x0_;
     int y0_;
     double actionCost_;
+    double holeCost_;
+    bool allDirections_;
     PairDoubleMap* goals_;
     mlcore::State* absorbing;
     IntPairSet walls;
+    IntPairSet holes;
 
     void addSuccessor(GridWorldState* state,
                       std::list<mlcore::Successor>& successors,
@@ -48,7 +59,7 @@ private:
 
     void addAllActions();
 
-    bool gridGoal(mlcore::State* s) const;
+    bool gridGoal(GridWorldState* s) const;
 public:
     /**
      * Default constructor.
@@ -63,7 +74,10 @@ public:
      * stored at the given filename. The constructor also receives
      * the cost of the actions.
      */
-    GridWorldProblem(const char* filename, double actionCost = 1.0);
+    GridWorldProblem(const char* filename,
+                     double actionCost = 1.0,
+                     double holeCost = 100.0,
+                     bool allDirections = false);
 
     /**
      * Constructs a grid world with the specified width, height,
