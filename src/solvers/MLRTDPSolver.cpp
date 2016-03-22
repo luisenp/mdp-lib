@@ -28,10 +28,13 @@ void MLRTDPSolver::trial(State* s)
     while (!labeledSolved(currentState)) {
         if (problem_->goal(currentState))
             break;
+
+        visited.push_front(currentState);
+
+        bellmanUpdate(problem_, currentState);
+
         if (currentState->deadEnd())
             break;
-	visited.push_front(currentState);
-        bellmanUpdate(problem_, currentState);
 
         currentState = randomSuccessor(problem_,
                                        currentState,
@@ -76,16 +79,12 @@ bool MLRTDPSolver::checkSolved(State* s)
             continue;
         }
 
+        if (problem_->goal(currentState) || currentState->deadEnd())
+            continue;
+
         closed.push_front(pp);
         currentState->setBits(mdplib::CLOSED);
 
-        if (problem_->goal(currentState))
-            continue;
-
-        if (currentState->deadEnd()) {
-            rv = false;
-            continue;
-        }
 
         Action* a = greedyAction(problem_, currentState);
 

@@ -15,9 +15,10 @@ void LRTDPSolver::trial(mlcore::State* s)
     mlcore::State* tmp = s;
     std::list<mlcore::State*> visited;
     while (!tmp->checkBits(mdplib::SOLVED)) {
-        visited.push_front(tmp);
         if (problem_->goal(tmp))
             break;
+
+        visited.push_front(tmp);
 
         bellmanUpdate(problem_, tmp);
 
@@ -49,18 +50,14 @@ bool LRTDPSolver::checkSolved(mlcore::State* s)
     while (!open.empty()) {
         tmp = open.front();
         open.pop_front();
+
+        if (problem_->goal(tmp) || tmp->deadEnd())
+            continue;
+
         closed.push_front(tmp);
         tmp->setBits(mdplib::CLOSED);
 
         mlcore::Action* a = greedyAction(problem_, tmp);
-
-        if (problem_->goal(tmp))
-            continue;
-
-        if (tmp->deadEnd()) {
-            rv = false;
-            continue;
-        }
 
         if (residual(problem_, tmp) > epsilon_)
             rv = false;

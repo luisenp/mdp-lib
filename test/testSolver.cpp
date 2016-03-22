@@ -249,7 +249,8 @@ int main(int argc, char* args[])
     if (flag_is_registered_with_value("heuristic") &&
             flag_value("heuristic") == "hmin") {
         clock_t startTime = clock();
-        heuristic = new HMinHeuristic(problem, false);
+        bool solveAll = flag_is_registered("hmin-solve-all");
+        heuristic = new HMinHeuristic(problem, solveAll);
         clock_t endTime = clock();
         if (verbosity > 100) {
             cout << "Heuristic took " <<
