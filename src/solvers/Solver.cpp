@@ -231,9 +231,8 @@ bool getReachableStates(mlcore::Problem* problem,
         stateDepthQueue.pop_back();
         mlcore::State* state = stateDepthPair.first;
         int depth = stateDepthPair.second;
-        if (!reachableStates.insert(state).second)
-            continue;
         if (problem->goal(state)) {
+            tipStates.insert(state);
             containsGoal = true;
             continue;
         }

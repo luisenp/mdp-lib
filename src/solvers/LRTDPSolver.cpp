@@ -77,6 +77,7 @@ bool LRTDPSolver::checkSolved(mlcore::State* s)
         }
     } else {
         while (!closed.empty()) {
+            double res = residual(problem_, tmp);
             tmp = closed.front();
             closed.pop_front();
             tmp->clearBits(mdplib::CLOSED);

@@ -4,9 +4,8 @@
 #include "../../include/domains/WrapperProblem.h"
 
 #include "../../include/solvers/Solver.h"
-#include "../../include/solvers/LAOStarSolver.h"
-#include "../../include/solvers/LRTDPSolver.h"
 #include "../../include/solvers/SSiPPSolver.h"
+#include "../../include/solvers/VISolver.h"
 
 
 using namespace mlcore;
@@ -18,12 +17,14 @@ namespace mlsolvers
 Action* SSiPPSolver::solveOriginal(State* s0)
 {
     StateSet reachableStates, tipStates;
+    reachableStates.insert(s0);
     getReachableStates(problem_, reachableStates, tipStates, t_);
     WrapperProblem* wrapper = new WrapperProblem(problem_);
+    wrapper->setNewInitialState(s0);
     wrapper->overrideStates(&reachableStates);
     wrapper->overrideGoals(&tipStates);
-    LRTDPSolver lrtdpSolver(wrapper, 100000, epsilon_);
-    lrtdpSolver.solve(s0);
+    VISolver vi(wrapper);
+    vi.solve();
     wrapper->cleanup();
     return s0->bestAction();
 }

@@ -154,10 +154,17 @@ public:
      * as there are override states.
      *
      * @param newStates The set of states that will override the previous ones.
+     * @param setToZero If true, the estimated cost of the state will be set
+     *                  to zero.
      */
-    void overrideStates(mlcore::StateSet* newStates)
+    void overrideStates(mlcore::StateSet* newStates, bool setToZero = false)
     {
         overrideStates_ = newStates;
+        if (setToZero) {
+            for (mlcore::State* s : *overrideStates_)
+                s->setCost(0.0);
+        }
+
     }
 
     /**

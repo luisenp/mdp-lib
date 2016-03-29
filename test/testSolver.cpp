@@ -69,7 +69,7 @@ void setupGridWorld()
     string grid = flag_value("grid");
     if (verbosity > 100)
         cout << "Setting up grid world " << grid << endl;
-    problem = new GridWorldProblem(grid.c_str(), 1.0, 100.0, true);
+    problem = new GridWorldProblem(grid.c_str(), 1.0, 50.0, true);
     if (!flag_is_registered_with_value("heuristic") ||
             flag_value("heuristic") == "domain")
         heuristic = new GWManhattanHeuristic((GridWorldProblem*) problem);
@@ -172,6 +172,9 @@ bool mustReplan(State* s, int plausTrial) {
               return true;
           }
       }
+  }
+  if (algorithm == "ssipp") {
+    return true;
   }
   return false;
 }

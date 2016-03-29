@@ -43,7 +43,9 @@ bool HDPSolver::dfs(mlcore::State* s, double plaus)
         return false;
     }
     if (residual(problem_, s) > epsilon_) {
-        bellmanUpdate(problem_, s);
+        do {
+            bellmanUpdate(problem_, s);
+        } while (residual(problem_, s) > epsilon_);
         return true;
     }
     inStack_.insert(s);
@@ -70,7 +72,9 @@ bool HDPSolver::dfs(mlcore::State* s, double plaus)
         i++;
     }
     if (neededUpdate) {
-        bellmanUpdate(problem_, s);
+        do {
+            bellmanUpdate(problem_, s);
+        } while (residual(problem_, s) > epsilon_);
         return true;
     } else if (indices_[s] == low_[s]) {
         // State s is the root of a connected component.
