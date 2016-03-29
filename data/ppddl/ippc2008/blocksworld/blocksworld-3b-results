@@ -1,0 +1,22 @@
+[ 0:(emptyhand) 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 36:(on-table b1) ]best a(pick-up-from-table b1) : newcost = 1.33333 count = 4 value = 3.11111 fraction 0.25
+[ 8:(clear b1) 10:(clear b3) 16:(on b3 b2) 22:(holding b2) 36:(on-table b1) ]best a(put-tower-down b3 b2) : newcost = 1 count = 1 value = 8.97222 fraction 0
+[ 2:(on b1 b2) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 22:(holding b2) ]best a(put-tower-down b1 b2) : newcost = 1 count = 3 value = 8.175 fraction 0
+[ 10:(clear b3) 14:(holding b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ]best a(put-down b3) : newcost = 1 count = 0 value = 7.22222 fraction -nan
+[ 0:(emptyhand) 2:(on b1 b2) 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) ]best a(pick-tower b1 b2 b3) : newcost = 1.8175 count = 5 value = 0 fraction 0
+[ 0:(emptyhand) 6:(on-table b3) 10:(clear b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ]best a(pick-up b2 b1) : newcost = 1.33333 count = 2 value = 6.22222 fraction 0.5
+[ 6:(on-table b3) 10:(clear b3) 18:(clear b2) 26:(on b2 b1) 30:(holding b1) ]best a(put-tower-down b2 b1) : newcost = 1 count = 1 value = 7.22222 fraction 0
+[ 0:(emptyhand) 6:(on-table b3) 18:(clear b2) 26:(on b2 b1) 28:(on b1 b3) ]best a(pick-up b2 b1) : newcost = 1.75 count = 2 value = 9.72222 fraction 0
+[ 6:(on-table b3) 8:(clear b1) 18:(clear b2) 22:(holding b2) 28:(on b1 b3) ]best a(put-down b2) : newcost = 1 count = 2 value = 8.97222 fraction 0
+[ 0:(emptyhand) 8:(clear b1) 10:(clear b3) 16:(on b3 b2) 34:(on-table b2) 36:(on-table b1) ]best a(pick-up b3 b2) : newcost = 1.75 count = 2 value = 7.97222 fraction 0.5
+[ 8:(clear b1) 10:(clear b3) 14:(holding b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ]best a(put-down b3) : newcost = 1 count = 1 value = 7.22222 fraction 1
+[ 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 30:(holding b1) 34:(on-table b2) ]best a(put-down b1) : newcost = 1 count = 2 value = 7.22222 fraction 0.5
+[ 0:(emptyhand) 2:(on b1 b2) 10:(clear b3) 20:(on b3 b1) 34:(on-table b2) ]best a(pick-up b3 b1) : newcost = 1.75 count = 2 value = 9.72222 fraction 0
+[ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ]best a(pick-up-from-table b2) : newcost = 1.33333 count = 3 value = 6.22222 fraction 0.666667
+[ 2:(on b1 b2) 8:(clear b1) 10:(clear b3) 14:(holding b3) 34:(on-table b2) ]best a(put-down b3) : newcost = 1 count = 2 value = 8.97222 fraction 0
+[ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 28:(on b1 b3) 34:(on-table b2) ]best a(pick-up b1 b3) : newcost = 1.75 count = 3 value = 7.97222 fraction 0.333333
+[ 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 30:(holding b1) ]best a(put-on-block b1 b2) : newcost = 1.77778 count = 3 value = 1.77778 fraction 0
+[ 0:(emptyhand) 2:(on b1 b2) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 34:(on-table b2) ]best a(pick-up b1 b2) : newcost = 1.75 count = 4 value = 7.97222 fraction 0.25
+[ 0:(emptyhand) 10:(clear b3) 16:(on b3 b2) 26:(on b2 b1) 36:(on-table b1) ]best a(pick-up b3 b2) : newcost = 1.75 count = 1 value = 7.97222 fraction 0
+[ 0:(emptyhand) 10:(clear b3) 18:(clear b2) 20:(on b3 b1) 34:(on-table b2) 36:(on-table b1) ]best a(pick-up b3 b1) : newcost = 1.75 count = 1 value = 7.97222 fraction 1
+[ 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 22:(holding b2) 36:(on-table b1) ]best a(put-on-block b2 b3) : newcost = 1.77778 count = 2 value = 4.88889 fraction 0.5
+[ 10:(clear b3) 18:(clear b2) 20:(on b3 b1) 30:(holding b1) 34:(on-table b2) ]best a(put-tower-down b3 b1) : newcost = 1 count = 0 value = 8.97222 fraction -nan
