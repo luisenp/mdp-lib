@@ -9,8 +9,7 @@ def parse_sexp(string):
   """
   Parses an S-Expression into a list-based tree.
   
-  >>> parse_sexp("(+ 5 (+ 3 5))")
-  [['+', '5', ['+', '3', '5']]]  
+  parse_sexp("(+ 5 (+ 3 5))") results in [['+', '5', ['+', '3', '5']]]  
   """
   sexp = [[]]
   word = ''
