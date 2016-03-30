@@ -121,25 +121,28 @@ def determinize_tree(determinization, ppddl_tree, index = 0):
   Each probabilistic effect is replaced by an element of determinization.
   The index in the determinization order corresponds to the pre-order
   index of the probabilistic effect in the PPDDL tree. The index parameter
-  is passed to keep track of this.
+  is passed and returned to keep track of this.
   """
   if not isinstance(ppddl_tree, list):
-    return
+    return index
   if ppddl_tree[0] == 'probabilistic':
     ppddl_tree[:] = []
-    ppddl_tree = determinization[0]
-    index += 1
+    ppddl_tree.extend(determinization[index])
+    return index + 1
   else:
     for element in ppddl_tree:
-      determinize_tree(determinization, element, index = 0)
+      index = determinize_tree(determinization, element, index)
+  return index
   
   
 def main(argv):
   parser = argparse.ArgumentParser(
     description='Create all possible determinizations of this domain.')
-  parser.add_argument('-d', '--domain', required=True)  
+  parser.add_argument('-d', '--domain', required=True)
+  parser.add_argument('-o', '--output', required=True)    
   args = parser.parse_args()
   domain_file_name = args.domain
+  output_file_name = args.output
   
   # Reading domain file.
   domain_str = ''
@@ -166,10 +169,15 @@ def main(argv):
   all_determinizations = (
     get_all_determinizations_comb(determinizations_of_all_effects))
   
+  # Writing all possible determinizations to a single PPDDL file each.
+  idx = 0
   for determinization in all_determinizations:
     determinization_ppddl_tree = copy.deepcopy(domain_tree)
     determinize_tree(determinization, determinization_ppddl_tree)
-    print make_str(determinization_ppddl_tree)
+    f = open('%s_det%d.pddl' % (output_file_name, idx), 'w')
+    f.write(make_str(determinization_ppddl_tree))
+    f.close()
+    idx += 1
   
 
 if __name__ == "__main__":
