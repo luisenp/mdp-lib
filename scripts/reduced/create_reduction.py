@@ -176,7 +176,7 @@ def main(argv):
   try:
     with open(domain_file_name, 'r') as domain_file:
       for line in domain_file:
-        if line.startswith(';;'):
+        if line.startswith(';;') or line.isspace():
           continue;
         domain_str += line
   except IOError:
