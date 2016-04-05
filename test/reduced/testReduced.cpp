@@ -170,6 +170,7 @@ int main(int argc, char* args[])
 
     double totalReductionTime = 0.0;
     ReducedTransition* bestReduction = nullptr;
+                                                                                bestReduction = reductions.front();
     wrapperProblem = new WrapperProblem(problem);
     mlcore::StateSet reachableStates, tipStates;
 
@@ -197,7 +198,7 @@ int main(int argc, char* args[])
 
     // Running a trial of the continual planning approach.
     double expectedCost = 0.0;
-    int nsims = 30;
+    int nsims = 100;
     for (int i = 0; i < nsims; i++) {
         pair<double, double> costAndTime =
             reducedModel->trial(solver, wrapperProblem);
