@@ -42,11 +42,14 @@ bool HDPSolver::dfs(mlcore::State* s, double plaus)
         solvedStates_.insert(s);
         return false;
     }
+    bool neededUpdate = false;
     if (residual(problem_, s) > epsilon_) {
-        do {
-            bellmanUpdate(problem_, s);
-        } while (residual(problem_, s) > epsilon_);
-        return true;
+        neededUpdate = true;
+        // mini-gpt adds this loop, but this actually worsens convergence.
+        // do {
+        //     bellmanUpdate(problem_, s);
+        // } while (residual(problem_, s) > epsilon_);
+        // return true;
     }
     inStack_.insert(s);
     stateStack_.push_back(s);
@@ -54,7 +57,6 @@ bool HDPSolver::dfs(mlcore::State* s, double plaus)
     low_[s] = index_;
     index_++;
 
-    bool neededUpdate = false;
     Action* a = greedyAction(problem_, s);
     list<Successor> successors = problem_->transition(s, a);
     if (minPlaus_ != INT_MAX)
@@ -72,10 +74,12 @@ bool HDPSolver::dfs(mlcore::State* s, double plaus)
         i++;
     }
     if (neededUpdate) {
-        do {
-            bellmanUpdate(problem_, s);
-        } while (residual(problem_, s) > epsilon_);
-        return true;
+        bellmanUpdate(problem_, s);
+        // same as above (mini-gpt code).
+        // do {
+        //     bellmanUpdate(problem_, s);
+        // } while (residual(problem_, s) > epsilon_);
+        //return true;
     } else if (indices_[s] == low_[s]) {
         // State s is the root of a connected component.
         while (true) {
