@@ -63,13 +63,29 @@ string FFReducedModelSolver::getActionNameFromFFPlanner()
                                                                                 dprint1(ffCommand);
     string actionName = "";
     FILE *ff = popen(ffCommand.c_str(), "r");
+    double costFF = mdplib::dead_end_cost;
     if (ff) {
         char lineBuffer[1024];
+        int currentLineAction = -1;
         while (fgets(lineBuffer, 1024, ff)) {
+                                                                                cerr << lineBuffer;
             if (strstr(lineBuffer, "step") != nullptr) {
-                char *pch = strstr(lineBuffer, "0:") + 3;
+                char *pch = strstr(lineBuffer, "0:");
+                if (pch == nullptr)
+                    continue;
+                pch += 3;
                 actionName += pch;
                 actionName = actionName.substr(0, actionName.size() - 1);
+                currentLineAction = 0;
+            } else if (currentLineAction != -1) {
+                currentLineAction++;
+                ostringstream oss("");
+                oss << currentLineAction << ":";
+                char *pch = strstr(lineBuffer, oss.str().c_str());
+                if (pch == nullptr) {
+                    costFF = currentLineAction;
+                    currentLineAction = -1;
+                }
             }
         }
         pclose(ff);
@@ -77,6 +93,7 @@ string FFReducedModelSolver::getActionNameFromFFPlanner()
         cerr << "Couldn't open FF at " << ffCommand.c_str() << endl;
         exit(-1);
     }
+                                                                                dprint2("CostFF", costFF);
     for (int i = 0; i < actionName.size(); i++) {
         actionName[i] = tolower(actionName[i]);
     }
@@ -95,6 +112,23 @@ mlcore::Action* FFReducedModelSolver::getActionFromName(string actionName)
             return a;
     }
     return nullptr;
+}
+
+
+mlcore::Action* FFReducedModelSolver::solve(mlcore::State* s0)
+{
+                                                                                dprint2("**** Solving", s0);
+    string currentStatePredicates = extractStatePredicates((PPDDLState*) s0);
+    replaceInitStateInProblemFile(currentStatePredicates);
+    mlcore::Action* action;
+    if (stateActions_.count(s0)) {
+        action = stateActions_[s0];
+    } else {
+        string actionName = getActionNameFromFFPlanner();
+        action = getActionFromName(actionName);
+        stateActions_[s0] = action;
+    }
+    return action;
 }
 
 }

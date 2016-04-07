@@ -142,7 +142,7 @@ int main(int argc, char* args[])
     FFReducedModelSolver ffSolver(problem,
                                   ffExec,
                                   directory + "/" + detProblem,
-                                  directory + "p01.pddl");
+                                  directory + "/p01.pddl");
 
     mlcore::StateActionMap stateActions;
 
@@ -151,18 +151,7 @@ int main(int argc, char* args[])
     while (true) {
         if (problem->goal(currentState))
             break;
-        string currentStatePredicates =
-            ffSolver.extractStatePredicates((PPDDLState*) currentState);
-                                                                                dprint1(currentStatePredicates);
-        ffSolver.replaceInitStateInProblemFile(currentStatePredicates);
-        mlcore::Action* action;
-        if (stateActions.count(currentState)) {
-            action = stateActions[currentState];
-        } else {
-            string actionName = ffSolver.getActionNameFromFFPlanner();
-            action = ffSolver.getActionFromName(actionName);
-            stateActions[currentState] = action;
-        }
+        mlcore::Action* action = ffSolver.solve(currentState);
         currentState = randomSuccessor(problem, currentState, action);
         cost += problem->cost(currentState, action);
                                                                                 dprint1(action);
