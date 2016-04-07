@@ -170,41 +170,9 @@ int main(int argc, char* args[])
 
     double totalReductionTime = 0.0;
     ReducedTransition* bestReduction = nullptr;
+                                                                                bestReduction = reductions.front();
     wrapperProblem = new WrapperProblem(problem);
     mlcore::StateSet reachableStates, tipStates;
-////////////////////////////////////////////////
-    // Testing the code that evaluates the reductions on a small sub-problem
-    // We use this wrapper problem to generate small sub-problems for
-    // learning the best reduced model for the original problem.
-    if (!useFullTransition) {
-                                                                                mdplib_debug = true;
-        reachableStates.insert(wrapperProblem->initialState());
-        getReachableStates(wrapperProblem,
-                           reachableStates,
-                           tipStates,
-                           5);
-
-        cout << "reachable " << reachableStates.size() <<
-            " tip " << tipStates.size() << endl;
-        wrapperProblem->overrideGoals(&tipStates);
-
-
-      wrapperProblem->overrideStates(&reachableStates);
-      BestDeterminizationReduction* best =
-          new BestDeterminizationReduction(wrapperProblem);
-
-//        wrapperProblem->setHeuristic(nullptr);
-//        clock_t startTimeReduction = clock();
-//        bestReduction = ReducedModel::getBestReduction(
-//              wrapperProblem, reductions, k, nullptr);
-//        clock_t endTimeReduction = clock();
-//        totalReductionTime =
-//            double(endTimeReduction - startTimeReduction) / CLOCKS_PER_SEC;
-
-        for (mlcore::State* s : wrapperProblem->states())
-            s->reset(); // Make sure the stored values/actions are cleared.
-    }
-/////////////////////////////////////////////////
 
     reducedModel = new ReducedModel(problem, bestReduction, k);
     reducedHeuristic = new ReducedHeuristicWrapper(heuristic);
@@ -230,7 +198,7 @@ int main(int argc, char* args[])
 
     // Running a trial of the continual planning approach.
     double expectedCost = 0.0;
-    int nsims = 30;
+    int nsims = 100;
     for (int i = 0; i < nsims; i++) {
         pair<double, double> costAndTime =
             reducedModel->trial(solver, wrapperProblem);

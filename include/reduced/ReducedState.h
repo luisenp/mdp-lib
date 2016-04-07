@@ -20,28 +20,28 @@ protected:
     /**
      * The number of exceptions that have occurred so far.
      */
-    int exceptionCount_;
+    int transitionCount_;
 
 public:
     ReducedState()
     {
         originalState_ = nullptr;
         problem_ = nullptr;
-        exceptionCount_ = 0;
+        transitionCount_ = 0;
     }
 
     ReducedState(const ReducedState& rhs) :
         originalState_(rhs.originalState_),
-        exceptionCount_(rhs.exceptionCount_)
+        transitionCount_(rhs.transitionCount_)
     {
         problem_ = rhs.problem_;
     }
 
     ReducedState(mlcore::State* originalState,
-                 int exceptionCount,
+                 int transitionCount,
                  mlcore::Problem* problem) :
         originalState_(originalState),
-        exceptionCount_(exceptionCount)
+        transitionCount_(transitionCount)
     {
         problem_ = problem;
     }
@@ -52,9 +52,9 @@ public:
 
     void originalState(mlcore::State* value) { originalState_ = value; }
 
-    int exceptionCount() { return exceptionCount_; }
+    int transitionCount() { return transitionCount_; }
 
-    void exceptionCount(int value) { exceptionCount_ = value; }
+    void transitionCount(int value) { transitionCount_ = value; }
 
     virtual mlcore::State& operator=(const mlcore::State& rhs)
     {
@@ -63,7 +63,7 @@ public:
 
         ReducedState* rs = (ReducedState *) &rhs;
         originalState_ = rs->originalState_;
-        exceptionCount_ = rs->exceptionCount_;
+        transitionCount_ = rs->transitionCount_;
         problem_ = rs->problem_;
         return *this;
     }
@@ -72,7 +72,7 @@ public:
     {
         ReducedState* rs = (ReducedState *) &rhs;
         return this->originalState_ == rs->originalState_ &&
-                this->exceptionCount_ == rs->exceptionCount_;
+                this->transitionCount_ == rs->transitionCount_;
     }
 
     virtual bool equals(mlcore::State* other) const
@@ -83,13 +83,13 @@ public:
 
     virtual int hashValue() const
     {
-        return originalState_->hashValue() + 37 * exceptionCount_;
+        return originalState_->hashValue() + 37 * transitionCount_;
     }
 
 
     virtual std::ostream& print(std::ostream& os) const
     {
-        os << "RS:(" << originalState_ << ", " << exceptionCount_ << ")";
+        os << "RS:(" << originalState_ << ", " << transitionCount_ << ")";
         return os;
     }
 

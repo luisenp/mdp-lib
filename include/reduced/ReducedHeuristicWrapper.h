@@ -18,7 +18,7 @@ public:
         heuristic_(heuristic) { }
     virtual ~ReducedHeuristicWrapper() { }
 
-    virtual double cost(const mlcore::State* s) const
+    virtual double cost(const mlcore::State* s)
     {
         ReducedState* rs = (ReducedState *) s;
         return heuristic_->cost(rs->originalState());

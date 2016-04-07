@@ -11,9 +11,11 @@
 
 #include "ReducedTransition.h"
 
+
 namespace mlreduced
 {
 
+//TODO: Might need to delete this class.
 class PPDDLTaggedReduction : public ReducedTransition
 {
 private:
@@ -24,19 +26,34 @@ public:
 
     virtual ~PPDDLTaggedReduction() { }
 
+    /**
+     * Overrides method from ReducedTransition.
+     */
     virtual
-    std::vector<bool> isPrimary(mlcore::State* s, mlcore::Action *a) const
+    getPrimaryIndicators(mlcore::State* s,
+                         mlcore::Action *a,
+                         std::vector<bool>& primaryIndicator) const
     {
-        mlppddl::PPDDLProblem* ppddlProblem = (mlppddl::PPDDLProblem *) problem_;
-        mlppddl::PPDDLState* ppddlState = (mlppddl::PPDDLState *) s;
-        state_t* internalPPDDLState = ppddlState->pState();
+//        mlppddl::PPDDLProblem* ppddlProblem = (mlppddl::PPDDLProblem *) problem_;
+//        mlppddl::PPDDLState* ppddlState = (mlppddl::PPDDLState *) s;
+//        state_t* internalPPDDLState = ppddlState->pState();
+//
+//        std::list<mlcore::Successor> successors = problem_->transition(s, a);
+//        std::vector<bool> primaryValues(successors.size(), false);
+//        for (mlcore::Successor successor : successors) {
+//            dprint1(successor.su_state, successor.su_prob);
+//        }
+    }
 
-        std::list<mlcore::Successor> successors = problem_->transition(s, a);
-        std::vector<bool> primaryValues(successors.size(), false);
-        for (mlcore::Successor successor : successors) {
-            dprint1(successor.su_state, successor.su_prob);
-        }
-        return primaryValues;
+    /**
+     * Overrides method from ReducedTransition.
+     */
+    virtual void
+    getIsCounterIncrementer(mlcore::State* s,
+                            mlcore::Action *a,
+                            std::vector<bool>& isCounterIncrementer) const
+    {
+
     }
 };
 
