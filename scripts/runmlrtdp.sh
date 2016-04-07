@@ -16,18 +16,11 @@ for track in ${tracks[@]}; do
   --heuristic=hmin --hmin-solve-all 
   
   # Approximate MLRDP 
-  echo "${track}|mlrtdp|hor=0"
-  ../testsolver.out --track=../data/tracks/$track.track \
-  --algorithm=mlrtdp --horizon=0 --v=0 --n=$nsims  \
-  --heuristic=hmin --hmin-solve-all 
-      
-  horizon=1
-  for i in `seq 0 1`; do
+  for horizon in `seq 0 1`; do
     echo "${track}|mlrtdp|hor=${horizon}"
       ../testsolver.out --track=../data/tracks/$track.track \
       --algorithm=mlrtdp --horizon=$horizon --v=0 --n=$nsims \
        --heuristic=hmin --hmin-solve-all 
-    let "horizon *= 2"
   done
     
   # Approximate HDP(0,j)
