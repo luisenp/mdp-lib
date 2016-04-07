@@ -30,8 +30,11 @@ void MLRTDPSolver::trial(State* s)
             break;
 
         visited.push_front(currentState);
-
+                                                                                double res = residual(problem_, currentState);
         bellmanUpdate(problem_, currentState);
+                                                                                if (res < epsilon_ && residual(problem_, currentState) > epsilon_) {
+                                                                                    dprint2("ooops!", residual(problem_, currentState));
+                                                                                }
 
         if (currentState->deadEnd())
             break;
@@ -121,7 +124,11 @@ bool MLRTDPSolver::checkSolved(State* s)
             pp = closed.front();
             closed.pop_front();
             pp.first->clearBits(mdplib::CLOSED);
+                                                                                double res = residual(problem_, pp.first);
             bellmanUpdate(problem_, pp.first);
+                                                                                if (res < epsilon_ && residual(problem_, pp.first) > epsilon_) {
+                                                                                    dprint2("ooops!", residual(problem_, pp.first));
+                                                                                }
         }
     }
 

@@ -60,17 +60,15 @@ double HMinHeuristic::cost(const State* s)
     if (it != costs_.end())
         return it->second;
     if (problem_->goal(const_cast<State*>(s)))
-	return 0.0;
+        return 0.0;
 
     State* currentState = nullptr;
     while (true) {
         // Starting a LRTA* trial.
         currentState = const_cast<State*> (s);
-        list<State*> visited;
         bool noActionChange = true;
         double maxResidual = 0.0;
         while (!problem_->goal(currentState)) {
-            visited.push_back(currentState);
             Action* bestAction = nullptr;
             if (bestActions_.count(currentState) > 0)
                 bestAction = bestActions_[currentState];

@@ -47,6 +47,8 @@ int SailingProblem::tack(const SailingState* state,
 
 bool SailingProblem::goal(mlcore::State* s) const
 {
+    if (s == absorbing_)
+      return true;
     SailingState* state = static_cast<SailingState*> (s);
     return state->x() == goalX_ && state->y() == goalY_;
 }
