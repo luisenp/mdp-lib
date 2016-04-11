@@ -142,7 +142,8 @@ int main(int argc, char* args[])
     FFReducedModelSolver ffSolver(problem,
                                   ffExec,
                                   directory + "/" + detProblem,
-                                  directory + "/p01.pddl");
+                                  directory + "/p01.pddl",
+                                  1);
 
     mlcore::StateActionMap stateActions;
 
@@ -151,11 +152,20 @@ int main(int argc, char* args[])
     while (true) {
         if (problem->goal(currentState))
             break;
+        if (cost > mdplib::dead_end_cost)
+            break;
         mlcore::Action* action = ffSolver.solve(currentState);
+                                                                                dprint1("*********************");
+                                                                                dprint1(currentState);
+                                                                                if (action != nullptr)
+                                                                                    dprint1(action);
+                                                                                dprint1("*********************");
+        if (action == nullptr) {
+            cost = mdplib::dead_end_cost;
+            break;
+        }
         currentState = randomSuccessor(problem, currentState, action);
         cost += problem->cost(currentState, action);
-                                                                                dprint1(action);
-                                                                                dsleep(1000);
     }
     dprint1(cost);
 
