@@ -143,7 +143,7 @@ int main(int argc, char* args[])
                                   ffExec,
                                   directory + "/" + detProblem,
                                   directory + "/p01.pddl",
-                                  1);
+                                  3);
 
     mlcore::StateActionMap stateActions;
 

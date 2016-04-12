@@ -126,9 +126,11 @@ FFReducedModelSolver::greedyAction_(mlcore::State* s, int horizon)
 {
     double qBestAction = mdplib::dead_end_cost + 1;
     mlcore::Action* bestAction = nullptr;
+                                                                                bool check = false;
     for (mlcore::Action* a : problem_->actions()) {
         if (!problem_->applicable(s, a))
             continue;
+//                                                                                check = true;
 //                                                                                dprint2("  APPLICABLE", a);
 //                                                                                mdplib_debug = false;
         double qAction = this->qValue_(s, a, horizon);
@@ -140,6 +142,9 @@ FFReducedModelSolver::greedyAction_(mlcore::State* s, int horizon)
             bestAction = a;
         }
     }
+//                                                                                if (!check) {
+//                                                                                    dprint1("OMG!!! DEADEND!!");
+//                                                                                }
     return bestAction;
 }
 
@@ -183,14 +188,22 @@ FFReducedModelSolver::solve(mlcore::State* s, int horizon, bool& isDeadEnd)
             estimatedCosts_[0][s] = actionNameAndCost.second;
         }
         isDeadEnd = (stateFFAction == nullptr);
-//                                                                                for(int i = 0; i < 2 * (maxHorizon_ - horizon); i++) cerr << " ";
-//                                                                                dprint2("RESULT", estimatedCosts_[0][s]);
+                                                                                for(int i = 0; i < 2 * (maxHorizon_ - horizon); i++) cerr << " ";
+                                                                                dprint2("RESULT", estimatedCosts_[0][s]);
         return 0.0;
     } else {
         double maxResidual = 0.0;
         mlcore::Action* action = this->greedyAction_(s, horizon);
-//                                                                                for(int i = 0; i < 2 * (maxHorizon_ - horizon); i++) cerr << " ";
-//                                                                                dprint2("BEST ACTION BEFORE", action);
+
+        if (action == nullptr) {
+            // This state is a dead-end.
+            isDeadEnd = true;
+            estimatedCosts_[horizon][s] = mdplib::dead_end_cost;
+            return 0.0;
+        }
+                                                                                for(int i = 0; i < 2 * (maxHorizon_ - horizon); i++) cerr << " ";
+                                                                                dprint2("BEST ACTION BEFORE", action);
+                                                                                dprint1((void *) action);
         bool newIsDeadEnd = true;
         for (auto const & successor : problem_->transition(s, action)) {
             maxResidual = std::max(maxResidual,
@@ -205,13 +218,14 @@ FFReducedModelSolver::solve(mlcore::State* s, int horizon, bool& isDeadEnd)
         // Computing the new best action.
         mlcore::Action* prevAction = action;
         action = this->greedyAction_(s, horizon);
-//                                                                                for(int i = 0; i < 2 * (maxHorizon_ - horizon); i++) cerr << " ";
-//                                                                                dprint2("BEST ACTION AFTER", action);
+                                                                                for(int i = 0; i < 2 * (maxHorizon_ - horizon); i++) cerr << " ";
+                                                                                dprint2("BEST ACTION AFTER", action);
 
         // Computing the new estimated cost of this state.
         double newCost = std::min(this->qValue_(s, action, horizon),
                                    mdplib::dead_end_cost);
         double residual = fabs(estimatedCosts_[horizon][s] - newCost);
+        estimatedCosts_[horizon][s] = newCost;
 
         if (prevAction != action) {
             // The best action changed, can't allow convergence.
@@ -234,6 +248,7 @@ mlcore::Action* FFReducedModelSolver::solve(mlcore::State* s0)
     while (residual > 1.0e-3) {
         bool isDeadEnd = true;
         residual = solve(s0, maxHorizon_, isDeadEnd);
+                                                                                dprint1(estimatedCosts_[maxHorizon_][s0]);
     }
     return this->greedyAction_(s0, maxHorizon_);
 }
