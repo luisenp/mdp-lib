@@ -125,17 +125,30 @@ int main(int argc, char* args[])
     mdplib_debug = true;
     register_flags(argc, args);
 
+    // The PPDDL problem to solve.
     assert(flag_is_registered_with_value("problem"));;
     string ppddlArgs = flag_value("problem");
 
+    // The PDDL determinization to use.
     assert(flag_is_registered_with_value("det_problem"));
     string detProblem = flag_value("det_problem");
 
+    //The directory where the determinization is stored.
     assert(flag_is_registered_with_value("dir"));
     string directory = flag_value("dir");
 
+    //The horizon to use.
+    assert(flag_is_registered_with_value("horizon"));
+    int horizon = stoi(flag_value("horizon"));
+
+    // The verbosity level.
     if (flag_is_registered_with_value("v"))
         verbosity = stoi(flag_value("v"));
+
+    // The number of simulations for the experiments.
+    int nsims = 100;
+    if (flag_is_registered_with_value("nsims"))
+        nsims = stoi(flag_value("nsims"));
 
     initPPDDL(ppddlArgs);
 
@@ -143,31 +156,54 @@ int main(int argc, char* args[])
                                   ffExec,
                                   directory + "/" + detProblem,
                                   directory + "/p01.pddl",
-                                  3);
+                                  horizon);
 
     mlcore::StateActionMap stateActions;
 
-    mlcore::State* currentState =  problem->initialState();
-    double cost = 0.0;
-    while (true) {
-        if (problem->goal(currentState))
-            break;
-        if (cost > mdplib::dead_end_cost)
-            break;
-        mlcore::Action* action = ffSolver.solve(currentState);
-                                                                                dprint1("*********************");
-                                                                                dprint1(currentState);
-                                                                                if (action != nullptr)
-                                                                                    dprint1(action);
-                                                                                dprint1("*********************");
-        if (action == nullptr) {
-            cost = mdplib::dead_end_cost;
-            break;
+    double expectedCost = 0.0;
+    int countSuccesses = 0;
+    mdplib_debug = true;
+    for (int i = 0; i < nsims; i++) {
+        double cost = 0.0;
+        mlcore::State* currentState =  problem->initialState();
+        int currentHorizon = horizon;
+        while (true) {
+            if (problem->goal(currentState)) {
+                                                                                    dprint1("GOAL!!!");
+                countSuccesses++;
+                break;
+            }
+            if (cost > mdplib::dead_end_cost) {
+                                                                                    dprint1("TOO LONG! :(");
+                break;
+            }
+            ffSolver.maxHorizon(currentHorizon);
+
+                                                                                    mdplib_debug = false;
+            mlcore::Action* action = ffSolver.solve(currentState);
+                                                                                    mdplib_debug = true;
+                                                                                    dprint1(currentState);
+                                                                                    if (action != nullptr)
+                                                                                        dprint1(action);
+                                                                                    dprint1("*********************");
+            if (action == nullptr) {
+                cost = mdplib::dead_end_cost;
+                                                                                    dprint1("DEAD-END!! #(");
+                break;
+            }
+            currentState = randomSuccessor(problem, currentState, action);
+            cost += problem->cost(currentState, action);
+
+            if (currentHorizon == 0) {
+                currentHorizon = horizon;
+            } else {
+                currentHorizon--;
+            }
         }
-        currentState = randomSuccessor(problem, currentState, action);
-        cost += problem->cost(currentState, action);
+        expectedCost += cost;
     }
-    dprint1(cost);
+    cout << "Expected cost " << expectedCost / nsims << endl;
+    cout << "Count successes " << countSuccesses << endl;
 
     delete problem;
     return 0;

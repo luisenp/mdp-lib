@@ -132,6 +132,8 @@ public:
 
     virtual ~FFReducedModelSolver() {}
 
+    void maxHorizon(int value) { maxHorizon_ = value; }
+
     /**
      * Fids the best action for the given state. If the state is a
      * dead-end according to the given determinization, the method

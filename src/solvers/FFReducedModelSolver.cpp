@@ -124,6 +124,10 @@ mlcore::Action* FFReducedModelSolver::getActionFromName(string actionName)
 mlcore::Action*
 FFReducedModelSolver::greedyAction_(mlcore::State* s, int horizon)
 {
+    if (horizon == 0) {
+        assert(ffStateActions_.count(s) > 0);
+        return ffStateActions_[s];
+    }
     double qBestAction = mdplib::dead_end_cost + 1;
     mlcore::Action* bestAction = nullptr;
                                                                                 bool check = false;
@@ -169,7 +173,7 @@ FFReducedModelSolver::qValue_(mlcore::State* s, mlcore::Action* a, int horizon)
 double
 FFReducedModelSolver::solve(mlcore::State* s, int horizon, bool& isDeadEnd)
 {
-                                                                                for(int i = 0; i < 2 * (maxHorizon_ - horizon); i++) cerr << " ";
+//                                                                                for(int i = 0; i < 2 * (maxHorizon_ - horizon); i++) cerr << " ";
                                                                                 dprint3("SOLVING", s, horizon);
     if (horizon == 0) {
         // For horizon = 0 we just call FF.
@@ -188,7 +192,7 @@ FFReducedModelSolver::solve(mlcore::State* s, int horizon, bool& isDeadEnd)
             estimatedCosts_[0][s] = actionNameAndCost.second;
         }
         isDeadEnd = (stateFFAction == nullptr);
-                                                                                for(int i = 0; i < 2 * (maxHorizon_ - horizon); i++) cerr << " ";
+//                                                                                for(int i = 0; i < 2 * (maxHorizon_ - horizon); i++) cerr << " ";
                                                                                 dprint2("RESULT", estimatedCosts_[0][s]);
         return 0.0;
     } else {
@@ -201,7 +205,7 @@ FFReducedModelSolver::solve(mlcore::State* s, int horizon, bool& isDeadEnd)
             estimatedCosts_[horizon][s] = mdplib::dead_end_cost;
             return 0.0;
         }
-                                                                                for(int i = 0; i < 2 * (maxHorizon_ - horizon); i++) cerr << " ";
+//                                                                                for(int i = 0; i < 2 * (maxHorizon_ - horizon); i++) cerr << " ";
                                                                                 dprint2("BEST ACTION BEFORE", action);
                                                                                 dprint1((void *) action);
         bool newIsDeadEnd = true;
@@ -218,7 +222,7 @@ FFReducedModelSolver::solve(mlcore::State* s, int horizon, bool& isDeadEnd)
         // Computing the new best action.
         mlcore::Action* prevAction = action;
         action = this->greedyAction_(s, horizon);
-                                                                                for(int i = 0; i < 2 * (maxHorizon_ - horizon); i++) cerr << " ";
+//                                                                                for(int i = 0; i < 2 * (maxHorizon_ - horizon); i++) cerr << " ";
                                                                                 dprint2("BEST ACTION AFTER", action);
 
         // Computing the new estimated cost of this state.
@@ -228,14 +232,15 @@ FFReducedModelSolver::solve(mlcore::State* s, int horizon, bool& isDeadEnd)
         estimatedCosts_[horizon][s] = newCost;
 
         if (prevAction != action) {
-            // The best action changed, can't allow convergence.
+            // The best action changed, therefore it hasn't converged.
             residual = mdplib::dead_end_cost;
         }
-                                                                                for(int i = 0; i < 2 * (maxHorizon_ - horizon); i++) cerr << " ";
+        maxResidual = std::max(maxResidual, residual);
+//                                                                                for(int i = 0; i < 2 * (maxHorizon_ - horizon); i++) cerr << " ";
                                                                                 dprint2("RESULT", estimatedCosts_[horizon][s]);
-                                                                                for(int i = 0; i < 2 * (maxHorizon_ - horizon); i++) cerr << " ";
+//                                                                                for(int i = 0; i < 2 * (maxHorizon_ - horizon); i++) cerr << " ";
                                                                                 dprint3("RESIDUAL", residual, isDeadEnd);
-        return residual;
+        return maxResidual;
     }
 
 }
