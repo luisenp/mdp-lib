@@ -11,6 +11,7 @@
 #include "../Problem.h"
 #include "../State.h"
 
+#include "ReducedHeuristicWrapper.h"
 #include "ReducedState.h"
 #include "ReducedTransition.h"
 
@@ -131,18 +132,18 @@ public:
     void k(int value) { k_ = value; }
 
     /**
-     * Sets whether the full transition model should be used or not.
+     * Returns the maximum number of exceptions before considering only
+     * primary outcomes in the transition function.
      */
+    int k() { return k_; }
+
     void useFullTransition(bool value)
     {
         useFullTransition_ = value | (reducedTransition_ == nullptr);
     }
 
     /**
-     * Sets whether the continual planning evaluation transition
-     * should be used or not. This transition corresponds to a
-     * Markov Chain that simulates continual planning using the
-     * reduced model, as explained in the ICAPS'14 paper.
+     * Sets whether the full transition model should be used or not.
      */
     void useContPlanEvaluationTransition(bool value)
     {
@@ -160,7 +161,7 @@ public:
      * @param wrapperProblem A WrapperProblem for the reduced model, to be
      *                      used for setting new successors during
      *                      re-planning. The internal problem of this wrapper
-     *                      must be this reduced model object.
+     *                      must correspond to the reduced model.
      * @return A pair that contains the cost of the trial and the time
      *        spent planning (not-concurrently with execution)
      *        during this trial.

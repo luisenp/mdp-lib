@@ -1,9 +1,13 @@
 #ifndef PPDDLTAGGEDREDUCTION_H
 #define PPDDLTAGGEDREDUCTION_H
 
+#include <fstream>
+#include <iostream>
 #include <list>
 #include <vector>
 
+
+#include "../ppddl/PPDDLAction.h"
 #include "../ppddl/PPDDLProblem.h"
 #include "../ppddl/PPDDLState.h"
 
@@ -15,49 +19,41 @@
 namespace mlreduced
 {
 
-//TODO: Might need to delete this class.
 class PPDDLTaggedReduction : public ReducedTransition
 {
 private:
     mlcore::Problem* problem_;
 
+    std::string reductionDescriptionFilename_;
+
 public:
-    PPDDLTaggedReduction(mlcore::Problem* problem) : problem_(problem) { }
+    PPDDLTaggedReduction(mlcore::Problem* problem,
+                         std::string reductionDescriptionFilename) :
+        problem_(problem),
+        reductionDescriptionFilename_(reductionDescriptionFilename) { }
 
     virtual ~PPDDLTaggedReduction() { }
 
     /**
      * Overrides method from ReducedTransition.
      */
-    virtual
-    getPrimaryIndicators(mlcore::State* s,
-                         mlcore::Action *a,
-                         std::vector<bool>& primaryIndicator) const
+    virtual void setPrimary(mlcore::State* s,
+                       mlcore::Action *a,
+                       std::vector<bool>& primaryIndicator) const
     {
-//        mlppddl::PPDDLProblem* ppddlProblem = (mlppddl::PPDDLProblem *) problem_;
-//        mlppddl::PPDDLState* ppddlState = (mlppddl::PPDDLState *) s;
-//        state_t* internalPPDDLState = ppddlState->pState();
-//
-//        std::list<mlcore::Successor> successors = problem_->transition(s, a);
-//        std::vector<bool> primaryValues(successors.size(), false);
-//        for (mlcore::Successor successor : successors) {
-//            dprint1(successor.su_state, successor.su_prob);
-//        }
-    }
-
-    /**
-     * Overrides method from ReducedTransition.
-     */
-    virtual void
-    getIsCounterIncrementer(mlcore::State* s,
-                            mlcore::Action *a,
-                            std::vector<bool>& isCounterIncrementer) const
-    {
-
+        std::ifstream ifs(reductionDescriptionFilename_);
+        if (ifs.is_open()) {
+            std::string line;
+            while (getline(ifs, line)) {
+                mlppddl::PPDDLAction* pAction =
+                    static_cast<mlppddl::PPDDLAction*> (a);
+            }
+        } else {
+            std::cerr << "Unable to open " <<
+                reductionDescriptionFilename_ << std::endl;
+        }
     }
 };
 
 }
 #endif // PPDDLTAGGEDREDUCTION_H
-
-

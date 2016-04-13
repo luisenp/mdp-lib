@@ -20,15 +20,9 @@ ReducedModel::transition(State* s, Action *a)
 {
     ReducedState* rs = static_cast<ReducedState*>(s);
     std::vector<bool> primaryIndicators;
-    std::vector<bool> isCounterIncrementer;
-    if (!useFullTransition_) {
+    if (!useFullTransition_)
         reducedTransition_->
-            getPrimaryIndicators(rs->originalState(), a, primaryIndicators);
-        reducedTransition_->
-            getIsCounterIncrementer(rs->originalState(),
-                                    a,
-                                    isCounterIncrementer);
-    }
+            setPrimary(rs->originalState(), a, primaryIndicators);
 
     std::list<Successor> successors;
     std::list<Successor> originalSuccessors =
@@ -38,27 +32,20 @@ ReducedModel::transition(State* s, Action *a)
     for (Successor const & origSucc : originalSuccessors) {
         State* next = nullptr;
         bool isPrimaryOutcome = useFullTransition_ || primaryIndicators[i];
-        bool increasesCount = false;
-        if (isCounterIncrementer.empty())
-            increasesCount = !isPrimaryOutcome;
-        else
-            increasesCount = isCounterIncrementer[i];
-        // Checking that all exceptions increase the transition counter.
-        assert(isPrimaryOutcome || increasesCount);
-        int add = increasesCount && rs->transitionCount() < k_ ? 1 : 0;
         if (useContPlanEvaluationTransition_) {
+            int add = isPrimaryOutcome && rs->exceptionCount() != k_ ? 0 : 1;
             next = addState(
                 new ReducedState(origSucc.su_state,
-                                 (rs->transitionCount() + add) % (k_ + 1),
+                                 (rs->exceptionCount() + add) % (k_ + 1),
                                  this));
         } else {
             if (isPrimaryOutcome) {
                 next = addState(new ReducedState(origSucc.su_state,
-                                                 rs->transitionCount() + add,
+                                                 rs->exceptionCount(),
                                                  this));
-            } else if (rs->transitionCount() < k_) {
+            } else if (rs->exceptionCount() < k_) {
                 next = addState(new ReducedState(origSucc.su_state,
-                                                 rs->transitionCount() + 1,
+                                                 rs->exceptionCount() + 1,
                                                  this));
             }
         }
@@ -125,7 +112,7 @@ double ReducedModel::evaluateMarkovChain(ReducedModel* reducedModel)
             State* currentState =
                 reducedModel->addState(
                     new ReducedState(markovChainState->originalState(),
-                                     markovChainState->transitionCount(),
+                                     markovChainState->exceptionCount(),
                                      reducedModel));
 
             if (currentState->deadEnd()) {
@@ -217,7 +204,7 @@ std::pair<double, double> ReducedModel::trial(
     while (true) {
         Action* bestAction = currentState->bestAction();
         cost += this->cost(currentState, bestAction);
-        int transitionCount = currentState->transitionCount();
+        int exceptionCount = currentState->exceptionCount();
 
         // Simulating the action execution using the full model.
         // Since we want to use the full transition function for this,
@@ -229,22 +216,22 @@ std::pair<double, double> ReducedModel::trial(
         // TODO: Make a method in ReducedModel that does this because this
         // approach will make reducedModel store the copies with j=-1.
         auxState->originalState(currentState->originalState());
-        auxState->transitionCount(-1);
+        auxState->exceptionCount(-1);
         ReducedState* nextState = static_cast<ReducedState*>(
             mlsolvers::randomSuccessor(this, auxState, bestAction));
         auxState->originalState(nextState->originalState());
-        auxState->transitionCount(nextState->transitionCount());
+        auxState->exceptionCount(nextState->exceptionCount());
 
         // Adjusting the result to the current exception count.
         if (resetExceptionCounter) {
             // We reset the exception counter after pro-active re-planning.
-            auxState->transitionCount(0);
+            auxState->exceptionCount(0);
             resetExceptionCounter = false;
         } else {
-            if (auxState->transitionCount() == -1)    // no exception happened.
-                auxState->transitionCount(transitionCount);
+            if (auxState->exceptionCount() == -1)    // no exception happened.
+                auxState->exceptionCount(exceptionCount);
             else
-                auxState->transitionCount(transitionCount + 1);
+                auxState->exceptionCount(exceptionCount + 1);
         }
         nextState =
             static_cast<ReducedState*>(this->getState(auxState));
@@ -263,14 +250,14 @@ std::pair<double, double> ReducedModel::trial(
         if (nextState == nullptr || nextState->bestAction() == nullptr) {
             // State wasn't considered before.
             assert(this->k_ == 0);  // Only determinization should reach here.
-            auxState->transitionCount(0);
+            auxState->exceptionCount(0);
             nextState = static_cast<ReducedState*>(
                 this->addState(new ReducedState(*auxState)));
             totalPlanningTime +=
                 triggerReplan(solver, nextState, false, wrapperProblem);
             assert(nextState != nullptr);
         } else if (!this->useFullTransition_) {
-            if (nextState->transitionCount() == this->k_) {
+            if (nextState->exceptionCount() == this->k_) {
                 totalPlanningTime +=
                     triggerReplan(solver, nextState, true, wrapperProblem);
                 resetExceptionCounter = true;

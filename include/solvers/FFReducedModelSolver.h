@@ -5,6 +5,8 @@
 
 #include "../ppddl/PPDDLState.h"
 
+#include "../reduced/ReducedModel.h"
+
 #include "../Action.h"
 #include "../Problem.h"
 
@@ -34,7 +36,7 @@ private:
     ////////////////////////////////////////////////////////////////////////////
 
     /* The problem to solve. */
-    mlcore::Problem* problem_;
+    mlreduced::ReducedModel* problem_;
 
     /* The file where FF is to be called at. */
     std::string ffExecFilename_;
@@ -66,6 +68,9 @@ private:
 
     /* The maximum number of outcomes before switching to the reduced model. */
     int maxHorizon_;
+
+    /* The error tolerance to use. */
+    double epsilon_;
 
     ////////////////////////////////////////////////////////////////////////////
     //                               FUNCTIONS                                //
@@ -112,9 +117,15 @@ private:
      */
     double solve(mlcore::State* s, int horizon, bool& isDeadEnd);
 
+    /* The optimal solver for the reduced model. */
+    void lao(mlcore::State* s0);
+
+    /* A Bellman update that calls FF on states with maximum exception count. */
+    double bellmanUpdate(mlcore::State* s);
+
 
 public:
-    FFReducedModelSolver(mlcore::Problem* problem,
+    FFReducedModelSolver(mlreduced::ReducedModel* problem,
                          std::string ffExecFilename,
                          std::string determinizedDomainFilename,
                          std::string templateProblemFilename,

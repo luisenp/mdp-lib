@@ -25,10 +25,9 @@ public:
     /**
      * Overrides method from ReducedTransition.
      */
-    virtual void
-    getPrimaryIndicators(mlcore::State* s,
-                         mlcore::Action *a,
-                         std::vector<bool>& primaryIndicators) const
+    virtual void setPrimary(mlcore::State* s,
+                            mlcore::Action *a,
+                            std::vector<bool>& primaryIndicators) const
     {
         std::list<mlcore::Successor> successors = problem_->transition(s, a);
         double minimumProbability = 2.0;
@@ -43,17 +42,6 @@ public:
             i++;
         }
         primaryIndicators[indexLeastLikely] = true;
-    }
-
-    /**
-     * Overrides method from ReducedTransition.
-     */
-    virtual void
-    getIsCounterIncrementer(mlcore::State* s,
-                            mlcore::Action *a,
-                            std::vector<bool>& isCounterIncrementer) const
-    {
-        isCounterIncrementer.clear();
     }
 };
 

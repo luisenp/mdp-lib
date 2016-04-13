@@ -25,10 +25,9 @@ public:
     /**
      * Overrides method from ReducedTransition.
      */
-    virtual void
-    getPrimaryIndicators(mlcore::State* s,
-                         mlcore::Action *a,
-                         std::vector<bool>& primaryIndicators) const
+    virtual void setPrimary(mlcore::State* s,
+                            mlcore::Action *a,
+                            std::vector<bool>& primaryIndicators) const
     {
         if (s == problem_->initialState()) {
             for (std::pair<int,int> start : problem_->starts())
@@ -79,17 +78,6 @@ public:
             for (int i = 0; i < cnt; i++)
                 primaryIndicators.push_back(false);
         }
-    }
-
-    /**
-     * Overrides method from ReducedTransition.
-     */
-    virtual void
-    getIsCounterIncrementer(mlcore::State* s,
-                            mlcore::Action *a,
-                            std::vector<bool>& isCounterIncrementer) const
-    {
-        isCounterIncrementer.clear();
     }
 };
 

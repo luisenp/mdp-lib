@@ -1,6 +1,9 @@
 #include <fstream>
 #include <sstream>
 
+
+#include "../../include/reduced/ReducedState.h"
+
 #include "../../include/solvers/FFReducedModelSolver.h"
 
 
@@ -256,6 +259,118 @@ mlcore::Action* FFReducedModelSolver::solve(mlcore::State* s0)
                                                                                 dprint1(estimatedCosts_[maxHorizon_][s0]);
     }
     return this->greedyAction_(s0, maxHorizon_);
+}
+
+
+void FFReducedModelSolver::lao(mlcore::State* s0)
+{
+    // This is a stack based implementation of LAO*.
+    // We don't use the existing library implementation because we are going to
+    // solve the reduced states with j=k using FF.
+    StateSet visited;
+    int countExpanded = 0;
+    while (true) {
+        do {
+            visited.clear();
+            countExpanded = 0;
+            list<mlcore::State*> stateStack;
+            stateStack.push_back(s0);
+            while (!stateStack.empty()) {
+                mlcore::State* s = stateStack.back();
+                stateStack.pop_back();
+                if (!visited.insert(s).second)  // state was already visited.
+                    continue;
+                if (s->deadEnd() || problem_->goal(s))
+                    continue;
+                int cnt = 0;
+                if (s->bestAction() == nullptr) {
+                    // state has never been expanded.
+                    this->bellmanUpdate(s);
+                    countExpanded++;
+                    continue;
+                } else {
+                    mlcore::Action* a = s->bestAction();
+                    for (Successor sccr : problem_->transition(s, a))
+                        stateStack.push_back(sccr.su_state);
+                }
+                this->bellmanUpdate(s);
+            }
+        } while (countExpanded != 0);
+        while (true) {
+            visited.clear();
+            list<mlcore::State*> stateStack;
+            stateStack.push_back(s0);
+            double error = 0.0;
+            while (!stateStack.empty()) {
+                mlcore::State* s = stateStack.back();
+                stateStack.pop_back();
+                if (s->deadEnd() || problem_->goal(s))
+                    continue;
+                if (!visited.insert(s).second)
+                    continue;
+                mlcore::Action* prevAction = s->bestAction();
+                if (prevAction == nullptr) {
+                    // if it reaches this point it hasn't converged yet.
+                    error = mdplib::dead_end_cost + 1;
+                } else {
+                    for (Successor sccr : problem_->transition(s, prevAction))
+                        stateStack.push_back(sccr.su_state);
+                }
+                error = std::max(error, this->bellmanUpdate(s));
+                if (prevAction == s->bestAction())
+                    break;
+                // it hasn't converged because the best action changed.
+                error = mdplib::dead_end_cost + 1;
+            }
+            if (error < epsilon_)
+                return;
+            if (error > mdplib::dead_end_cost) {
+                break;  // BPSG changed, must expand tip nodes again
+            }
+        }
+    }
+}
+
+
+double FFReducedModelSolver::bellmanUpdate(mlcore::State* s)
+{
+    if (problem_->goal(s)) {
+        s->setCost(0.0);
+        for (mlcore::Action* a : problem_->actions()) {
+            if (problem_->applicable(s, a)) {
+                s->setBestAction(a);
+                return 0.0;
+            }
+        }
+    }
+
+    mlreduced::ReducedState* redState = (mlreduced::ReducedState* ) s;
+    if (redState->exceptionCount() == problem_->k()) {
+        // For exceptionCount = k we just call FF.
+        PPDDLState* pState = (PPDDLState*) redState->originalState();
+        string statePredicates = extractStatePredicates((PPDDLState*) pState);
+        replaceInitStateInProblemFile(statePredicates);
+        mlcore::Action* stateFFAction;
+        int stateFFCost;
+        if (ffStateActions_.count(s)) {
+            stateFFAction = ffStateActions_[s];
+            stateFFCost = ffStateCosts_[s];
+        } else {
+            pair<string, int> actionNameAndCost = getActionNameAndCostFromFF();
+            stateFFAction = getActionFromName(actionNameAndCost.first);
+            ffStateActions_[s] = stateFFAction;
+            ffStateCosts_[s] = actionNameAndCost.second;
+        }
+        s->setCost(ffStateCosts_[s]);
+        s->setBestAction(ffStateActions_[s]);
+        return 0.0;
+    }
+
+    std::pair<double, mlcore::Action*> best = bellmanBackup(problem_, s);
+    double residual = s->cost() - best.bb_cost;
+    s->setCost(best.bb_cost);
+    s->setBestAction(best.bb_action);
+    return fabs(residual);
 }
 
 }
