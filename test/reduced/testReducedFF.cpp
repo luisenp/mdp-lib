@@ -138,9 +138,20 @@ bool initPPDDL(string ppddlArgs)
  *        det_descriptor. The format of this file will be one action name per
  *        line followed by a number specifying which of the outcomes is primary.
  *    --k: The maximum number of exceptions.
+ *
+ * Other required command line arguments are:
+ *    --problem: the PPDDL domain/problem to solve. The format is
+ *        ppddlFilename:problemName
+ *    --dir: the directory to use for FF. This directory must contain the file
+ *        at "det_problem" as well as a file called "p01.pddl" containing only
+ *        the PPDDL problem description (i.e., init and goal, not the domain).
+ *        The user of testReducedFF is responsible for ensuring consistency
+ *        between p01.pddl and the file passed in the "problem" flag.
  */
 int main(int argc, char* args[])
 {
+    mdplib_debug = true;
+
     register_flags(argc, args);
 
     // Reading flags.
@@ -178,13 +189,11 @@ int main(int argc, char* args[])
     initPPDDL(ppddlArgs);
 
     // Creating the reduced model.
-    ReducedTransition* reduction = new PPDDLTaggedReduction(problem, detDescriptor);
+    ReducedTransition* reduction =
+        new PPDDLTaggedReduction(problem, detDescriptor);
     reducedModel = new ReducedModel(problem, reduction, k);
     reducedHeuristic = new ReducedHeuristicWrapper(heuristic);
     reducedModel->setHeuristic(reducedHeuristic);
-
-
-    // Solving the reduced model.
 
     // We will now use the wrapper for the pro-active re-planning approach. It
     // will allow us to plan in advance for the set of successors of a

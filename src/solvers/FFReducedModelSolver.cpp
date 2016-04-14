@@ -163,7 +163,8 @@ FFReducedModelSolver::qValue_(mlcore::State* s, mlcore::Action* a, int horizon)
 //                                                                                assert(horizon > 0);
     double qv = 0.0;
     for (auto const & successor : problem_->transition(s, a)) {
-        qv += successor.su_prob * estimatedCosts_[horizon - 1][successor.su_state];
+        qv += successor.su_prob *
+            estimatedCosts_[horizon - 1][successor.su_state];
 //                                                                                dprint4("    ",
 //                                                                                        successor.su_state,
 //                                                                                        successor.su_prob,
@@ -252,12 +253,13 @@ FFReducedModelSolver::solve(mlcore::State* s, int horizon, bool& isDeadEnd)
 mlcore::Action* FFReducedModelSolver::solve(mlcore::State* s0)
 {
                                                                                 dprint2("xxxxxxxxxxxx", s0);
-    double residual = mdplib::dead_end_cost;
-    while (residual > 1.0e-3) {
-        bool isDeadEnd = true;
-        residual = solve(s0, maxHorizon_, isDeadEnd);
-                                                                                dprint1(estimatedCosts_[maxHorizon_][s0]);
-    }
+//    double residual = mdplib::dead_end_cost;
+//    while (residual > 1.0e-3) {
+//        bool isDeadEnd = true;
+//        residual = solve(s0, maxHorizon_, isDeadEnd);
+//                                                                                dprint1(estimatedCosts_[maxHorizon_][s0]);
+//    }
+    this->lao(s0);
     return this->greedyAction_(s0, maxHorizon_);
 }
 
@@ -285,16 +287,20 @@ void FFReducedModelSolver::lao(mlcore::State* s0)
                 int cnt = 0;
                 if (s->bestAction() == nullptr) {
                     // state has never been expanded.
+                                                                                dprint2("never expanded", s);
                     this->bellmanUpdate(s);
                     countExpanded++;
                     continue;
                 } else {
                     mlcore::Action* a = s->bestAction();
+                                                                                dprint3("already expanded", s, a);
                     for (Successor sccr : problem_->transition(s, a))
                         stateStack.push_back(sccr.su_state);
                 }
                 this->bellmanUpdate(s);
             }
+                                                                                dprint2(countExpanded, s0->cost());
+                                                                                dsleep(500);
         } while (countExpanded != 0);
         while (true) {
             visited.clear();
@@ -344,6 +350,7 @@ double FFReducedModelSolver::bellmanUpdate(mlcore::State* s)
         }
     }
 
+                                                                                dprint2("*** backup", s);
     mlreduced::ReducedState* redState = (mlreduced::ReducedState* ) s;
     if (redState->exceptionCount() == problem_->k()) {
         // For exceptionCount = k we just call FF.
@@ -368,6 +375,7 @@ double FFReducedModelSolver::bellmanUpdate(mlcore::State* s)
 
     std::pair<double, mlcore::Action*> best = bellmanBackup(problem_, s);
     double residual = s->cost() - best.bb_cost;
+                                                                                dprint3("*** backup", s, best.bb_action);
     s->setCost(best.bb_cost);
     s->setBestAction(best.bb_action);
     return fabs(residual);
