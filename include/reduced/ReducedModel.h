@@ -46,9 +46,9 @@ private:
      *
      */
     double triggerReplan(mlsolvers::Solver& solver,
-                                        ReducedState* nextState,
-                                        bool proactive,
-                                        WrapperProblem* wrapperProblem);
+                         ReducedState* nextState,
+                         bool proactive,
+                         WrapperProblem* wrapperProblem);
 
     /*
      * If true, then the destructor can be called safely.
@@ -219,7 +219,7 @@ public:
      */
     virtual bool goal(mlcore::State* s) const
     {
-        ReducedState* rs = (ReducedState* ) s;
+        ReducedState* rs = static_cast<ReducedState*> (s);
         return originalProblem_->goal(rs->originalState());
     }
 
@@ -228,7 +228,7 @@ public:
      */
     virtual double cost(mlcore::State* s, mlcore::Action* a) const
     {
-        ReducedState* rs = (ReducedState* ) s;
+        ReducedState* rs = static_cast<ReducedState*> (s);
         return originalProblem_->cost(rs->originalState(), a);
     }
 
@@ -237,7 +237,7 @@ public:
      */
     virtual bool applicable(mlcore::State* s, mlcore::Action* a) const
     {
-        ReducedState* rs = (ReducedState* ) s;
+        ReducedState* rs = static_cast<ReducedState*> (s);
         return originalProblem_->applicable(rs->originalState(), a);
     }
 };

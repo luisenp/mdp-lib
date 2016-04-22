@@ -203,7 +203,7 @@ int main(int argc, char* args[])
     // Solving reduced model using LAO* + FF.
     double totalPlanningTime = 0.0;
     clock_t startTime = clock();
-    FFReducedModelSolver solver(reducedModel,
+    FFReducedModelSolver solver(wrapperProblem,
                                 ffExec,
                                 directory + "/" + detProblem,
                                 directory + "/p01.pddl",
@@ -220,6 +220,7 @@ int main(int argc, char* args[])
     for (int i = 0; i < nsims; i++) {
         pair<double, double> costAndTime =
             reducedModel->trial(solver, wrapperProblem);
+                                                                                cerr << costAndTime.first << endl;
         expectedCost += costAndTime.first;
     }
     cout << expectedCost / nsims << endl;

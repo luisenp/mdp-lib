@@ -252,6 +252,8 @@ FFReducedModelSolver::solve(mlcore::State* s, int horizon, bool& isDeadEnd)
 
 mlcore::Action* FFReducedModelSolver::solve(mlcore::State* s0)
 {
+                                                                                bool prev = mdplib_debug;
+                                                                                mdplib_debug = false;
                                                                                 dprint2("xxxxxxxxxxxx", s0);
 //    double residual = mdplib::dead_end_cost;
 //    while (residual > 1.0e-3) {
@@ -261,11 +263,13 @@ mlcore::Action* FFReducedModelSolver::solve(mlcore::State* s0)
 //    }
     this->lao(s0);
     return this->greedyAction_(s0, maxHorizon_);
+                                                                                mdplib_debug = prev;
 }
 
 
 void FFReducedModelSolver::lao(mlcore::State* s0)
 {
+                                                                                dprint1("LAO*");
     // This is a stack based implementation of LAO*.
     // We don't use the existing library implementation because we are going to
     // solve the reduced states with j=k using FF.
@@ -287,21 +291,25 @@ void FFReducedModelSolver::lao(mlcore::State* s0)
                 int cnt = 0;
                 if (s->bestAction() == nullptr) {
                     // state has never been expanded.
-                                                                                dprint2("never expanded", s);
+                                                                                dprint2("NEVER EXPANDED", s);
                     this->bellmanUpdate(s);
                     countExpanded++;
                     continue;
                 } else {
                     mlcore::Action* a = s->bestAction();
-                                                                                dprint3("already expanded", s, a);
-                    for (Successor sccr : problem_->transition(s, a))
+                                                                                dprint3("ALREADY EXPANDED", s, a);
+                    for (Successor sccr : problem_->transition(s, a)) {
                         stateStack.push_back(sccr.su_state);
+                                                                                dprint2("    SUCCESSOR", sccr.su_state);
+                    }
                 }
                 this->bellmanUpdate(s);
             }
-                                                                                dprint2(countExpanded, s0->cost());
-                                                                                dsleep(500);
+                                                                                dprint4("count expanded", countExpanded,
+                                                                                        "cost initial state", s0->cost());
+//                                                                                dsleep(500);
         } while (countExpanded != 0);
+                                                                                dprint1("TEST CONVERGENCE");
         while (true) {
             visited.clear();
             list<mlcore::State*> stateStack;
@@ -310,23 +318,31 @@ void FFReducedModelSolver::lao(mlcore::State* s0)
             while (!stateStack.empty()) {
                 mlcore::State* s = stateStack.back();
                 stateStack.pop_back();
-                if (s->deadEnd() || problem_->goal(s))
-                    continue;
                 if (!visited.insert(s).second)
                     continue;
+                                                                                dprint2("TESTING", s);
+                if (s->deadEnd() || problem_->goal(s))
+                    continue;
                 mlcore::Action* prevAction = s->bestAction();
+                                                                                dprint3("TESTING", s, prevAction);
                 if (prevAction == nullptr) {
                     // if it reaches this point it hasn't converged yet.
+                                                                                dprint1("NO-ACTION FOR s");
                     error = mdplib::dead_end_cost + 1;
                 } else {
-                    for (Successor sccr : problem_->transition(s, prevAction))
+                    for (Successor sccr : problem_->transition(s, prevAction)) {
+                                                                                dprint2("    SUCCESSOR", sccr.su_state);
                         stateStack.push_back(sccr.su_state);
+                    }
                 }
                 error = std::max(error, this->bellmanUpdate(s));
-                if (prevAction == s->bestAction())
+                                                                                dprint2("ERROR FOR s", error);
+                if (prevAction != s->bestAction()) {
+                                                                                dprint1("NO CONVERGENCE");
+                    // it hasn't converged because the best action changed.
+                    error = mdplib::dead_end_cost + 1;
                     break;
-                // it hasn't converged because the best action changed.
-                error = mdplib::dead_end_cost + 1;
+                }
             }
             if (error < epsilon_)
                 return;
@@ -352,7 +368,8 @@ double FFReducedModelSolver::bellmanUpdate(mlcore::State* s)
 
                                                                                 dprint2("*** backup", s);
     mlreduced::ReducedState* redState = (mlreduced::ReducedState* ) s;
-    if (redState->exceptionCount() == problem_->k()) {
+    if (redState->exceptionCount() ==
+            static_cast<mlreduced::ReducedModel*>(problem_)->k()) {
         // For exceptionCount = k we just call FF.
         PPDDLState* pState = (PPDDLState*) redState->originalState();
         string statePredicates = extractStatePredicates((PPDDLState*) pState);
@@ -364,7 +381,15 @@ double FFReducedModelSolver::bellmanUpdate(mlcore::State* s)
             stateFFCost = ffStateCosts_[s];
         } else {
             pair<string, int> actionNameAndCost = getActionNameAndCostFromFF();
+                                                                                dprint2("calling-FF",
+                                                                                        actionNameAndCost.first);
+            // If FF finds this state is a dead-end,
+            // getActionNameAndCostFromFF() returns "__mdplib-dead-end__"
+            // getActionFromName() returns a nullptr.
             stateFFAction = getActionFromName(actionNameAndCost.first);
+            if (stateFFAction == nullptr) {
+                s->markDeadEnd();
+            }
             ffStateActions_[s] = stateFFAction;
             ffStateCosts_[s] = actionNameAndCost.second;
         }
@@ -375,7 +400,14 @@ double FFReducedModelSolver::bellmanUpdate(mlcore::State* s)
 
     std::pair<double, mlcore::Action*> best = bellmanBackup(problem_, s);
     double residual = s->cost() - best.bb_cost;
-                                                                                dprint3("*** backup", s, best.bb_action);
+
+    if (s->deadEnd()) {
+                                                                                dprint3("xxx backup", s, "DEAD-END!");
+        s->setCost(mdplib::dead_end_cost);
+        return 0.0;
+    }
+
+                                                                                dprint3("xxx backup", s, best.bb_action);
     s->setCost(best.bb_cost);
     s->setBestAction(best.bb_action);
     return fabs(residual);

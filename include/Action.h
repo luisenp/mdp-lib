@@ -27,7 +27,8 @@ public:
 };
 
 /**
- * Wrapper of the hash function for action objects (used to define ActionSet below).
+ * Wrapper of the hash function for action objects (used to define
+ * ActionSet below).
  */
 struct ActionHash {
   size_t operator()(Action* a) const {
@@ -36,13 +37,14 @@ struct ActionHash {
 };
 
 /**
- * Wrapper of the equality operator for action objects (used to define ActionSet below).
+ * Wrapper of the equality operator for action objects (used to define
+ * ActionSet below).
  */
 struct ActionEqual {
   bool operator() (Action* a1, Action* a2) const {
     /*
-     * Assuming actions can be compared by their address since no new actions are generated
-     * after the problem is created.
+     * Assuming actions can be compared by their address since no new actions
+     * are generated after the problem is created.
      */
     return a1 == a2;
   }
@@ -61,7 +63,8 @@ typedef std::unordered_map<Action*, int, ActionHash, ActionEqual> ActionIntMap;
 /**
  * A map of actions to doubles.
  */
-typedef std::unordered_map<Action*, double, ActionHash, ActionEqual> ActionDoubleMap;
+typedef
+std::unordered_map<Action*, double, ActionHash, ActionEqual> ActionDoubleMap;
 
 }
 

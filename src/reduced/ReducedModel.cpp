@@ -184,6 +184,8 @@ double ReducedModel::evaluateMonteCarlo(int numTrials)
 std::pair<double, double> ReducedModel::trial(
     mlsolvers::Solver & solver, WrapperProblem* wrapperProblem)
 {
+                                                                                static int countGoals = 0;
+                                                                                mdplib_debug = false;
     assert(wrapperProblem->problem() == this);
 
     double cost = 0.0;
@@ -205,6 +207,9 @@ std::pair<double, double> ReducedModel::trial(
         Action* bestAction = currentState->bestAction();
         cost += this->cost(currentState, bestAction);
         int exceptionCount = currentState->exceptionCount();
+
+        if (cost >= mdplib::dead_end_cost)
+            break;
 
         // Simulating the action execution using the full model.
         // Since we want to use the full transition function for this,
@@ -242,11 +247,19 @@ std::pair<double, double> ReducedModel::trial(
             break;
         }
         if (nextState != nullptr && this->goal(nextState)) {
+                                                                                countGoals++;
+                                                                                mdplib_debug = true;
+                                                                                dprint2("count goals", countGoals);
+                                                                                mdplib_debug = false;
             break;
         }
 
         // Re-planning
         // Checking if the state has already been considered during planning.
+                                                                                dprint1(nextState);
+                                                                                if (nextState->bestAction() != nullptr)
+                                                                                    dprint1(nextState->bestAction());
+
         if (nextState == nullptr || nextState->bestAction() == nullptr) {
             // State wasn't considered before.
             assert(this->k_ == 0);  // Only determinization should reach here.
@@ -276,6 +289,7 @@ double ReducedModel::triggerReplan(mlsolvers::Solver& solver,
                                     bool proactive,
                                     WrapperProblem* wrapperProblem)
 {
+                                                                                dprint2("TRIGGER", nextState);
     if (this->goal(nextState))
         return 0.0;
     if (proactive) {
@@ -298,6 +312,7 @@ double ReducedModel::triggerReplan(mlsolvers::Solver& solver,
                             originalState(),
                         0,
                         this)));
+                                                                                dprint2("ADDING", reducedSccrState);
             dummySuccessors.push_back(
                 Successor(reducedSccrState, sccr.su_prob));
         }

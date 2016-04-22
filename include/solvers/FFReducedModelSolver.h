@@ -36,7 +36,7 @@ private:
     ////////////////////////////////////////////////////////////////////////////
 
     /* The problem to solve. */
-    mlreduced::ReducedModel* problem_;
+    mlcore::Problem* problem_;
 
     /* The file where FF is to be called at. */
     std::string ffExecFilename_;
@@ -125,7 +125,7 @@ private:
 
 
 public:
-    FFReducedModelSolver(mlreduced::ReducedModel* problem,
+    FFReducedModelSolver(mlcore::Problem* problem,
                          std::string ffExecFilename,
                          std::string determinizedDomainFilename,
                          std::string templateProblemFilename,

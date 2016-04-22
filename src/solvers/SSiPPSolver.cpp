@@ -193,10 +193,11 @@ void SSiPPSolver::optimalSolver(WrapperProblem* problem, State* s0)
                         stateStack.push_back(sccr.su_state);
                 }
                 error = std::max(error, bellmanUpdate(problem, s));
-                if (prevAction == s->bestAction())
+                if (prevAction != s->bestAction()) {
+                    // it hasn't converged because the best action changed.
+                    error = mdplib::dead_end_cost + 1;
                     break;
-                // it hasn't converged because the best action changed.
-                error = mdplib::dead_end_cost + 1;
+                }
             }
             if (error < epsilon_)
                 return;
