@@ -1,4 +1,4 @@
-data/ppddl/ippc2008/robot.pddl
+data/ppddl/ippc2008/slipperry-robot/slip-robot-1.pddl
 S=12
 A=19
 Init =[ 2:(vehicle-at l-1-1) ]
