@@ -185,8 +185,8 @@ std::pair<double, double> ReducedModel::trial(
     mlsolvers::Solver & solver, WrapperProblem* wrapperProblem)
 {
                                                                                 static int countGoals = 0;
-                                                                                mdplib_debug = false;
     assert(wrapperProblem->problem() == this);
+
 
     double cost = 0.0;
     double totalPlanningTime = 0.0;
@@ -207,6 +207,11 @@ std::pair<double, double> ReducedModel::trial(
         Action* bestAction = currentState->bestAction();
         cost += this->cost(currentState, bestAction);
         int exceptionCount = currentState->exceptionCount();
+//                                                                                mdplib_debug = true;
+//                                                                                dprint2("CURRENT", currentState);
+//                                                                                if (currentState->bestAction() != nullptr)
+//                                                                                    dprint1(currentState->bestAction());
+//                                                                                mdplib_debug = false;
 
         if (cost >= mdplib::dead_end_cost)
             break;
@@ -246,6 +251,9 @@ std::pair<double, double> ReducedModel::trial(
             cost = mdplib::dead_end_cost;
             break;
         }
+//                                                                                dprint2("NEXT", nextState);
+//                                                                                if (nextState->bestAction() != nullptr)
+//                                                                                    dprint1(nextState->bestAction());
         if (nextState != nullptr && this->goal(nextState)) {
                                                                                 countGoals++;
                                                                                 mdplib_debug = true;
@@ -256,9 +264,9 @@ std::pair<double, double> ReducedModel::trial(
 
         // Re-planning
         // Checking if the state has already been considered during planning.
-                                                                                dprint1(nextState);
-                                                                                if (nextState->bestAction() != nullptr)
-                                                                                    dprint1(nextState->bestAction());
+//                                                                                dprint1(nextState);
+//                                                                                if (nextState->bestAction() != nullptr)
+//                                                                                    dprint1(nextState->bestAction());
 
         if (nextState == nullptr || nextState->bestAction() == nullptr) {
             // State wasn't considered before.

@@ -145,12 +145,13 @@ bool initPPDDL(string ppddlArgs)
  *    --dir: the directory to use for FF. This directory must contain the file
  *        at "det_problem" as well as a file called "p01.pddl" containing only
  *        the PPDDL problem description (i.e., init and goal, not the domain).
+ *        The init state must be described in a single line.
  *        The user of testReducedFF is responsible for ensuring consistency
  *        between p01.pddl and the file passed in the "problem" flag.
  */
 int main(int argc, char* args[])
 {
-    mdplib_debug = true;
+    mdplib_debug = false;
 
     register_flags(argc, args);
 

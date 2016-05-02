@@ -252,7 +252,7 @@ FFReducedModelSolver::solve(mlcore::State* s, int horizon, bool& isDeadEnd)
 
 mlcore::Action* FFReducedModelSolver::solve(mlcore::State* s0)
 {
-                                                                                bool prev = mdplib_debug;
+//                                                                                bool prev = mdplib_debug;
                                                                                 mdplib_debug = false;
                                                                                 dprint2("xxxxxxxxxxxx", s0);
 //    double residual = mdplib::dead_end_cost;
@@ -262,8 +262,9 @@ mlcore::Action* FFReducedModelSolver::solve(mlcore::State* s0)
 //                                                                                dprint1(estimatedCosts_[maxHorizon_][s0]);
 //    }
     this->lao(s0);
-    return this->greedyAction_(s0, maxHorizon_);
-                                                                                mdplib_debug = prev;
+//                                                                                mdplib_debug = prev;
+    return s0->bestAction();
+//    return this->greedyAction_(s0, maxHorizon_);
 }
 
 
@@ -368,8 +369,8 @@ double FFReducedModelSolver::bellmanUpdate(mlcore::State* s)
 
                                                                                 dprint2("*** backup", s);
     mlreduced::ReducedState* redState = (mlreduced::ReducedState* ) s;
-    if (redState->exceptionCount() ==
-            static_cast<mlreduced::ReducedModel*>(problem_)->k()) {
+    if (redState->exceptionCount() == maxHorizon_) {
+//            static_cast<mlreduced::ReducedModel*>(problem_)->k()) {
         // For exceptionCount = k we just call FF.
         PPDDLState* pState = (PPDDLState*) redState->originalState();
         string statePredicates = extractStatePredicates((PPDDLState*) pState);
