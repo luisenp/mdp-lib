@@ -184,8 +184,8 @@ int main(int argc, char* args[])
 
     // The number of simulations for the experiments.
     int nsims = 100;
-    if (flag_is_registered_with_value("nsims"))
-        nsims = stoi(flag_value("nsims"));
+    if (flag_is_registered_with_value("n"))
+        nsims = stoi(flag_value("n"));
 
     initPPDDL(ppddlArgs);
 

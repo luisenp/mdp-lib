@@ -176,7 +176,8 @@ FFReducedModelSolver::qValue_(mlcore::State* s, mlcore::Action* a, int horizon)
 
 double
 FFReducedModelSolver::solve(mlcore::State* s, int horizon, bool& isDeadEnd)
-{
+{//                                                                                cerr << lineBuffer;
+
 //                                                                                for(int i = 0; i < 2 * (maxHorizon_ - horizon); i++) cerr << " ";
                                                                                 dprint3("SOLVING", s, horizon);
     if (horizon == 0) {
@@ -369,7 +370,8 @@ double FFReducedModelSolver::bellmanUpdate(mlcore::State* s)
 
                                                                                 dprint2("*** backup", s);
     mlreduced::ReducedState* redState = (mlreduced::ReducedState* ) s;
-    if (redState->exceptionCount() == maxHorizon_) {
+//    if (redState->exceptionCount() == maxHorizon_) {
+    if (redState->exceptionCount() == 10000) {
 //            static_cast<mlreduced::ReducedModel*>(problem_)->k()) {
         // For exceptionCount = k we just call FF.
         PPDDLState* pState = (PPDDLState*) redState->originalState();
@@ -382,8 +384,10 @@ double FFReducedModelSolver::bellmanUpdate(mlcore::State* s)
             stateFFCost = ffStateCosts_[s];
         } else {
             pair<string, int> actionNameAndCost = getActionNameAndCostFromFF();
+                                                                                mdplib_debug = true;
                                                                                 dprint2("calling-FF",
                                                                                         actionNameAndCost.first);
+                                                                                mdplib_debug = false;
             // If FF finds this state is a dead-end,
             // getActionNameAndCostFromFF() returns "__mdplib-dead-end__"
             // getActionFromName() returns a nullptr.

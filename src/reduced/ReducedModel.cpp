@@ -207,11 +207,11 @@ std::pair<double, double> ReducedModel::trial(
         Action* bestAction = currentState->bestAction();
         cost += this->cost(currentState, bestAction);
         int exceptionCount = currentState->exceptionCount();
-//                                                                                mdplib_debug = true;
-//                                                                                dprint2("CURRENT", currentState);
-//                                                                                if (currentState->bestAction() != nullptr)
-//                                                                                    dprint1(currentState->bestAction());
-//                                                                                mdplib_debug = false;
+                                                                                mdplib_debug = true;
+                                                                                dprint2("CURRENT", currentState);
+                                                                                if (currentState->bestAction() != nullptr)
+                                                                                    dprint1(currentState->bestAction());
+                                                                                mdplib_debug = false;
 
         if (cost >= mdplib::dead_end_cost)
             break;
@@ -251,13 +251,12 @@ std::pair<double, double> ReducedModel::trial(
             cost = mdplib::dead_end_cost;
             break;
         }
-//                                                                                dprint2("NEXT", nextState);
-//                                                                                if (nextState->bestAction() != nullptr)
-//                                                                                    dprint1(nextState->bestAction());
+
         if (nextState != nullptr && this->goal(nextState)) {
                                                                                 countGoals++;
                                                                                 mdplib_debug = true;
                                                                                 dprint2("count goals", countGoals);
+                                                                                dprint1("*************************");
                                                                                 mdplib_debug = false;
             break;
         }
