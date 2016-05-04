@@ -115,6 +115,7 @@ bool initPPDDL(string ppddlArgs)
     problem = new PPDDLProblem(internalPPDDLProblem);
     heuristic = new mlppddl::PPDDLHeuristic(static_cast<PPDDLProblem*>(problem),
                                             mlppddl::FF);
+                                                                                heuristic = nullptr;
     problem->setHeuristic(heuristic);
 }
 

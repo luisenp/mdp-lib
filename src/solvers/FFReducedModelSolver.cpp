@@ -71,7 +71,7 @@ pair<string, int> FFReducedModelSolver::getActionNameAndCostFromFF()
         char lineBuffer[1024];
         int currentLineAction = -1;
         while (fgets(lineBuffer, 1024, ff)) {
-//                                                                                cerr << lineBuffer;
+                                                                                cerr << lineBuffer;
             if (strstr(lineBuffer, "goal can be simplified to FALSE.") !=
                     nullptr) {
                 break;
@@ -370,9 +370,8 @@ double FFReducedModelSolver::bellmanUpdate(mlcore::State* s)
 
                                                                                 dprint2("*** backup", s);
     mlreduced::ReducedState* redState = (mlreduced::ReducedState* ) s;
-//    if (redState->exceptionCount() == maxHorizon_) {
-    if (redState->exceptionCount() == 10000) {
-//            static_cast<mlreduced::ReducedModel*>(problem_)->k()) {
+    if (redState->exceptionCount() == maxHorizon_) {
+//    if (redState->exceptionCount() == 10000) {
         // For exceptionCount = k we just call FF.
         PPDDLState* pState = (PPDDLState*) redState->originalState();
         string statePredicates = extractStatePredicates((PPDDLState*) pState);
@@ -385,8 +384,9 @@ double FFReducedModelSolver::bellmanUpdate(mlcore::State* s)
         } else {
             pair<string, int> actionNameAndCost = getActionNameAndCostFromFF();
                                                                                 mdplib_debug = true;
-                                                                                dprint2("calling-FF",
-                                                                                        actionNameAndCost.first);
+                                                                                dprint3("called-FF",
+                                                                                        actionNameAndCost.first,
+                                                                                        actionNameAndCost.second);
                                                                                 mdplib_debug = false;
             // If FF finds this state is a dead-end,
             // getActionNameAndCostFromFF() returns "__mdplib-dead-end__"
@@ -400,7 +400,7 @@ double FFReducedModelSolver::bellmanUpdate(mlcore::State* s)
         }
         s->setCost(ffStateCosts_[s]);
         s->setBestAction(ffStateActions_[s]);
-        return 0.0;
+//        return 0.0;
     }
 
     std::pair<double, mlcore::Action*> best = bellmanBackup(problem_, s);
@@ -411,6 +411,21 @@ double FFReducedModelSolver::bellmanUpdate(mlcore::State* s)
         s->setCost(mdplib::dead_end_cost);
         return 0.0;
     }
+
+                                                                                mdplib_debug = true;
+                                                                                if (redState->exceptionCount() == maxHorizon_) {
+                                                                                    dprint1("*************************");
+                                                                                    dprint1(s);
+                                                                                    dprint3("compare", best.bb_cost, ffStateCosts_[s]);
+                                                                                    dprint1(best.bb_action);
+                                                                                    for (auto const & ssss : problem_->transition(s, best.bb_action)) {
+                                                                                        dprint2("    ", ssss.su_state);
+                                                                                    }
+                                                                                    bellmanBackup(problem_, s);
+                                                                                    dprint1("*************************");
+                                                                                }
+                                                                                mdplib_debug = false;
+
 
                                                                                 dprint3("xxx backup", s, best.bb_action);
     s->setCost(best.bb_cost);

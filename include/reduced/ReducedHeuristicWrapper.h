@@ -16,10 +16,13 @@ private:
 public:
     ReducedHeuristicWrapper(mlcore::Heuristic* heuristic) :
         heuristic_(heuristic) { }
+
     virtual ~ReducedHeuristicWrapper() { }
 
     virtual double cost(const mlcore::State* s)
     {
+        if (heuristic_ == nullptr)
+            return 0.0;
         ReducedState* rs = (ReducedState *) s;
         return heuristic_->cost(rs->originalState());
     }
