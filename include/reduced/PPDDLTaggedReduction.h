@@ -61,11 +61,19 @@ public:
                             std::vector<bool>& primaryIndicator) const
     {
         mlppddl::PPDDLAction* pAction = static_cast<mlppddl::PPDDLAction*> (a);
-        std::ostringstream oss("");
-        oss << pAction;
+        // Name of the action including the parameters (e.g., (pick-up b2 b1)).
+        std::string fullActionName(pAction->pAction()->name());
+        // Name of the action schema (e.g. pick-up).
+        std::string actionName =
+            fullActionName.substr(1, fullActionName.find(" ") - 1);
+        int i = 0;
         for (auto const & successors : problem_->transition(s, a)) {
-            primaryIndicator.push_back(true);
-            return;
+            if (actionPrimaryOutcomeIndex_.at(actionName) == i) {
+                primaryIndicator.push_back(true);
+            } else {
+                primaryIndicator.push_back(false);
+            }
+            i++;
         }
     }
 };
