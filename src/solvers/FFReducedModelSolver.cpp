@@ -312,6 +312,37 @@ void FFReducedModelSolver::lao(mlcore::State* s0)
 //                                                                                dsleep(500);
         } while (countExpanded != 0);
                                                                                 dprint1("TEST CONVERGENCE");
+
+
+                                                                                  mdplib_debug = true;
+                                                                                  dprint1("Visiting BPSG");
+                                                                                  list<mlcore::State*> tmpStack;
+                                                                                  tmpStack.push_back(s0);
+                                                                                  visited.clear();
+                                                                                  while (!tmpStack.empty()) {
+                                                                                    mlcore::State* x = tmpStack.back();
+                                                                                    tmpStack.pop_back();
+                                                                                    if (!visited.insert(x).second)
+                                                                                      continue;
+                                                                                    if (x->deadEnd() || problem_->goal(x))
+                                                                                      continue;
+                                                                                    mlcore::Action* y = x->bestAction();
+                                                                                    dprint1("*****************************");
+                                                                                    dprint1(x);
+                                                                                    if (y == nullptr) {
+                                                                                      dprint1("no action");
+                                                                                      continue;
+                                                                                    }
+                                                                                    dprint1(y);
+                                                                                    dprint1(x->cost());
+                                                                                    for (auto const & z : problem_->transition(x, y)) {
+                                                                                      tmpStack.push_back(z.su_state);
+                                                                                    }
+                                                                                    bellmanBackup(problem_, x);
+                                                                                    dprint1("*****************************");
+                                                                                  }
+                                                                                  dprint1("Done!");
+                                                                                  mdplib_debug = false;
         while (true) {
             visited.clear();
             list<mlcore::State*> stateStack;
@@ -348,31 +379,6 @@ void FFReducedModelSolver::lao(mlcore::State* s0)
             }
             if (error < epsilon_)
                                                                                 {
-                                                                                  mdplib_debug = true;
-                                                                                  dprint1("Visiting BPSG");
-                                                                                  list<mlcore::State*> tmpStack;
-                                                                                  tmpStack.push_back(s0);
-                                                                                  visited.clear();
-                                                                                  while (!tmpStack.empty()) {
-                                                                                    mlcore::State* x = tmpStack.back();
-                                                                                    tmpStack.pop_back();
-                                                                                    if (!visited.insert(x).second)
-                                                                                      continue;
-                                                                                    if (x->deadEnd() || problem_->goal(x))
-                                                                                      continue;
-                                                                                    mlcore::Action* y = x->bestAction();
-                                                                                    dprint1("*****************************");
-                                                                                    dprint1(x);
-                                                                                    dprint1(y);
-                                                                                    dprint1(x->cost());
-                                                                                    for (auto const & z : problem_->transition(x, y)) {
-                                                                                      tmpStack.push_back(z.su_state);
-                                                                                    }
-                                                                                    bellmanBackup(problem_, x);
-                                                                                    dprint1("*****************************");
-                                                                                  }
-                                                                                  dprint1("Done!");
-                                                                                  mdplib_debug = false;
                 return;
                                                                                 }
             if (error > mdplib::dead_end_cost) {
@@ -440,19 +446,20 @@ double FFReducedModelSolver::bellmanUpdate(mlcore::State* s)
         return 0.0;
     }
 
-//                                                                                mdplib_debug = true;
+                                                                                mdplib_debug = true;
 //                                                                                if (redState->exceptionCount() == maxHorizon_) {
 //                                                                                    dprint1("*************************");
 //                                                                                    dprint1(s);
-                                                                                    dprint3("compare", best.bb_cost, ffStateCosts_[s]);
-//                                                                                    dprint1(best.bb_action);
+//                                                                                    dprint3("compare", best.bb_cost, ffStateCosts_[s]);
+//                                                                                    dprint2("best action", best.bb_action);
 //                                                                                    for (auto const & ssss : problem_->transition(s, best.bb_action)) {
 //                                                                                        dprint2("    ", ssss.su_state);
 //                                                                                    }
+//                                                                                    dprint1("BACKUP");
 //                                                                                    bellmanBackup(problem_, s);
 //                                                                                    dprint1("*************************");
 //                                                                                }
-//                                                                                mdplib_debug = false;
+                                                                                mdplib_debug = false;
 
 
                                                                                 dprint3("xxx backup", s, best.bb_action);
