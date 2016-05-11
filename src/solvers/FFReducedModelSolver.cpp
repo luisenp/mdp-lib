@@ -271,7 +271,6 @@ mlcore::Action* FFReducedModelSolver::solve(mlcore::State* s0)
 
 void FFReducedModelSolver::lao(mlcore::State* s0)
 {
-                                                                                dprint1("LAO*");
     // This is a stack based implementation of LAO*.
     // We don't use the existing library implementation because we are going to
     // solve the reduced states with j=k using FF.
@@ -312,9 +311,48 @@ void FFReducedModelSolver::lao(mlcore::State* s0)
 //                                                                                dsleep(500);
         } while (countExpanded != 0);
                                                                                 dprint1("TEST CONVERGENCE");
+        while (true) {
+            visited.clear();
+            list<mlcore::State*> stateStack;
+            stateStack.push_back(s0);
+            double error = 0.0;
+            while (!stateStack.empty()) {
+                mlcore::State* s = stateStack.back();
+                stateStack.pop_back();
+                if (!visited.insert(s).second)
+                    continue;
+                                                                                mdplib_debug = false;
+                                                                                dprint2("TESTING", s);
+                                                                                dprint2("VISITED", visited.size());
+                if (s->deadEnd() || problem_->goal(s))
+                    continue;
+                mlcore::Action* prevAction = s->bestAction();
+                if (prevAction == nullptr) {
+                    // if it reaches this point it hasn't converged yet.
+                                                                                dprint1("NO-ACTION FOR s");
+                    error = mdplib::dead_end_cost + 1;
+                } else {
+                                                                                dprint2("ACTION FOR s", prevAction);
+                    for (Successor sccr : problem_->transition(s, prevAction)) {
+                                                                                dprint2("    SUCCESSOR", sccr.su_state);
+                        stateStack.push_back(sccr.su_state);
+                    }
+                }
+                error = std::max(error, this->bellmanUpdate(s));
+                                                                                dprint2("ERROR FOR s", error);
+                if (prevAction != s->bestAction()) {
+                                                                                dprint1("NO CONVERGENCE");
+                    // it hasn't converged because the best action changed.
+                    error = mdplib::dead_end_cost + 1;
+                    break;
+                }
+            }
+                                                                                dprint3("OUT OF LOOP", error, epsilon_);
+            if (error < epsilon_)
+                                                                                {
+                                                                                dprint1("CONVERGED");
 
-
-                                                                                  mdplib_debug = true;
+                                                                                  mdplib_debug = false;
                                                                                   dprint1("Visiting BPSG");
                                                                                   list<mlcore::State*> tmpStack;
                                                                                   tmpStack.push_back(s0);
@@ -343,42 +381,6 @@ void FFReducedModelSolver::lao(mlcore::State* s0)
                                                                                   }
                                                                                   dprint1("Done!");
                                                                                   mdplib_debug = false;
-        while (true) {
-            visited.clear();
-            list<mlcore::State*> stateStack;
-            stateStack.push_back(s0);
-            double error = 0.0;
-            while (!stateStack.empty()) {
-                mlcore::State* s = stateStack.back();
-                stateStack.pop_back();
-                if (!visited.insert(s).second)
-                    continue;
-                                                                                dprint2("TESTING", s);
-                if (s->deadEnd() || problem_->goal(s))
-                    continue;
-                mlcore::Action* prevAction = s->bestAction();
-                                                                                dprint3("TESTING", s, prevAction);
-                if (prevAction == nullptr) {
-                    // if it reaches this point it hasn't converged yet.
-                                                                                dprint1("NO-ACTION FOR s");
-                    error = mdplib::dead_end_cost + 1;
-                } else {
-                    for (Successor sccr : problem_->transition(s, prevAction)) {
-                                                                                dprint2("    SUCCESSOR", sccr.su_state);
-                        stateStack.push_back(sccr.su_state);
-                    }
-                }
-                error = std::max(error, this->bellmanUpdate(s));
-                                                                                dprint2("ERROR FOR s", error);
-                if (prevAction != s->bestAction()) {
-                                                                                dprint1("NO CONVERGENCE");
-                    // it hasn't converged because the best action changed.
-                    error = mdplib::dead_end_cost + 1;
-                    break;
-                }
-            }
-            if (error < epsilon_)
-                                                                                {
                 return;
                                                                                 }
             if (error > mdplib::dead_end_cost) {

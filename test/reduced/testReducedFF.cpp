@@ -56,7 +56,7 @@ ReducedHeuristicWrapper* reducedHeuristic = nullptr;
 WrapperProblem* wrapperProblem = nullptr;
 list<ReducedTransition *> reductions;
 
-string ffExec = "/home/lpineda/Desktop/FF-v2.3/ff";
+string ffExec = "/home/lpineda/Desktop/planning-code/FF-v2.3/ff";
 string ffDomain = "-o /home/lpineda/Desktop/domain.pddl";
 string ffProblem = "-f /home/lpineda/Desktop/problem.pddl";
 string ffCommand = ffExec + " " + ffDomain + " " + ffProblem;

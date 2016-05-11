@@ -129,12 +129,14 @@ public:
                          std::string ffExecFilename,
                          std::string determinizedDomainFilename,
                          std::string templateProblemFilename,
-                         int maxHorizon) :
+                         int maxHorizon,
+                         double epsilon = 1.0e-3) :
         problem_(problem),
         ffExecFilename_(ffExecFilename),
         determinizedDomainFilename_(determinizedDomainFilename),
         templateProblemFilename_(templateProblemFilename),
-        maxHorizon_(maxHorizon)
+        maxHorizon_(maxHorizon),
+        epsilon_(epsilon)
     {
         for (int i = 0; i <= maxHorizon_; i++) {
             estimatedCosts_.push_back(mlcore::StateDoubleMap());
