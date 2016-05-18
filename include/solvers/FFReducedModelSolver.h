@@ -72,6 +72,12 @@ private:
     /* The error tolerance to use. */
     double epsilon_;
 
+    /*
+     * If true FF will be used for states with exceptionCounter = maxHorizon_
+     * (This is the default option).
+     */
+    bool useFF_;
+
     ////////////////////////////////////////////////////////////////////////////
     //                               FUNCTIONS                                //
     ////////////////////////////////////////////////////////////////////////////
@@ -130,13 +136,15 @@ public:
                          std::string determinizedDomainFilename,
                          std::string templateProblemFilename,
                          int maxHorizon,
-                         double epsilon = 1.0e-3) :
+                         double epsilon = 1.0e-3,
+                         bool useFF = true) :
         problem_(problem),
         ffExecFilename_(ffExecFilename),
         determinizedDomainFilename_(determinizedDomainFilename),
         templateProblemFilename_(templateProblemFilename),
         maxHorizon_(maxHorizon),
-        epsilon_(epsilon)
+        epsilon_(epsilon),
+        useFF_(useFF)
     {
         for (int i = 0; i <= maxHorizon_; i++) {
             estimatedCosts_.push_back(mlcore::StateDoubleMap());

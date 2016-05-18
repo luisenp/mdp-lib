@@ -56,7 +56,7 @@ ReducedHeuristicWrapper* reducedHeuristic = nullptr;
 WrapperProblem* wrapperProblem = nullptr;
 list<ReducedTransition *> reductions;
 
-string ffExec = "/home/lpineda/Desktop/planning-code/FF-v2.3/ff";
+string ffExec = "/home/lpineda/Desktop/FF-v2.3/ff";
 string ffDomain = "-o /home/lpineda/Desktop/domain.pddl";
 string ffProblem = "-f /home/lpineda/Desktop/problem.pddl";
 string ffCommand = ffExec + " " + ffDomain + " " + ffProblem;
@@ -115,7 +115,7 @@ bool initPPDDL(string ppddlArgs)
     problem = new PPDDLProblem(internalPPDDLProblem);
     heuristic = new mlppddl::PPDDLHeuristic(static_cast<PPDDLProblem*>(problem),
                                             mlppddl::FF);
-                                                                                heuristic = nullptr;
+//                                                                                heuristic = nullptr;
     problem->setHeuristic(heuristic);
 }
 
@@ -183,6 +183,10 @@ int main(int argc, char* args[])
     if (flag_is_registered_with_value("v"))
         verbosity = stoi(flag_value("v"));
 
+    bool useFF = true;
+    if (flag_is_registered("no-ff"))
+        useFF = false;
+
     // The number of simulations for the experiments.
     int nsims = 100;
     if (flag_is_registered_with_value("n"))
@@ -209,7 +213,9 @@ int main(int argc, char* args[])
                                 ffExec,
                                 directory + "/" + detProblem,
                                 directory + "/p01.pddl",
-                                k);
+                                k,
+                                1.0e-3,
+                                useFF);
     solver.solve(wrapperProblem->initialState());
     clock_t endTime = clock();
     totalPlanningTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
@@ -222,8 +228,8 @@ int main(int argc, char* args[])
     for (int i = 0; i < nsims; i++) {
         pair<double, double> costAndTime =
             reducedModel->trial(solver, wrapperProblem);
-                                                                                cerr << costAndTime.first << endl;
         expectedCost += costAndTime.first;
+                                                                                cerr << costAndTime.first << " " << expectedCost / (i+1) << endl;
     }
     cout << expectedCost / nsims << endl;
     cout << totalPlanningTime << endl;

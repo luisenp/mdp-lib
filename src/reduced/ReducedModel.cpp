@@ -207,10 +207,14 @@ std::pair<double, double> ReducedModel::trial(
         Action* bestAction = currentState->bestAction();
         cost += this->cost(currentState, bestAction);
         int exceptionCount = currentState->exceptionCount();
-                                                                                mdplib_debug = true;
+                                                                                mdplib_debug = false;
                                                                                 dprint2("CURRENT", currentState);
-                                                                                if (currentState->bestAction() != nullptr)
+                                                                                if (currentState->bestAction() != nullptr) {
                                                                                     dprint1(currentState->bestAction());
+                                                                                    for (auto const & xxx : wrapperProblem->transition(currentState, currentState->bestAction())) {
+                                                                                        dprint2("    ", xxx.su_state);
+                                                                                    }
+                                                                                }
                                                                                 mdplib_debug = false;
 
         if (cost >= mdplib::dead_end_cost)
@@ -263,11 +267,9 @@ std::pair<double, double> ReducedModel::trial(
 
         // Re-planning
         // Checking if the state has already been considered during planning.
-//                                                                                dprint1(nextState);
-//                                                                                if (nextState->bestAction() != nullptr)
-//                                                                                    dprint1(nextState->bestAction());
 
         if (nextState == nullptr || nextState->bestAction() == nullptr) {
+                                                                                dprint1(nextState);
             // State wasn't considered before.
             assert(this->k_ == 0);  // Only determinization should reach here.
             auxState->exceptionCount(0);

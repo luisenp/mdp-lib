@@ -75,7 +75,6 @@
   )
 )
 
-
 (define (problem zeno_4_2_2_3846)
   (:domain zenotravel)
   (:objects c0 c1 c2 c3 - city p0 p1 - person a0 a1 - aircraft f0 f1 f2 f3 f4 - flevel)
