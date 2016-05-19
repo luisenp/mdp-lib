@@ -18,7 +18,6 @@ double qvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
 {
     double qAction = 0.0;
     for (mlcore::Successor su : problem->transition(s, a)) {
-                                                                                dprint3("----", su.su_state, su.su_state->cost());
         qAction += su.su_prob * su.su_state->cost();
     }
     qAction = (qAction * problem->gamma()) + problem->cost(s, a);
@@ -50,7 +49,6 @@ std::pair<double, mlcore::Action*> bellmanBackup(mlcore::Problem* problem,
             continue;
         hasAction = true;
         double qAction = std::min(mdplib::dead_end_cost, qvalue(problem, s, a));
-                                                                                dprint2(a, qAction);
         if (qAction <= bestQ) {
             bestQ = qAction;
             bestAction = a;

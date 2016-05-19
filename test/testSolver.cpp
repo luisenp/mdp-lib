@@ -11,7 +11,7 @@
 #include "../include/solvers/HMinHeuristic.h"
 #include "../include/solvers/LAOStarSolver.h"
 #include "../include/solvers/LRTDPSolver.h"
-#include "../include/solvers/MLRTDPSolver.h"
+#include "../include/solvers/FLARESSolver.h"
 #include "../include/solvers/Solver.h"
 #include "../include/solvers/SSiPPSolver.h"
 #include "../include/solvers/UCTSolver.h"
@@ -158,8 +158,8 @@ bool mustReplan(State* s, int plausTrial) {
   if (flag_is_registered("online"))
       return true;
   string algorithm = flag_value("algorithm");
-  if (algorithm == "mlrtdp") {
-      return !s->checkBits(mdplib::SOLVED_MLRTDP);
+  if (algorithm == "flares") {
+      return !s->checkBits(mdplib::SOLVED_FLARES);
   }
   if (algorithm == "hdp") {
       if (flag_is_registered("i")) {
@@ -203,9 +203,9 @@ void initSolver()
         solver = new LAOStarSolver(problem, tol, 1000000);
     } else if (algorithm == "lrtdp") {
         solver = new LRTDPSolver(problem, trials, tol);
-    } else if (algorithm == "mlrtdp") {
+    } else if (algorithm == "flares") {
         bool optimal = flag_is_registered("optimal");
-        solver = new MLRTDPSolver(problem, trials, tol, horizon, optimal);
+        solver = new FLARESSolver(problem, trials, tol, horizon, optimal);
     } else if (algorithm == "hdp") {
         int plaus;
         if (flag_is_registered_with_value("i"))

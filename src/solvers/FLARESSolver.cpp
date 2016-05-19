@@ -1,6 +1,6 @@
 #include "../../include/MDPLib.h"
 
-#include "../../include/solvers/MLRTDPSolver.h"
+#include "../../include/solvers/FLARESSolver.h"
 
 using namespace mlcore;
 using namespace std;
@@ -8,7 +8,7 @@ using namespace std;
 namespace mlsolvers
 {
 
-MLRTDPSolver::MLRTDPSolver(Problem* problem,
+FLARESSolver::FLARESSolver(Problem* problem,
                          int maxTrials,
                          double epsilon,
                          int horizon,
@@ -21,7 +21,7 @@ MLRTDPSolver::MLRTDPSolver(Problem* problem,
 { }
 
 
-void MLRTDPSolver::trial(State* s)
+void FLARESSolver::trial(State* s)
 {
     State* currentState = s;
     list<State*> visited;
@@ -53,14 +53,14 @@ void MLRTDPSolver::trial(State* s)
 }
 
 
-bool MLRTDPSolver::labeledSolved(State* s)
+bool FLARESSolver::labeledSolved(State* s)
 {
     return (s->checkBits(mdplib::SOLVED) ||
-        s->checkBits(mdplib::SOLVED_MLRTDP));
+        s->checkBits(mdplib::SOLVED_FLARES));
 }
 
 
-bool MLRTDPSolver::checkSolved(State* s)
+bool FLARESSolver::checkSolved(State* s)
 {
     list< pair<State*,int > > open, closed;
 
@@ -99,7 +99,7 @@ bool MLRTDPSolver::checkSolved(State* s)
             if (!labeledSolved(next) &&
                     !next->checkBits(mdplib::CLOSED)) {
                 open.push_front(make_pair(next, depth + 1));
-            } else if (next->checkBits(mdplib::SOLVED_MLRTDP) &&
+            } else if (next->checkBits(mdplib::SOLVED_FLARES) &&
                           !next->checkBits(mdplib::SOLVED)) {
                 subgraphWithinSearchHorizon = false;
             }
@@ -110,11 +110,11 @@ bool MLRTDPSolver::checkSolved(State* s)
         for (auto const & pp : closed) {
             pp.first->clearBits(mdplib::CLOSED);
             if (subgraphWithinSearchHorizon) {
-                pp.first->setBits(mdplib::SOLVED_MLRTDP);
+                pp.first->setBits(mdplib::SOLVED_FLARES);
                 pp.first->setBits(mdplib::SOLVED);
                 depthSolved_.insert(pp.first);
             } else if (pp.second <= horizon_) {
-                pp.first->setBits(mdplib::SOLVED_MLRTDP);
+                pp.first->setBits(mdplib::SOLVED_FLARES);
                 depthSolved_.insert(pp.first);
             }
         }
@@ -136,7 +136,7 @@ bool MLRTDPSolver::checkSolved(State* s)
 }
 
 
-Action* MLRTDPSolver::solve(State* s0)
+Action* FLARESSolver::solve(State* s0)
 {
     if (optimal_)
         return solveOptimally(s0);
@@ -144,7 +144,7 @@ Action* MLRTDPSolver::solve(State* s0)
 }
 
 
-Action* MLRTDPSolver::solveApproximate(State* s0)
+Action* FLARESSolver::solveApproximate(State* s0)
 {
     int trials = 0;
     while (!labeledSolved(s0) && trials++ < maxTrials_)
@@ -153,7 +153,7 @@ Action* MLRTDPSolver::solveApproximate(State* s0)
 }
 
 
-Action* MLRTDPSolver::solveOptimally(State* s0)
+Action* FLARESSolver::solveOptimally(State* s0)
 {
     horizon_ = 0;
     while (true) {
@@ -165,7 +165,7 @@ Action* MLRTDPSolver::solveOptimally(State* s0)
             break;
         horizon_ = 2 * horizon_ + 1;
         for (State* tmp : depthSolved_)
-            tmp->clearBits(mdplib::SOLVED_MLRTDP);
+            tmp->clearBits(mdplib::SOLVED_FLARES);
         depthSolved_.clear();
     }
     return s0->bestAction();

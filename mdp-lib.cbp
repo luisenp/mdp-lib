@@ -558,7 +558,6 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/ppddl/mini-gpt/types.h" />
 		<Unit filename="include/ppddl/mini-gpt/utils.cc" />
 		<Unit filename="include/ppddl/mini-gpt/utils.h" />
-		<Unit filename="include/reduced/BestDeterminizationReduction.h" />
 		<Unit filename="include/reduced/LeastLikelyOutcomeReduction.h" />
 		<Unit filename="include/reduced/MostLikelyOutcomeReduction.h" />
 		<Unit filename="include/reduced/PPDDLTaggedReduction.h" />
@@ -625,7 +624,6 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="src/ppddl/PPDDLHeuristic.cpp" />
 		<Unit filename="src/ppddl/PPDDLProblem.cpp" />
 		<Unit filename="src/ppddl/PPDDLState.cpp" />
-		<Unit filename="src/reduced/BestDeterminizationReduction.cpp" />
 		<Unit filename="src/reduced/ReducedModel.cpp" />
 		<Unit filename="src/solvers/ConcurrentSolver.cpp" />
 		<Unit filename="src/solvers/DeterministicSolver.cpp" />
@@ -656,6 +654,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="test/mobj/testLexiRaw.cpp" />
 		<Unit filename="test/reduced/testFF.cpp" />
 		<Unit filename="test/reduced/testReduced.cpp" />
+		<Unit filename="test/reduced/testReducedFF.cpp" />
 		<Unit filename="test/testB2T.cpp" />
 		<Unit filename="test/testCTP.cpp" />
 		<Unit filename="test/testConc.cpp" />

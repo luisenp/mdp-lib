@@ -1,5 +1,5 @@
-#ifndef MDPLIB_MLRTDPSOLVER_H
-#define MDPLIB_MLRTDPSOLVER_H
+#ifndef MDPLIB_FLARESSOLVER_H
+#define MDPLIB_FLARESSOLVER_H
 
 #include "../Problem.h"
 #include "../Heuristic.h"
@@ -11,9 +11,9 @@ namespace mlsolvers
 
 
 /**
- * A SSP solver using the Myopic LRTDP algorithm.
+ * A SSP solver using the FLARES algorithm.
  */
-class MLRTDPSolver : public Solver
+class FLARESSolver : public Solver
 {
 private:
     /* The problem to solve. */
@@ -51,14 +51,14 @@ private:
 
 public:
     /**
-     * Creates a Myopic LRTDP solver for the given problem.
+     * Creates a FLARES solver for the given problem.
      *
      * @param problem The problem to be solved.
      * @param maxTrials The maximum number of trials to perform.
      * @param epsilon The error tolerance.
      * @param horizon_ The maximum depth for checkSolved.
      */
-    MLRTDPSolver(mlcore::Problem* problem,
+    FLARESSolver(mlcore::Problem* problem,
                  int maxTrials,
                  double epsilon,
                  int horizon_,
@@ -76,4 +76,4 @@ public:
 
 }
 
-#endif // MDPLIB_MLRTDPSOLVER_H
+#endif // MDPLIB_FLARESSOLVER_H
