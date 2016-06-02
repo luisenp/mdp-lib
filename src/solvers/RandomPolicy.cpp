@@ -54,7 +54,8 @@ void RandomPolicy::print(std::ostream& os)
         int idxAction = 0;
         for (mlcore::Action* a : problem_->actions()) {
             if (policy_[idxState][idxAction] > 0.0) {
-                os << "    " << a << " " << policy_[idxState][idxAction] << " " << std::endl;
+                os << "    " << a << " " <<
+                    policy_[idxState][idxAction] << " " << std::endl;
             }
             idxAction++;
         }

@@ -26,9 +26,6 @@ private:
     /* The tolerance for the residual error. */
     double epsilon_;
 
-                                                                                int xxx_ = 0;
-                                                                                mlcore::StateIntMap yyy_;
-
     /*
      * The minimum plausibilitiy (note that a plausibility of 0 is greater than
      * a plausibility of 1, 1 greater than 2, and so on.
