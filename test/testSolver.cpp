@@ -347,6 +347,8 @@ int main(int argc, char* args[])
         } else {
             cnt++;
             updateStatistics(costTrial, cnt, expectedCost, variance);
+            if (verbosity >= 1)
+                cout << costTrial << endl;
         }
         if (verbosity >= 100)
             cout << endl;
