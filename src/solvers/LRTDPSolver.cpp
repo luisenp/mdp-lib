@@ -74,10 +74,10 @@ bool LRTDPSolver::checkSolved(mlcore::State* s)
     if (rv) {
         for (mlcore::State* sc : closed) {
             sc->setBits(mdplib::SOLVED);
+            sc->clearBits(mdplib::CLOSED);
         }
     } else {
         while (!closed.empty()) {
-            double res = residual(problem_, tmp);
             tmp = closed.front();
             closed.pop_front();
             tmp->clearBits(mdplib::CLOSED);

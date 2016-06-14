@@ -1,24 +1,20 @@
 #!/bin/bash
 
-tracks=(known/square-4-error known/square-5-error \
-        known/ring-5-error known/ring-6-error)
 nsims=100
 verbosity=1
 
+tracks=(known/square-4-error known/square-5-error \
+        known/ring-5-error known/ring-6-error)
+Racetrack problems
 for track in ${tracks[@]}; do
-#   echo "${track}|lrtdp"
-#   ../testsolver.out --track=../data/tracks/$track.track \
-#   --algorithm=lrtdp --v=0 --n=1 \
-#   --heuristic=hmin --hmin-solve-all 
-  
-#   echo "${track}|flares"
-#   ../testsolver.out --track=../data/tracks/$track.track \
-#   --algorithm=flares --v=0 --n=1 --optimal  \
-#   --heuristic=hmin --hmin-solve-all 
+  echo "${track}|lrtdp"
+  ../testsolver.out --track=../data/tracks/$track.track \
+  --algorithm=lrtdp --v=1 --n=100 \
+  --heuristic=hmin --no-initial-plan
   
   # FLARES
   for horizon in `seq 0 1`; do
-    echo "${track}|flares|hor=${horizon}"
+    echo "${track}|flares(${horizon})"
       ../testsolver.out --track=../data/tracks/$track.track \
       --algorithm=flares --horizon=$horizon --v=$verbosity --n=$nsims \
        --heuristic=hmin --hmin-solve-all 
@@ -37,11 +33,47 @@ for track in ${tracks[@]}; do
   # SSiPP(t)
   t=2
   for i in `seq 0 2`; do
-    echo "${track}|ssipp(t)|j=${t}"
+    echo "${track}|ssipp(${t})"
       ../testsolver.out --track=../data/tracks/$track.track \
       --algorithm=ssipp --horizon=$t --v=$verbosity --n=$nsims \
       --heuristic=hmin --hmin-solve-all 
     let "t *= 2"
-  done
+  done  
+done
+
+
+sizes=(20 40)
+for size in ${sizes[@]}; do
+  let "goal = size - 1"
+  # LRTDP
+  echo "${size}-$goal|lrtdp"
+  ../testsolver.out --sailing-size=$size --sailing-goal=$goal --algorithm=lrtdp \
+  --n=$nsims --v=$verbosity --heuristic=hmin --hmin-solve-all --no-initial-plan
   
+  # FLARES
+  for horizon in `seq 0 1`; do
+    echo "${size}-$goal|flares(${horizon})"
+    ../testsolver.out --sailing-size=$size --sailing-goal=$goal --algorithm=flares \
+    --horizon=$horizon --n=$nsims --v=$verbosity --heuristic=hmin --hmin-solve-all
+  done
+    
+  # HDP(i,j)
+  for i in `seq 0 1`; do
+    for j in `seq 0 1`; do
+      echo "${size}-$goal|hdp(${i},${j})"
+      ../testsolver.out --sailing-size=$size --sailing-goal=$goal --algorithm=hdp \
+        --n=$nsims --v=$verbosity -i=$i j=$j \
+        --heuristic=hmin --hmin-solve-all
+    done
+  done   
+  
+  # Approximate SSiPP  
+  horizon=4
+  for i in `seq 0 1`; do
+    echo "${size}-$goal||ssipp(${horizon})"
+    ../testsolver.out --sailing-size=$size --sailing-goal=$goal --algorithm=ssipp \
+      --horizon=$horizon --n=$nsims --v=$verbosity \
+      --heuristic=hmin --hmin-solve-all
+      let "horizon *= 2"
+  done
 done
