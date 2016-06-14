@@ -232,13 +232,13 @@ lib/libminigpt.a:
 
 # Compiles the PPDDL library
 ppddl: lib/libmdp_ppddl.a
-lib/libmdp_ppddl.a: lib/libmdp.a src/ppddl/*.cpp include/ppddl/*.h lib/libminigpt.a
+lib/libmdp_ppddl.a: lib/libmdp.a src/ppddl/*.cpp include/ppddl/*.h lib/libminigpt.a test/testPPDDL.cpp
 	$(CC) $(CFLAGS) -Iinclude -Iinclude/ppddl -Include/ppddl/mini-gpt -I$(ID_SOLV) -c src/ppddl/*.cpp
 	mkdir -p $(TD)
 	ar rvs lib/libmdp_ppddl.a *.o
 	mkdir -p $(OD_PPDDL)
 	mv *.o $(OD_PPDDL)
-#	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) $(INCLUDE_PPDDL) -o testppddl.out $(TD)/testPPDDL.cpp include/ppddl/mini-gpt/heuristics.cc $(LIBS) lib/libminigpt.a lib/libmdp_ppddl.a
+	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) $(INCLUDE_PPDDL) -o testppddl.out $(TD)/testPPDDL.cpp include/ppddl/mini-gpt/heuristics.cc -Llib lib/libmdp.a lib/libminigpt.a lib/libmdp_ppddl.a
 
 # Compiles the reduced model code
 reduced: lib/libmdp_reduced.a
