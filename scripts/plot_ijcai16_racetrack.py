@@ -36,7 +36,7 @@ labels = ['OPT',
           'S(4)', 'S(8)']
 i = 0
 fig = plt.figure()
-plt.rcParams.update({'font.size': 18})
+plt.rcParams.update({'font.size': 14})
 
 tracks = ['ring-6', 'square-4', 'square-5', 'ring-5']
 
@@ -54,5 +54,6 @@ for track in tracks:
 
     j += 1
   plt.boxplot(results, sym='', widths=0.35)
-  ax.set_xticklabels(labels)
+  ax.set_xticklabels(labels, rotation='45')
+fig.tight_layout()
 fig.show()

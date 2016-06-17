@@ -36,7 +36,7 @@ labels = ['OPT',
           'S(4)', 'S(8)']
 i = 0
 fig = plt.figure()
-plt.rcParams.update({'font.size': 18})
+plt.rcParams.update({'font.size': 14})
 
 problems = {
   '40-39' : ('size=(40,40) goal=(39,39)', 0), 
@@ -61,5 +61,6 @@ for problem in problems:
 
     j += 1
   plt.boxplot(results, sym='', widths=0.35)
-  ax.set_xticklabels(labels)
+  ax.set_xticklabels(labels, rotation=45)
+fig.tight_layout()
 fig.show()
