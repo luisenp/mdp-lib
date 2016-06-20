@@ -30,6 +30,16 @@ ushort_t
 problem_t::atom_hash_get( const Atom& atom, bool negated )
 {
   std::map<const Atom*,ushort_t>::const_iterator it = atom_hash_.find( &atom );
+
+    std::cout << &atom << " *******************************" << std::endl;
+  for (std::map<const Atom*,ushort_t>::const_iterator it2 = atom_hash_.begin();
+        it2 != atom_hash_.end(); it2++) {
+        std::cout << it2->first << " " << it2->second << std::endl;
+        }
+    std::cout << "*******************************" << std::endl;
+
+
+
   if( it == atom_hash_.end() )
     {
       StateFormula::register_use( &atom );
@@ -76,14 +86,14 @@ problem_t::fluent_inv_hash_get( ushort_t fluent )
   return( it == fluent_inv_hash_.end() ? NULL : (*it).second );
 }
 
-problem_t* 
+problem_t*
 problem_t::find_problem( const std::string& name )
 {
   ProblemMap::const_iterator pi = problems.find( name );
   return( (pi!=problems.end()?(*pi).second:NULL) );
 }
 
-const problem_t* 
+const problem_t*
 problem_t::find( const std::string& name )
 {
   ProblemMap::const_iterator pi = problems.find( name );
@@ -125,7 +135,7 @@ problem_t::allocate( const std::string &name, const problem_t &problem )
 }
 
 problem_t::problem_t( const std::string &name, const problem_t &problem )
-  : ref_count_(0), name_(name), domain_(&problem.domain()), 
+  : ref_count_(0), name_(name), domain_(&problem.domain()),
     terms_(TermTable(problem.domain().terms())),
     goal_(&problem.goal()), metric_(problem.metric()),
     nprec_(false), goal_atom_(false), application_graph_(NULL)
@@ -207,7 +217,7 @@ problem_t::~problem_t()
     }
 }
 
-void 
+void
 problem_t::add_init_atom( const Atom& atom )
 {
   if( init_atoms_.find( &atom ) == init_atoms_.end() )
@@ -217,7 +227,7 @@ problem_t::add_init_atom( const Atom& atom )
     }
 }
 
-void 
+void
 problem_t::add_init_fluent( const Application& application, const Rational& value )
 {
   if( init_fluents_.find( &application ) == init_fluents_.end() )
@@ -229,14 +239,14 @@ problem_t::add_init_fluent( const Application& application, const Rational& valu
     init_fluents_[&application] = value;
 }
 
-void 
+void
 problem_t::add_init_effect( const Effect& effect )
 {
   Effect::register_use( &effect );
   init_effects_.push_back( &effect );
 }
 
-void 
+void
 problem_t::set_goal( const StateFormula& goal )
 {
   if( &goal != goal_ )
@@ -247,7 +257,7 @@ problem_t::set_goal( const StateFormula& goal )
     }
 }
 
-void 
+void
 problem_t::instantiate_actions( void )
 {
   const StateFormula *ngoal = &goal().instantiation( SubstitutionMap(), *this );
@@ -264,14 +274,14 @@ problem_t::instantiate_actions( void )
     }
 }
 
-void 
+void
 problem_t::flatten( void )
 {
   // goal
   const StateFormula &g = goal().flatten();
   g.translate( goalT_ );
   StateFormula::unregister_use( &g );
-  
+
   // actions
   for( ActionList::const_iterator it = actions().begin(); it != actions().end(); ++it )
     {
@@ -332,9 +342,9 @@ problem_t::compute_weak_relaxation( problem_t &problem, bool verb )
   // remove disjunctive goal
   if( problem.goalT().size() > 1 )
     {
-      // create goal atom 
+      // create goal atom
       problem.goal_atom_ = true;
-      ushort_t goal_atom = problem_t::atom_get_new(); 
+      ushort_t goal_atom = problem_t::atom_get_new();
 
       // create goal action
       dact = new deterministicAction_t( "(reach-goal)",
@@ -641,7 +651,7 @@ problem_t::compute_strong_relaxation( problem_t &problem, bool verb )
 
 // Fills the provided object list with objects (including constants
 // declared in the domain) that are compatible with the given type.
-void 
+void
 problem_t::compatible_objects( ObjectList& objects, Type type ) const
 {
   domain().compatible_constants( objects, type );
@@ -680,32 +690,32 @@ problem_t::complete_state( state_t &state ) const
     }
 }
 
-void 
+void
 problem_t::enabled_actions( ActionList& actions, const state_t& state ) const
 {
   for( ActionList::const_iterator ai = actions_.begin(); ai != actions_.end(); ++ai )
     if( (*ai)->enabled( state ) ) actions.push_back( *ai );
 }
 
-void 
+void
 problem_t::print( std::ostream& os, const StateFormula &formula ) const
 {
   formula.print( os, domain_->predicates(), domain_->functions(), terms() );
 }
 
-void 
+void
 problem_t::print( std::ostream& os, const Application &app ) const
 {
   app.print( os, domain_->functions(), terms() );
 }
 
-void 
+void
 problem_t::print( std::ostream& os, const Action &action ) const
 {
   action.print( os, terms() );
 }
 
-void 
+void
 problem_t::print_full( std::ostream& os, const Action &action ) const
 {
   action.print_full( os, domain_->predicates(), domain_->functions(), terms() );
@@ -825,7 +835,7 @@ problem_t::analyze_symmetries( void )
       add_i.clear();
     }
 
-#if 0  
+#if 0
   std::cout << "<operator-graph>: begin" << std::endl;
   operator_graph.print( std::cout );
   std::cout << "<operator-graph>: end" << std::endl;
@@ -920,7 +930,7 @@ problem_t::add_orbit( std::string *name, std::vector<const Atom*> *atoms )
 }
 
 void
-problem_t::add_system( std::string *name, 
+problem_t::add_system( std::string *name,
 		       std::vector<const std::string*> *focus,
 		       std::vector<const std::string*> *base,
 		       std::vector<const std::string*> *frame )
@@ -928,7 +938,7 @@ problem_t::add_system( std::string *name,
   systems_[*name] = new system_t( focus, base, frame );
 }
 
-std::ostream& 
+std::ostream&
 operator<<( std::ostream& os, const problem_t& p )
 {
   os << "name: " << p.name();

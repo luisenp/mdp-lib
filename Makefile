@@ -5,7 +5,7 @@
 
 # Compilation flags and variables
 CC = g++
-CFLAGS = -std=c++11 -O3 -DATOM_STATES -pthread
+CFLAGS = -std=c++11 -g -DATOM_STATES -pthread
 
 # Variables for directories
 ID = include
@@ -226,7 +226,7 @@ testsolver.out: lib/libmdp.a domains
 
 # Compiles the mini-gpt library
 minigpt: lib/libminigpt.a
-lib/libminigpt.a:
+lib/libminigpt.a: include/ppddl/mini-gpt/*
 	$(MAKE) -C include/ppddl/mini-gpt
 	ar rvs lib/libminigpt.a include/ppddl/mini-gpt/*.o
 
@@ -242,7 +242,7 @@ lib/libmdp_ppddl.a: lib/libmdp.a src/ppddl/*.cpp include/ppddl/*.h lib/libminigp
 	 -o testppddl.out $(TD)/testPPDDL.cpp include/ppddl/mini-gpt/heuristics.cc \
 	 -Llib lib/libmdp.a lib/libminigpt.a lib/libmdp_ppddl.a
 	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) $(INCLUDE_PPDDL) \
-	-o testclient $(TD)/testPPDDL.cpp include/ppddl/mini-gpt/heuristics.cc \
+	-o testclient $(TD)/testClient.cpp include/ppddl/mini-gpt/heuristics.cc \
 	-Llib lib/libmdp.a lib/libminigpt.a lib/libmdp_ppddl.a
 
 # Compiles the reduced model code
