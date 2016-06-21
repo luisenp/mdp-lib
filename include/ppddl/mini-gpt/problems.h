@@ -198,19 +198,21 @@ public:
   void print_full( std::ostream &os, const Action &action ) const;
 
   const stateProbList_t& expand( const action_t &action, const state_t &state ) const;
-  void expand( const action_t &action, const state_t &state, 
+  void expand( const action_t &action, const state_t &state,
 	       std::pair<state_t*,Rational> *list ) const;
   void initial_states( std::pair<state_t*,Rational> *list ) const;
 
   void analyze_symmetries( void );
 
   void add_orbit( std::string *name, std::vector<const Atom*> *atoms );
-  void add_system( std::string *name, 
+  void add_system( std::string *name,
 		   std::vector<const std::string*> *focus,
 		   std::vector<const std::string*> *base,
 		   std::vector<const std::string*> *frame );
   const std::map<const std::string,std::vector<const Atom*>*>& orbits( void ) const { return( orbits_ ); }
   const std::map<const std::string,const system_t*>& systems( void ) const { return( systems_ ); }
+
+  static std::map<const Atom*,ushort_t>& atom_hash() { return atom_hash_;}
 };
 
 std::ostream& operator<<( std::ostream& os, const problem_t& p );

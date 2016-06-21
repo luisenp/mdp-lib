@@ -1,17 +1,20 @@
+#include <map>
 #include <sstream>
 #include <typeinfo>
 
-#include "../include/ppddl/mini-gpt/states.h"
-#include "../include/ppddl/mini-gpt/problems.h"
 #include "../include/ppddl/mini-gpt/domains.h"
-#include "../include/ppddl/mini-gpt/states.h"
 #include "../include/ppddl/mini-gpt/exceptions.h"
+#include "../include/ppddl/mini-gpt/formulas.h"
+#include "../include/ppddl/mini-gpt/problems.h"
+#include "../include/ppddl/mini-gpt/states.h"
 
-#include "../include/State.h"
-#include "../include/ppddl/PPDDLProblem.h"
 #include "../include/ppddl/PPDDLHeuristic.h"
+#include "../include/ppddl/PPDDLProblem.h"
+#include "../include/ppddl/PPDDLState.h"
 
 #include "../include/solvers/Solver.h"
+
+#include "../include/State.h"
 
 
 using namespace std;
@@ -82,7 +85,23 @@ int main(int argc, char **argv)
         new mlppddl::PPDDLHeuristic(MLProblem, mlppddl::FF);
     MLProblem->setHeuristic(heuristic);
 
-    cout << "INITIAL: " << MLProblem->initialState() << " ";
+    Domain dom = problem->domain();
+    PredicateTable& preds = dom.predicates();
+    TermTable& terms = problem->terms();
+
+    map<const Atom*,ushort_t>& atom_hash = problem_t::atom_hash();
+    unordered_map<string, ushort_t> stringAtomMap;
+
+    cout << " *******************************" << endl;
+    for (auto const & foo : atom_hash) {
+        ostringstream oss;
+        foo.first->print(oss, preds, dom.functions(), terms);
+        stringAtomMap[oss.str()] = foo.second;
+    }
+    for (auto const & foo : stringAtomMap) {
+        cout << foo.first << " " << stringAtomMap[foo.first] << endl;
+    }
+    cout << "*******************************" << endl;
 
 
     list<mlcore::State*> Q;
@@ -92,7 +111,30 @@ int main(int argc, char **argv)
         mlcore::State* cur = Q.back();
         Q.pop_back();
         cnt++;
+        ostringstream oss;
+        oss << cur;
+        string stateString = oss.str();
+        state_t* bar = new state_t();
+        for (int i = 0; i < stateString.size(); i++) {
+            if (stateString[i] == '(') {
+                string atomString = "";
+                int j;
+                for (j = i; stateString[j] != ')'; j++)
+                    atomString += stateString[j];
+                atomString += stateString[j];
+                cout << atomString << " " << stringAtomMap[atomString] << ", ";
+                bar->add(stringAtomMap[atomString]);
+                i = j;
+            }
+        }
+        cout << endl;
         cout << cur << endl;
+        cout << "created "; bar->print(cout); cout << endl;
+        mlppddl::PPDDLState* newState = new mlppddl::PPDDLState(MLProblem);
+        newState->setPState(*bar);
+        cout << "new " << newState << " " << (void *) newState << endl;
+        cout << "fetched " << (void *) MLProblem->addState(newState) <<
+            " " << (void *) cur << endl;
         for (mlcore::Action* a : MLProblem->actions()) {
             if (MLProblem->applicable(cur, a)) {
                 for (auto const & scc : MLProblem->transition(cur, a))
@@ -100,29 +142,6 @@ int main(int argc, char **argv)
             }
         }
     }
-
-    Domain dom = problem->domain();
-    PredicateTable& preds = dom.predicates();
-    TermTable& terms = problem->terms();
-
-    pair<Predicate, bool> pr = preds.find_predicate("vehicle-at");
-    pair<Object, bool> tr = terms.find_object("l-1-1");
-
-    TermList tl;
-    tl.push_back(tr.first);
-    Atom att = Atom::make_atom(pr.first, tl);
-    cout << "Atom:" << endl;
-    att.print(cout, preds, dom.functions(), terms);
-    cout << endl;
-
-    state_t* sss = new state_t();
-    sss->add(problem_t::atom_hash_get(att));
-
-    cout << "State:" << endl;
-    sss->full_print(cout, problem);
-    cout << endl;
-
-    delete sss;
     delete heuristic;
 }
 

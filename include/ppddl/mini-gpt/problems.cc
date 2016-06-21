@@ -30,16 +30,6 @@ ushort_t
 problem_t::atom_hash_get( const Atom& atom, bool negated )
 {
   std::map<const Atom*,ushort_t>::const_iterator it = atom_hash_.find( &atom );
-
-    std::cout << &atom << " *******************************" << std::endl;
-  for (std::map<const Atom*,ushort_t>::const_iterator it2 = atom_hash_.begin();
-        it2 != atom_hash_.end(); it2++) {
-        std::cout << it2->first << " " << it2->second << std::endl;
-        }
-    std::cout << "*******************************" << std::endl;
-
-
-
   if( it == atom_hash_.end() )
     {
       StateFormula::register_use( &atom );
