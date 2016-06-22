@@ -13,11 +13,13 @@
 #include "../include/ppddl/PPDDLState.h"
 
 #include "../include/solvers/Solver.h"
+#include "../include/solvers/FLARESSolver.h"
 
 #include "../include/State.h"
 
 
 using namespace std;
+using namespace mlsolvers;
 
 
 extern int yyparse();
@@ -25,6 +27,7 @@ extern FILE* yyin;
 string current_file;
 int warning_level = 0;
 int verbosity = 0;
+
 
 /* Parses the given file, and returns true on success. */
 static bool read_file( const char* name )
@@ -49,6 +52,54 @@ static bool read_file( const char* name )
         fclose( yyin );
         return( success );
     }
+}
+
+
+/* Initializes the map from strings (describing atoms) to atoms ids. */
+void initStringAtomMap(problem_t* problem,
+                        unordered_map<string, ushort_t>& stringAtomMap)
+{
+    Domain dom = problem->domain();
+    PredicateTable& preds = dom.predicates();
+    TermTable& terms = problem->terms();
+    for (auto const & atom : problem_t::atom_hash()) {
+        ostringstream oss;
+        atom.first->print(oss, preds, dom.functions(), terms);
+        stringAtomMap[oss.str()] = atom.second;
+    }
+}
+
+
+/* Returns the state corresponding to the given string. */
+mlcore::State* getStatefromString(
+    string stateString,
+    mlppddl::PPDDLProblem* MLProblem,
+    unordered_map<string, ushort_t>& stringAtomMap)
+{
+    state_t* pState = new state_t();
+    for (int i = 0; i < stateString.size(); i++) {
+        if (stateString[i] == '(') {
+            string atomString = "";
+            int j;
+            for (j = i; stateString[j] != ')'; j++)
+                atomString += stateString[j];
+            atomString += stateString[j];
+            pState->add(stringAtomMap[atomString]);
+            i = j;
+        }
+    }
+    mlppddl::PPDDLState* newState = new mlppddl::PPDDLState(MLProblem);
+    newState->setPState(*pState);
+    return MLProblem->addState(newState);
+}
+
+
+/* Simulates receiving the state description of the given state from server. */
+string simulateServerComm(mlcore::State* state)
+{
+    ostringstream oss;
+    oss << state;
+    return oss.str();
 }
 
 
@@ -85,63 +136,27 @@ int main(int argc, char **argv)
         new mlppddl::PPDDLHeuristic(MLProblem, mlppddl::FF);
     MLProblem->setHeuristic(heuristic);
 
-    Domain dom = problem->domain();
-    PredicateTable& preds = dom.predicates();
-    TermTable& terms = problem->terms();
-
-    map<const Atom*,ushort_t>& atom_hash = problem_t::atom_hash();
+    /* Initializing a map from atom names to atom indices. */
     unordered_map<string, ushort_t> stringAtomMap;
+    initStringAtomMap(problem, stringAtomMap);
 
-    cout << " *******************************" << endl;
-    for (auto const & foo : atom_hash) {
-        ostringstream oss;
-        foo.first->print(oss, preds, dom.functions(), terms);
-        stringAtomMap[oss.str()] = foo.second;
-    }
-    for (auto const & foo : stringAtomMap) {
-        cout << foo.first << " " << stringAtomMap[foo.first] << endl;
-    }
-    cout << "*******************************" << endl;
-
-
-    list<mlcore::State*> Q;
-    Q.push_back(MLProblem->initialState());
-    int cnt = 0;
-    while (cnt < 10) {
-        mlcore::State* cur = Q.back();
-        Q.pop_back();
-        cnt++;
-        ostringstream oss;
-        oss << cur;
-        string stateString = oss.str();
-        state_t* bar = new state_t();
-        for (int i = 0; i < stateString.size(); i++) {
-            if (stateString[i] == '(') {
-                string atomString = "";
-                int j;
-                for (j = i; stateString[j] != ')'; j++)
-                    atomString += stateString[j];
-                atomString += stateString[j];
-                cout << atomString << " " << stringAtomMap[atomString] << ", ";
-                bar->add(stringAtomMap[atomString]);
-                i = j;
-            }
+    FLARESSolver solver(MLProblem, 1000, 1.0e-3, 1);
+    mlcore::State* currentState = MLProblem->initialState();
+    string receivedString = simulateServerComm(currentState);
+    while (!MLProblem->goal(currentState)) {
+        mlcore::Action* action = solver.solve(currentState);
+        if (currentState->deadEnd()) {
+            cout << "DEAD-END" << endl;
+            break;
         }
-        cout << endl;
-        cout << cur << endl;
-        cout << "created "; bar->print(cout); cout << endl;
-        mlppddl::PPDDLState* newState = new mlppddl::PPDDLState(MLProblem);
-        newState->setPState(*bar);
-        cout << "new " << newState << " " << (void *) newState << endl;
-        cout << "fetched " << (void *) MLProblem->addState(newState) <<
-            " " << (void *) cur << endl;
-        for (mlcore::Action* a : MLProblem->actions()) {
-            if (MLProblem->applicable(cur, a)) {
-                for (auto const & scc : MLProblem->transition(cur, a))
-                    Q.push_back(scc.su_state);
-            }
-        }
+        cout << currentState << " " << action << endl;
+        mlcore::State* successorState =
+            randomSuccessor(MLProblem, currentState, action);
+        receivedString = simulateServerComm(successorState);
+        currentState =
+            getStatefromString(receivedString, MLProblem, stringAtomMap);
     }
+
     delete heuristic;
 }
 
