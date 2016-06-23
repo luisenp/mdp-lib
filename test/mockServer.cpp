@@ -7,7 +7,6 @@
 #include <typeinfo>
 #include <unistd.h>
 
-
 #include "../include/ppddl/mini-gpt/domains.h"
 #include "../include/ppddl/mini-gpt/exceptions.h"
 #include "../include/ppddl/mini-gpt/formulas.h"
@@ -24,9 +23,11 @@
 #include "../include/State.h"
 
 
+#define BUFFER_SIZE 1024
+
+
 using namespace std;
 using namespace mlsolvers;
-
 
 extern int yyparse();
 extern FILE* yyin;
@@ -97,19 +98,49 @@ string getAtomsString(string stateString,
 }
 
 
-/* Simulates receiving an action from the client. */
-mlcore::Action*
-simulateActionFromClient(mlcore::State* state,
-                         Solver* solver,
-                         unordered_map<string, ushort_t>& stringAtomMap) {
+/* Simulates receiving an action description from the client. */
+string
+getActionFromServer(int sockfd,
+                    mlcore::State* state,
+                    Solver* solver,
+                    unordered_map<string, ushort_t>& stringAtomMap) {
+
+    /* Sending the state description to the planning server. */
     ostringstream oss;
-    oss << state;
-    cout << getAtomsString(oss.str(), stringAtomMap) << endl;
-    // SEND OSS.STR() TO CLIENT
-    // RECEIVE HERE FROM CLIENT
-    return solver->solve(state);
+    oss << "state:" << state;
+    char buffer[BUFFER_SIZE];
+    bzero(buffer, BUFFER_SIZE);
+    sprintf(buffer, "%s", oss.str().c_str());
+    cout << "SENDING: " << oss.str() << endl;
+    int n = write(sockfd, buffer, strlen(buffer));
+    if (n < 0) {
+        cerr << "ERROR: couldn't write to socket." << endl;
+        return "";
+    }
+    bzero(buffer, BUFFER_SIZE);
+    n = read(sockfd, buffer, BUFFER_SIZE - 1);
+    if (n < 0) {
+        cerr << "ERROR: couldn't read from socket." << endl;
+        return "";
+    }
+    return string(buffer);
 }
 
+
+/* Simulates receiving an action description from the client. */
+void stopServer(int sockfd) {
+
+    /* Sending the state description to the planning server. */
+    ostringstream oss;
+    oss << "stop:";
+    char buffer[BUFFER_SIZE];
+    bzero(buffer, BUFFER_SIZE);
+    sprintf(buffer, "%s", oss.str().c_str());
+    cout << "SENDING: " << oss.str() << endl;
+    int n = write(sockfd, buffer, strlen(buffer));
+    if (n < 0)
+        cerr << "ERROR: couldn't write to socket." << endl;
+}
 
 
 int main(int argc, char **argv)
@@ -123,7 +154,7 @@ int main(int argc, char **argv)
 
     if (argc < 2) {
         cout << "Usage: testClient [file] [problem]\n";
-        return -1;
+        exit(0);
     }
 
     file = argv[1];
@@ -132,13 +163,13 @@ int main(int argc, char **argv)
     if( !read_file( file.c_str() ) ) {
         cout <<
             "<main>: ERROR: couldn't read problem file `" << file << endl;
-        return( -1 );
+        exit(-1);
     }
     problem = (problem_t*) problem_t::find( prob.c_str() );
     if( !problem ) {
         cout << "<main>: ERROR: problem `" << prob <<
             "' is not defined in file '" << file << "'" << endl;
-        return( -1 );
+        exit(-1);
     }
 
     /* Initializing problem */
@@ -159,7 +190,8 @@ int main(int argc, char **argv)
     struct hostent *server = gethostbyname("localhost");
     if (server == NULL) {
         cout << "No host: localhost." << endl;
-        exit(0);
+        close(sockfd);
+        exit(-1);
     }
     struct sockaddr_in serv_addr;
     bzero((char *) &serv_addr, sizeof(serv_addr));
@@ -170,16 +202,7 @@ int main(int argc, char **argv)
     serv_addr.sin_port = htons(portno);
     if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) {
         cerr << "ERROR: couldn't connect." << endl;
-        exit(-1);
-    }
-
-    /* Sending a state to the server. */
-    char buffer[1024];
-    bzero(buffer, 1024);
-    sprintf(buffer, "state:(somegarbagestate) (moregarbage)");
-    int n = write(sockfd, buffer, strlen(buffer));
-    if (n < 0) {
-        cerr << "ERROR: couldn't write to socket." << endl;
+        close(sockfd);
         exit(-1);
     }
 
@@ -189,18 +212,29 @@ int main(int argc, char **argv)
     unordered_map<string, ushort_t> stringAtomMap;
     initStringAtomMap(problem, stringAtomMap);
 
+    /* Simulating a run of the plan computed by the planning server. */
     while (!MLProblem->goal(currentState)) {
+        cout << currentState << " ";
         if (currentState->deadEnd()) {
             cout << "DEAD-END" << endl;
             break;
         }
-        mlcore::Action* action =
-            simulateActionFromClient(currentState, &solver, stringAtomMap);
-        cout << currentState << " " << action << endl;
+        string actionDescription =
+            getActionFromServer(sockfd, currentState, &solver, stringAtomMap);
+        mlcore::Action* action = nullptr;
+        for (mlcore::Action* a : MLProblem->actions()) {
+            ostringstream oss;
+            oss << a;
+            if (oss.str() == actionDescription)
+                action = a;
+        }
+        cout << action << endl;
         currentState = randomSuccessor(MLProblem, currentState, action);
     }
-
+    stopServer(sockfd);
+    close(sockfd);
     delete heuristic;
+    return 0;
 }
 
 

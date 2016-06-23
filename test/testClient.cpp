@@ -22,6 +22,9 @@
 #include "../include/State.h"
 
 
+#define BUFFER_SIZE 1024
+
+
 using namespace std;
 using namespace mlsolvers;
 
@@ -98,15 +101,6 @@ mlcore::State* getStatefromString(
 }
 
 
-/* Simulates receiving the state description of the given state from server. */
-string simulateServerComm(mlcore::State* state)
-{
-    ostringstream oss;
-    oss << state;
-    return oss.str();
-}
-
-
 int main(int argc, char **argv)
 {
     string file;
@@ -154,51 +148,63 @@ int main(int argc, char **argv)
     serv_addr.sin_port = htons(portno);
     if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
         cerr << "ERROR: couldn't bind the socket." << endl;
+        close(sockfd);
         exit(-1);
     }
+    /* Connect to the client. */
     struct sockaddr_in cli_addr;
     listen(sockfd, 5);
     socklen_t clilen = sizeof(cli_addr);
-
-    /* Reading communication from the client. */
     int newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
     if (newsockfd < 0) {
         cerr << "ERROR: problems accepting connection." << endl;
+        close(sockfd);
         exit(-1);
-    }
-    char buffer[1024];
-    bzero(buffer, 1024);
-    int n = read(newsockfd, buffer, 1023);
-    if (n < 0) {
-        cerr << "ERROR: couldn't read from socket." << endl;
-        exit(-1);
-    }
-    string msg(buffer);
-    if (msg.substr(0, 6) == "state:") {    // Received a state to plan for
-        cout << msg.substr(6, msg.size()) << endl;
     }
 
     /* Initializing a map from atom names to atom indices. */
     unordered_map<string, ushort_t> stringAtomMap;
     initStringAtomMap(problem, stringAtomMap);
 
+    /* Planner to use. */
     FLARESSolver solver(MLProblem, 1000, 1.0e-3, 1);
-    mlcore::State* currentState = MLProblem->initialState();
-    string receivedString = simulateServerComm(currentState);
-    while (!MLProblem->goal(currentState)) {
-        mlcore::Action* action = solver.solve(currentState);
-        if (currentState->deadEnd()) {
-            cout << "DEAD-END!" << endl;
+
+    /* Solving states on demand. */
+    while (true) {
+        /* Reading communication from the client. */
+        char buffer[BUFFER_SIZE];
+        bzero(buffer, BUFFER_SIZE);
+        int n = read(newsockfd, buffer, BUFFER_SIZE - 1);
+        if (n < 0) {
+            cerr << "ERROR: couldn't read from socket." << endl;
             break;
         }
-        cout << currentState << " " << action << endl;
-        mlcore::State* successorState =
-            randomSuccessor(MLProblem, currentState, action);
-        receivedString = simulateServerComm(successorState);
-        currentState =
-            getStatefromString(receivedString, MLProblem, stringAtomMap);
-    }
+        string msg(buffer);
+        string atomsString;
+        if (msg.substr(0, 6) == "state:") // Received a state to plan for.
+            atomsString = msg.substr(6, msg.size());
+        else if (msg.substr(0, 5) == "stop:") // Stop the program.
+            break;
+        mlcore::State* state =
+            getStatefromString(atomsString, MLProblem, stringAtomMap);
 
+        mlcore::Action* action = solver.solve(state); // Solving for state.
+
+        /* Sending the action to the client. */
+        ostringstream oss;
+        oss << action;
+        bzero(buffer, BUFFER_SIZE);
+        sprintf(buffer, "%s", oss.str().c_str());
+        n = write(newsockfd, buffer, strlen(buffer));
+        if (n < 0) {
+            cerr << "ERROR: couldn't write to socket." << endl;
+            break;
+        }
+    }
+    close(sockfd);
+    if (newsockfd >= 0)
+        close(newsockfd);
     delete heuristic;
+    return 0;
 }
 
