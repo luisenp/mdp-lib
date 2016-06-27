@@ -18,7 +18,6 @@
 #include "../include/ppddl/PPDDLState.h"
 
 #include "../include/solvers/Solver.h"
-#include "../include/solvers/FLARESSolver.h"
 
 #include "../include/State.h"
 
@@ -102,7 +101,6 @@ string getAtomsString(string stateString,
 string
 getActionFromServer(int sockfd,
                     mlcore::State* state,
-                    Solver* solver,
                     unordered_map<string, ushort_t>& stringAtomMap) {
 
     /* Sending the state description to the planning server. */
@@ -206,8 +204,6 @@ int main(int argc, char **argv)
         exit(-1);
     }
 
-    FLARESSolver solver(MLProblem, 1000, 1.0e-3, 1);
-
     /* Initializing a map from atom names to atom indices. */
     unordered_map<string, ushort_t> stringAtomMap;
     initStringAtomMap(problem, stringAtomMap);
@@ -220,7 +216,7 @@ int main(int argc, char **argv)
             break;
         }
         string actionDescription =
-            getActionFromServer(sockfd, currentState, &solver, stringAtomMap);
+            getActionFromServer(sockfd, currentState, stringAtomMap);
         mlcore::Action* action = nullptr;
         for (mlcore::Action* a : MLProblem->actions()) {
             ostringstream oss;

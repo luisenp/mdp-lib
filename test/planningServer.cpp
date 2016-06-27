@@ -18,6 +18,7 @@
 
 #include "../include/solvers/Solver.h"
 #include "../include/solvers/FLARESSolver.h"
+#include "../include/solvers/LAOStarSolver.h"
 
 #include "../include/State.h"
 
@@ -167,7 +168,8 @@ int main(int argc, char **argv)
     initStringAtomMap(problem, stringAtomMap);
 
     /* Planner to use. */
-    FLARESSolver solver(MLProblem, 1000, 1.0e-3, 1);
+    //FLARESSolver solver(MLProblem, 1000, 1.0e-3, 1);
+    LAOStarSolver solver(MLProblem);
 
     /* Solving states on demand. */
     while (true) {
@@ -179,6 +181,7 @@ int main(int argc, char **argv)
             cerr << "ERROR: couldn't read from socket." << endl;
             break;
         }
+        cout << buffer << endl;
         string msg(buffer);
         string atomsString;
         if (msg.substr(0, 6) == "state:") // Received a state to plan for.
@@ -189,12 +192,21 @@ int main(int argc, char **argv)
             getStatefromString(atomsString, MLProblem, stringAtomMap);
 
         mlcore::Action* action = solver.solve(state); // Solving for state.
+        if (MLProblem->goal(state)) {
+            cout << "GOAL!!" << endl;
+        }
+        if (state->deadEnd() || MLProblem->goal(state))
+            action = nullptr;
 
         /* Sending the action to the client. */
         ostringstream oss;
-        oss << action;
+        if (action != nullptr)
+            oss << action;
+        else
+            oss << "(done)";
         bzero(buffer, BUFFER_SIZE);
         sprintf(buffer, "%s", oss.str().c_str());
+        cout << buffer << "." << endl;
         n = write(newsockfd, buffer, strlen(buffer));
         if (n < 0) {
             cerr << "ERROR: couldn't write to socket." << endl;
