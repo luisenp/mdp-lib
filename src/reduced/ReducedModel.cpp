@@ -200,6 +200,8 @@ std::pair<double, double> ReducedModel::trial(
     // accordingly.
     ReducedState* auxState = new ReducedState(*currentState);
 
+                                                                                mlcore::State* foo = currentState->originalState();
+
     bool resetExceptionCounter = false;
     while (true) {
         Action* bestAction = currentState->bestAction();
@@ -224,6 +226,8 @@ std::pair<double, double> ReducedModel::trial(
             mlsolvers::randomSuccessor(this, auxState, bestAction));
         auxState->originalState(nextState->originalState());
         auxState->exceptionCount(nextState->exceptionCount());
+                                                                                mlcore::State* bar = nextState->originalState();
+                                                                                isException(foo, bar, bestAction);
 
         // Adjusting the result to the current exception count.
         if (resetExceptionCounter) {
@@ -317,6 +321,28 @@ double ReducedModel::triggerReplan(mlsolvers::Solver& solver,
         return (double(endTime - startTime) / CLOCKS_PER_SEC);
 
     }
+}
+
+
+bool ReducedModel::isException(
+    mlcore::State* state, mlcore::State* successor, mlcore::Action* action)
+{
+    bool isExcept = false;
+    bool isNotExcept = false;
+    ReducedState* rs = new ReducedState(state, 0, originalProblem_);
+    for (auto const & sccr : this->transition(rs, action)) {
+        ReducedState* reducedSuccessor =
+            static_cast<ReducedState*> (sccr.su_state);
+        if (reducedSuccessor->originalState() == successor) {
+            if (reducedSuccessor->exceptionCount() == 1) {
+                isExcept = true;
+            } else {
+                isNotExcept = true;
+            }
+        }
+    }
+                                                                                assert(!isExcept || !isNotExcept);
+    return isExcept;
 }
 
 } // namespace mlreduced

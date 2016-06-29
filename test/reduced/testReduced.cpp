@@ -18,7 +18,6 @@
 #include "../../include/ppddl/PPDDLHeuristic.h"
 #include "../../include/ppddl/PPDDLProblem.h"
 
-#include "../../include/reduced/BestDeterminizationReduction.h"
 #include "../../include/reduced/LeastLikelyOutcomeReduction.h"
 #include "../../include/reduced/MostLikelyOutcomeReduction.h"
 #include "../../include/reduced/RacetrackObviousReduction.h"
@@ -140,6 +139,8 @@ bool initPPDDL(string ppddlArgs)
 int main(int argc, char* args[])
 {
     register_flags(argc, args);
+    if (flag_is_registered("debug"))
+        mdplib_debug = true;
 
     // Reading flags.
     assert(flag_is_registered_with_value("domain"));
@@ -149,7 +150,6 @@ int main(int argc, char* args[])
 
     if (flag_is_registered_with_value("v"))
         verbosity = stoi(flag_value("v"));
-
 
     if (flag_is_registered_with_value("k"))
         k = stoi(flag_value("k"));
@@ -170,9 +170,9 @@ int main(int argc, char* args[])
 
     double totalReductionTime = 0.0;
     ReducedTransition* bestReduction = nullptr;
-                                                                                bestReduction = reductions.front();
+    bestReduction = reductions.front();
     wrapperProblem = new WrapperProblem(problem);
-    mlcore::StateSet reachableStates, tipStates;
+//    mlcore::StateSet reachableStates, tipStates;
 
     reducedModel = new ReducedModel(problem, bestReduction, k);
     reducedHeuristic = new ReducedHeuristicWrapper(heuristic);
@@ -206,14 +206,6 @@ int main(int argc, char* args[])
     }
     cout << expectedCost / nsims << endl;
     cout << totalPlanningTime + totalReductionTime << endl;
-//    if (verbosity > 100) {
-//        cout << "Total cost " << costAndTime.first << endl;
-//        cout << "Total planning time " <<
-//            costAndTime.second + totalPlanningTime << endl;
-//    } else {
-//        cout << costAndTime.first << " "
-//            << costAndTime.second + totalPlanningTime << endl;
-//    }
 
     // Releasing memory
     for (auto reduction : reductions)
