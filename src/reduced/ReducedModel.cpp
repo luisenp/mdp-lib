@@ -184,9 +184,7 @@ double ReducedModel::evaluateMonteCarlo(int numTrials)
 std::pair<double, double> ReducedModel::trial(
     mlsolvers::Solver & solver, WrapperProblem* wrapperProblem)
 {
-                                                                                static int countGoals = 0;
     assert(wrapperProblem->problem() == this);
-
 
     double cost = 0.0;
     double totalPlanningTime = 0.0;
@@ -207,15 +205,6 @@ std::pair<double, double> ReducedModel::trial(
         Action* bestAction = currentState->bestAction();
         cost += this->cost(currentState, bestAction);
         int exceptionCount = currentState->exceptionCount();
-                                                                                mdplib_debug = false;
-                                                                                dprint2("CURRENT", currentState);
-                                                                                if (currentState->bestAction() != nullptr) {
-                                                                                    dprint1(currentState->bestAction());
-                                                                                    for (auto const & xxx : wrapperProblem->transition(currentState, currentState->bestAction())) {
-                                                                                        dprint2("    ", xxx.su_state);
-                                                                                    }
-                                                                                }
-                                                                                mdplib_debug = false;
 
         if (cost >= mdplib::dead_end_cost)
             break;
@@ -257,11 +246,6 @@ std::pair<double, double> ReducedModel::trial(
         }
 
         if (nextState != nullptr && this->goal(nextState)) {
-                                                                                countGoals++;
-                                                                                mdplib_debug = true;
-                                                                                dprint2("count goals", countGoals);
-                                                                                dprint1("*************************");
-                                                                                mdplib_debug = false;
             break;
         }
 
@@ -269,7 +253,6 @@ std::pair<double, double> ReducedModel::trial(
         // Checking if the state has already been considered during planning.
 
         if (nextState == nullptr || nextState->bestAction() == nullptr) {
-                                                                                dprint1(nextState);
             // State wasn't considered before.
             assert(this->k_ == 0);  // Only determinization should reach here.
             auxState->exceptionCount(0);
@@ -298,7 +281,6 @@ double ReducedModel::triggerReplan(mlsolvers::Solver& solver,
                                     bool proactive,
                                     WrapperProblem* wrapperProblem)
 {
-                                                                                dprint2("TRIGGER", nextState);
     if (this->goal(nextState))
         return 0.0;
     if (proactive) {
@@ -321,7 +303,6 @@ double ReducedModel::triggerReplan(mlsolvers::Solver& solver,
                             originalState(),
                         0,
                         this)));
-                                                                                dprint2("ADDING", reducedSccrState);
             dummySuccessors.push_back(
                 Successor(reducedSccrState, sccr.su_prob));
         }
