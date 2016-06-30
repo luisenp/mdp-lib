@@ -97,7 +97,7 @@ double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s, double weight)
             bestAction = a;
         }
     }
-
+                                                                                dprint3("     hasaction", s, hasAction);
     if (!hasAction && bestQ == mdplib::dead_end_cost)
         s->markDeadEnd();
 

@@ -53,7 +53,6 @@ mlcore::Problem* problem = nullptr;
 mlcore::Heuristic* heuristic = nullptr;
 ReducedModel* reducedModel = nullptr;
 ReducedHeuristicWrapper* reducedHeuristic = nullptr;
-WrapperProblem* wrapperProblem = nullptr;
 list<ReducedTransition *> reductions;
 
 string ffExec = "/home/lpineda/Desktop/FF-v2.3/ff";
@@ -200,25 +199,20 @@ int main(int argc, char* args[])
     reducedHeuristic = new ReducedHeuristicWrapper(heuristic);
     reducedModel->setHeuristic(reducedHeuristic);
 
-    // We will now use the wrapper for the pro-active re-planning approach. It
-    // will allow us to plan in advance for the set of successors of a
-    // state-action.
-    wrapperProblem = new WrapperProblem(reducedModel);
-
     // Solving reduced model using LAO* + FF.
     double totalPlanningTime = 0.0;
     clock_t startTime = clock();
-    FFReducedModelSolver solver(wrapperProblem,
+    FFReducedModelSolver solver(reducedModel,
                                 ffExec,
                                 directory + "/" + detProblem,
                                 directory + "/p01.pddl",
                                 k,
                                 1.0e-3,
                                 useFF);
-    solver.solve(wrapperProblem->initialState());
+    solver.solve(reducedModel->initialState());
     clock_t endTime = clock();
     totalPlanningTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
-    cout << "cost " << wrapperProblem->initialState()->cost() <<
+    cout << "cost " << reducedModel->initialState()->cost() <<
         " time " << totalPlanningTime << endl;
 
 
@@ -226,7 +220,7 @@ int main(int argc, char* args[])
     double expectedCost = 0.0;
     for (int i = 0; i < nsims; i++) {
         pair<double, double> costAndTime =
-            reducedModel->trial(solver, wrapperProblem);
+            reducedModel->trial(solver);
         expectedCost += costAndTime.first;
                                                                                 cerr << costAndTime.first << " " << expectedCost / (i+1) << endl;
     }
@@ -238,8 +232,6 @@ int main(int argc, char* args[])
         delete reduction;
     reducedModel->cleanup();
     delete reducedModel;
-    wrapperProblem->cleanup();
-    delete wrapperProblem;
     delete problem;
     return 0;
 }
