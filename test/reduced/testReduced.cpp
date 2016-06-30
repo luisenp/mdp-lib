@@ -171,6 +171,7 @@ int main(int argc, char* args[])
     double totalReductionTime = 0.0;
     ReducedTransition* bestReduction = nullptr;
     bestReduction = reductions.front();
+    wrapperProblem = new WrapperProblem(problem);
 //    mlcore::StateSet reachableStates, tipStates;
 
     reducedModel = new ReducedModel(problem, bestReduction, k);
@@ -179,14 +180,19 @@ int main(int argc, char* args[])
     static_cast<ReducedModel*>(reducedModel)->
         useFullTransition(useFullTransition);
 
+    // We will now use the wrapper for the pro-active re-planning approach. It
+    // will allow us to plan in advance for the set of successors of a
+    // state-action.
+    wrapperProblem->setNewProblem(reducedModel);
+
     // Solving reduced model using LAO*
     double totalPlanningTime = 0.0;
     clock_t startTime = clock();
-    LAOStarSolver solver(reducedModel);
-    solver.solve(reducedModel->initialState());
+    LAOStarSolver solver(wrapperProblem);
+    solver.solve(wrapperProblem->initialState());
     clock_t endTime = clock();
     totalPlanningTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
-    cout << "cost " << reducedModel->initialState()->cost() <<
+    cout << "cost " << wrapperProblem->initialState()->cost() <<
         " time " << totalPlanningTime << endl;
 
 
@@ -194,7 +200,8 @@ int main(int argc, char* args[])
     double expectedCost = 0.0;
     int nsims = 100;
     for (int i = 0; i < nsims; i++) {
-        pair<double, double> costAndTime = reducedModel->trial(solver);
+        pair<double, double> costAndTime =
+            reducedModel->trial(solver, wrapperProblem);
         expectedCost += costAndTime.first;
     }
     cout << expectedCost / nsims << endl;
@@ -205,6 +212,8 @@ int main(int argc, char* args[])
         delete reduction;
     reducedModel->cleanup();
     delete reducedModel;
+    wrapperProblem->cleanup();
+    delete wrapperProblem;
     delete problem;
     return 0;
 }

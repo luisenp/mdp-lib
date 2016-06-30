@@ -27,17 +27,6 @@ class ReducedModel : public mlcore::Problem
 private:
 
     /*
-     * If true, then the destructor can be called safely.
-     */
-    bool clean_ = false;
-
-    /*
-     * A wrapper problem used during re-planning. It allows setting a dummy
-     * state leading to all successors of the current state.
-     */
-    WrapperProblem* wrapper_;
-
-    /*
      * Triggers a re-planning computation using this reduced model
      * an returns the time spent planning.
      * Proactive re-planning plans for the set of successors of the given
@@ -51,12 +40,20 @@ private:
      * @param proactive If true, then the plan will be created for the
      *                 successors of nextState with j=0. Otherwise the
      *                 plan is found for nextState directly.
+     * @param wrapperProblem A WrapperProblem object used for setting new
+     *                      successors for the pro-active planning approach.
      * @return The time spent planning.
      *
      */
     double triggerReplan(mlsolvers::Solver& solver,
-                          ReducedState* nextState,
-                          bool proactive);
+                         ReducedState* nextState,
+                         bool proactive,
+                         WrapperProblem* wrapperProblem);
+
+    /*
+     * If true, then the destructor can be called safely.
+     */
+    bool clean_ = false;
 
 protected:
     /**
@@ -108,7 +105,6 @@ public:
         gamma_ = originalProblem_->gamma();
         if (reducedTransition_ == nullptr)
             useFullTransition_ = true;
-        wrapper_ = new WrapperProblem(this);
     }
 
     virtual ~ReducedModel()
@@ -162,11 +158,16 @@ public:
      * approach based on this reduced model.
      *
      * @param solver An MDP solver to compute the online policy.
+     * @param wrapperProblem A WrapperProblem for the reduced model, to be
+     *                      used for setting new successors during
+     *                      re-planning. The internal problem of this wrapper
+     *                      must correspond to the reduced model.
      * @return A pair that contains the cost of the trial and the time
      *        spent planning (not-concurrently with execution)
      *        during this trial.
      */
-    std::pair<double, double> trial(mlsolvers::Solver & solver);
+    std::pair<double, double>
+    trial(mlsolvers::Solver & solver, WrapperProblem* wrapperProblem);
 
     /**
      * Computes the true expected cost of the continual planning approach
