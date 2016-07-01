@@ -1,9 +1,10 @@
 #include <fstream>
 #include <sstream>
 
-
+#include "../../include/ppddl/PPDDLProblem.h"
+#include "../../include/ppddl/mini-gpt/problems.h"
+#include "../../include/reduced/ReducedModel.h"
 #include "../../include/reduced/ReducedState.h"
-
 #include "../../include/solvers/FFReducedModelSolver.h"
 
 
@@ -35,6 +36,58 @@ string FFReducedModelSolver::extractStatePredicates(PPDDLState* state)
 }
 
 
+void FFReducedModelSolver::storeRemovedInitAtoms()
+{
+    mlcore::Problem* originalProblem =
+        static_cast<mlreduced::ReducedModel*> (problem_)->originalProblem();
+    problem_t* pProblem =
+        static_cast<PPDDLProblem*> (originalProblem)->pProblem();
+    std::ifstream problemTemplateFile_;
+    problemTemplateFile_.open(templateProblemFilename_, ifstream::in);
+    string line;
+    unordered_set<string> allInitAtoms;
+    dprint1("********");
+    if (problemTemplateFile_.is_open()) {
+        while (getline(problemTemplateFile_, line)) {
+            int idx = line.find("init");
+            if (idx != string::npos) {
+                while (idx != line.size()) {
+                    if (line[idx] == '(') {
+                        string atom = "";
+                        do {
+                            atom += line[idx++];
+
+                        } while (line[idx] != ')');
+                        atom += line[idx];
+                        allInitAtoms.insert(atom);
+                        dprint1(atom);
+                    }
+                    idx++;
+                }
+            }
+        }
+        problemTemplateFile_.close();
+    }
+    Domain dom = pProblem->domain();
+    PredicateTable& preds = dom.predicates();
+    TermTable& terms = pProblem->terms();
+    dprint1("********");
+    for (auto const & atom : problem_t::atom_hash()) {
+        ostringstream oss;
+        atom.first->print(oss, preds, dom.functions(), terms);
+        dprint1(oss.str());
+        allInitAtoms.erase(oss.str());
+    }
+    dprint1("********");
+
+    removedInitAtoms_ = "";
+    for (auto const & atomString : allInitAtoms)
+        removedInitAtoms_ += atomString;
+    dprint1(removedInitAtoms_);
+    dprint1("********");
+}
+
+
 void FFReducedModelSolver::replaceInitStateInProblemFile(
     string currentStatePredicates)
 {
@@ -45,7 +98,8 @@ void FFReducedModelSolver::replaceInitStateInProblemFile(
     if (problemTemplateFile_.is_open()) {
         while (getline(problemTemplateFile_, line)) {
             if (line.find("init") != string::npos) {
-                line = "  (:init " + currentStatePredicates + ")";
+                line = "  (:init " +
+                    currentStatePredicates + removedInitAtoms_ + ")";
             }
             newProblemText += line + "\n";
         }
@@ -62,7 +116,7 @@ pair<string, int> FFReducedModelSolver::getActionNameAndCostFromFF()
 {
     string ffDomain = "-o " + determinizedDomainFilename_;
     string ffProblem = "-f " + currentProblemFilename_;
-    string ffCommand = ffExecFilename_ + " " + ffDomain + " " + ffProblem + " -i 101 -i 105 -i 114 -i 118";
+    string ffCommand = ffExecFilename_ + " " + ffDomain + " " + ffProblem;
     string actionName = "__mdplib-dead-end__";
     FILE *ff = popen(ffCommand.c_str(), "r");
     int costFF = floor(mdplib::dead_end_cost);
@@ -70,7 +124,6 @@ pair<string, int> FFReducedModelSolver::getActionNameAndCostFromFF()
         char lineBuffer[1024];
         int currentLineAction = -1;
         while (fgets(lineBuffer, 1024, ff)) {
-                                                                                  cerr << lineBuffer;
             if (strstr(lineBuffer, "goal can be simplified to FALSE.") !=
                     nullptr) {
                 break;

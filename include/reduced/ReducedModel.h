@@ -113,6 +113,11 @@ public:
     }
 
     /**
+     * Returns the original problem.
+     */
+    mlcore::Problem* originalProblem() { return originalProblem_; }
+
+    /**
      * Cleans up any data that may affect the original model when
      * the reduced model is destroyed. For example, the reference to
      * the actions in the original model is released, so that

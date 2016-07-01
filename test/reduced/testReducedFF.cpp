@@ -209,22 +209,7 @@ int main(int argc, char* args[])
                                 k,
                                 1.0e-3,
                                 useFF);
-                                                                                dprint2("INITIAL: ", reducedModel->initialState());
-                                                                                problem_t* foo = static_cast<PPDDLProblem*> (problem)->pProblem();
 
-                                                                                Domain dom = foo->domain();
-                                                                                PredicateTable& preds = dom.predicates();
-                                                                                TermTable& terms = foo->terms();
-                                                                                dprint1("here1");
-                                                                                for (auto const & atom : problem_t::atom_hash()) {
-                                                                                    state_t* bar = static_cast<PPDDLState*> (
-                                                                                            problem->initialState())->pState();
-                                                                                    atom.first->print(cerr, preds, dom.functions(), terms);
-                                                                                    if (bar->holds(atom.second)) {
-                                                                                        cerr << "holds";
-                                                                                    }
-                                                                                    cerr << endl;
-                                                                                }
     solver.solve(reducedModel->initialState());
     clock_t endTime = clock();
     totalPlanningTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
@@ -244,6 +229,8 @@ int main(int argc, char* args[])
             // The successor state according to the original transition model.
             mlcore::State* nextOriginalState =
                 randomSuccessor(problem, currentState->originalState(), action);
+
+            cerr << action << endl;
 
             if (problem->goal(nextOriginalState)) {
                 break;

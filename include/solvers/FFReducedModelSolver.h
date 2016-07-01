@@ -27,6 +27,12 @@ namespace mlsolvers
  * of a PPDDL domain containing the determinization to be used.
  * The planner does not check that this is in fact a determinization
  * of the original problem, this responsibility is left to the user.
+ *
+ * Known issues:
+ *     - (:init ) must be defined in a single line in the PPDDL file.
+ *     - (:goal ) should only contain atoms derived from the set
+ *         given predicates (no goal-rewards, etc.).
+ *
  */
 class FFReducedModelSolver : public Solver
 {
@@ -77,6 +83,9 @@ private:
      * (This is the default option).
      */
     bool useFF_;
+
+    /* The initial atoms that are removed during the PPDDL parsing. */
+    std::string removedInitAtoms_;
 
     ////////////////////////////////////////////////////////////////////////////
     //                               FUNCTIONS                                //
@@ -129,6 +138,13 @@ private:
     /* A Bellman update that calls FF on states with maximum exception count. */
     double bellmanUpdate(mlcore::State* s);
 
+    /*
+     * Stores the initial atoms that the PPDDL parser removes from the internal
+     * representation because they can't be changed by actions. We need to
+     * include these in the problem given to FF, otherwise it might not be
+     * able to solve the determinization.
+     */
+    void storeRemovedInitAtoms();
 
 public:
     FFReducedModelSolver(mlcore::Problem* problem,
@@ -149,6 +165,7 @@ public:
         for (int i = 0; i <= maxHorizon_; i++) {
             estimatedCosts_.push_back(mlcore::StateDoubleMap());
         }
+        storeRemovedInitAtoms();
     }
 
     virtual ~FFReducedModelSolver() {}
