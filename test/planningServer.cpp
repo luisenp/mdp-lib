@@ -65,7 +65,7 @@ static bool read_file( const char* name )
 
 /* Initializes the map from strings (describing atoms) to atoms ids. */
 void initStringAtomMap(problem_t* problem,
-                        unordered_map<string, ushort_t>& stringAtomMap)
+                       unordered_map<string, ushort_t>& stringAtomMap)
 {
     Domain dom = problem->domain();
     PredicateTable& preds = dom.predicates();

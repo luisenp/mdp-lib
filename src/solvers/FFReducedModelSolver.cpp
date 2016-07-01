@@ -63,7 +63,6 @@ pair<string, int> FFReducedModelSolver::getActionNameAndCostFromFF()
     string ffDomain = "-o " + determinizedDomainFilename_;
     string ffProblem = "-f " + currentProblemFilename_;
     string ffCommand = ffExecFilename_ + " " + ffDomain + " " + ffProblem + " -i 101 -i 105 -i 114 -i 118";
-//                                                                                dprint1(ffCommand);
     string actionName = "__mdplib-dead-end__";
     FILE *ff = popen(ffCommand.c_str(), "r");
     int costFF = floor(mdplib::dead_end_cost);
@@ -253,7 +252,6 @@ FFReducedModelSolver::solve(mlcore::State* s, int horizon, bool& isDeadEnd)
 mlcore::Action* FFReducedModelSolver::solve(mlcore::State* s0)
 {
 //                                                                                bool prev = mdplib_debug;
-                                                                                mdplib_debug = false;
                                                                                 dprint2("xxxxxxxxxxxx", s0);
 //    double residual = mdplib::dead_end_cost;
 //    while (residual > 1.0e-3) {
@@ -405,6 +403,7 @@ double FFReducedModelSolver::bellmanUpdate(mlcore::State* s)
                                                                                 dprint2("*** backup", s);
     mlreduced::ReducedState* redState = (mlreduced::ReducedState* ) s;
     if (useFF_ && redState->exceptionCount() == maxHorizon_) {
+                                                                                dprint2("*** calling FF", s);
 //    if (redState->exceptionCount() == 10000) {
         // For exceptionCount = k we just call FF.
         PPDDLState* pState = (PPDDLState*) redState->originalState();
@@ -447,20 +446,20 @@ double FFReducedModelSolver::bellmanUpdate(mlcore::State* s)
         return 0.0;
     }
 
-                                                                                mdplib_debug = false;
-                                                                                if (redState->exceptionCount() == maxHorizon_) {
-                                                                                    dprint1("*************************");
-                                                                                    dprint1(s);
-                                                                                    dprint3("compare", best.bb_cost, ffStateCosts_[s]);
-                                                                                    dprint2("best action", best.bb_action);
-                                                                                    for (auto const & ssss : problem_->transition(s, best.bb_action)) {
-                                                                                        dprint2("    ", ssss.su_state);
-                                                                                    }
-                                                                                    dprint1("BACKUP");
-                                                                                    bellmanBackup(problem_, s);
-                                                                                    dprint1("*************************");
-                                                                                }
-                                                                                mdplib_debug = false;
+//                                                                                mdplib_debug = false;
+//                                                                                if (redState->exceptionCount() == maxHorizon_) {
+//                                                                                    dprint1("*************************");
+//                                                                                    dprint1(s);
+//                                                                                    dprint3("compare", best.bb_cost, ffStateCosts_[s]);
+//                                                                                    dprint2("best action", best.bb_action);
+//                                                                                    for (auto const & ssss : problem_->transition(s, best.bb_action)) {
+//                                                                                        dprint2("    ", ssss.su_state);
+//                                                                                    }
+//                                                                                    dprint1("BACKUP");
+//                                                                                    bellmanBackup(problem_, s);
+//                                                                                    dprint1("*************************");
+//                                                                                }
+//                                                                                mdplib_debug = false;
 
 
                                                                                 dprint3("xxx backup", s, best.bb_action);
