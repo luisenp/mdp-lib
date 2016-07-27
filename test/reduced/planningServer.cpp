@@ -29,7 +29,6 @@
 #include "../../include/reduced/ReducedTransition.h"
 
 #include "../../include/solvers/FFReducedModelSolver.h"
-#include "../../include/solvers/LAOStarSolver.h"
 
 #include "../../include/util/flags.h"
 #include "../../include/util/general.h"
