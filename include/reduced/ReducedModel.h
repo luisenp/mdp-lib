@@ -90,8 +90,8 @@ protected:
     bool useContPlanEvaluationTransition_;
 
 public:
-    ReducedModel(mlcore::Problem *originalProblem,
-                 ReducedTransition *reducedTransition, int k) :
+    ReducedModel(mlcore::Problem* originalProblem,
+                 ReducedTransition* reducedTransition, int k) :
         originalProblem_(originalProblem),
         reducedTransition_(reducedTransition),
         k_(k),
@@ -111,6 +111,8 @@ public:
     {
         assert(clean_);
     }
+
+    mlcore::Problem* originalProblem() { return originalProblem_; }
 
     /**
      * Cleans up any data that may affect the original model when

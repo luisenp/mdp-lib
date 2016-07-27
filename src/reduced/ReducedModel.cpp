@@ -16,7 +16,7 @@ namespace mlreduced
 {
 
 std::list<Successor>
-ReducedModel::transition(State* s, Action *a)
+ReducedModel::transition(State* s, Action* a)
 {
     ReducedState* rs = static_cast<ReducedState*>(s);
     std::vector<bool> primaryIndicators;
@@ -123,7 +123,7 @@ double ReducedModel::evaluateMarkovChain(ReducedModel* reducedModel)
             }
 
             assert(currentState->bestAction() != nullptr);
-            Action *a = currentState->bestAction();
+            Action* a = currentState->bestAction();
             double previousCost = s->cost();
             double currentCost = 0.0;
             for (Successor successor : markovChain->transition(s, a)) {
@@ -144,7 +144,7 @@ double ReducedModel::evaluateMarkovChain(ReducedModel* reducedModel)
 
 
 ReducedTransition* ReducedModel::getBestReduction(
-    Problem *originalProblem,
+    Problem* originalProblem,
     std::list<ReducedTransition*> reducedTransitions,
     int k,
     ReducedHeuristicWrapper* heuristic)

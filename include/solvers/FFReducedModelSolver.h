@@ -3,6 +3,7 @@
 
 #include <string>
 
+#include "../ppddl/PPDDLProblem.h"
 #include "../ppddl/PPDDLState.h"
 
 #include "../reduced/ReducedModel.h"
@@ -26,7 +27,7 @@ namespace mlsolvers
  * The determinization to be used is specified by passing the filename
  * of a PPDDL domain containing the determinization to be used.
  * The planner does not check that this is in fact a determinization
- * of the original problem, this responsibility is left to the user.
+ * of the Ŕ problem, this responsibility is left to the user.
  */
 class FFReducedModelSolver : public Solver
 {
@@ -78,20 +79,29 @@ private:
      */
     bool useFF_;
 
+    std::string removedAtoms_;
+
     ////////////////////////////////////////////////////////////////////////////
     //                               FUNCTIONS                                //
     ////////////////////////////////////////////////////////////////////////////
 
     /*
-     * Returns a string with the predicates in the given state.
+     * Checks the init state in the problem file and stores the atoms that are
+     * removed by the PPDDL parser. These are the atoms that are not part of
+     * the PPDDL problem object (problem_t type) atom_hash.
+    */
+    void storeRemovedAtoms();
+
+    /*
+     * Returns a string with the atoms in the given state.
      */
-    std::string extractStatePredicates(mlppddl::PPDDLState* state);
+    std::string extractStateAtoms(mlppddl::PPDDLState* state);
 
     /*
      * Replaces the initial state in the problem file with the current state
      * and creates a new file with the new state.
      */
-    void replaceInitStateInProblemFile(std::string currentStatePredicates);
+    void replaceInitStateInProblemFile(std::string atomsCurrentState);
 
     /*
      * Calls the FF planner and gets a cost and action estimate for
@@ -113,7 +123,7 @@ private:
     double qValue_(mlcore::State* s, mlcore::Action* a, int horizon);
 
     /*
-     * Performs a dynamic programmin algorithm (AO*) to find the optimal
+     * Performs a dynamic programming algorithm (AO*) to find the optimal
      * action for the given state and the given horizon. For horizon = 0,
      * this function invokes the FF planner.
      * The return value is the max residual observed while traversing the
@@ -146,9 +156,11 @@ public:
         epsilon_(epsilon),
         useFF_(useFF)
     {
+        // initializing memoization table
         for (int i = 0; i <= maxHorizon_; i++) {
             estimatedCosts_.push_back(mlcore::StateDoubleMap());
         }
+        storeRemovedAtoms();
     }
 
     virtual ~FFReducedModelSolver() {}
@@ -161,8 +173,6 @@ public:
      * returns a nullptr.
      */
     virtual mlcore::Action* solve(mlcore::State* s0);
-
-
 };
 
 }

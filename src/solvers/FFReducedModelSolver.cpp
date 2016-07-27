@@ -16,36 +16,88 @@ namespace mlsolvers
 {
 
 
-string FFReducedModelSolver::extractStatePredicates(PPDDLState* state)
+void FFReducedModelSolver::storeRemovedAtoms()
+{
+    mlreduced::ReducedModel* reducedModel =
+        dynamic_cast<mlreduced::ReducedModel*> (problem_);
+    assert(reducedModel);
+    mlppddl::PPDDLProblem* originalProblem =
+        dynamic_cast<mlppddl::PPDDLProblem*> (reducedModel->originalProblem());
+    assert(originalProblem);
+
+    // Storing all atoms in the initial state
+    ifstream problemTemplateFile_;
+    problemTemplateFile_.open(templateProblemFilename_, ifstream::in);
+    string line;
+    unordered_set<string> initAtoms;
+    if (problemTemplateFile_.is_open()) {
+        while (getline(problemTemplateFile_, line)) {
+            size_t idx = line.find("init");
+            if (idx != string::npos) {
+                for (int i = idx + 4; i < line.size(); i++) {
+                    if (line[i] == '(') {
+                        string atom = "";
+                        do {
+                            atom += line[i];
+                        } while (line[i++] != ')');
+                        initAtoms.insert(atom);
+                    }
+                }
+            }
+        }
+        problemTemplateFile_.close();
+    }
+
+    // Figuring out which atoms were removed from the PPDDL parser
+    problem_t* pProblem = originalProblem->pProblem();
+    Domain dom = pProblem->domain();
+    PredicateTable& preds = dom.predicates();
+    TermTable& terms = pProblem->terms();
+    for (auto const & atom : problem_t::atom_hash()) {
+        ostringstream oss;
+        atom.first->print(oss, preds, dom.functions(), terms);
+        if (initAtoms.find(oss.str()) != initAtoms.end())
+            initAtoms.erase(oss.str());
+    }
+
+    // Storing the removed atoms
+    removedAtoms_ = "";
+    for (string atom : initAtoms)
+        removedAtoms_ += atom + " ";
+}
+
+string FFReducedModelSolver::extractStateAtoms(PPDDLState* state)
 {
     ostringstream oss;
     oss << state;
     string stateStr = oss.str();
-    string currentStatePredicates = "";
+    string atomsCurrentState = "";
     for (int i = 0; i < stateStr.size(); i++) {
+        // The format of a PPDDLState "tostring" conversion is
+        // [ atom_1_Id:(atom_1), atom_2_Id:(atom_2), ..., atom_N_Id:(atom_N) ]
         if (stateStr[i] == ':') {
             i++;
             do {
-                currentStatePredicates += stateStr[i];
+                atomsCurrentState += stateStr[i];
             } while (stateStr[i++] != ')');
-            currentStatePredicates += " ";
+            atomsCurrentState += " ";
         }
     }
-    return currentStatePredicates;
+    return atomsCurrentState;
 }
 
 
 void FFReducedModelSolver::replaceInitStateInProblemFile(
-    string currentStatePredicates)
+    string atomsCurrentState)
 {
-    std::ifstream problemTemplateFile_;
+    ifstream problemTemplateFile_;
     problemTemplateFile_.open(templateProblemFilename_, ifstream::in);
     string line;
     string newProblemText = "";
     if (problemTemplateFile_.is_open()) {
         while (getline(problemTemplateFile_, line)) {
             if (line.find("init") != string::npos) {
-                line = "  (:init " + currentStatePredicates + ")";
+                line = "  (:init " + removedAtoms_ + atomsCurrentState + ")";
             }
             newProblemText += line + "\n";
         }
@@ -180,8 +232,8 @@ FFReducedModelSolver::solve(mlcore::State* s, int horizon, bool& isDeadEnd)
                                                                                 dprint3("SOLVING", s, horizon);
     if (horizon == 0) {
         // For horizon = 0 we just call FF.
-        string statePredicates = extractStatePredicates((PPDDLState*) s);
-        replaceInitStateInProblemFile(statePredicates);
+        string stateAtoms = extractStateAtoms(static_cast<PPDDLState*> (s));
+        replaceInitStateInProblemFile(stateAtoms);
         mlcore::Action* stateFFAction;
         int stateFFCost;
         if (ffStateActions_.count(s)) {
@@ -404,11 +456,12 @@ double FFReducedModelSolver::bellmanUpdate(mlcore::State* s)
     mlreduced::ReducedState* redState = (mlreduced::ReducedState* ) s;
     if (useFF_ && redState->exceptionCount() == maxHorizon_) {
                                                                                 dprint2("*** calling FF", s);
-//    if (redState->exceptionCount() == 10000) {
         // For exceptionCount = k we just call FF.
-        PPDDLState* pState = (PPDDLState*) redState->originalState();
-        string statePredicates = extractStatePredicates((PPDDLState*) pState);
-        replaceInitStateInProblemFile(statePredicates);
+        PPDDLState* pState =
+            static_cast<PPDDLState*> (redState->originalState());
+        string stateAtoms = extractStateAtoms(
+            static_cast<PPDDLState*> (pState));
+        replaceInitStateInProblemFile(stateAtoms);
         mlcore::Action* stateFFAction;
         int stateFFCost;
         if (ffStateActions_.count(s)) {
