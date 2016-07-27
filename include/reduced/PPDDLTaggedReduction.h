@@ -64,8 +64,8 @@ public:
         // Name of the action including the parameters (e.g., (pick-up b2 b1)).
         std::string fullActionName(pAction->pAction()->name());
         // Name of the action schema (e.g. pick-up).
-        std::string actionName =
-            fullActionName.substr(1, fullActionName.find(" ") - 1);
+        int idx = fullActionName.find_first_of(" )");
+        std::string actionName = fullActionName.substr(1,  idx - 1);
         int i = 0;
         for (auto const & successors : problem_->transition(s, a)) {
             if (actionPrimaryOutcomeIndex_.at(actionName) == i) {

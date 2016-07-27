@@ -1,9 +1,10 @@
 #include <fstream>
 #include <sstream>
 
-
+#include "../../include/ppddl/PPDDLProblem.h"
+#include "../../include/ppddl/mini-gpt/problems.h"
+#include "../../include/reduced/ReducedModel.h"
 #include "../../include/reduced/ReducedState.h"
-
 #include "../../include/solvers/FFReducedModelSolver.h"
 
 
@@ -16,7 +17,7 @@ namespace mlsolvers
 {
 
 
-void FFReducedModelSolver::storeRemovedAtoms()
+void FFReducedModelSolver::storeRemovedInitAtoms()
 {
     mlreduced::ReducedModel* reducedModel =
         dynamic_cast<mlreduced::ReducedModel*> (problem_);
@@ -62,10 +63,11 @@ void FFReducedModelSolver::storeRemovedAtoms()
     }
 
     // Storing the removed atoms
-    removedAtoms_ = "";
+    removedInitAtoms_ = "";
     for (string atom : initAtoms)
-        removedAtoms_ += atom + " ";
+        removedInitAtoms_ += atom + " ";
 }
+
 
 string FFReducedModelSolver::extractStateAtoms(PPDDLState* state)
 {
@@ -98,7 +100,7 @@ void FFReducedModelSolver::replaceInitStateInProblemFile(
     if (problemTemplateFile_.is_open()) {
         while (getline(problemTemplateFile_, line)) {
             if (line.find("init") != string::npos) {
-                line = "  (:init " + removedAtoms_ + atomsCurrentState + ")";
+                line = "  (:init " + removedInitAtoms_ + atomsCurrentState + ")";
             }
             newProblemText += line + "\n";
         }
@@ -115,8 +117,7 @@ pair<string, int> FFReducedModelSolver::getActionNameAndCostFromFF()
 {
     string ffDomain = "-o " + determinizedDomainFilename_;
     string ffProblem = "-f " + currentProblemFilename_;
-    string ffCommand = ffExecFilename_ + " " + ffDomain + " " + ffProblem + " -i 101 -i 105 -i 114 -i 118";
-    dprint1(ffCommand);
+    string ffCommand = ffExecFilename_ + " " + ffDomain + " " + ffProblem;
     string actionName = "__mdplib-dead-end__";
     FILE *ff = popen(ffCommand.c_str(), "r");
     int costFF = floor(mdplib::dead_end_cost);
@@ -124,7 +125,6 @@ pair<string, int> FFReducedModelSolver::getActionNameAndCostFromFF()
         char lineBuffer[1024];
         int currentLineAction = -1;
         while (fgets(lineBuffer, 1024, ff)) {
-                                                                                  cerr << lineBuffer;
             if (strstr(lineBuffer, "goal can be simplified to FALSE.") !=
                     nullptr) {
                 break;
