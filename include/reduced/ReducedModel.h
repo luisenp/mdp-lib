@@ -112,8 +112,6 @@ public:
         assert(clean_);
     }
 
-    mlcore::Problem* originalProblem() { return originalProblem_; }
-
     /**
      * Returns the original problem.
      */
