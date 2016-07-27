@@ -41,6 +41,7 @@ void FFReducedModelSolver::storeRemovedAtoms()
                             atom += line[i];
                         } while (line[i++] != ')');
                         initAtoms.insert(atom);
+                        i--;
                     }
                 }
             }
@@ -115,6 +116,7 @@ pair<string, int> FFReducedModelSolver::getActionNameAndCostFromFF()
     string ffDomain = "-o " + determinizedDomainFilename_;
     string ffProblem = "-f " + currentProblemFilename_;
     string ffCommand = ffExecFilename_ + " " + ffDomain + " " + ffProblem + " -i 101 -i 105 -i 114 -i 118";
+    dprint1(ffCommand);
     string actionName = "__mdplib-dead-end__";
     FILE *ff = popen(ffCommand.c_str(), "r");
     int costFF = floor(mdplib::dead_end_cost);
