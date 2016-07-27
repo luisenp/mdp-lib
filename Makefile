@@ -5,7 +5,7 @@
 
 # Compilation flags and variables
 CC = g++
-CFLAGS = -std=c++11 -g -DATOM_STATES -pthread
+CFLAGS = -std=c++11 -O3 -DATOM_STATES -pthread
 
 # Variables for directories
 ID = include
@@ -269,6 +269,12 @@ lib/libmdp_reduced.a: lib/libmdp.a domains ppddl $(SD_REDUCED)/*.cpp $(ID_REDUCE
       $(LIBS) lib/libminigpt.a lib/libmdp_reduced.a lib/libmdp_ppddl.a
 	$(CC) $(CFLAGS) -I$(ID_REDUCED) $(INCLUDE_CORE) $(INCLUDE_PPDDL) \
       -o testReducedFF.out $(TD)/reduced/testReducedFF.cpp $(OD_DOMAINS)/*.o \
+      $(SD_SOLV)/LAOStarSolver.cpp \
+      $(SD)/Action.cpp \
+      $(ID_PPDDL)/mini-gpt/heuristics.cc \
+      $(LIBS) lib/libminigpt.a lib/libmdp_reduced.a lib/libmdp_ppddl.a
+	$(CC) $(CFLAGS) -I$(ID_REDUCED) $(INCLUDE_CORE) $(INCLUDE_PPDDL) \
+      -o planserv_red.out $(TD)/reduced/planningServer.cpp $(OD_DOMAINS)/*.o \
       $(SD_SOLV)/LAOStarSolver.cpp \
       $(SD)/Action.cpp \
       $(ID_PPDDL)/mini-gpt/heuristics.cc \
