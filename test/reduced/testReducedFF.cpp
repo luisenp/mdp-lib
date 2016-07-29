@@ -223,15 +223,14 @@ int main(int argc, char* args[])
         ReducedState* currentState =
             static_cast<ReducedState*> (reducedModel->initialState());
         mlcore::Action* action = currentState->bestAction();
-        while (true) {
+        while (cost < mdplib::dead_end_cost) {
             cost += problem->cost(currentState->originalState(), action);
             // The successor state according to the original transition model.
             mlcore::State* nextOriginalState =
                 randomSuccessor(problem, currentState->originalState(), action);
 
-            cerr << action << endl;
-
             if (problem->goal(nextOriginalState)) {
+                dprint1("GOAL!");
                 break;
             }
 
@@ -256,7 +255,6 @@ int main(int argc, char* args[])
 
             if (currentState->deadEnd()) {
                 cost = mdplib::dead_end_cost;
-                break;
             }
 
             action = currentState->bestAction();
