@@ -8,33 +8,48 @@ from create_all_determinizations import parse_sexp
 from create_all_determinizations import make_str
 
 
+def convert_list_to_single_line(list_str):
+  single_line_block = ""
+  j = 0
+  cnt = 0
+  previous_char_was_space = False
+  while True:
+    char_to_add = list_str[j]
+    if list_str[j] == "(":
+      cnt += 1
+    elif list_str[j] == ")":
+      cnt -= 1
+    elif list_str[j] == "\n":
+      char_to_add = " "
+    if char_to_add != " " or not previous_char_was_space:
+      single_line_block += char_to_add
+    previous_char_was_space = (char_to_add == " ")        
+    j += 1
+    if cnt == 0:
+      break
+  return (single_line_block, j)
+
+
+# Cleans up the PPDDL problem string by removing line breaks inside the init
+# and goal lists. This also removes other types of goals that can't be read
+# the FF planner (e.g., :goal-reward, :metric).
 def clean_up_problem_str(problem_str):
   cleaned_up_str = ""
   i = 0;
   while i < len(problem_str):
-    cleaned_up_str += problem_str[i]
-    if problem_str[i:i+6] == "(:init":
-      cnt = 1
-      j = i + 1 
-      while cnt > -1:
-        if problem_str[j] == ")":
-          cleaned_up_str += problem_str[j]
-          cnt -= 1
-        elif problem_str[j] == "(":
-          cleaned_up_str += problem_str[j]
-          cnt += 1
-        elif problem_str[j] == "\n":
-          cleaned_up_str += " "
-        else:
-          cleaned_up_str += problem_str[j]
-        j += 1
-      i = j
-    if problem_str[i:i+6] == "(:goal":
-      cleaned_up_str += "(:goal"
-      cnt = 0
-      j = i + 6
-      while cnt > 0:
-        if problem_str[j] == "(:"
+    if problem_str.startswith("(:goal-reward", i):
+      (str_to_add, size_str) = convert_list_to_single_line(problem_str[i:])
+      i += size_str
+    elif problem_str.startswith("(:metric", i):
+      (str_to_add, size_str) = convert_list_to_single_line(problem_str[i:])
+      i += size_str
+    elif (problem_str.startswith("(:init",i) or 
+          problem_str.startswith("(:goal", i)):
+      (str_to_add, size_str) = convert_list_to_single_line(problem_str[i:])
+      cleaned_up_str += str_to_add
+      i += size_str
+    else:
+      cleaned_up_str += problem_str[i]
     i += 1
   print cleaned_up_str
     
