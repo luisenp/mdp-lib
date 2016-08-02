@@ -51,7 +51,7 @@ def clean_up_problem_str(problem_str):
     else:
       cleaned_up_str += problem_str[i]
     i += 1
-  print cleaned_up_str
+  return cleaned_up_str
     
             
 def main(argv):
@@ -76,7 +76,7 @@ def main(argv):
           continue;
         ppddl_str += line
   except IOError:
-    print "Could not read file:", domain_file_name
+    print "Could not read file:", problem_file_name
     sys.exit(-1)  
   
   # Parsing the problem tree.
@@ -86,7 +86,11 @@ def main(argv):
     if sub_tree[0] == "define" and sub_tree[1][0] == "problem":
       problem_str = make_str(sub_tree)
         
-  clean_up_problem_str(problem_str)
+  cleaned_up_str = clean_up_problem_str(problem_str)
+  
+  f = open(output_file_name, 'w')
+  f.write(cleaned_up_str)
+  f.close()
   
 
 if __name__ == "__main__":
