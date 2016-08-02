@@ -205,7 +205,7 @@ int main(int argc, char* args[])
     FFReducedModelSolver solver(reducedModel,
                                 ffExec,
                                 directory + "/" + detProblem,
-                                directory + "/p01.pddl",
+                                directory + "/ff-template.pddl",
                                 k,
                                 1.0e-3,
                                 useFF);

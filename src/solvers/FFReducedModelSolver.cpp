@@ -268,11 +268,11 @@ double FFReducedModelSolver::bellmanUpdate(mlcore::State* s)
         }
     }
 
-    mlreduced::ReducedState* redState = (mlreduced::ReducedState* ) s;
-    if (useFF_ && redState->exceptionCount() == maxHorizon_) {
+    mlreduced::ReducedState* reducedState = (mlreduced::ReducedState* ) s;
+    if (useFF_ && reducedState->exceptionCount() == maxHorizon_) {
         // For exceptionCount = k we just call FF.
         PPDDLState* pState =
-            static_cast<PPDDLState*> (redState->originalState());
+            static_cast<PPDDLState*> (reducedState->originalState());
         string stateAtoms = extractStateAtoms(
             static_cast<PPDDLState*> (pState));
         replaceInitStateInProblemFile(stateAtoms);
@@ -286,7 +286,7 @@ double FFReducedModelSolver::bellmanUpdate(mlcore::State* s)
 
             // If FF finds this state is a dead-end,
             // getActionNameAndCostFromFF() returns "__mdplib-dead-end__"
-            // getActionFromName() returns a nullptr.
+            // and getActionFromName() returns a nullptr.
             stateFFAction = getActionFromName(actionNameAndCost.first);
             if (stateFFAction == nullptr) {
                 s->markDeadEnd();
@@ -298,7 +298,6 @@ double FFReducedModelSolver::bellmanUpdate(mlcore::State* s)
         s->setBestAction(ffStateActions_[s]);
         return 0.0;
     }
-
     std::pair<double, mlcore::Action*> best = bellmanBackup(problem_, s);
     double residual = s->cost() - best.bb_cost;
 

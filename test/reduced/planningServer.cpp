@@ -287,7 +287,7 @@ int main(int argc, char* args[])
     FFReducedModelSolver solver(reducedModel,
                                 ffExec,
                                 directory + "/" + detProblem,
-                                directory + "/p01.pddl",
+                                directory + "/ff-template.pddl",
                                 k,
                                 1.0e-3,
                                 useFF);
@@ -303,7 +303,7 @@ int main(int argc, char* args[])
     unordered_map<string, ushort_t> stringAtomMap;
     fillStringAtomMap(static_cast<PPDDLProblem*> (problem)->pProblem(),
                       stringAtomMap);
-
+    double cost = 0.0;
     while (true) {
         // Reading communication from the client.
         char buffer[BUFFER_SIZE];
@@ -313,13 +313,28 @@ int main(int argc, char* args[])
             cerr << "ERROR: couldn't read from socket." << endl;
             break;
         }
-        cout << buffer << endl;
+        cout << "RECEIVED: " << buffer << endl;
         string msg(buffer);
         string atomsString;
-        if (msg.substr(0, 6) == "state:") // Received a state to plan for.
+        if (msg.substr(0, 6) == "state:") { // Received a state to plan for.
             atomsString = msg.substr(6, msg.size());
-        else if (msg.substr(0, 5) == "stop:") // Stop the program.
+        } else if (msg.substr(0, 5) == "stop") { // Stop the program.
             break;
+        } else if (msg.substr(0, 9) == "end-round") {
+            cost = 0;
+            bzero(buffer, BUFFER_SIZE);
+            sprintf(buffer, "%s", "round-ended");
+            cout << "SENDING: " << buffer << "." << endl;
+            n = write(newsockfd, buffer, strlen(buffer));
+            if (n < 0) {
+                cerr << "ERROR: couldn't write to socket." << endl;
+                break;
+            }
+            continue;
+        } else {
+            cerr << "ERROR: unknown message. Terminating." << endl;
+            break;
+        }
         // Getting the state whose action needs to be found.
         mlcore::State* state =
             getStatefromString(atomsString,
@@ -327,15 +342,21 @@ int main(int argc, char* args[])
                                stringAtomMap);
 
         // For now, always set the exception counter to 0 and re-plan.
-        ReducedState* reducedState = new ReducedState(state, 0, reducedModel);
+        ReducedState* reducedState = static_cast<ReducedState*> (
+            reducedModel->addState(new ReducedState(state, 0, reducedModel)));
+        cout << "PLANNING." << endl;
         mlcore::Action* action = solver.solve(reducedState);
+        cout << "DONE." << endl;
 
         // Sending the action to the client.
         ostringstream oss;
-        if (action != nullptr)
+        if (action != nullptr && cost < mdplib::dead_end_cost) {
             oss << action;
-        else
+            cost += problem->cost(state, action);
+        } else {
+            cout << "DEAD-END." << endl;
             oss << "(done)";
+        }
         bzero(buffer, BUFFER_SIZE);
         sprintf(buffer, "%s", oss.str().c_str());
         cout << buffer << "." << endl;
