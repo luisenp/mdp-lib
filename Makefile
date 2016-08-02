@@ -2,7 +2,6 @@
 #                                VARIABLES                              #
 #########################################################################
 
-
 # Compilation flags and variables
 CC = g++
 CFLAGS = -std=c++11 -O3 -DATOM_STATES -pthread
@@ -279,6 +278,14 @@ lib/libmdp_reduced.a: lib/libmdp.a domains ppddl $(SD_REDUCED)/*.cpp $(ID_REDUCE
       $(SD)/Action.cpp \
       $(ID_PPDDL)/mini-gpt/heuristics.cc \
       $(LIBS) lib/libminigpt.a lib/libmdp_reduced.a lib/libmdp_ppddl.a
+
+patilla: lib/libmdp.a lib/libmdp_reduced.a domains ppddl $(SD_REDUCED)/*.cpp $(ID_REDUCED)/*.h
+	$(CC) $(CFLAGS) -I$(ID_REDUCED) $(INCLUDE_CORE) $(INCLUDE_PPDDL) \
+	-o patilla.out $(TD)/reduced/genBlockworld.cpp $(OD_DOMAINS)/*.o \
+	$(ID_PPDDL)/mini-gpt/heuristics.cc \
+	$(LIBS) lib/libminigpt.a lib/libmdp_reduced.a lib/libmdp_ppddl.a
+
+
 
 .PHONY: clean
 clean:

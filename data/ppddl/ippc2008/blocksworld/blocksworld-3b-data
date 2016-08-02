@@ -1,0 +1,283 @@
+S=22
+A=78
+J=
+Init:(emptyhand) (on-table b1) (on-table b2) (on-table b3) (clear b2) (clear b3) (clear b1)
+Goal:(emptyhand) (on b1 b2) (on b2 b3) (on-table b3) (clear b1)
+printing states : 
+[ 0:(emptyhand) 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 36:(on-table b1) ]
+[ 8:(clear b1) 10:(clear b3) 16:(on b3 b2) 22:(holding b2) 36:(on-table b1) ]
+[ 2:(on b1 b2) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 22:(holding b2) ]
+[ 10:(clear b3) 14:(holding b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ]
+[ 0:(emptyhand) 2:(on b1 b2) 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) ]
+[ 0:(emptyhand) 6:(on-table b3) 10:(clear b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ]
+[ 6:(on-table b3) 10:(clear b3) 18:(clear b2) 26:(on b2 b1) 30:(holding b1) ]
+[ 0:(emptyhand) 6:(on-table b3) 18:(clear b2) 26:(on b2 b1) 28:(on b1 b3) ]
+[ 6:(on-table b3) 8:(clear b1) 18:(clear b2) 22:(holding b2) 28:(on b1 b3) ]
+[ 0:(emptyhand) 8:(clear b1) 10:(clear b3) 16:(on b3 b2) 34:(on-table b2) 36:(on-table b1) ]
+[ 8:(clear b1) 10:(clear b3) 14:(holding b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ]
+[ 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 30:(holding b1) 34:(on-table b2) ]
+[ 0:(emptyhand) 2:(on b1 b2) 10:(clear b3) 20:(on b3 b1) 34:(on-table b2) ]
+[ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ]
+[ 2:(on b1 b2) 8:(clear b1) 10:(clear b3) 14:(holding b3) 34:(on-table b2) ]
+[ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 28:(on b1 b3) 34:(on-table b2) ]
+[ 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 30:(holding b1) ]
+[ 0:(emptyhand) 2:(on b1 b2) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 34:(on-table b2) ]
+[ 0:(emptyhand) 10:(clear b3) 16:(on b3 b2) 26:(on b2 b1) 36:(on-table b1) ]
+[ 0:(emptyhand) 10:(clear b3) 18:(clear b2) 20:(on b3 b1) 34:(on-table b2) 36:(on-table b1) ]
+[ 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 22:(holding b2) 36:(on-table b1) ]
+[ 10:(clear b3) 18:(clear b2) 20:(on b3 b1) 30:(holding b1) 34:(on-table b2) ]
+number of states = 22
+
+ printing actios : 
+(pick-tower b3 b3 b3)
+(pick-tower b3 b3 b2)
+(pick-tower b3 b3 b1)
+(pick-tower b3 b2 b3)
+(pick-tower b3 b2 b2)
+(pick-tower b3 b2 b1)
+(pick-tower b3 b1 b3)
+(pick-tower b3 b1 b2)
+(pick-tower b3 b1 b1)
+(pick-tower b2 b3 b3)
+(pick-tower b2 b3 b2)
+(pick-tower b2 b3 b1)
+(pick-tower b2 b2 b3)
+(pick-tower b2 b2 b2)
+(pick-tower b2 b2 b1)
+(pick-tower b2 b1 b3)
+(pick-tower b2 b1 b2)
+(pick-tower b2 b1 b1)
+(pick-tower b1 b3 b3)
+(pick-tower b1 b3 b2)
+(pick-tower b1 b3 b1)
+(pick-tower b1 b2 b3)
+(pick-tower b1 b2 b2)
+(pick-tower b1 b2 b1)
+(pick-tower b1 b1 b3)
+(pick-tower b1 b1 b2)
+(pick-tower b1 b1 b1)
+(pick-up b3 b3)
+(pick-up b3 b2)
+(pick-up b3 b1)
+(pick-up b2 b3)
+(pick-up b2 b2)
+(pick-up b2 b1)
+(pick-up b1 b3)
+(pick-up b1 b2)
+(pick-up b1 b1)
+(pick-up-from-table b3)
+(pick-up-from-table b2)
+(pick-up-from-table b1)
+(pick-up-from-table-not2 b3)
+(pick-up-from-table-not2 b2)
+(pick-up-from-table-not2 b1)
+(put-down b3)
+(put-down b2)
+(put-down b1)
+(put-on-block b3 b2)
+(put-on-block b3 b1)
+(put-on-block b2 b3)
+(put-on-block b2 b1)
+(put-on-block b1 b3)
+(put-on-block b1 b2)
+(put-tower-down b3 b3)
+(put-tower-down b3 b2)
+(put-tower-down b3 b1)
+(put-tower-down b2 b3)
+(put-tower-down b2 b2)
+(put-tower-down b2 b1)
+(put-tower-down b1 b3)
+(put-tower-down b1 b2)
+(put-tower-down b1 b1)
+(put-tower-on-block b3 b3 b2)
+(put-tower-on-block b3 b3 b1)
+(put-tower-on-block b3 b2 b2)
+(put-tower-on-block b3 b2 b1)
+(put-tower-on-block b3 b1 b2)
+(put-tower-on-block b3 b1 b1)
+(put-tower-on-block b2 b3 b3)
+(put-tower-on-block b2 b3 b1)
+(put-tower-on-block b2 b2 b3)
+(put-tower-on-block b2 b2 b1)
+(put-tower-on-block b2 b1 b3)
+(put-tower-on-block b2 b1 b1)
+(put-tower-on-block b1 b3 b3)
+(put-tower-on-block b1 b3 b2)
+(put-tower-on-block b1 b2 b3)
+(put-tower-on-block b1 b2 b2)
+(put-tower-on-block b1 b1 b3)
+(put-tower-on-block b1 b1 b2)
+number of actions = 78
+printing successors:
+[ 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 22:(holding b2) 36:(on-table b1) ]
+[ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ]
+[ 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 30:(holding b1) ]
+[ 0:(emptyhand) 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 36:(on-table b1) ]
+[ 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 30:(holding b1) ]
+[ 0:(emptyhand) 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 36:(on-table b1) ]
+[ 0:(emptyhand) 8:(clear b1) 10:(clear b3) 16:(on b3 b2) 34:(on-table b2) 36:(on-table b1) ]
+[ 0:(emptyhand) 10:(clear b3) 16:(on b3 b2) 26:(on b2 b1) 36:(on-table b1) ]
+[ 0:(emptyhand) 8:(clear b1) 10:(clear b3) 16:(on b3 b2) 34:(on-table b2) 36:(on-table b1) ]
+[ 0:(emptyhand) 2:(on b1 b2) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 34:(on-table b2) ]
+[ 0:(emptyhand) 2:(on b1 b2) 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) ]
+[ 0:(emptyhand) 2:(on b1 b2) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 34:(on-table b2) ]
+[ 0:(emptyhand) 6:(on-table b3) 10:(clear b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ]
+[ 0:(emptyhand) 10:(clear b3) 16:(on b3 b2) 26:(on b2 b1) 36:(on-table b1) ]
+[ 0:(emptyhand) 6:(on-table b3) 10:(clear b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ]
+[ 2:(on b1 b2) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 22:(holding b2) ]
+[ 0:(emptyhand) 2:(on b1 b2) 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) ]
+[ 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 30:(holding b1) ]
+[ 0:(emptyhand) 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 36:(on-table b1) ]
+[ 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 22:(holding b2) 36:(on-table b1) ]
+[ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ]
+[ 10:(clear b3) 14:(holding b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ]
+[ 0:(emptyhand) 6:(on-table b3) 10:(clear b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ]
+[ 10:(clear b3) 14:(holding b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ]
+[ 0:(emptyhand) 6:(on-table b3) 10:(clear b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ]
+[ 0:(emptyhand) 6:(on-table b3) 10:(clear b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ]
+[ 0:(emptyhand) 6:(on-table b3) 18:(clear b2) 26:(on b2 b1) 28:(on b1 b3) ]
+[ 0:(emptyhand) 6:(on-table b3) 10:(clear b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ]
+[ 6:(on-table b3) 10:(clear b3) 18:(clear b2) 26:(on b2 b1) 30:(holding b1) ]
+[ 0:(emptyhand) 6:(on-table b3) 18:(clear b2) 26:(on b2 b1) 28:(on b1 b3) ]
+[ 6:(on-table b3) 8:(clear b1) 18:(clear b2) 22:(holding b2) 28:(on b1 b3) ]
+[ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 28:(on b1 b3) 34:(on-table b2) ]
+[ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 28:(on b1 b3) 34:(on-table b2) ]
+[ 0:(emptyhand) 6:(on-table b3) 18:(clear b2) 26:(on b2 b1) 28:(on b1 b3) ]
+[ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 28:(on b1 b3) 34:(on-table b2) ]
+[ 8:(clear b1) 10:(clear b3) 14:(holding b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ]
+[ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ]
+[ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ]
+[ 0:(emptyhand) 8:(clear b1) 10:(clear b3) 16:(on b3 b2) 34:(on-table b2) 36:(on-table b1) ]
+[ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ]
+[ 0:(emptyhand) 10:(clear b3) 18:(clear b2) 20:(on b3 b1) 34:(on-table b2) 36:(on-table b1) ]
+[ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ]
+[ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ]
+[ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 28:(on b1 b3) 34:(on-table b2) ]
+[ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ]
+[ 0:(emptyhand) 2:(on b1 b2) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 34:(on-table b2) ]
+[ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ]
+[ 10:(clear b3) 18:(clear b2) 20:(on b3 b1) 30:(holding b1) 34:(on-table b2) ]
+[ 0:(emptyhand) 2:(on b1 b2) 10:(clear b3) 20:(on b3 b1) 34:(on-table b2) ]
+[ 2:(on b1 b2) 8:(clear b1) 10:(clear b3) 14:(holding b3) 34:(on-table b2) ]
+[ 0:(emptyhand) 2:(on b1 b2) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 34:(on-table b2) ]
+[ 8:(clear b1) 10:(clear b3) 14:(holding b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ]
+[ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ]
+[ 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 22:(holding b2) 36:(on-table b1) ]
+[ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ]
+[ 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 30:(holding b1) 34:(on-table b2) ]
+[ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ]
+[ 0:(emptyhand) 2:(on b1 b2) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 34:(on-table b2) ]
+[ 0:(emptyhand) 2:(on b1 b2) 10:(clear b3) 20:(on b3 b1) 34:(on-table b2) ]
+[ 0:(emptyhand) 2:(on b1 b2) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 34:(on-table b2) ]
+[ 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 30:(holding b1) 34:(on-table b2) ]
+[ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ]
+[ 6:(on-table b3) 8:(clear b1) 18:(clear b2) 22:(holding b2) 28:(on b1 b3) ]
+[ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 28:(on b1 b3) 34:(on-table b2) ]
+[ 0:(emptyhand) 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 36:(on-table b1) ]
+[ 0:(emptyhand) 2:(on b1 b2) 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) ]
+[ 0:(emptyhand) 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 36:(on-table b1) ]
+[ 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 30:(holding b1) 34:(on-table b2) ]
+[ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ]
+[ 2:(on b1 b2) 8:(clear b1) 10:(clear b3) 14:(holding b3) 34:(on-table b2) ]
+[ 0:(emptyhand) 2:(on b1 b2) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 34:(on-table b2) ]
+[ 8:(clear b1) 10:(clear b3) 16:(on b3 b2) 22:(holding b2) 36:(on-table b1) ]
+[ 0:(emptyhand) 10:(clear b3) 16:(on b3 b2) 26:(on b2 b1) 36:(on-table b1) ]
+[ 10:(clear b3) 14:(holding b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ]
+[ 0:(emptyhand) 6:(on-table b3) 10:(clear b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ]
+[ 8:(clear b1) 10:(clear b3) 14:(holding b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ]
+[ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ]
+[ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ]
+[ 0:(emptyhand) 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 36:(on-table b1) ]
+[ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ]
+[ 0:(emptyhand) 6:(on-table b3) 10:(clear b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ]
+[ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ]
+[ 0:(emptyhand) 10:(clear b3) 18:(clear b2) 20:(on b3 b1) 34:(on-table b2) 36:(on-table b1) ]
+[ 0:(emptyhand) 2:(on b1 b2) 10:(clear b3) 20:(on b3 b1) 34:(on-table b2) ]
+[ 0:(emptyhand) 10:(clear b3) 18:(clear b2) 20:(on b3 b1) 34:(on-table b2) 36:(on-table b1) ]
+
+ printing transitions : 
+s = [ 0:(emptyhand) 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 36:(on-table b1) ];a = (pick-up b2 b3);j = [ 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 22:(holding b2) 36:(on-table b1) ];prob = 0.75
+s = [ 0:(emptyhand) 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 36:(on-table b1) ];a = (pick-up b2 b3);j = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ];prob = 0.25
+s = [ 0:(emptyhand) 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 36:(on-table b1) ];a = (pick-up-from-table b1);j = [ 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 30:(holding b1) ];prob = 0.75
+s = [ 0:(emptyhand) 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 36:(on-table b1) ];a = (pick-up-from-table b1);j = [ 0:(emptyhand) 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 36:(on-table b1) ];prob = 0.25
+s = [ 0:(emptyhand) 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 36:(on-table b1) ];a = (pick-up-from-table-not2 b1);j = [ 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 30:(holding b1) ];prob = 0.5
+s = [ 0:(emptyhand) 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 36:(on-table b1) ];a = (pick-up-from-table-not2 b1);j = [ 0:(emptyhand) 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 36:(on-table b1) ];prob = 0.5
+s = [ 8:(clear b1) 10:(clear b3) 16:(on b3 b2) 22:(holding b2) 36:(on-table b1) ];a = (put-tower-down b3 b2);j = [ 0:(emptyhand) 8:(clear b1) 10:(clear b3) 16:(on b3 b2) 34:(on-table b2) 36:(on-table b1) ];prob = 1
+s = [ 8:(clear b1) 10:(clear b3) 16:(on b3 b2) 22:(holding b2) 36:(on-table b1) ];a = (put-tower-on-block b3 b2 b1);j = [ 0:(emptyhand) 10:(clear b3) 16:(on b3 b2) 26:(on b2 b1) 36:(on-table b1) ];prob = 0.1
+s = [ 8:(clear b1) 10:(clear b3) 16:(on b3 b2) 22:(holding b2) 36:(on-table b1) ];a = (put-tower-on-block b3 b2 b1);j = [ 0:(emptyhand) 8:(clear b1) 10:(clear b3) 16:(on b3 b2) 34:(on-table b2) 36:(on-table b1) ];prob = 0.9
+s = [ 2:(on b1 b2) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 22:(holding b2) ];a = (put-tower-down b1 b2);j = [ 0:(emptyhand) 2:(on b1 b2) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 34:(on-table b2) ];prob = 1
+s = [ 2:(on b1 b2) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 22:(holding b2) ];a = (put-tower-on-block b1 b2 b3);j = [ 0:(emptyhand) 2:(on b1 b2) 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) ];prob = 0.1
+s = [ 2:(on b1 b2) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 22:(holding b2) ];a = (put-tower-on-block b1 b2 b3);j = [ 0:(emptyhand) 2:(on b1 b2) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 34:(on-table b2) ];prob = 0.9
+s = [ 10:(clear b3) 14:(holding b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ];a = (put-down b3);j = [ 0:(emptyhand) 6:(on-table b3) 10:(clear b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ];prob = 1
+s = [ 10:(clear b3) 14:(holding b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ];a = (put-on-block b3 b2);j = [ 0:(emptyhand) 10:(clear b3) 16:(on b3 b2) 26:(on b2 b1) 36:(on-table b1) ];prob = 0.75
+s = [ 10:(clear b3) 14:(holding b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ];a = (put-on-block b3 b2);j = [ 0:(emptyhand) 6:(on-table b3) 10:(clear b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ];prob = 0.25
+s = [ 0:(emptyhand) 2:(on b1 b2) 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) ];a = (pick-tower b1 b2 b3);j = [ 2:(on b1 b2) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 22:(holding b2) ];prob = 0.1
+s = [ 0:(emptyhand) 2:(on b1 b2) 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) ];a = (pick-tower b1 b2 b3);j = [ 0:(emptyhand) 2:(on b1 b2) 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) ];prob = 0.9
+s = [ 0:(emptyhand) 2:(on b1 b2) 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) ];a = (pick-up b1 b2);j = [ 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 30:(holding b1) ];prob = 0.75
+s = [ 0:(emptyhand) 2:(on b1 b2) 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) ];a = (pick-up b1 b2);j = [ 0:(emptyhand) 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 36:(on-table b1) ];prob = 0.25
+s = [ 0:(emptyhand) 6:(on-table b3) 10:(clear b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ];a = (pick-up b2 b1);j = [ 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 22:(holding b2) 36:(on-table b1) ];prob = 0.75
+s = [ 0:(emptyhand) 6:(on-table b3) 10:(clear b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ];a = (pick-up b2 b1);j = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ];prob = 0.25
+s = [ 0:(emptyhand) 6:(on-table b3) 10:(clear b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ];a = (pick-up-from-table b3);j = [ 10:(clear b3) 14:(holding b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ];prob = 0.75
+s = [ 0:(emptyhand) 6:(on-table b3) 10:(clear b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ];a = (pick-up-from-table b3);j = [ 0:(emptyhand) 6:(on-table b3) 10:(clear b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ];prob = 0.25
+s = [ 0:(emptyhand) 6:(on-table b3) 10:(clear b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ];a = (pick-up-from-table-not2 b3);j = [ 10:(clear b3) 14:(holding b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ];prob = 0.5
+s = [ 0:(emptyhand) 6:(on-table b3) 10:(clear b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ];a = (pick-up-from-table-not2 b3);j = [ 0:(emptyhand) 6:(on-table b3) 10:(clear b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ];prob = 0.5
+s = [ 6:(on-table b3) 10:(clear b3) 18:(clear b2) 26:(on b2 b1) 30:(holding b1) ];a = (put-tower-down b2 b1);j = [ 0:(emptyhand) 6:(on-table b3) 10:(clear b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ];prob = 1
+s = [ 6:(on-table b3) 10:(clear b3) 18:(clear b2) 26:(on b2 b1) 30:(holding b1) ];a = (put-tower-on-block b2 b1 b3);j = [ 0:(emptyhand) 6:(on-table b3) 18:(clear b2) 26:(on b2 b1) 28:(on b1 b3) ];prob = 0.1
+s = [ 6:(on-table b3) 10:(clear b3) 18:(clear b2) 26:(on b2 b1) 30:(holding b1) ];a = (put-tower-on-block b2 b1 b3);j = [ 0:(emptyhand) 6:(on-table b3) 10:(clear b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ];prob = 0.9
+s = [ 0:(emptyhand) 6:(on-table b3) 18:(clear b2) 26:(on b2 b1) 28:(on b1 b3) ];a = (pick-tower b2 b1 b3);j = [ 6:(on-table b3) 10:(clear b3) 18:(clear b2) 26:(on b2 b1) 30:(holding b1) ];prob = 0.1
+s = [ 0:(emptyhand) 6:(on-table b3) 18:(clear b2) 26:(on b2 b1) 28:(on b1 b3) ];a = (pick-tower b2 b1 b3);j = [ 0:(emptyhand) 6:(on-table b3) 18:(clear b2) 26:(on b2 b1) 28:(on b1 b3) ];prob = 0.9
+s = [ 0:(emptyhand) 6:(on-table b3) 18:(clear b2) 26:(on b2 b1) 28:(on b1 b3) ];a = (pick-up b2 b1);j = [ 6:(on-table b3) 8:(clear b1) 18:(clear b2) 22:(holding b2) 28:(on b1 b3) ];prob = 0.75
+s = [ 0:(emptyhand) 6:(on-table b3) 18:(clear b2) 26:(on b2 b1) 28:(on b1 b3) ];a = (pick-up b2 b1);j = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 28:(on b1 b3) 34:(on-table b2) ];prob = 0.25
+s = [ 6:(on-table b3) 8:(clear b1) 18:(clear b2) 22:(holding b2) 28:(on b1 b3) ];a = (put-down b2);j = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 28:(on b1 b3) 34:(on-table b2) ];prob = 1
+s = [ 6:(on-table b3) 8:(clear b1) 18:(clear b2) 22:(holding b2) 28:(on b1 b3) ];a = (put-on-block b2 b1);j = [ 0:(emptyhand) 6:(on-table b3) 18:(clear b2) 26:(on b2 b1) 28:(on b1 b3) ];prob = 0.75
+s = [ 6:(on-table b3) 8:(clear b1) 18:(clear b2) 22:(holding b2) 28:(on b1 b3) ];a = (put-on-block b2 b1);j = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 28:(on b1 b3) 34:(on-table b2) ];prob = 0.25
+s = [ 0:(emptyhand) 8:(clear b1) 10:(clear b3) 16:(on b3 b2) 34:(on-table b2) 36:(on-table b1) ];a = (pick-up b3 b2);j = [ 8:(clear b1) 10:(clear b3) 14:(holding b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ];prob = 0.75
+s = [ 0:(emptyhand) 8:(clear b1) 10:(clear b3) 16:(on b3 b2) 34:(on-table b2) 36:(on-table b1) ];a = (pick-up b3 b2);j = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ];prob = 0.25
+s = [ 8:(clear b1) 10:(clear b3) 14:(holding b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ];a = (put-down b3);j = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ];prob = 1
+s = [ 8:(clear b1) 10:(clear b3) 14:(holding b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ];a = (put-on-block b3 b2);j = [ 0:(emptyhand) 8:(clear b1) 10:(clear b3) 16:(on b3 b2) 34:(on-table b2) 36:(on-table b1) ];prob = 0.75
+s = [ 8:(clear b1) 10:(clear b3) 14:(holding b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ];a = (put-on-block b3 b2);j = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ];prob = 0.25
+s = [ 8:(clear b1) 10:(clear b3) 14:(holding b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ];a = (put-on-block b3 b1);j = [ 0:(emptyhand) 10:(clear b3) 18:(clear b2) 20:(on b3 b1) 34:(on-table b2) 36:(on-table b1) ];prob = 0.75
+s = [ 8:(clear b1) 10:(clear b3) 14:(holding b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ];a = (put-on-block b3 b1);j = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ];prob = 0.25
+s = [ 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 30:(holding b1) 34:(on-table b2) ];a = (put-down b1);j = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ];prob = 1
+s = [ 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 30:(holding b1) 34:(on-table b2) ];a = (put-on-block b1 b3);j = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 28:(on b1 b3) 34:(on-table b2) ];prob = 0.75
+s = [ 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 30:(holding b1) 34:(on-table b2) ];a = (put-on-block b1 b3);j = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ];prob = 0.25
+s = [ 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 30:(holding b1) 34:(on-table b2) ];a = (put-on-block b1 b2);j = [ 0:(emptyhand) 2:(on b1 b2) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 34:(on-table b2) ];prob = 0.75
+s = [ 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 30:(holding b1) 34:(on-table b2) ];a = (put-on-block b1 b2);j = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ];prob = 0.25
+s = [ 0:(emptyhand) 2:(on b1 b2) 10:(clear b3) 20:(on b3 b1) 34:(on-table b2) ];a = (pick-tower b3 b1 b2);j = [ 10:(clear b3) 18:(clear b2) 20:(on b3 b1) 30:(holding b1) 34:(on-table b2) ];prob = 0.1
+s = [ 0:(emptyhand) 2:(on b1 b2) 10:(clear b3) 20:(on b3 b1) 34:(on-table b2) ];a = (pick-tower b3 b1 b2);j = [ 0:(emptyhand) 2:(on b1 b2) 10:(clear b3) 20:(on b3 b1) 34:(on-table b2) ];prob = 0.9
+s = [ 0:(emptyhand) 2:(on b1 b2) 10:(clear b3) 20:(on b3 b1) 34:(on-table b2) ];a = (pick-up b3 b1);j = [ 2:(on b1 b2) 8:(clear b1) 10:(clear b3) 14:(holding b3) 34:(on-table b2) ];prob = 0.75
+s = [ 0:(emptyhand) 2:(on b1 b2) 10:(clear b3) 20:(on b3 b1) 34:(on-table b2) ];a = (pick-up b3 b1);j = [ 0:(emptyhand) 2:(on b1 b2) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 34:(on-table b2) ];prob = 0.25
+s = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ];a = (pick-up-from-table b3);j = [ 8:(clear b1) 10:(clear b3) 14:(holding b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ];prob = 0.75
+s = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ];a = (pick-up-from-table b3);j = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ];prob = 0.25
+s = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ];a = (pick-up-from-table b2);j = [ 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 22:(holding b2) 36:(on-table b1) ];prob = 0.75
+s = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ];a = (pick-up-from-table b2);j = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ];prob = 0.25
+s = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ];a = (pick-up-from-table b1);j = [ 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 30:(holding b1) 34:(on-table b2) ];prob = 0.75
+s = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ];a = (pick-up-from-table b1);j = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ];prob = 0.25
+s = [ 2:(on b1 b2) 8:(clear b1) 10:(clear b3) 14:(holding b3) 34:(on-table b2) ];a = (put-down b3);j = [ 0:(emptyhand) 2:(on b1 b2) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 34:(on-table b2) ];prob = 1
+s = [ 2:(on b1 b2) 8:(clear b1) 10:(clear b3) 14:(holding b3) 34:(on-table b2) ];a = (put-on-block b3 b1);j = [ 0:(emptyhand) 2:(on b1 b2) 10:(clear b3) 20:(on b3 b1) 34:(on-table b2) ];prob = 0.75
+s = [ 2:(on b1 b2) 8:(clear b1) 10:(clear b3) 14:(holding b3) 34:(on-table b2) ];a = (put-on-block b3 b1);j = [ 0:(emptyhand) 2:(on b1 b2) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 34:(on-table b2) ];prob = 0.25
+s = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 28:(on b1 b3) 34:(on-table b2) ];a = (pick-up b1 b3);j = [ 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 30:(holding b1) 34:(on-table b2) ];prob = 0.75
+s = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 28:(on b1 b3) 34:(on-table b2) ];a = (pick-up b1 b3);j = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ];prob = 0.25
+s = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 28:(on b1 b3) 34:(on-table b2) ];a = (pick-up-from-table b2);j = [ 6:(on-table b3) 8:(clear b1) 18:(clear b2) 22:(holding b2) 28:(on b1 b3) ];prob = 0.75
+s = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 28:(on b1 b3) 34:(on-table b2) ];a = (pick-up-from-table b2);j = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 28:(on b1 b3) 34:(on-table b2) ];prob = 0.25
+s = [ 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 30:(holding b1) ];a = (put-down b1);j = [ 0:(emptyhand) 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 36:(on-table b1) ];prob = 1
+s = [ 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 30:(holding b1) ];a = (put-on-block b1 b2);j = [ 0:(emptyhand) 2:(on b1 b2) 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) ];prob = 0.75
+s = [ 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 30:(holding b1) ];a = (put-on-block b1 b2);j = [ 0:(emptyhand) 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 36:(on-table b1) ];prob = 0.25
+s = [ 0:(emptyhand) 2:(on b1 b2) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 34:(on-table b2) ];a = (pick-up b1 b2);j = [ 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 30:(holding b1) 34:(on-table b2) ];prob = 0.75
+s = [ 0:(emptyhand) 2:(on b1 b2) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 34:(on-table b2) ];a = (pick-up b1 b2);j = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ];prob = 0.25
+s = [ 0:(emptyhand) 2:(on b1 b2) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 34:(on-table b2) ];a = (pick-up-from-table b3);j = [ 2:(on b1 b2) 8:(clear b1) 10:(clear b3) 14:(holding b3) 34:(on-table b2) ];prob = 0.75
+s = [ 0:(emptyhand) 2:(on b1 b2) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 34:(on-table b2) ];a = (pick-up-from-table b3);j = [ 0:(emptyhand) 2:(on b1 b2) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 34:(on-table b2) ];prob = 0.25
+s = [ 0:(emptyhand) 10:(clear b3) 16:(on b3 b2) 26:(on b2 b1) 36:(on-table b1) ];a = (pick-tower b3 b2 b1);j = [ 8:(clear b1) 10:(clear b3) 16:(on b3 b2) 22:(holding b2) 36:(on-table b1) ];prob = 0.1
+s = [ 0:(emptyhand) 10:(clear b3) 16:(on b3 b2) 26:(on b2 b1) 36:(on-table b1) ];a = (pick-tower b3 b2 b1);j = [ 0:(emptyhand) 10:(clear b3) 16:(on b3 b2) 26:(on b2 b1) 36:(on-table b1) ];prob = 0.9
+s = [ 0:(emptyhand) 10:(clear b3) 16:(on b3 b2) 26:(on b2 b1) 36:(on-table b1) ];a = (pick-up b3 b2);j = [ 10:(clear b3) 14:(holding b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ];prob = 0.75
+s = [ 0:(emptyhand) 10:(clear b3) 16:(on b3 b2) 26:(on b2 b1) 36:(on-table b1) ];a = (pick-up b3 b2);j = [ 0:(emptyhand) 6:(on-table b3) 10:(clear b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ];prob = 0.25
+s = [ 0:(emptyhand) 10:(clear b3) 18:(clear b2) 20:(on b3 b1) 34:(on-table b2) 36:(on-table b1) ];a = (pick-up b3 b1);j = [ 8:(clear b1) 10:(clear b3) 14:(holding b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ];prob = 0.75
+s = [ 0:(emptyhand) 10:(clear b3) 18:(clear b2) 20:(on b3 b1) 34:(on-table b2) 36:(on-table b1) ];a = (pick-up b3 b1);j = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ];prob = 0.25
+s = [ 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 22:(holding b2) 36:(on-table b1) ];a = (put-down b2);j = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ];prob = 1
+s = [ 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 22:(holding b2) 36:(on-table b1) ];a = (put-on-block b2 b3);j = [ 0:(emptyhand) 4:(on b2 b3) 6:(on-table b3) 8:(clear b1) 18:(clear b2) 36:(on-table b1) ];prob = 0.75
+s = [ 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 22:(holding b2) 36:(on-table b1) ];a = (put-on-block b2 b3);j = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ];prob = 0.25
+s = [ 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 22:(holding b2) 36:(on-table b1) ];a = (put-on-block b2 b1);j = [ 0:(emptyhand) 6:(on-table b3) 10:(clear b3) 18:(clear b2) 26:(on b2 b1) 36:(on-table b1) ];prob = 0.75
+s = [ 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 22:(holding b2) 36:(on-table b1) ];a = (put-on-block b2 b1);j = [ 0:(emptyhand) 6:(on-table b3) 8:(clear b1) 10:(clear b3) 18:(clear b2) 34:(on-table b2) 36:(on-table b1) ];prob = 0.25
+s = [ 10:(clear b3) 18:(clear b2) 20:(on b3 b1) 30:(holding b1) 34:(on-table b2) ];a = (put-tower-down b3 b1);j = [ 0:(emptyhand) 10:(clear b3) 18:(clear b2) 20:(on b3 b1) 34:(on-table b2) 36:(on-table b1) ];prob = 1
+s = [ 10:(clear b3) 18:(clear b2) 20:(on b3 b1) 30:(holding b1) 34:(on-table b2) ];a = (put-tower-on-block b3 b1 b2);j = [ 0:(emptyhand) 2:(on b1 b2) 10:(clear b3) 20:(on b3 b1) 34:(on-table b2) ];prob = 0.1
+s = [ 10:(clear b3) 18:(clear b2) 20:(on b3 b1) 30:(holding b1) 34:(on-table b2) ];a = (put-tower-on-block b3 b1 b2);j = [ 0:(emptyhand) 10:(clear b3) 18:(clear b2) 20:(on b3 b1) 34:(on-table b2) 36:(on-table b1) ];prob = 0.9
