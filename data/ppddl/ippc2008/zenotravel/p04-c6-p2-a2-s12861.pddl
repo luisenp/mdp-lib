@@ -75,7 +75,7 @@
   )
 )
 
-(define (problem zeno_6_2_2_12861)
+(define (problem p04)
   (:domain zenotravel)
   (:objects c0 c1 c2 c3 c4 c5 - city p0 p1 - person a0 a1 - aircraft f0 f1 f2 f3 f4 - flevel)
   (:init (next f0 f1) (next f1 f2) (next f2 f3) (next f3 f4)
