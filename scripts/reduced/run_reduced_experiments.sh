@@ -1,39 +1,37 @@
 #!/bin/bash
 
-PDDL_FOLDER=../../data/ppddl/ippc2008
-DOMAIN=blocksworld
-PROBLEM=p01
+pddl_folder=../../data/ppddl/ippc2008
+domain=blocksworld
+problem=p01
 
-./create_all_determinizations.py -d $PDDL_FOLDER/$DOMAIN/domain.pddl \
-  -o /tmp/$DOMAIN
+# Creating all possible determinizations
+./create_all_determinizations.py -d $pddl_folder/$domain/domain.pddl \
+  -o /tmp/$domain
   
-NUM_DET=`ls /tmp/${DOMAIN}_det*.pddl -l | wc -l`
+num_det=`ls /tmp/${domain}_det*.pddl -l | wc -l`
+let "num_det=$num_det-1"
 
-for i in `seq 0 $NUM_DET`; do
-  echo $i
+# Evaluating all possible determinizations in the first problem of this domain
+all_successes=""
+all_costs=""
+for i in `seq 0 $num_det`; do
+  successes_and_costs=`./run_experiment.sh $pddl_folder $domain p01 $i 0 \
+    | tail -n 1`
+  echo $successes_and_costs
+  all_successes=$all_successes`echo $successes_and_costs | awk '{print $1}'`,
+  all_costs=$all_costs`echo $successes_and_costs | awk '{print $2}'`,
 done
+echo $all_successes
+echo $all_costs
 
-sleep 1
+# Getting the best determinizations
+n=3
+best_n_determinizations=`./get_index_n_best_results.py \\
+  -s ${all_successes::-1} -c ${all_costs::-1} -n $n `
+best_determinization=`echo $best_n_determinizations | { read x _ ; echo $x; }`
 
-DET_IDX=1
-
-./setup_ff_template.py -p $PDDL_FOLDER/$DOMAIN/$PROBLEM.pddl \
-  -o /tmp/ff-template.pddl
-
-../../planserv_red.out --problem=$PDDL_FOLDER/$DOMAIN/$PROBLEM.pddl:$PROBLEM \
-  --det_problem=${DOMAIN}_det${DET_IDX}.pddl \
-  --det_descriptor=/tmp/${DOMAIN}_det${DET_IDX}.desc \
-  --dir=/tmp --k=0 &
-
-../../../mdpsim-2.2/mdpsim --port=2323 --time-limit=1200000 --round-limit=50 \
-  --turn-limit=2500 $PDDL_FOLDER/$DOMAIN/$PROBLEM.pddl &
-
-sleep 2
-
-../../../mdpsim-2.2/mdpclient --host=localhost --port=2323 \
-  $PDDL_FOLDER/$DOMAIN/$PROBLEM.pddl &> log.txt
-
-kill $(ps aux | grep '[p]lanserv' | awk '{print $2}')
-kill $(ps aux | grep '[l]t-mdpsim' | awk '{print $2}')
-kill $(ps aux | grep '[l]t-mdpclient' | awk '{print $2}')
-rm -f last_id
+# Solving all problems with the best determinization
+for i in {01..10}; do
+  echo `./run_experiment.sh $pddl_folder $domain p$i $best_determinization 0 \\
+    | tail -n 1`
+done

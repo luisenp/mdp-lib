@@ -4,11 +4,7 @@ pddl_folder=$1
 domain=$2
 problem=$3
 determinization_index=$4
-
-echo $1
-echo $2
-echo $3
-echo $4
+k=$5
 
 # Setups the template problem for FF (removes PPDDL features not supported 
 # by FF and other cleanup)
@@ -19,7 +15,7 @@ echo $4
 ../../planserv_red.out --problem=$pddl_folder/$domain/$problem.pddl:$problem \
   --det_problem=${domain}_det${determinization_index}.pddl \
   --det_descriptor=/tmp/${domain}_det${determinization_index}.desc \
-  --dir=/tmp --k=0 &
+  --dir=/tmp --k=$k &
 
 # Starts the mdpsim server
 ../../../mdpsim-2.2/mdpsim --port=2323 --time-limit=1200000 --round-limit=50 \
