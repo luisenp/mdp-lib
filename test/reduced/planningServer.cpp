@@ -230,6 +230,12 @@ int main(int argc, char* args[])
     if (flag_is_registered_with_value("v"))
         verbosity = stoi(flag_value("v"));
 
+    int maxPlanningTime = 60 * 5;
+    if (flag_is_registered("max-time"))
+        maxPlanningTime = stoi(flag_value("max-time"));
+    int remainingPlanningTime = maxPlanningTime;
+
+
     // If true, FF will be used for the states with exception_counter = k.
     bool useFF = true;
     if (flag_is_registered("no-ff"))
@@ -284,16 +290,20 @@ int main(int argc, char* args[])
     // Solving reduced model using LAO* + FF.
     double totalPlanningTime = 0.0;
     clock_t startTime = clock();
+     // using half of the time fot the initial plan (last argument)
     FFReducedModelSolver solver(reducedModel,
                                 ffExec,
                                 directory + "/" + detProblem,
                                 directory + "/ff-template.pddl",
                                 k,
                                 1.0e-3,
-                                useFF);
+                                useFF,
+                                maxPlanningTime / 2);
+    cerr << "SOLVING" << endl;
     solver.solve(reducedModel->initialState());
     clock_t endTime = clock();
     totalPlanningTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
+    remainingPlanningTime -= int(totalPlanningTime);
     cout << "cost " << reducedModel->initialState()->cost() <<
         " time " << totalPlanningTime << endl;
 
@@ -345,8 +355,12 @@ int main(int argc, char* args[])
         ReducedState* reducedState = static_cast<ReducedState*> (
             reducedModel->addState(new ReducedState(state, 0, reducedModel)));
         cout << "PLANNING." << endl;
+        solver.maxPlanningTime(remainingPlanningTime);
+        startTime = clock();
         mlcore::Action* action = solver.solve(reducedState);
-        cout << "DONE." << endl;
+        endTime = clock();
+        remainingPlanningTime -= double(endTime - startTime) / CLOCKS_PER_SEC;
+        cout << "DONE. Remaining time: " << remainingPlanningTime << endl;
 
         // Sending the action to the client.
         ostringstream oss;

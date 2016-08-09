@@ -88,6 +88,12 @@ private:
     /* The initial atoms that are removed during the PPDDL parsing. */
     std::string removedInitAtoms_;
 
+    /* The total time available for planning (in seconds). */
+    int maxPlanningTime_;
+
+    /* The time at which the solve method was last called. */
+    int startingPlanningTime_;
+
     ////////////////////////////////////////////////////////////////////////////
     //                               FUNCTIONS                                //
     ////////////////////////////////////////////////////////////////////////////
@@ -154,6 +160,12 @@ private:
      */
     void storeRemovedInitAtoms();
 
+    /*
+     * Returns true if the planning time has run out. If passed and not
+     * nullptr, the parameter stores the time left for planning.
+     */
+    bool planningTimeHasRunOut(double* timeLeft = nullptr);
+
 public:
     FFReducedModelSolver(mlcore::Problem* problem,
                          std::string ffExecFilename,
@@ -161,14 +173,17 @@ public:
                          std::string templateProblemFilename,
                          int maxHorizon,
                          double epsilon = 1.0e-3,
-                         bool useFF = true) :
+                         bool useFF = true,
+                         int maxPlanningTime = 3600) :
         problem_(problem),
         ffExecFilename_(ffExecFilename),
         determinizedDomainFilename_(determinizedDomainFilename),
         templateProblemFilename_(templateProblemFilename),
         maxHorizon_(maxHorizon),
         epsilon_(epsilon),
-        useFF_(useFF)
+        useFF_(useFF),
+        maxPlanningTime_(maxPlanningTime)
+
     {
         // initializing memoization table
         for (int i = 0; i <= maxHorizon_; i++) {
@@ -178,6 +193,8 @@ public:
     }
 
     virtual ~FFReducedModelSolver() {}
+
+    void maxPlanningTime(int theTime) { maxPlanningTime_ = theTime; }
 
     void maxHorizon(int value) { maxHorizon_ = value; }
 
