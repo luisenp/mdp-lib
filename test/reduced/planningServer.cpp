@@ -299,7 +299,7 @@ int main(int argc, char* args[])
                                 1.0e-3,
                                 useFF,
                                 maxPlanningTime / 2);
-    cerr << "SOLVING" << endl;
+    cout << "SOLVING" << endl;
     solver.solve(reducedModel->initialState());
     clock_t endTime = clock();
     totalPlanningTime += (double(endTime - startTime) / CLOCKS_PER_SEC);

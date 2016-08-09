@@ -32,7 +32,7 @@ best_n_determinizations=`./get_index_n_best_results.py \\
 best_determinization=`echo $best_n_determinizations | { read x _ ; echo $x; }`
 
 # Solving all problems with the best determinization
-for i in {08..10}; do
+for i in {07..10}; do
   echo `./run_experiment.sh $pddl_folder $domain p$i $best_determinization $k \\
     | tail -n 1`
 done

@@ -141,11 +141,16 @@ pair<string, int> FFReducedModelSolver::getActionNameAndCostFromFF()
     child_pid = fork();
     if (child_pid != 0) {   // parent process (process FF output)
         close(fds[1]);
+        int status;
         while (timeLeft > 0) {  // TODO: improve this ugly code hack
             planningTimeHasRunOut(&timeLeft);
-            int status;
             pid_t wait_result = waitpid(child_pid, &status, WNOHANG);
             if (wait_result == -1) {
+                if (errno == ECHILD) {
+                    // This happens when SIGCHLD is ignored and FF ends.
+                    // Probably not the right way to do it, but it works.
+                    break;
+                }
                 cerr << "Error ocurred during call to FF: " <<
                     strerror(errno) << endl;
                 exit(-1);
@@ -156,6 +161,7 @@ pair<string, int> FFReducedModelSolver::getActionNameAndCostFromFF()
             }
         }
         kill(child_pid, SIGTERM); // seems to be safe to use on child processes
+        pid_t wait_result = waitpid(child_pid, &status, 0);
         FILE* ff_output = fdopen(fds[0], "r");
         if (ff_output) {
             char lineBuffer[1024];
@@ -249,6 +255,8 @@ void FFReducedModelSolver::lao(mlcore::State* s0)
             list<mlcore::State*> stateStack;
             stateStack.push_back(s0);
             while (!stateStack.empty()) {
+                if (planningTimeHasRunOut())
+                    return;
                 mlcore::State* s = stateStack.back();
                 stateStack.pop_back();
                 if (!visited.insert(s).second)  // state was already visited.
@@ -268,8 +276,6 @@ void FFReducedModelSolver::lao(mlcore::State* s0)
                     }
                 }
                 this->bellmanUpdate(s);
-                if (planningTimeHasRunOut())
-                    return;
             }
         } while (countExpanded != 0);
         while (true) {
@@ -278,6 +284,8 @@ void FFReducedModelSolver::lao(mlcore::State* s0)
             stateStack.push_back(s0);
             double error = 0.0;
             while (!stateStack.empty()) {
+                if (planningTimeHasRunOut())
+                    return;
                 mlcore::State* s = stateStack.back();
                 stateStack.pop_back();
                 if (!visited.insert(s).second)
@@ -300,7 +308,7 @@ void FFReducedModelSolver::lao(mlcore::State* s0)
                     break;
                 }
             }
-            if (error < epsilon_ || planningTimeHasRunOut())
+            if (error < epsilon_)
                 return;
             if (error > mdplib::dead_end_cost) {
                 break;  // BPSG changed, must expand tip nodes again
