@@ -1,6 +1,7 @@
 #ifndef MDPLIB_FFREDUCEDMODELSOLVER_H
 #define MDPLIB_FFREDUCEDMODELSOLVER_H
 
+#include <ctime>
 #include <string>
 
 #include "../ppddl/PPDDLProblem.h"
@@ -92,7 +93,7 @@ private:
     int maxPlanningTime_;
 
     /* The time at which the solve method was last called. */
-    int startingPlanningTime_;
+    time_t startingPlanningTime_;
 
     ////////////////////////////////////////////////////////////////////////////
     //                               FUNCTIONS                                //
@@ -164,7 +165,7 @@ private:
      * Returns true if the planning time has run out. If passed and not
      * nullptr, the parameter stores the time left for planning.
      */
-    bool planningTimeHasRunOut(double* timeLeft = nullptr);
+    bool planningTimeHasRunOut(time_t* timeLeft = nullptr);
 
 public:
     FFReducedModelSolver(mlcore::Problem* problem,
@@ -174,7 +175,7 @@ public:
                          int maxHorizon,
                          double epsilon = 1.0e-3,
                          bool useFF = true,
-                         int maxPlanningTime = 3600) :
+                         time_t maxPlanningTime = 3600) :
         problem_(problem),
         ffExecFilename_(ffExecFilename),
         determinizedDomainFilename_(determinizedDomainFilename),
@@ -194,7 +195,7 @@ public:
 
     virtual ~FFReducedModelSolver() {}
 
-    void maxPlanningTime(int theTime) { maxPlanningTime_ = theTime; }
+    void maxPlanningTime(time_t theTime) { maxPlanningTime_ = theTime; }
 
     void maxHorizon(int value) { maxHorizon_ = value; }
 

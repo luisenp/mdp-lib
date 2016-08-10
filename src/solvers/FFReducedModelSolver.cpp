@@ -1,5 +1,6 @@
 #include <cerrno>
 #include <cstdlib>
+#include <ctime>
 #include <fstream>
 #include <iostream>
 #include <signal.h>
@@ -133,7 +134,7 @@ pair<string, int> FFReducedModelSolver::getActionNameAndCostFromFF()
 
     string actionName = "__mdplib-dead-end__";
     int costFF = floor(mdplib::dead_end_cost);
-    double timeLeft;
+    time_t timeLeft = 0.0;
     if (planningTimeHasRunOut(&timeLeft)) {
         return make_pair(actionName, costFF);
     }
@@ -146,16 +147,17 @@ pair<string, int> FFReducedModelSolver::getActionNameAndCostFromFF()
             planningTimeHasRunOut(&timeLeft);
             pid_t wait_result = waitpid(child_pid, &status, WNOHANG);
             if (wait_result == -1) {
-                if (errno == ECHILD) {
-                    // This happens when SIGCHLD is ignored and FF ends.
+                /*if (errno == ECHILD) {
+                    // This happens when FF ends because SIGCHLD is ignored.
                     // Probably not the right way to do it, but it works.
+                    cerr << "FF finished while waiting" << endl;
                     break;
-                }
+                }*/
                 cerr << "Error ocurred during call to FF: " <<
                     strerror(errno) << endl;
                 exit(-1);
-            } else if (wait_result != 0) {  // FF still running
-                sleep(2);
+            } else if (wait_result == 0) {  // FF still running
+                sleep(1);
             } else {    // FF finished
                 break;
             }
@@ -235,7 +237,7 @@ mlcore::Action* FFReducedModelSolver::getActionFromName(string actionName)
 
 mlcore::Action* FFReducedModelSolver::solve(mlcore::State* s0)
 {
-    startingPlanningTime_ = clock();
+    startingPlanningTime_ = time(nullptr);
     this->lao(s0);
     return s0->bestAction();
 }
@@ -374,11 +376,10 @@ double FFReducedModelSolver::bellmanUpdate(mlcore::State* s)
 }
 
 
-bool FFReducedModelSolver::planningTimeHasRunOut(double* timeLeft) {
-    double elapsedTime =
-        double(clock() - startingPlanningTime_) / CLOCKS_PER_SEC;
+bool FFReducedModelSolver::planningTimeHasRunOut(time_t* timeLeft) {
+    time_t elapsedTime = time(nullptr) - startingPlanningTime_;
     if (timeLeft != nullptr)
-        *timeLeft = double(maxPlanningTime_) - elapsedTime;
+        *timeLeft = maxPlanningTime_ - elapsedTime;
     return elapsedTime > maxPlanningTime_;
 }
 

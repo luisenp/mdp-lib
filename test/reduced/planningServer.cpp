@@ -230,10 +230,10 @@ int main(int argc, char* args[])
     if (flag_is_registered_with_value("v"))
         verbosity = stoi(flag_value("v"));
 
-    int maxPlanningTime = 60 * 5;
+    time_t maxPlanningTime = 60 * 5;
     if (flag_is_registered("max-time"))
         maxPlanningTime = stoi(flag_value("max-time"));
-    int remainingPlanningTime = maxPlanningTime;
+    time_t remainingPlanningTime = maxPlanningTime;
 
 
     // If true, FF will be used for the states with exception_counter = k.
@@ -288,8 +288,8 @@ int main(int argc, char* args[])
 
     /* *********************** SOLVING THE PROBLEM ********************** */
     // Solving reduced model using LAO* + FF.
-    double totalPlanningTime = 0.0;
-    clock_t startTime = clock();
+    time_t totalPlanningTime = 0.0;
+    time_t startTime = time(nullptr);
      // using half of the time fot the initial plan (last argument)
     FFReducedModelSolver solver(reducedModel,
                                 ffExec,
@@ -301,9 +301,9 @@ int main(int argc, char* args[])
                                 maxPlanningTime / 2);
     cout << "SOLVING" << endl;
     solver.solve(reducedModel->initialState());
-    clock_t endTime = clock();
-    totalPlanningTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
-    remainingPlanningTime -= int(totalPlanningTime);
+    time_t endTime = time(nullptr);
+    totalPlanningTime += endTime - startTime;
+    remainingPlanningTime -= totalPlanningTime;
     cout << "cost " << reducedModel->initialState()->cost() <<
         " time " << totalPlanningTime << endl;
 
@@ -356,10 +356,10 @@ int main(int argc, char* args[])
             reducedModel->addState(new ReducedState(state, 0, reducedModel)));
         cout << "PLANNING." << endl;
         solver.maxPlanningTime(remainingPlanningTime);
-        startTime = clock();
+        startTime = time(nullptr);
         mlcore::Action* action = solver.solve(reducedState);
-        endTime = clock();
-        remainingPlanningTime -= double(endTime - startTime) / CLOCKS_PER_SEC;
+        endTime = time(nullptr);
+        remainingPlanningTime -= endTime - startTime;
         cout << "DONE. Remaining time: " << remainingPlanningTime << endl;
 
         // Sending the action to the client.
