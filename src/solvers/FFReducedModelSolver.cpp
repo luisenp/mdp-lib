@@ -1,4 +1,5 @@
 #include <cerrno>
+#include <chrono>
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
@@ -21,6 +22,13 @@
 using namespace mlcore;
 using namespace mlppddl;
 using namespace std;
+
+
+// Handler for the child process running FF
+static void sigchld_hdl(int sig)
+{
+    // the main process will handle the child, no need to do anything
+}
 
 
 namespace mlsolvers
@@ -139,6 +147,15 @@ pair<string, int> FFReducedModelSolver::getActionNameAndCostFromFF()
         return make_pair(actionName, costFF);
     }
 
+    // setting a handler for the FF child process
+    struct sigaction act;
+	memset (&act, 0, sizeof(act));
+	act.sa_handler = sigchld_hdl;
+	if (sigaction(SIGCHLD, &act, 0) == -1) {
+		cerr << "Error setting handler for FF process signal" << endl;
+		exit(-1);
+	}
+
     child_pid = fork();
     if (child_pid != 0) {   // parent process (process FF output)
         close(fds[1]);
@@ -147,17 +164,11 @@ pair<string, int> FFReducedModelSolver::getActionNameAndCostFromFF()
             planningTimeHasRunOut(&timeLeft);
             pid_t wait_result = waitpid(child_pid, &status, WNOHANG);
             if (wait_result == -1) {
-                /*if (errno == ECHILD) {
-                    // This happens when FF ends because SIGCHLD is ignored.
-                    // Probably not the right way to do it, but it works.
-                    cerr << "FF finished while waiting" << endl;
-                    break;
-                }*/
                 cerr << "Error ocurred during call to FF: " <<
                     strerror(errno) << endl;
                 exit(-1);
             } else if (wait_result == 0) {  // FF still running
-                sleep(1);
+                this_thread::sleep_for(chrono::milliseconds(1000));
             } else {    // FF finished
                 break;
             }
