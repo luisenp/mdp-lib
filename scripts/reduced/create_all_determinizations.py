@@ -62,7 +62,8 @@ def make_str(ppddl_tree, level=0):
 
   
 def get_all_probabilistic_effects(ppddl_tree,
-                                  all_prob_effects_list):
+                                  all_prob_effects_list,
+                                  action = None):
   """
   Adds all probabilistic effects in this PPDDL tree to the given list.
   The effects are added in pre-order traversal.
@@ -70,25 +71,32 @@ def get_all_probabilistic_effects(ppddl_tree,
   """
   if not isinstance(ppddl_tree, list):
     return
+  if ppddl_tree[0] == ':action':
+    action = ppddl_tree[1].rstrip('\r')
   if ppddl_tree[0] == 'probabilistic':
-    all_prob_effects_list.append(ppddl_tree)
+    all_prob_effects_list.append( (action, ppddl_tree) )
   else:
     for element in ppddl_tree:
-      get_all_probabilistic_effects(element, all_prob_effects_list)
+      get_all_probabilistic_effects(element, all_prob_effects_list, action)
   
 
-def get_all_determinizations_effect(probabilistic_effect):
+def get_all_determinizations_effect(probabilistic_effect_info):
   """
   Generates all possible determinizations of the given probabilistic effect.
   """    
   all_determinizations = []
   total_explicit_prob = Fraction(0)
+  idx = 0
+  probabilistic_effect = probabilistic_effect_info[1]
   for i in range(2, len(probabilistic_effect), 2):
     total_explicit_prob += Fraction(probabilistic_effect[i - 1])
-    all_determinizations.append(probabilistic_effect[i])
+    # The first element is the index of the deterministic effect, the second
+    # is the effect itself.
+    all_determinizations.append( (idx, probabilistic_effect[i]) )
+    idx += 1
   if total_explicit_prob != Fraction(1):
-    all_determinizations.append(['and'])  # No-op effect
-  return all_determinizations
+    all_determinizations.append( (idx, ['and']) )  # No-op effect
+  return (probabilistic_effect_info[0], all_determinizations)
   
 
 def get_all_determinizations_comb(determinizations_of_all_effects):
@@ -96,11 +104,14 @@ def get_all_determinizations_comb(determinizations_of_all_effects):
   Generates all possible combinations of the given list with of probabilistic 
   effects determinizations.
   """
-  # Base case for the recursion, only determinizations for one effect.
+  # Base case for the recursion, only determinizations for one effect.  
   all_determinizations = []
   if len(determinizations_of_all_effects) == 1:
-    for determinization in determinizations_of_all_effects[0]:
-      all_determinizations.append([determinization])
+    # Note that determinizations_of_all_effects[0] is a tuple:
+    # (action_name, all_determinizations_of_the_actions_effect)
+    for determinization in determinizations_of_all_effects[0][1]:
+      all_determinizations.append([(determinizations_of_all_effects[0][0], 
+                                    determinization)])
     return all_determinizations
   
   # We do this recursively by generating all combinations of effects from the 
@@ -109,9 +120,10 @@ def get_all_determinizations_comb(determinizations_of_all_effects):
   remaining_determinizations_comb = (
     get_all_determinizations_comb(determinizations_of_all_effects[1:]))
   
-  for effect_determinization in determinizations_of_all_effects[0]:
+  for effect_determinization in determinizations_of_all_effects[0][1]:
     for remaining_effects_determinization in remaining_determinizations_comb:
-      determinization = [effect_determinization]
+      determinization = [(determinizations_of_all_effects[0][0], 
+                          effect_determinization)]
       determinization.extend(remaining_effects_determinization)
       all_determinizations.append(determinization)
   return all_determinizations
@@ -129,7 +141,7 @@ def determinize_tree(determinization, ppddl_tree, index = 0):
     return index
   if ppddl_tree[0] == 'probabilistic':
     ppddl_tree[:] = []
-    ppddl_tree.extend(determinization[index])
+    ppddl_tree.extend(determinization[index][1][1])
     return index + 1
   else:
     for element in ppddl_tree:
@@ -195,21 +207,27 @@ def main(argv):
   
   # Getting all possible determinizations.
   determinizations_of_all_effects = []
-  for probabilistic_effect in all_prob_effects_list:
+  for probabilistic_effect_info in all_prob_effects_list:
     determinizations_of_all_effects.append(
-      get_all_determinizations_effect(probabilistic_effect))      
+      get_all_determinizations_effect(probabilistic_effect_info))
   all_determinizations = (
-    get_all_determinizations_comb(determinizations_of_all_effects))
+    get_all_determinizations_comb(determinizations_of_all_effects))  
   
   # Writing all possible determinizations to a single PPDDL file each.
   idx = 0
   for determinization in all_determinizations:
     determinization_ppddl_tree = copy.deepcopy(domain_tree)
+    description_text = ""
+    for effect_info in determinization:
+      description_text += "%s %d\n" % (effect_info[0], effect_info[1][0])
     determinize_tree(determinization, determinization_ppddl_tree)
     clean_up_tree(determinization_ppddl_tree)
     f = open('%s_det%d.pddl' % (output_file_name, idx), 'w')
+    fd = open('%s_det%d.desc' % (output_file_name, idx), 'w')
     f.write(make_str(determinization_ppddl_tree[0]))
+    fd.write(description_text)
     f.close()
+    fd.close()
     idx += 1
   
 

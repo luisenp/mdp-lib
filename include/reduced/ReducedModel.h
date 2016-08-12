@@ -59,13 +59,13 @@ protected:
     /**
      * The problem for which the reduced model is constructed.
      */
-    mlcore::Problem *originalProblem_;
+    mlcore::Problem* originalProblem_;
 
     /**
      * An object describing the outcomes to be considered primary for
      * each state, action pair.
      */
-    ReducedTransition *reducedTransition_;
+    ReducedTransition* reducedTransition_;
 
     /**
      * The bound on the number of exceptions.
@@ -90,8 +90,8 @@ protected:
     bool useContPlanEvaluationTransition_;
 
 public:
-    ReducedModel(mlcore::Problem *originalProblem,
-                 ReducedTransition *reducedTransition, int k) :
+    ReducedModel(mlcore::Problem* originalProblem,
+                 ReducedTransition* reducedTransition, int k) :
         originalProblem_(originalProblem),
         reducedTransition_(reducedTransition),
         k_(k),
@@ -111,6 +111,11 @@ public:
     {
         assert(clean_);
     }
+
+    /**
+     * Returns the original problem.
+     */
+    mlcore::Problem* originalProblem() { return originalProblem_; }
 
     /**
      * Cleans up any data that may affect the original model when
@@ -206,6 +211,14 @@ public:
         std::list<ReducedTransition *> reducedTransitions,
         int k,
         ReducedHeuristicWrapper* heuristic);
+
+
+    /**
+     * Returns true if successor is an exception for state when the give action
+     * is executed.
+     */
+    bool isException(
+        mlcore::State* state, mlcore::State* successor, mlcore::Action* action);
 
     /**
      * Implements a reduced transition model for this problem according to

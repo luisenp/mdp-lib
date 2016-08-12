@@ -652,9 +652,11 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="test/mobj/testLexiGW.cpp" />
 		<Unit filename="test/mobj/testLexiRace.cpp" />
 		<Unit filename="test/mobj/testLexiRaw.cpp" />
+		<Unit filename="test/planningServer.cpp" />
 		<Unit filename="test/reduced/testFF.cpp" />
 		<Unit filename="test/reduced/testReduced.cpp" />
 		<Unit filename="test/reduced/testReducedFF.cpp" />
+		<Unit filename="test/reduced/testReducedFFFull.cpp" />
 		<Unit filename="test/testB2T.cpp" />
 		<Unit filename="test/testCTP.cpp" />
 		<Unit filename="test/testConc.cpp" />

@@ -37,3 +37,6 @@ mdp-lib.layout
 *gurobi*
 *borra*
 *.kate*
+testclient
+planserv
+*.pyc

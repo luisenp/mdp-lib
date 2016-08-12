@@ -2,9 +2,13 @@
 #include <ctime>
 #include <iostream>
 #include <list>
+#include <netinet/in.h>
 #include <sstream>
 #include <string>
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <typeinfo>
+#include <unistd.h>
 
 #include "../../include/domains/racetrack/RacetrackProblem.h"
 #include "../../include/domains/racetrack/RTrackDetHeuristic.h"
@@ -25,12 +29,13 @@
 #include "../../include/reduced/ReducedTransition.h"
 
 #include "../../include/solvers/FFReducedModelSolver.h"
-#include "../../include/solvers/LAOStarSolver.h"
 
 #include "../../include/util/flags.h"
 #include "../../include/util/general.h"
 
 #include "../../include/Problem.h"
+
+#define BUFFER_SIZE 65536
 
 
 using namespace std;
@@ -52,12 +57,8 @@ mlcore::Problem* problem = nullptr;
 mlcore::Heuristic* heuristic = nullptr;
 ReducedModel* reducedModel = nullptr;
 ReducedHeuristicWrapper* reducedHeuristic = nullptr;
-list<ReducedTransition *> reductions;
 
 string ffExec = "/home/lpineda/Desktop/FF-v2.3/ff";
-string ffDomain = "-o /home/lpineda/Desktop/domain.pddl";
-string ffProblem = "-f /home/lpineda/Desktop/problem.pddl";
-string ffCommand = ffExec + " " + ffDomain + " " + ffProblem;
 
 
 /*
@@ -88,6 +89,9 @@ static bool read_file( const char* ppddlFileName )
 }
 
 
+/*
+ * Initializes the PPDDL problem with the given arguments.
+ */
 bool initPPDDL(string ppddlArgs)
 {
     size_t pos_equals = ppddlArgs.find(":");
@@ -114,6 +118,49 @@ bool initPPDDL(string ppddlArgs)
     heuristic = new mlppddl::PPDDLHeuristic(static_cast<PPDDLProblem*>(problem),
                                             mlppddl::FF);
     problem->setHeuristic(heuristic);
+}
+
+
+/*
+ * Fills the given map from atom_strings to atom_ids according to the
+ * atom_hash of the given problem_t. This map can be used to recover a state
+ * from a list of atoms.
+ */
+void fillStringAtomMap(problem_t* problem,
+                       unordered_map<string, ushort_t>& stringAtomMap)
+{
+    const Domain& dom = problem->domain();
+    const PredicateTable& preds = dom.predicates();
+    TermTable& terms = problem->terms();
+    for (auto const & atom : problem_t::atom_hash()) {
+        ostringstream oss;
+        atom.first->print(oss, preds, dom.functions(), terms);
+        stringAtomMap[oss.str()] = atom.second;
+    }
+}
+
+
+/* Returns the state corresponding to the given string. */
+mlcore::State* getStatefromString(
+    string stateString,
+    mlppddl::PPDDLProblem* MLProblem,
+    unordered_map<string, ushort_t>& stringAtomMap)
+{
+    state_t* pState = new state_t();
+    for (int i = 0; i < stateString.size(); i++) {
+        if (stateString[i] == '(') {
+            string atomString = "";
+            int j;
+            for (j = i; stateString[j] != ')'; j++)
+                atomString += stateString[j];
+            atomString += stateString[j];
+            pState->add(stringAtomMap[atomString]);
+            i = j;
+        }
+    }
+    mlppddl::PPDDLState* newState = new mlppddl::PPDDLState(MLProblem);
+    newState->setPState(*pState);
+    return MLProblem->addState(newState);
 }
 
 
@@ -151,6 +198,8 @@ int main(int argc, char* args[])
 {
     register_flags(argc, args);
 
+    /* *********************** PROBLEM INITIALIZATION ********************** */
+
     if (flag_is_registered("debug"))
         mdplib_debug = true;
 
@@ -181,6 +230,13 @@ int main(int argc, char* args[])
     if (flag_is_registered_with_value("v"))
         verbosity = stoi(flag_value("v"));
 
+    time_t maxPlanningTime = 60 * 5;
+    if (flag_is_registered("max-time"))
+        maxPlanningTime = stoi(flag_value("max-time"));
+    time_t remainingPlanningTime = maxPlanningTime;
+
+
+    // If true, FF will be used for the states with exception_counter = k.
     bool useFF = true;
     if (flag_is_registered("no-ff"))
         useFF = false;
@@ -199,74 +255,133 @@ int main(int argc, char* args[])
     reducedHeuristic = new ReducedHeuristicWrapper(heuristic);
     reducedModel->setHeuristic(reducedHeuristic);
 
+    /* *********************** SERVER INITIALIZATION ********************** */
+
+    // Setting up the server to connect to MDP-SIM.
+    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd < 0) {
+        cerr << "ERROR: couldn't open socket." << endl;
+        exit(-1);
+    }
+    struct sockaddr_in serv_addr;
+    bzero((char *) &serv_addr, sizeof(serv_addr));
+    int portno = 1234;
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_addr.s_addr = INADDR_ANY;
+    serv_addr.sin_port = htons(portno);
+    if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
+        cerr << "ERROR: couldn't bind the socket." << endl;
+        close(sockfd);
+        exit(-1);
+    }
+
+    // Connect to the MDP-SIM client.
+    struct sockaddr_in cli_addr;
+    listen(sockfd, 5);
+    socklen_t clilen = sizeof(cli_addr);
+    int newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
+    if (newsockfd < 0) {
+        cerr << "ERROR: problems accepting connection." << endl;
+        close(sockfd);
+        exit(-1);
+    }
+
+    /* *********************** SOLVING THE PROBLEM ********************** */
     // Solving reduced model using LAO* + FF.
-    double totalPlanningTime = 0.0;
-    clock_t startTime = clock();
+    time_t totalPlanningTime = 0.0;
+    time_t startTime = time(nullptr);
+     // using half of the time fot the initial plan (last argument)
     FFReducedModelSolver solver(reducedModel,
                                 ffExec,
                                 directory + "/" + detProblem,
                                 directory + "/ff-template.pddl",
                                 k,
                                 1.0e-3,
-                                useFF);
+                                useFF,
+                                maxPlanningTime / 2);
+    cout << "SOLVING" << endl;
     solver.solve(reducedModel->initialState());
-    clock_t endTime = clock();
-    totalPlanningTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
+    time_t endTime = time(nullptr);
+    totalPlanningTime += endTime - startTime;
+    remainingPlanningTime -= totalPlanningTime;
     cout << "cost " << reducedModel->initialState()->cost() <<
         " time " << totalPlanningTime << endl;
 
 
-    // Running a trial of the continual planning approach.
-    double expectedCost = 0.0;
-    for (int i = 0; i < nsims; i++) {
-        double cost = 0.0;
-        ReducedState* currentState =
-            static_cast<ReducedState*> (reducedModel->initialState());
-        mlcore::Action* action = currentState->bestAction();
-        while (cost < mdplib::dead_end_cost) {
-            cost += problem->cost(currentState->originalState(), action);
-            // The successor state according to the original transition model.
-            mlcore::State* nextOriginalState =
-                randomSuccessor(problem, currentState->originalState(), action);
-
-            if (problem->goal(nextOriginalState)) {
-                dprint1("GOAL!");
+    /* *********************** SEVER LOOP ********************** */
+    // Initializing a map from atom names to atom indices.
+    unordered_map<string, ushort_t> stringAtomMap;
+    fillStringAtomMap(static_cast<PPDDLProblem*> (problem)->pProblem(),
+                      stringAtomMap);
+    double cost = 0.0;
+    while (true) {
+        // Reading communication from the client.
+        char buffer[BUFFER_SIZE];
+        bzero(buffer, BUFFER_SIZE);
+        int n = read(newsockfd, buffer, BUFFER_SIZE - 1);
+        if (n < 0) {
+            cerr << "ERROR: couldn't read from socket." << endl;
+            break;
+        }
+        cout << "RECEIVED: " << buffer << endl;
+        string msg(buffer);
+        string atomsString;
+        if (msg.substr(0, 6) == "state:") { // Received a state to plan for.
+            atomsString = msg.substr(6, msg.size());
+        } else if (msg.substr(0, 5) == "stop") { // Stop the program.
+            break;
+        } else if (msg.substr(0, 9) == "end-round") {
+            cost = 0;
+            bzero(buffer, BUFFER_SIZE);
+            sprintf(buffer, "%s", "round-ended");
+            cout << "SENDING: " << buffer << "." << endl;
+            n = write(newsockfd, buffer, strlen(buffer));
+            if (n < 0) {
+                cerr << "ERROR: couldn't write to socket." << endl;
                 break;
             }
-
-            bool isException =
-                reducedModel->isException(currentState->originalState(),
-                                          nextOriginalState,
-                                          action);
-            int exceptionCount =
-                currentState->exceptionCount() + int(isException);
-            currentState = new ReducedState(nextOriginalState,
-                                            exceptionCount,
-                                            reducedModel);
-
-            // Re-planning if needed.
-            if (currentState->bestAction() == nullptr ||
-                    exceptionCount > k) {
-                currentState->exceptionCount(0);
-                currentState = static_cast<ReducedState*> (
-                    reducedModel->addState(currentState));
-                solver.solve(currentState);
-            }
-
-            if (currentState->deadEnd()) {
-                cost = mdplib::dead_end_cost;
-            }
-
-            action = currentState->bestAction();
+            continue;
+        } else {
+            cerr << "ERROR: unknown message. Terminating." << endl;
+            break;
         }
-        expectedCost += cost;
+        // Getting the state whose action needs to be found.
+        mlcore::State* state =
+            getStatefromString(atomsString,
+                               static_cast<PPDDLProblem*> (problem),
+                               stringAtomMap);
+
+        // For now, always set the exception counter to 0 and re-plan.
+        ReducedState* reducedState = static_cast<ReducedState*> (
+            reducedModel->addState(new ReducedState(state, 0, reducedModel)));
+        cout << "PLANNING." << endl;
+        solver.maxPlanningTime(remainingPlanningTime);
+        startTime = time(nullptr);
+        mlcore::Action* action = solver.solve(reducedState);
+        endTime = time(nullptr);
+        remainingPlanningTime -= endTime - startTime;
+        cout << "DONE. Remaining time: " << remainingPlanningTime << endl;
+
+        // Sending the action to the client.
+        ostringstream oss;
+        if (action != nullptr && cost < mdplib::dead_end_cost) {
+            oss << action;
+            cost += problem->cost(state, action);
+        } else {
+            cout << "DEAD-END." << endl;
+            oss << "(done)";
+        }
+        bzero(buffer, BUFFER_SIZE);
+        sprintf(buffer, "%s", oss.str().c_str());
+        cout << buffer << "." << endl;
+        n = write(newsockfd, buffer, strlen(buffer));
+        if (n < 0) {
+            cerr << "ERROR: couldn't write to socket." << endl;
+            break;
+        }
     }
-    cout << expectedCost / nsims << endl;
-    cout << totalPlanningTime << endl;
 
     // Releasing memory
-    for (auto reduction : reductions)
-        delete reduction;
     reducedModel->cleanup();
     delete reducedModel;
     delete problem;

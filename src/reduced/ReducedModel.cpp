@@ -16,7 +16,7 @@ namespace mlreduced
 {
 
 std::list<Successor>
-ReducedModel::transition(State* s, Action *a)
+ReducedModel::transition(State* s, Action* a)
 {
     ReducedState* rs = static_cast<ReducedState*>(s);
     std::vector<bool> primaryIndicators;
@@ -123,7 +123,7 @@ double ReducedModel::evaluateMarkovChain(ReducedModel* reducedModel)
             }
 
             assert(currentState->bestAction() != nullptr);
-            Action *a = currentState->bestAction();
+            Action* a = currentState->bestAction();
             double previousCost = s->cost();
             double currentCost = 0.0;
             for (Successor successor : markovChain->transition(s, a)) {
@@ -144,7 +144,7 @@ double ReducedModel::evaluateMarkovChain(ReducedModel* reducedModel)
 
 
 ReducedTransition* ReducedModel::getBestReduction(
-    Problem *originalProblem,
+    Problem* originalProblem,
     std::list<ReducedTransition*> reducedTransitions,
     int k,
     ReducedHeuristicWrapper* heuristic)
@@ -184,9 +184,7 @@ double ReducedModel::evaluateMonteCarlo(int numTrials)
 std::pair<double, double> ReducedModel::trial(
     mlsolvers::Solver & solver, WrapperProblem* wrapperProblem)
 {
-                                                                                static int countGoals = 0;
     assert(wrapperProblem->problem() == this);
-
 
     double cost = 0.0;
     double totalPlanningTime = 0.0;
@@ -202,20 +200,13 @@ std::pair<double, double> ReducedModel::trial(
     // accordingly.
     ReducedState* auxState = new ReducedState(*currentState);
 
+                                                                                mlcore::State* foo = currentState->originalState();
+
     bool resetExceptionCounter = false;
     while (true) {
         Action* bestAction = currentState->bestAction();
         cost += this->cost(currentState, bestAction);
         int exceptionCount = currentState->exceptionCount();
-                                                                                mdplib_debug = false;
-                                                                                dprint2("CURRENT", currentState);
-                                                                                if (currentState->bestAction() != nullptr) {
-                                                                                    dprint1(currentState->bestAction());
-                                                                                    for (auto const & xxx : wrapperProblem->transition(currentState, currentState->bestAction())) {
-                                                                                        dprint2("    ", xxx.su_state);
-                                                                                    }
-                                                                                }
-                                                                                mdplib_debug = false;
 
         if (cost >= mdplib::dead_end_cost)
             break;
@@ -235,6 +226,8 @@ std::pair<double, double> ReducedModel::trial(
             mlsolvers::randomSuccessor(this, auxState, bestAction));
         auxState->originalState(nextState->originalState());
         auxState->exceptionCount(nextState->exceptionCount());
+                                                                                mlcore::State* bar = nextState->originalState();
+                                                                                isException(foo, bar, bestAction);
 
         // Adjusting the result to the current exception count.
         if (resetExceptionCounter) {
@@ -257,11 +250,6 @@ std::pair<double, double> ReducedModel::trial(
         }
 
         if (nextState != nullptr && this->goal(nextState)) {
-                                                                                countGoals++;
-                                                                                mdplib_debug = true;
-                                                                                dprint2("count goals", countGoals);
-                                                                                dprint1("*************************");
-                                                                                mdplib_debug = false;
             break;
         }
 
@@ -269,7 +257,6 @@ std::pair<double, double> ReducedModel::trial(
         // Checking if the state has already been considered during planning.
 
         if (nextState == nullptr || nextState->bestAction() == nullptr) {
-                                                                                dprint1(nextState);
             // State wasn't considered before.
             assert(this->k_ == 0);  // Only determinization should reach here.
             auxState->exceptionCount(0);
@@ -298,7 +285,6 @@ double ReducedModel::triggerReplan(mlsolvers::Solver& solver,
                                     bool proactive,
                                     WrapperProblem* wrapperProblem)
 {
-                                                                                dprint2("TRIGGER", nextState);
     if (this->goal(nextState))
         return 0.0;
     if (proactive) {
@@ -321,7 +307,6 @@ double ReducedModel::triggerReplan(mlsolvers::Solver& solver,
                             originalState(),
                         0,
                         this)));
-                                                                                dprint2("ADDING", reducedSccrState);
             dummySuccessors.push_back(
                 Successor(reducedSccrState, sccr.su_prob));
         }
@@ -336,6 +321,28 @@ double ReducedModel::triggerReplan(mlsolvers::Solver& solver,
         return (double(endTime - startTime) / CLOCKS_PER_SEC);
 
     }
+}
+
+
+bool ReducedModel::isException(
+    mlcore::State* state, mlcore::State* successor, mlcore::Action* action)
+{
+    bool isExcept = false;
+    bool isNotExcept = false;
+    ReducedState* rs = new ReducedState(state, 0, originalProblem_);
+    for (auto const & sccr : this->transition(rs, action)) {
+        ReducedState* reducedSuccessor =
+            static_cast<ReducedState*> (sccr.su_state);
+        if (reducedSuccessor->originalState() == successor) {
+            if (reducedSuccessor->exceptionCount() == 1) {
+                isExcept = true;
+            } else {
+                isNotExcept = true;
+            }
+        }
+    }
+                                                                                assert(!isExcept || !isNotExcept);
+    return isExcept;
 }
 
 } // namespace mlreduced

@@ -1,8 +1,10 @@
 #ifndef MDPLIB_FFREDUCEDMODELSOLVER_H
 #define MDPLIB_FFREDUCEDMODELSOLVER_H
 
+#include <ctime>
 #include <string>
 
+#include "../ppddl/PPDDLProblem.h"
 #include "../ppddl/PPDDLState.h"
 
 #include "../reduced/ReducedModel.h"
@@ -27,6 +29,12 @@ namespace mlsolvers
  * of a PPDDL domain containing the determinization to be used.
  * The planner does not check that this is in fact a determinization
  * of the original problem, this responsibility is left to the user.
+ *
+ * Known issues:
+ *     - (:init ) must be defined in a single line in the PPDDL file.
+ *     - (:goal ) should only contain atoms derived from the set
+ *         given predicates (no goal-rewards, etc.).
+ *
  */
 class FFReducedModelSolver : public Solver
 {
@@ -78,20 +86,36 @@ private:
      */
     bool useFF_;
 
+    /* The initial atoms that are removed during the PPDDL parsing. */
+    std::string removedInitAtoms_;
+
+    /* The total time available for planning (in seconds). */
+    int maxPlanningTime_;
+
+    /* The time at which the solve method was last called. */
+    time_t startingPlanningTime_;
+
     ////////////////////////////////////////////////////////////////////////////
     //                               FUNCTIONS                                //
     ////////////////////////////////////////////////////////////////////////////
 
     /*
-     * Returns a string with the predicates in the given state.
+     * Checks the init state in the problem file and stores the atoms that are
+     * removed by the PPDDL parser. These are the atoms that are not part of
+     * the PPDDL problem object (problem_t type) atom_hash.
+    */
+    void storeRemovedAtoms();
+
+    /*
+     * Returns a string with the atoms in the given state.
      */
-    std::string extractStatePredicates(mlppddl::PPDDLState* state);
+    std::string extractStateAtoms(mlppddl::PPDDLState* state);
 
     /*
      * Replaces the initial state in the problem file with the current state
      * and creates a new file with the new state.
      */
-    void replaceInitStateInProblemFile(std::string currentStatePredicates);
+    void replaceInitStateInProblemFile(std::string atomsCurrentState);
 
     /*
      * Calls the FF planner and gets a cost and action estimate for
@@ -113,7 +137,7 @@ private:
     double qValue_(mlcore::State* s, mlcore::Action* a, int horizon);
 
     /*
-     * Performs a dynamic programmin algorithm (AO*) to find the optimal
+     * Performs a dynamic programming algorithm (AO*) to find the optimal
      * action for the given state and the given horizon. For horizon = 0,
      * this function invokes the FF planner.
      * The return value is the max residual observed while traversing the
@@ -129,6 +153,19 @@ private:
     /* A Bellman update that calls FF on states with maximum exception count. */
     double bellmanUpdate(mlcore::State* s);
 
+    /*
+     * Stores the initial atoms that the PPDDL parser removes from the internal
+     * representation because they can't be changed by actions. We need to
+     * include these in the problem given to FF, otherwise it might not be
+     * able to solve the determinization.
+     */
+    void storeRemovedInitAtoms();
+
+    /*
+     * Returns true if the planning time has run out. If passed and not
+     * nullptr, the parameter stores the time left for planning.
+     */
+    bool planningTimeHasRunOut(time_t* timeLeft = nullptr);
 
 public:
     FFReducedModelSolver(mlcore::Problem* problem,
@@ -137,21 +174,28 @@ public:
                          std::string templateProblemFilename,
                          int maxHorizon,
                          double epsilon = 1.0e-3,
-                         bool useFF = true) :
+                         bool useFF = true,
+                         time_t maxPlanningTime = 3600) :
         problem_(problem),
         ffExecFilename_(ffExecFilename),
         determinizedDomainFilename_(determinizedDomainFilename),
         templateProblemFilename_(templateProblemFilename),
         maxHorizon_(maxHorizon),
         epsilon_(epsilon),
-        useFF_(useFF)
+        useFF_(useFF),
+        maxPlanningTime_(maxPlanningTime)
+
     {
+        // initializing memoization table
         for (int i = 0; i <= maxHorizon_; i++) {
             estimatedCosts_.push_back(mlcore::StateDoubleMap());
         }
+        storeRemovedInitAtoms();
     }
 
     virtual ~FFReducedModelSolver() {}
+
+    void maxPlanningTime(time_t theTime) { maxPlanningTime_ = theTime; }
 
     void maxHorizon(int value) { maxHorizon_ = value; }
 
@@ -161,8 +205,6 @@ public:
      * returns a nullptr.
      */
     virtual mlcore::Action* solve(mlcore::State* s0);
-
-
 };
 
 }

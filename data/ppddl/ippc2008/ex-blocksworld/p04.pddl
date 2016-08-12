@@ -25,7 +25,7 @@
                 (probabilistic 2/5 (when (no-detonated ?b) (and (not (no-destroyed-table)) (not (no-detonated ?b))))))
   )
   (:action put-on-block
-   :parameters (?b1 ?b2 - block)   
+   :parameters (?b1 ?b2 - block)
    ;; Remove (not (= ?b1 ?b2)) from precondition (not in original)
    :precondition (and (holding ?b1) (clear ?b2) (no-destroyed ?b2) (not (= ?b1 ?b2)))
    :effect (and (emptyhand) (on ?b1 ?b2) (not (holding ?b1)) (not (clear ?b2))
@@ -33,11 +33,11 @@
   )
 )
 
-(define (problem ex_bw_6_p03)
+(define (problem p04)
   (:domain exploding-blocksworld)
   (:objects b1 b2 b3 b4 b5 b6 - block)
-  (:init (emptyhand) (on b1 b5) (on b2 b3) (on-table b3) (on-table b4) (on b5 b6) (on b6 b4) (clear b1) (clear b2) (no-detonated b1) (no-destroyed b1) (no-detonated b2) (no-destroyed b2) (no-detonated b3) (no-destroyed b3) (no-detonated b4) (no-destroyed b4) (no-detonated b5) (no-destroyed b5) (no-detonated b6) (no-destroyed b6) (no-destroyed-table))
-  (:goal (and (on b3 b4) (on-table b5) (on-table b6)  )
+  (:init (emptyhand) (on b1 b5) (on b2 b4) (on b3 b1) (on-table b4) (on b5 b2) (on b6 b3) (clear b6) (no-detonated b1) (no-destroyed b1) (no-detonated b2) (no-destroyed b2) (no-detonated b3) (no-destroyed b3) (no-detonated b4) (no-destroyed b4) (no-detonated b5) (no-destroyed b5) (no-detonated b6) (no-destroyed b6) (no-destroyed-table))
+  (:goal (and (on-table b3) (on-table b4) (on b5 b4) (on b6 b3)  )
 )
   (:goal-reward 1)
   (:metric maximize (reward))
