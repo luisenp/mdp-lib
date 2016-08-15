@@ -122,7 +122,8 @@ int main(int argc, char* args[])
     clock_t endTime = clock();
     double timeReductions = double(endTime - startTime) / CLOCKS_PER_SEC;
     totalPlanningTime += timeReductions;
-    cout << "time finding reductions " << wrapperProblem->initialState()->cost() <<
+    cout << "time finding reductions " <<
+        wrapperProblem->initialState()->cost() <<
         " time " << timeReductions << endl;
 
     // Setting up the final reduced model to use

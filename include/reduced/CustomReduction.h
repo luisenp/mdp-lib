@@ -12,10 +12,13 @@ namespace mlreduced
 class CustomReduction : public ReducedTransition
 {
 private:
+    mlcore::Problem* problem_;
+
     std::unordered_map<a, std::vector<bool> > primaryIndicatorsActions;
 
 public:
-    CustomReduction(mlcore::Problem* problem) {
+    CustomReduction(mlcore::Problem* problem) : problem_(problem) {
+
         for (mlcore::Action* action : problem->actions()) {
             primaryIndicatorsActions[action] = vector<bool> ();
         }
@@ -41,7 +44,9 @@ public:
                             mlcore::Action *a,
                             std::vector<bool>& primaryIndicators) const
     {
-        primaryIndicators = primaryIndicatorsActions[a];
+        std::vector<bool>& indicators = primaryIndicatorsActions[a];
+        assert(problem_->transition(s, a).size() == indicators.size());
+        primaryIndicators = indicators;
     }
 };
 
