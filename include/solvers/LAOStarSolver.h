@@ -22,10 +22,13 @@ private:
     mlcore::StateSet visited;
 
     /* Error tolerance */
-    double epsilon_;
+    double epsilon_ = 1.0e-6;
 
     /* Weight for the Bellman backup */
-    double weight_;
+    double weight_ = 1.0;
+
+    /* Time limit for LAO* in milliseconds */
+    int timeLimit_ = 1000000;
 
     /*
      * Expands the BPSG rooted at state s and returns the
@@ -35,9 +38,6 @@ private:
 
     /* Test if the BPSG rooted at state s has converged */
     double testConvergence(mlcore::State* s);
-
-    /* Time limit for LAO* in milliseconds */
-    int timeLimit_;
 
 public:
     /**

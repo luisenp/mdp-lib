@@ -26,14 +26,15 @@ private:
      * Indicates the choice of deterministic outcome
      * (e.g. most-likely, least-likely).
      */
-    int choice_;
+    int choice_ = det_most_likely;
 
     /*
      * The heuristic to use.
      */
-    mlcore::Heuristic* heuristic_;
+    mlcore::Heuristic* heuristic_ = nullptr;
 
-    mlcore::Problem* problem_;
+    /* The problem to solve. */
+    mlcore::Problem* problem_ = nullptr;
 
 public:
 

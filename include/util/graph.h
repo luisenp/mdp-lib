@@ -46,7 +46,7 @@ public:
 
     }
 
-    double weight(int i, int j)
+    double weight(unsigned int i, unsigned int j)
     {
         assert(i >= 0 && i < adjList.size() && j >= 0 && j < adjList.size());
         if (adjList[i].find(j) == adjList[i].end())
@@ -54,13 +54,13 @@ public:
         else return adjList[i][j];
     }
 
-    bool connect(int i, int j, double weight)
+    bool connect(unsigned int i, unsigned int j, double weight)
     {
         assert(i >= 0 && i < adjList.size() && j >= 0 && j < adjList.size());
         adjList[i][j] = weight;
     }
 
-    std::unordered_map<int, double>& neighbors(int i)
+    std::unordered_map<int, double>& neighbors(unsigned int i)
     {
         assert(i >= 0 && i < adjList.size());
         return adjList[i];

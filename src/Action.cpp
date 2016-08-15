@@ -5,6 +5,6 @@ namespace mlcore
 {
     std::ostream& operator<<(std::ostream& os, Action* a)
     {
-        a->print(os);
+        return a->print(os);
     }
 }

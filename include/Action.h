@@ -14,6 +14,8 @@ protected:
     virtual std::ostream& print(std::ostream& os) const =0;
 
 public:
+    virtual ~Action() {}
+
     /**
      * Returns a hash value for the action.
      *

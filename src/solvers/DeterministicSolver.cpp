@@ -13,7 +13,7 @@ mlcore::Action* DeterministicSolver::solve(mlcore::State* s0)
     frontier.push(init);
     std::list<Node*> allNodes;  // for memory clean-up later
     allNodes.push_back(init);
-    Node* final;
+    Node* final = nullptr;
     while (!frontier.empty()) {
         Node* node = frontier.top();
         frontier.pop();
@@ -31,7 +31,7 @@ mlcore::Action* DeterministicSolver::solve(mlcore::State* s0)
             if (!problem_->applicable(node->state(), a))
                 continue;
 
-            mlcore::State* nextState;
+            mlcore::State* nextState = nullptr;
             if (choice_ == det_most_likely)
                 nextState = mostLikelyOutcome(problem_, node->state(), a);
 
@@ -43,7 +43,7 @@ mlcore::Action* DeterministicSolver::solve(mlcore::State* s0)
         }
     }
 
-    mlcore::Action* optimal;
+    mlcore::Action* optimal = nullptr;
     while (final->parent() != nullptr) {
         optimal = final->action();
         final = final->parent();
