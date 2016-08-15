@@ -76,66 +76,6 @@ void initRacetrack(string trackName, int mds)
 }
 
 
-/*
- * Parses the given PPDDL file, and returns true on success.
- */
-static bool read_file( const char* ppddlFileName )
-{
-    yyin = fopen( ppddlFileName, "r" );
-    if( yyin == NULL ) {
-        cout << "parser:" << ppddlFileName <<
-            ": " << strerror( errno ) << endl;
-        return( false );
-    }
-    else {
-        current_file = ppddlFileName;
-        bool success;
-        try {
-            success = (yyparse() == 0);
-        }
-        catch( Exception exception ) {
-            fclose( yyin );
-            cout << exception << endl;
-            return( false );
-        }
-        fclose( yyin );
-        return( success );
-    }
-}
-
-
-bool initPPDDL(string ppddlArgs)
-{
-    size_t pos_equals = ppddlArgs.find(":");
-    assert(pos_equals != string::npos);
-    string file = ppddlArgs.substr(0, pos_equals);
-    string prob =
-        ppddlArgs.substr(pos_equals + 1, ppddlArgs.size() - pos_equals);
-
-    pair<state_t *,Rational> *initial = nullptr;
-
-    if( !read_file( file.c_str() ) ) {
-        cerr << "<main>: ERROR: couldn't read problem file `" << file << endl;
-        return false;
-    }
-    problem_t* internalPPDDLProblem =
-        (problem_t *)(problem_t::find(prob.c_str()));
-    if( !internalPPDDLProblem ) {
-        cerr << "<main>: ERROR: problem `" << prob <<
-            "' is not defined in file '" << file << "'" << endl;
-        return false;
-    }
-
-    problem = new PPDDLProblem(internalPPDDLProblem);
-    heuristic = new mlppddl::PPDDLHeuristic(static_cast<PPDDLProblem*>(problem),
-                                            mlppddl::FF);
-//                                            mlppddl::atomMin1Forward);
-    problem->setHeuristic(heuristic);
-    reductions.push_back(new LeastLikelyOutcomeReduction(problem));
-    reductions.push_back(new MostLikelyOutcomeReduction(problem));
-}
-
-
 int main(int argc, char* args[])
 {
     register_flags(argc, args);
@@ -161,19 +101,31 @@ int main(int argc, char* args[])
             mds = stoi(flag_value("mds"));
         string trackName = flag_value("problem");
         initRacetrack(trackName, mds);
-    } else if (domainName == "ppddl") {
-        string ppddlArgs = flag_value("problem");
-        initPPDDL(ppddlArgs);
     }
 
     bool useFullTransition = flag_is_registered("use_full");
 
-    double totalReductionTime = 0.0;
     ReducedTransition* bestReduction = nullptr;
     bestReduction = reductions.front();
     wrapperProblem = new WrapperProblem(problem);
-//    mlcore::StateSet reachableStates, tipStates;
 
+    // Finding the best reduction using Monte Carlo simulations
+    double totalPlanningTime = 0.0;
+    mlcore::StateSet reachableStates, tipStates;
+    getReachableStates(problem, reachableStates, tipStates, 2);
+    clock_t startTime = clock();
+    for (auto const & reduction : reductions) {
+        reducedModel = new ReducedModel(wrapperProblem, reduction, k);
+        double result = reducedModel->evaluateMonteCarlo(50);
+        cout << result << endl;
+    }
+    clock_t endTime = clock();
+    double timeReductions = double(endTime - startTime) / CLOCKS_PER_SEC;
+    totalPlanningTime += timeReductions;
+    cout << "time finding reductions " << wrapperProblem->initialState()->cost() <<
+        " time " << timeReductions << endl;
+
+    // Setting up the final reduced model to use
     reducedModel = new ReducedModel(problem, bestReduction, k);
     reducedHeuristic = new ReducedHeuristicWrapper(heuristic);
     reducedModel->setHeuristic(reducedHeuristic);
@@ -182,18 +134,18 @@ int main(int argc, char* args[])
 
     // We will now use the wrapper for the pro-active re-planning approach. It
     // will allow us to plan in advance for the set of successors of a
-    // state-action.
+    // state-action
     wrapperProblem->setNewProblem(reducedModel);
 
     // Solving reduced model using LAO*
-    double totalPlanningTime = 0.0;
-    clock_t startTime = clock();
+    startTime = clock();
     LAOStarSolver solver(wrapperProblem);
     solver.solve(wrapperProblem->initialState());
-    clock_t endTime = clock();
-    totalPlanningTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
+    endTime = clock();
+    double timeInitialPlan = (double(endTime - startTime) / CLOCKS_PER_SEC);
+    totalPlanningTime += timeInitialPlan;
     cout << "cost " << wrapperProblem->initialState()->cost() <<
-        " time " << totalPlanningTime << endl;
+        " time " << timeInitialPlan << endl;
 
 
     // Running a trial of the continual planning approach.
@@ -205,7 +157,7 @@ int main(int argc, char* args[])
         expectedCost += costAndTime.first;
     }
     cout << expectedCost / nsims << endl;
-    cout << totalPlanningTime + totalReductionTime << endl;
+    cout << totalPlanningTime << endl;
 
     // Releasing memory
     for (auto reduction : reductions)

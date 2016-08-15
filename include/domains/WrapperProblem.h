@@ -133,7 +133,11 @@ public:
      * @param overrideGoal The goal to add.
      */
     void addOverrideGoal(mlcore::State* overrideGoal)
-        { overrideGoals_->insert(overrideGoal); }
+    {
+        if (overrideGoals_ == nullptr)
+            overrideGoals_ = new mlcore::StateSet();
+        overrideGoals_->insert(overrideGoal);
+    }
 
     /**
      * Clears the set of override goals.

@@ -171,9 +171,13 @@ double ReducedModel::evaluateMonteCarlo(int numTrials)
 {
     WrapperProblem wrapper(this);
     mlsolvers::LAOStarSolver solver(static_cast<Problem*>(&wrapper));
+                                                                                dprint1("solving");
     solver.solve(wrapper.initialState());
+                                                                                dprint1("solved");
     double expectedCost = 0.0;
     for (int i = 0; i < numTrials; i++) {
+                                                                                if (i % 100 == 0)
+                                                                                    dprint1(i);
         expectedCost += trial(solver, &wrapper).first;
     }
     wrapper.cleanup();
@@ -199,9 +203,6 @@ std::pair<double, double> ReducedModel::trial(
     // making it a copy of the current state and adjusting the exception counter
     // accordingly.
     ReducedState* auxState = new ReducedState(*currentState);
-
-                                                                                mlcore::State* foo = currentState->originalState();
-
     bool resetExceptionCounter = false;
     while (true) {
         Action* bestAction = currentState->bestAction();
@@ -226,8 +227,6 @@ std::pair<double, double> ReducedModel::trial(
             mlsolvers::randomSuccessor(this, auxState, bestAction));
         auxState->originalState(nextState->originalState());
         auxState->exceptionCount(nextState->exceptionCount());
-                                                                                mlcore::State* bar = nextState->originalState();
-                                                                                isException(foo, bar, bestAction);
 
         // Adjusting the result to the current exception count.
         if (resetExceptionCounter) {
@@ -255,7 +254,6 @@ std::pair<double, double> ReducedModel::trial(
 
         // Re-planning
         // Checking if the state has already been considered during planning.
-
         if (nextState == nullptr || nextState->bestAction() == nullptr) {
             // State wasn't considered before.
             assert(this->k_ == 0);  // Only determinization should reach here.
@@ -341,7 +339,6 @@ bool ReducedModel::isException(
             }
         }
     }
-                                                                                assert(!isExcept || !isNotExcept);
     return isExcept;
 }
 
