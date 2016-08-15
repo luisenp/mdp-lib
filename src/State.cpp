@@ -9,7 +9,7 @@ namespace mlcore
 {
     std::ostream& operator<<(std::ostream& os, State* s)
     {
-        s->print(os);
+        return s->print(os);
     }
 
     double State::cost() const
