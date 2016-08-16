@@ -18,6 +18,7 @@
 #include "../../include/ppddl/PPDDLHeuristic.h"
 #include "../../include/ppddl/PPDDLProblem.h"
 
+#include "../../include/reduced/CustomReduction.h"
 #include "../../include/reduced/LeastLikelyOutcomeReduction.h"
 #include "../../include/reduced/MostLikelyOutcomeReduction.h"
 #include "../../include/reduced/RacetrackObviousReduction.h"
@@ -57,6 +58,32 @@ ReducedModel* reducedModel = nullptr;
 ReducedHeuristicWrapper* reducedHeuristic = nullptr;
 WrapperProblem* wrapperProblem = nullptr;
 list<ReducedTransition *> reductions;
+
+
+void createCustomRacetrackReductions(RacetrackProblem* rtp)
+{
+    CustomReduction* customReduction = new CustomReduction(rtp);
+    vector<bool> primaryIndicators;
+    bool first = true;
+    for (mlcore::Action* a : rtp->actions()) {
+        // Setting primary outcomes for initial state
+        if (first) {
+            // All action work the same for this state, choose the first
+            for (auto const & successor :
+                 rtp->transition(rtp->initialState(), a))
+                primaryIndicators.push_back(true);
+            customReduction->setPrimaryForState(
+                rtp->initialState(), primaryIndicators);
+            first = false;
+        }
+        primaryIndicators.clear();
+        RacetrackAction* rta = static_cast<RacetrackAction*> (a);
+        int numSuccessors = rtp->numSuccessorsAction(rta);
+        for (int i = 0; i < numSuccessors; i++)
+            primaryIndicators.push_back(true);
+        customReduction->setPrimaryForAction(a, primaryIndicators);
+    }
+}
 
 
 void initRacetrack(string trackName, int mds)
