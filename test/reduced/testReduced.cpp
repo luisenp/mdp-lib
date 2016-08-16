@@ -60,7 +60,7 @@ WrapperProblem* wrapperProblem = nullptr;
 list<ReducedTransition *> reductions;
 
 
-void createCustomRacetrackReductions(RacetrackProblem* rtp)
+void createCustomRacetrackReductionTemplate(RacetrackProblem* rtp)
 {
     CustomReduction* customReduction = new CustomReduction(rtp);
     vector<bool> primaryIndicators;
@@ -70,8 +70,9 @@ void createCustomRacetrackReductions(RacetrackProblem* rtp)
         if (first) {
             // All action work the same for this state, choose the first
             for (auto const & successor :
-                 rtp->transition(rtp->initialState(), a))
+                 rtp->transition(rtp->initialState(), a)) {
                 primaryIndicators.push_back(true);
+            }
             customReduction->setPrimaryForState(
                 rtp->initialState(), primaryIndicators);
             first = false;
@@ -83,6 +84,8 @@ void createCustomRacetrackReductions(RacetrackProblem* rtp)
             primaryIndicators.push_back(true);
         customReduction->setPrimaryForAction(a, primaryIndicators);
     }
+    reductions.push_back(customReduction);
+    dprint1("done");
 }
 
 
@@ -93,13 +96,16 @@ void initRacetrack(string trackName, int mds)
     static_cast<RacetrackProblem*>(problem)->pSlip(0.10);
     static_cast<RacetrackProblem*>(problem)->mds(mds);
     heuristic = new RTrackDetHeuristic(trackName.c_str());
+    static_cast<RacetrackProblem*>(problem)->useFlatTransition(true);
     problem->generateAll();
     if (verbosity > 100)
         cout << "Generated " << problem->states().size() << " states." << endl;
 
-    reductions.push_back(
-        new RacetrackObviousReduction(static_cast<RacetrackProblem*>(problem)));
+//    reductions.push_back(
+//        new RacetrackObviousReduction(static_cast<RacetrackProblem*>(problem)));
     reductions.push_back(new LeastLikelyOutcomeReduction(problem));
+//    createCustomRacetrackReductionTemplate(
+//        static_cast<RacetrackProblem*> (problem));
 }
 
 

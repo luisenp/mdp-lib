@@ -270,7 +270,8 @@ RacetrackProblem::flatTransition(mlcore::State* s, mlcore::Action* a)
         std::list<mlcore::Successor> successors;
         for (int i = 0; i < numSuccessors; i++)
             successors.push_back(
-                mlcore::Successor(this->addState(absorbing_), 1.0));
+                mlcore::Successor(this->addState(absorbing_),
+                                  1.0 / numSuccessors));
         return successors;
     }
 
@@ -290,7 +291,7 @@ RacetrackProblem::flatTransition(mlcore::State* s, mlcore::Action* a)
           this->addState(new RacetrackState(x + ax, y + ay, ax, ay, this));
         for (int i = 0; i < numSuccessors; i++)
             allSuccessors->at(idAction).
-                push_back(mlcore::Successor(next, 1.0));
+                push_back(mlcore::Successor(next, 1.0 / numSuccessors));
         return allSuccessors->at(idAction);
     }
 
@@ -325,7 +326,6 @@ RacetrackProblem::flatTransition(mlcore::State* s, mlcore::Action* a)
             push_back(mlcore::Successor(next, p_err / (numSuccessors - 2)));
         acc += p_err / (numSuccessors - 2);
     }
-
     assert(fabs(acc - 1.0) < 1.0e-6);
 
     return allSuccessors->at(idAction);

@@ -12,6 +12,7 @@
 namespace mlreduced
 {
 
+// Note: This works with the non-flat representation of the transition function
 class RacetrackObviousReduction : public ReducedTransition
 {
 private:

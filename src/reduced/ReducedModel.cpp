@@ -31,7 +31,7 @@ ReducedModel::transition(State* s, Action* a)
     int i = 0;
     for (Successor const & origSucc : originalSuccessors) {
         State* next = nullptr;
-        bool isPrimaryOutcome = useFullTransition_ || primaryIndicators[i];
+        bool isPrimaryOutcome = useFullTransition_ || primaryIndicators.at(i);
         if (useContPlanEvaluationTransition_) {
             int add = isPrimaryOutcome && rs->exceptionCount() != k_ ? 0 : 1;
             next = addState(
@@ -239,6 +239,7 @@ std::pair<double, double> ReducedModel::trial(
             else
                 auxState->exceptionCount(exceptionCount + 1);
         }
+
         nextState =
             static_cast<ReducedState*>(this->getState(auxState));
 
@@ -285,6 +286,7 @@ double ReducedModel::triggerReplan(mlsolvers::Solver& solver,
 {
     if (this->goal(nextState))
         return 0.0;
+
     if (proactive) {
         Action* bestAction = nextState->bestAction();
         // This action can't be null because we are planning pro-actively.

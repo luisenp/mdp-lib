@@ -71,8 +71,11 @@ public:
                             mlcore::Action *a,
                             std::vector<bool>& primaryIndicators) const
     {
-        const std::vector<bool>& indicators = primaryIndicatorsStates.count(s) ?
-            primaryIndicatorsStates.at(s) : primaryIndicatorsActions.at(a);
+        if (primaryIndicatorsStates.count(s)) {
+            primaryIndicators = primaryIndicatorsStates.at(s);
+            return;
+        }
+        const std::vector<bool>& indicators = primaryIndicatorsActions.at(a);
         assert(problem_->transition(s, a).size() == indicators.size());
         primaryIndicators = indicators;
     }
