@@ -4,6 +4,8 @@
 #include <sstream>
 #include <string>
 #include <typeinfo>
+#include <vector>
+#include <unordered_map>
 
 #include "../../include/domains/racetrack/RacetrackProblem.h"
 #include "../../include/domains/racetrack/RTrackDetHeuristic.h"
@@ -57,12 +59,59 @@ mlcore::Heuristic* heuristic = nullptr;
 ReducedModel* reducedModel = nullptr;
 ReducedHeuristicWrapper* reducedHeuristic = nullptr;
 WrapperProblem* wrapperProblem = nullptr;
+CustomReduction* bestReductionGreedy = nullptr;
 list<ReducedTransition *> reductions;
 
 
-void createCustomRacetrackReductionTemplate(RacetrackProblem* rtp)
+// Finds the best reduction on the given problem using the greedy approach
+// described in http://anytime.cs.umass.edu/shlomo/papers/PZicaps14.pdf
+void findBestReductionGreedy(mlcore::Problem* problem, int k)
 {
-    CustomReduction* customReduction = new CustomReduction(rtp);
+    // Evaluating expected cost of full reduction
+    reducedModel = new ReducedModel(problem, bestReductionGreedy, k);
+    double result = ReducedModel::evaluateMarkovChain(reducedModel);
+    for (int i = 0; i < 10; i++) {
+        double bestResult = mdplib::dead_end_cost + 1;
+        mlcore::Action* bestAction = nullptr;
+        int bestOutcomeIndex = -1;
+        for (pair< mlcore::Action*, vector <bool> > entry
+                : bestReductionGreedy->primaryIndicatorsActions()) {
+                                                                                    dprint1(entry.first);
+            for (unsigned int i = 0; i < entry.second.size(); i++) {
+                if (entry.second[i]) {
+                    CustomReduction* testReduction =
+                        new CustomReduction(bestReductionGreedy);
+                                                                                    cerr << i << " ";
+
+                    unordered_map< mlcore::Action*, vector<bool> > &
+                        primaryIndicatorsActions =
+                            testReduction->primaryIndicatorsActions();
+                    primaryIndicatorsActions[entry.first][i] = false;
+                    reducedModel = new ReducedModel(problem, testReduction, k);
+    //                result = reducedModel->evaluateMonteCarlo(20);
+                    result = ReducedModel::evaluateMarkovChain(reducedModel);
+                    cout << result << endl;
+                    if (result < bestResult) {
+                        bestAction = entry.first;
+                        bestOutcomeIndex = i;
+                        bestResult = result;
+                    }
+                    primaryIndicatorsActions[entry.first][i] = true;
+                }
+            }
+        }
+                                                                                dprint1(bestReductionGreedy->primaryIndicatorsActions()[bestAction][bestOutcomeIndex]);
+        bestReductionGreedy->
+        primaryIndicatorsActions()[bestAction][bestOutcomeIndex] = false;
+                                                                                dprint1(bestReductionGreedy->primaryIndicatorsActions()[bestAction][bestOutcomeIndex]);
+                                                                                dprint1("*************");
+    }
+}
+
+
+void createRacetrackReductionsTemplate(RacetrackProblem* rtp)
+{
+    CustomReduction* reductionsTemplate = new CustomReduction(rtp);
     vector<bool> primaryIndicators;
     bool first = true;
     for (mlcore::Action* a : rtp->actions()) {
@@ -73,7 +122,7 @@ void createCustomRacetrackReductionTemplate(RacetrackProblem* rtp)
                  rtp->transition(rtp->initialState(), a)) {
                 primaryIndicators.push_back(true);
             }
-            customReduction->setPrimaryForState(
+            reductionsTemplate->setPrimaryForState(
                 rtp->initialState(), primaryIndicators);
             first = false;
         }
@@ -82,10 +131,10 @@ void createCustomRacetrackReductionTemplate(RacetrackProblem* rtp)
         int numSuccessors = rtp->numSuccessorsAction(rta);
         for (int i = 0; i < numSuccessors; i++)
             primaryIndicators.push_back(true);
-        customReduction->setPrimaryForAction(a, primaryIndicators);
+        reductionsTemplate->setPrimaryForAction(a, primaryIndicators);
     }
-    reductions.push_back(customReduction);
-    dprint1("done");
+    reductions.push_back(reductionsTemplate);
+    bestReductionGreedy = reductionsTemplate;
 }
 
 
@@ -100,12 +149,8 @@ void initRacetrack(string trackName, int mds)
     problem->generateAll();
     if (verbosity > 100)
         cout << "Generated " << problem->states().size() << " states." << endl;
-
-//    reductions.push_back(
-//        new RacetrackObviousReduction(static_cast<RacetrackProblem*>(problem)));
     reductions.push_back(new LeastLikelyOutcomeReduction(problem));
-//    createCustomRacetrackReductionTemplate(
-//        static_cast<RacetrackProblem*> (problem));
+    createRacetrackReductionsTemplate(static_cast<RacetrackProblem*> (problem));
 }
 
 
@@ -145,11 +190,15 @@ int main(int argc, char* args[])
     // Finding the best reduction using Monte Carlo simulations
     double totalPlanningTime = 0.0;
     mlcore::StateSet reachableStates, tipStates;
-    getReachableStates(problem, reachableStates, tipStates, 2);
+    getReachableStates(problem, reachableStates, tipStates, 4);
+    wrapperProblem->overrideGoals(&tipStates);
+    cout << "reachable/tip states: " << reachableStates.size() <<
+        "/" << tipStates.size() << endl;
     clock_t startTime = clock();
+    findBestReductionGreedy(wrapperProblem, k);
     for (auto const & reduction : reductions) {
         reducedModel = new ReducedModel(wrapperProblem, reduction, k);
-        double result = reducedModel->evaluateMonteCarlo(50);
+        double result = reducedModel->evaluateMonteCarlo(20);
         cout << result << endl;
     }
     clock_t endTime = clock();
@@ -169,6 +218,7 @@ int main(int argc, char* args[])
     // We will now use the wrapper for the pro-active re-planning approach. It
     // will allow us to plan in advance for the set of successors of a
     // state-action
+    wrapperProblem->clearOverrideGoals();
     wrapperProblem->setNewProblem(reducedModel);
 
     // Solving reduced model using LAO*

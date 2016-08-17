@@ -28,20 +28,39 @@ private:
     mlcore::Problem* problem_;
 
     std::unordered_map< mlcore::Action*, std::vector<bool> >
-    primaryIndicatorsActions;
+    primaryIndicatorsActions_;
 
     std::unordered_map< mlcore::State*, std::vector<bool> >
-    primaryIndicatorsStates;
+    primaryIndicatorStates_;
 
 public:
     CustomReduction(mlcore::Problem* problem) : problem_(problem) {
 
         for (mlcore::Action* action : problem->actions()) {
-            primaryIndicatorsActions[action] = std::vector<bool> ();
+            primaryIndicatorsActions_[action] = std::vector<bool> ();
+        }
+    }
+
+    CustomReduction(CustomReduction* reduction)
+    {
+        problem_ = reduction->problem_;
+        for (std::pair< mlcore::Action*, std::vector<bool> > entry :
+                reduction->primaryIndicatorsActions_) {
+            primaryIndicatorsActions_[entry.first] = entry.second;
+        }
+        for (std::pair< mlcore::State*, std::vector<bool> > entry :
+                reduction->primaryIndicatorStates_) {
+            primaryIndicatorStates_[entry.first] = entry.second;
         }
     }
 
     virtual ~CustomReduction() {}
+
+    std::unordered_map< mlcore::Action*, std::vector<bool> > &
+    primaryIndicatorsActions()
+    {
+        return primaryIndicatorsActions_;
+    }
 
     /**
      * Sets the primary outcomes indicators for the given action according to
@@ -50,8 +69,8 @@ public:
     virtual void setPrimaryForAction(mlcore::Action* a,
                                      std::vector<bool> primaryIndicators)
     {
-        assert(primaryIndicatorsActions.count(a) > 0);
-        primaryIndicatorsActions[a] = primaryIndicators;
+        assert(primaryIndicatorsActions_.count(a) > 0);
+        primaryIndicatorsActions_[a] = primaryIndicators;
     }
 
     /**
@@ -61,7 +80,7 @@ public:
     virtual void setPrimaryForState(mlcore::State* s,
                                     std::vector<bool> primaryIndicators)
     {
-        primaryIndicatorsStates[s] = primaryIndicators;
+        primaryIndicatorStates_[s] = primaryIndicators;
     }
 
     /**
@@ -71,11 +90,13 @@ public:
                             mlcore::Action *a,
                             std::vector<bool>& primaryIndicators) const
     {
-        if (primaryIndicatorsStates.count(s)) {
-            primaryIndicators = primaryIndicatorsStates.at(s);
+        if (primaryIndicatorStates_.count(s)) {
+            primaryIndicators = primaryIndicatorStates_.at(s);
             return;
         }
-        const std::vector<bool>& indicators = primaryIndicatorsActions.at(a);
+        if (!problem_->applicable(s, a))
+            return;
+        const std::vector<bool>& indicators = primaryIndicatorsActions_.at(a);
         assert(problem_->transition(s, a).size() == indicators.size());
         primaryIndicators = indicators;
     }

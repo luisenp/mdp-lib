@@ -31,7 +31,9 @@ ReducedModel::transition(State* s, Action* a)
     int i = 0;
     for (Successor const & origSucc : originalSuccessors) {
         State* next = nullptr;
-        bool isPrimaryOutcome = useFullTransition_ || primaryIndicators.at(i);
+        bool isPrimaryOutcome =
+            useFullTransition_ || primaryIndicators.empty() ||
+            primaryIndicators.at(i);
         if (useContPlanEvaluationTransition_) {
             int add = isPrimaryOutcome && rs->exceptionCount() != k_ ? 0 : 1;
             next = addState(
@@ -171,13 +173,9 @@ double ReducedModel::evaluateMonteCarlo(int numTrials)
 {
     WrapperProblem wrapper(this);
     mlsolvers::LAOStarSolver solver(static_cast<Problem*>(&wrapper));
-                                                                                dprint1("solving");
     solver.solve(wrapper.initialState());
-                                                                                dprint1("solved");
     double expectedCost = 0.0;
     for (int i = 0; i < numTrials; i++) {
-                                                                                if (i % 100 == 0)
-                                                                                    dprint1(i);
         expectedCost += trial(solver, &wrapper).first;
     }
     wrapper.cleanup();
@@ -265,7 +263,7 @@ std::pair<double, double> ReducedModel::trial(
                 triggerReplan(solver, nextState, false, wrapperProblem);
             assert(nextState != nullptr);
         } else if (!this->useFullTransition_) {
-            if (nextState->exceptionCount() == this->k_) {
+            if (this->k_ != 0 && nextState->exceptionCount() == this->k_) {
                 totalPlanningTime +=
                     triggerReplan(solver, nextState, true, wrapperProblem);
                 resetExceptionCounter = true;
