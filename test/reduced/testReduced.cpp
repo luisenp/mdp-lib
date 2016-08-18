@@ -63,47 +63,68 @@ CustomReduction* bestReductionGreedy = nullptr;
 list<ReducedTransition *> reductions;
 
 
-// Finds the best reduction on the given problem using the greedy approach
-// described in http://anytime.cs.umass.edu/shlomo/papers/PZicaps14.pdf
-void findBestReductionGreedy(mlcore::Problem* problem, int k)
+/*
+ * Finds the best reduction on the given problem using the greedy approach
+ * described in http://anytime.cs.umass.edu/shlomo/papers/PZicaps14.pdf
+ *
+ * This methods receives a vector<vector<mlcore::Action> parameter that
+ * allows for the same reduction to be applied to multiple actions at the
+ * same time. This is useful if the actions are symmetric, for example.
+ */
+void findBestReductionGreedy(mlcore::Problem* problem,
+                             vector<vector<mlcore::Action*> > & actionGroups,
+                             int k)
 {
     // Evaluating expected cost of full reduction
     reducedModel = new ReducedModel(problem, bestReductionGreedy, k);
     double result = ReducedModel::evaluateMarkovChain(reducedModel);
     for (int i = 0; i < 10; i++) {
         double bestResult = mdplib::dead_end_cost + 1;
-        mlcore::Action* bestAction = nullptr;
+        int bestGroup = -1;
         int bestOutcomeIndex = -1;
-        for (pair< mlcore::Action*, vector <bool> > entry
-                : bestReductionGreedy->primaryIndicatorsActions()) {
-                                                                                    dprint1(entry.first);
-            for (unsigned int i = 0; i < entry.second.size(); i++) {
-                if (entry.second[i]) {
-                    CustomReduction* testReduction =
-                        new CustomReduction(bestReductionGreedy);
-                                                                                    cerr << i << " ";
-
-                    unordered_map< mlcore::Action*, vector<bool> > &
-                        primaryIndicatorsActions =
-                            testReduction->primaryIndicatorsActions();
-                    primaryIndicatorsActions[entry.first][i] = false;
-                    reducedModel = new ReducedModel(problem, testReduction, k);
-    //                result = reducedModel->evaluateMonteCarlo(20);
-                    result = ReducedModel::evaluateMarkovChain(reducedModel);
-                    cout << result << endl;
-                    if (result < bestResult) {
-                        bestAction = entry.first;
-                        bestOutcomeIndex = i;
-                        bestResult = result;
-                    }
-                    primaryIndicatorsActions[entry.first][i] = true;
+        unordered_map< mlcore::Action*, vector <bool> > &
+            primaryIndicatorsActions =
+                bestReductionGreedy->primaryIndicatorsActions();
+        for (unsigned int groupIndex = 0; groupIndex < actionGroups.size();
+             groupIndex++) {
+            vector<mlcore::Action*> & actionGroup = actionGroups[groupIndex];
+            // Testing a new reduced model for each outcome of the actions in
+            // this group. We use actionGroup[0] to get the number of outcomes,
+            // because all actions in the same group should have the same
+            // number of outcomes
+            for (unsigned int outcomeIdx = 0;
+                 outcomeIdx < primaryIndicatorsActions[actionGroup[0]].size();
+                 outcomeIdx++) {
+                // The greedy method works by removing outcomes. If it is
+                // already removed, there is nothing to do
+                if (!primaryIndicatorsActions[actionGroup[0]][outcomeIdx])
+                    continue;
+                CustomReduction* testReduction =
+                    new CustomReduction(bestReductionGreedy);
+                unordered_map< mlcore::Action*, vector<bool> > &
+                    testPrimaryIndicatorsActions =
+                        testReduction->primaryIndicatorsActions();
+                // Remove this outcome from the set of primary outcomes for
+                // all actions in the group
+                for (mlcore::Action* a : actionGroup)
+                    testPrimaryIndicatorsActions[a][outcomeIdx] = false;
+                reducedModel = new ReducedModel(problem, testReduction, k);
+                result = ReducedModel::evaluateMarkovChain(reducedModel);
+                cout << result << endl;
+                if (result < bestResult) {
+                    bestGroup = groupIndex;
+                    bestOutcomeIndex = outcomeIdx;
+                    bestResult = result;
                 }
+                // Set the outcome back to true to try a new model
+                for (mlcore::Action* a : actionGroup)
+                    testPrimaryIndicatorsActions[a][outcomeIdx] = false;
             }
         }
-                                                                                dprint1(bestReductionGreedy->primaryIndicatorsActions()[bestAction][bestOutcomeIndex]);
-        bestReductionGreedy->
-        primaryIndicatorsActions()[bestAction][bestOutcomeIndex] = false;
-                                                                                dprint1(bestReductionGreedy->primaryIndicatorsActions()[bestAction][bestOutcomeIndex]);
+        for (mlcore::Action* a : actionGroups[bestGroup]) {
+            bestReductionGreedy->
+                primaryIndicatorsActions()[a][bestOutcomeIndex] = false;
+        }
                                                                                 dprint1("*************");
     }
 }
@@ -173,12 +194,19 @@ int main(int argc, char* args[])
         k = stoi(flag_value("k"));
 
     // Creating problem
+    vector< vector<mlcore::Action*> >
+    actionGroups(3, vector<mlcore::Action*> ());
     if (domainName == "racetrack") {
         int mds = -1;
         if (flag_is_registered_with_value("mds"))
             mds = stoi(flag_value("mds"));
         string trackName = flag_value("problem");
         initRacetrack(trackName, mds);
+        for (mlcore::Action* a : problem->actions()) {
+            RacetrackAction* rta = static_cast<RacetrackAction*> (a);
+            int magnitude = abs(rta->ax()) + abs(rta->ay());
+            actionGroups[magnitude].push_back(a);
+        }
     }
 
     bool useFullTransition = flag_is_registered("use_full");
@@ -195,7 +223,7 @@ int main(int argc, char* args[])
     cout << "reachable/tip states: " << reachableStates.size() <<
         "/" << tipStates.size() << endl;
     clock_t startTime = clock();
-    findBestReductionGreedy(wrapperProblem, k);
+    findBestReductionGreedy(wrapperProblem, actionGroups, k);
     for (auto const & reduction : reductions) {
         reducedModel = new ReducedModel(wrapperProblem, reduction, k);
         double result = reducedModel->evaluateMonteCarlo(20);
