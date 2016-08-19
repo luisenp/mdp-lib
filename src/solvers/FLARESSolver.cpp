@@ -25,18 +25,20 @@ void FLARESSolver::trial(State* s)
 {
     State* currentState = s;
     list<State*> visited;
+    int depth = 0;
     while (!labeledSolved(currentState)) {
         if (problem_->goal(currentState))
             break;
 
         visited.push_front(currentState);
+        depth++;
                                                                                 double res = residual(problem_, currentState);
         bellmanUpdate(problem_, currentState);
                                                                                 if (res < epsilon_ && residual(problem_, currentState) > epsilon_) {
-                                                                                    dprint2("ooops!", residual(problem_, currentState));
+                                                                                    cerr << "ooops!" << residual(problem_, currentState) << endl;
                                                                                 }
 
-        if (currentState->deadEnd())
+        if (currentState->deadEnd() || depth > 1000000)
             break;
 
         currentState = randomSuccessor(problem_,
@@ -127,7 +129,7 @@ bool FLARESSolver::checkSolved(State* s)
                                                                                 double res = residual(problem_, pp.first);
             bellmanUpdate(problem_, pp.first);
                                                                                 if (res < epsilon_ && residual(problem_, pp.first) > epsilon_) {
-                                                                                    dprint2("ooops!", residual(problem_, pp.first));
+                                                                                    cerr << "ooops!" << residual(problem_, pp.first) << endl;
                                                                                 }
         }
     }
@@ -147,8 +149,9 @@ Action* FLARESSolver::solve(State* s0)
 Action* FLARESSolver::solveApproximate(State* s0)
 {
     int trials = 0;
-    while (!labeledSolved(s0) && trials++ < maxTrials_)
+    while (!labeledSolved(s0) && trials++ < maxTrials_) {
         trial(s0);
+    }
     return s0->bestAction();
 }
 

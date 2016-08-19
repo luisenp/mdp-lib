@@ -106,16 +106,19 @@ int main(int argc, char **argv)
 {
     string file;
     string prob;
+    string algorithm;
     problem_t *problem = NULL;
     pair<state_t *,Rational> *initial = NULL;
 
-    if (argc < 2) {
-        cout << "Usage: testClient [file] [problem].\n";
+    if (argc < 4) {
+        cout << "Usage: testClient [file] [problem] [algorithm].\n";
         exit(0);
     }
 
     file = argv[1];
     prob = argv[2];
+    algorithm = argv[3];
+
 
     if( !read_file( file.c_str() ) ) {
         cout <<
@@ -168,8 +171,11 @@ int main(int argc, char **argv)
     initStringAtomMap(problem, stringAtomMap);
 
     /* Planner to use. */
-    //FLARESSolver solver(MLProblem, 1000, 1.0e-3, 1);
-    LAOStarSolver solver(MLProblem);
+    Solver* solver = nullptr;
+    if (algorithm == "flares")
+        solver = new FLARESSolver(MLProblem, 100, 1.0e-3, 1);
+    else
+        solver = new LAOStarSolver(MLProblem);
 
     /* Solving states on demand. */
     while (true) {
@@ -191,7 +197,7 @@ int main(int argc, char **argv)
         mlcore::State* state =
             getStatefromString(atomsString, MLProblem, stringAtomMap);
 
-        mlcore::Action* action = solver.solve(state); // Solving for state.
+        mlcore::Action* action = solver->solve(state); // Solving for state.
         if (MLProblem->goal(state)) {
             cout << "GOAL!!" << endl;
         }
@@ -219,4 +225,3 @@ int main(int argc, char **argv)
     delete heuristic;
     return 0;
 }
-

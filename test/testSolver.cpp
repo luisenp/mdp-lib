@@ -318,6 +318,11 @@ int main(int argc, char* args[])
                 numDecisions++;
             }
             a = greedyAction(problem, tmp);
+
+            if (verbosity >= 1000) {
+                cout << tmp << " " << a << " " << endl;
+            }
+
             costTrial += problem->cost(tmp, a);
             if (costTrial >= mdplib::dead_end_cost) {
                 break;
@@ -333,10 +338,6 @@ int main(int argc, char* args[])
             }
             tmp = aux;
 
-            if (verbosity >= 1000) {
-                cout << a << " " << endl;
-                cout << tmp << " ";
-            }
         }
         if (flag_is_registered("ctp")) {
             CTPState* ctps = static_cast<CTPState*>(tmp);
