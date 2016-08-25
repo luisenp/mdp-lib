@@ -12,6 +12,7 @@
 #include "../include/ppddl/PPDDLHeuristic.h"
 
 #include "../include/solvers/Solver.h"
+#include "../include/solvers/HMinHeuristic.h"
 #include "../include/solvers/LRTDPSolver.h"
 #include "../include/solvers/LAOStarSolver.h"
 #include "../include/solvers/UCTSolver.h"
@@ -79,11 +80,14 @@ int main(int argc, char **argv)
 
     /* Initializing problem */
     mlppddl::PPDDLProblem* MLProblem = new mlppddl::PPDDLProblem(problem);
-    mlppddl::PPDDLHeuristic* heuristic =
+    //    mlppddl::PPDDLHeuristic* heuristic =
 //        new mlppddl::PPDDLHeuristic(MLProblem, mlppddl::atomMin1Forward);
 //        new mlppddl::PPDDLHeuristic(MLProblem, mlppddl::atomMinMForward);
-        new mlppddl::PPDDLHeuristic(MLProblem, mlppddl::FF);
+//        new mlppddl::PPDDLHeuristic(MLProblem, mlppddl::FF);
+    mlcore::Heuristic* heuristic = new mlsolvers::HMinHeuristic(MLProblem);
     MLProblem->setHeuristic(heuristic);
+
+    cout << "HEURISTIC s0: " << MLProblem->initialState()->cost() << endl;
 
     int ntrials = 5000;
     if (argc > 3) {

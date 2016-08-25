@@ -5,7 +5,7 @@
 
 # Compilation flags and variables
 CC = g++
-CFLAGS = -std=c++11 -g -DATOM_STATES -pthread
+CFLAGS = -std=c++11 -O3 -DATOM_STATES -pthread
 
 # Variables for directories
 ID = include
@@ -104,9 +104,10 @@ $(OD)/mo-solvers.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_H) 
 	ar rvs lib/libmdp_mosolvers.a $(OD_SOLV_MOBJ)/*.o
 
 # Compiles the base (single-objective) solvers
-$(OD)/solvers.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_H)
+$(OD)/solvers.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_H) $(ID_DOMAINS)/*.h $(SD_DOMAINS)/*.cpp
 	make $(OD)/core.a
-	$(CC) $(CFLAGS) $(INCLUDE_CORE) -c $(SOLV_CPP)
+	$(CC) $(CFLAGS) $(INCLUDE_CORE) $(ID_DOMAINS)/*.h -c $(SOLV_CPP) \
+		$(SD_DOMAINS)/DummyState.cpp $(SD_DOMAINS)/WrapperProblem.cpp
 	mkdir -p $(OD_SOLV)
 	mv *.o $(OD_SOLV)
 	ar rvs $(OD)/solvers.a $(OD_SOLV)/*.o
@@ -237,8 +238,8 @@ lib/libminigpt.a: include/ppddl/mini-gpt/*
 	ar rvs lib/libminigpt.a include/ppddl/mini-gpt/*.o
 
 # Compiles the PPDDL library
-ppddl: lib/libmdp_ppddl.a
-lib/libmdp_ppddl.a: lib/libmdp.a src/ppddl/*.cpp include/ppddl/*.h \
+ppddl: planserv
+planserv: lib/libmdp.a src/ppddl/*.cpp include/ppddl/*.h \
 lib/libminigpt.a test/testPPDDL.cpp test/testClient.cpp test/planningServer.cpp
 	$(CC) $(CFLAGS) -Iinclude -Iinclude/ppddl -Include/ppddl/mini-gpt -I$(ID_SOLV) -c src/ppddl/*.cpp
 	mkdir -p $(TD)
@@ -249,10 +250,10 @@ lib/libminigpt.a test/testPPDDL.cpp test/testClient.cpp test/planningServer.cpp
 	  -o testppddl.out $(TD)/testPPDDL.cpp include/ppddl/mini-gpt/heuristics.cc \
 	  -Llib lib/libmdp.a lib/libminigpt.a lib/libmdp_ppddl.a
 	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) $(INCLUDE_PPDDL) \
-	  -o planserv $(TD)/planningServer.cpp include/ppddl/mini-gpt/heuristics.cc \
+	  -o testclient $(TD)/testClient.cpp include/ppddl/mini-gpt/heuristics.cc \
 	  -Llib lib/libmdp.a lib/libminigpt.a lib/libmdp_ppddl.a -lsocket -L/usr/lib/happycoders
 	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) $(INCLUDE_PPDDL) \
-	  -o testclient $(TD)/testClient.cpp include/ppddl/mini-gpt/heuristics.cc \
+	  -o planserv $(TD)/planningServer.cpp include/ppddl/mini-gpt/heuristics.cc \
 	  -Llib lib/libmdp.a lib/libminigpt.a lib/libmdp_ppddl.a -lsocket -L/usr/lib/happycoders
 
 # Compiles the reduced model code

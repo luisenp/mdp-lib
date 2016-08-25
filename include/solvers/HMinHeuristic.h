@@ -21,8 +21,7 @@ private:
 
     /*
      * If true, the heuristic value for all states will be found when the
-     * the heuristic is constructed. Otherwise it will be computed on demand
-     * TODO: Implement for solveAll_ = false;
+     * the heuristic is constructed. Otherwise it will be computed on demand.
      */
     bool solveAll_;
 

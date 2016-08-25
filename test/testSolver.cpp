@@ -295,6 +295,7 @@ int main(int argc, char* args[])
             solver->solve(problem->initialState());
             endTime = clock();
             expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
+                                                                                dprint1((double(endTime - startTime) / CLOCKS_PER_SEC));
             numDecisions++;
         }
         if (verbosity >= 10) {
@@ -315,6 +316,7 @@ int main(int argc, char* args[])
                 a = solver->solve(tmp);
                 endTime = clock();
                 expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
+                                                                                dprint1((double(endTime - startTime) / CLOCKS_PER_SEC));
                 numDecisions++;
             }
             a = greedyAction(problem, tmp);

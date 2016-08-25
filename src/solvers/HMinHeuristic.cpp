@@ -12,8 +12,13 @@ using namespace std;
 namespace mlsolvers
 {
 
-void HMinHeuristic::hminUpdate(State* s)
+void
+ HMinHeuristic::hminUpdate(State* s)
 {
+  if (problem_->goal(s)) {
+    costs_[s] = 0.0;
+    return;
+  }
     double bestQ = mdplib::dead_end_cost;
     for (Action* a : problem_->actions()) {
         if (!problem_->applicable(s, a))
@@ -56,12 +61,12 @@ HMinHeuristic::HMinHeuristic(Problem* problem, bool solveAll)
 
 double HMinHeuristic::cost(const State* s)
 {
+    if (problem_->goal(const_cast<State*>(s)))
+        return 0.0;
     auto it = costs_.find(const_cast<State*> (s));
     if (it != costs_.end())
         return it->second;
-    if (problem_->goal(const_cast<State*>(s)))
-        return 0.0;
-
+    
     State* currentState = nullptr;
     while (true) {
         // Starting a LRTA* trial.

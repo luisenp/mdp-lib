@@ -19,6 +19,7 @@
 #include "../include/solvers/Solver.h"
 #include "../include/solvers/FLARESSolver.h"
 #include "../include/solvers/LAOStarSolver.h"
+#include "../include/solvers/SSiPPSolver.h"
 
 #include "../include/State.h"
 
@@ -111,7 +112,7 @@ int main(int argc, char **argv)
     pair<state_t *,Rational> *initial = NULL;
 
     if (argc < 4) {
-        cout << "Usage: testClient [file] [problem] [algorithm].\n";
+        cout << "Usage: planserv [file] [problem] [algorithm].\n";
         exit(0);
     }
 
@@ -174,6 +175,13 @@ int main(int argc, char **argv)
     Solver* solver = nullptr;
     if (algorithm == "flares")
         solver = new FLARESSolver(MLProblem, 100, 1.0e-3, 1);
+    else if (algorithm == "ssipp") {
+        int horizon = 2;
+        if (argc > 4) {
+            horizon = atoi(argv[4]);
+        }
+        solver = new SSiPPSolver(MLProblem, 1.0e-3, horizon);
+    }
     else
         solver = new LAOStarSolver(MLProblem);
 
