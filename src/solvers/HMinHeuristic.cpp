@@ -15,14 +15,17 @@ namespace mlsolvers
 void
  HMinHeuristic::hminUpdate(State* s)
 {
-  if (problem_->goal(s)) {
-    costs_[s] = 0.0;
-    return;
-  }
+    if (problem_->goal(s)) {
+        costs_[s] = 0.0;
+        return;
+    }
+
     double bestQ = mdplib::dead_end_cost;
+    bool hasAction = false;
     for (Action* a : problem_->actions()) {
         if (!problem_->applicable(s, a))
             continue;
+        hasAction = true;
         double qAction = problem_->cost(s, a);
         double minCostSuccessor = mdplib::dead_end_cost;
         for (auto const & successor : problem_->transition(s, a)) {
@@ -30,10 +33,14 @@ void
                 std::min(minCostSuccessor, costs_[successor.su_state]);
         }
         qAction += minCostSuccessor;
+        qAction = std::min(qAction, mdplib::dead_end_cost);
         if (qAction <= bestQ) {
             bestQ = qAction;
             bestActions_[s] = a;
         }
+    }
+    if (!hasAction) {
+        s->markDeadEnd();
     }
     costs_[s] = bestQ;
 }
@@ -66,7 +73,7 @@ double HMinHeuristic::cost(const State* s)
     auto it = costs_.find(const_cast<State*> (s));
     if (it != costs_.end())
         return it->second;
-    
+
     State* currentState = nullptr;
     while (true) {
         // Starting a LRTA* trial.
@@ -79,17 +86,19 @@ double HMinHeuristic::cost(const State* s)
                 bestAction = bestActions_[currentState];
             double prevCost = costs_[currentState];
             hminUpdate(currentState);
-            if (bestAction != bestActions_[currentState])
+            if (currentState->deadEnd())
+                break;
+            if (bestAction != bestActions_.at(currentState))
                 noActionChange == false;
             maxResidual = std::max(maxResidual,
-                                   fabs(prevCost - costs_[currentState]));
+                                   fabs(prevCost - costs_.at(currentState)));
             // Getting the successor of the best action.
-            bestAction = bestActions_[currentState];
+            bestAction = bestActions_.at(currentState);
             double minCost = mdplib::dead_end_cost;
             State* nextState = nullptr;
             for (auto const & successor :
                     problem_->transition(currentState, bestAction)) {
-                double successorCost = costs_[successor.su_state];
+                double successorCost = costs_.at(successor.su_state);
                 if (successorCost < minCost) {
                     nextState = successor.su_state;
                     minCost = successorCost;
