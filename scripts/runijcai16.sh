@@ -5,12 +5,13 @@ verbosity=1
 
 tracks=(known/square-4-error known/square-5-error \
         known/ring-5-error known/ring-6-error)
-Racetrack problems
+        
+# ######## Racetrack domain problems # ########
 for track in ${tracks[@]}; do
   echo "${track}|lrtdp"
   ../testsolver.out --track=../data/tracks/$track.track \
-  --algorithm=lrtdp --v=1 --n=100 \
-  --heuristic=hmin --no-initial-plan
+  --algorithm=lrtdp --v=$verbosity --n=$nsims \
+  --no-initial-plan --heuristic=hmin --hmin-solve-all
   
   # FLARES
   for horizon in `seq 0 1`; do
@@ -41,7 +42,7 @@ for track in ${tracks[@]}; do
   done  
 done
 
-
+# ######## Sailing domain problems # ########
 sizes=(20 40)
 for size in ${sizes[@]}; do
   let "goal = size - 1"
