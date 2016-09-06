@@ -288,7 +288,8 @@ int main(int argc, char* args[])
             for (State* s : problem->states())
                 s->reset();
             if (flag_is_registered_with_value("heuristic") &&
-                    flag_value("heuristic") == "hmin") {
+                    flag_value("heuristic") == "hmin" &&
+                    !flag_is_registered("hmin-solve-all")) {
                 static_cast<HMinHeuristic*>(heuristic)->reset();
             }
             startTime = clock();
