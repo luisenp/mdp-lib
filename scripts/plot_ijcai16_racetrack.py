@@ -5,7 +5,7 @@ from scipy import stats
 
 # Reading data from the racetrack problem.
 data = {}
-with open('../ijcai_grw_racetrack.txt', 'r') as f:
+with open('../results_aaai17.txt', 'r') as f:
   for line in f:
     if line.startswith('known'):
       idx_bar = line.find('|')
@@ -20,7 +20,7 @@ with open('../ijcai_grw_racetrack.txt', 'r') as f:
       cnt += 1
 
 # Plotting data
-algorithms = ['lrtdp',
+algorithms = [#'lrtdp',
               'flares(0)', 
               'flares(1)',
               'hdp(0,0)',
@@ -30,7 +30,7 @@ algorithms = ['lrtdp',
               'ssipp(4)',
               'ssipp(8)']
 
-labels = ['OPT', 
+labels = [#'OPT', 
           'F(0)', 'F(1)', 
           'H(0,0)', 'H(0,1)', 'H(1,0)', 'H(1,1)',
           'S(4)', 'S(8)']
@@ -50,7 +50,7 @@ for track in tracks:
   for alg in algorithms:
     results[:, j] = data[track][alg]
     print (alg, np.mean(results[:, j]),
-           scipy.stats.ttest_ind(results[:,0], results[:,j], equal_var=False))
+           stats.ttest_ind(results[:,0], results[:,j], equal_var=False))
 
     j += 1
   plt.boxplot(results, sym='', widths=0.35)

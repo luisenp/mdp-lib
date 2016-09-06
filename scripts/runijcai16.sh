@@ -8,10 +8,10 @@ tracks=(known/square-4-error known/square-5-error \
         
 # ######## Racetrack domain problems # ########
 for track in ${tracks[@]}; do
-  echo "${track}|lrtdp"
-  ../testsolver.out --track=../data/tracks/$track.track \
-  --algorithm=lrtdp --v=$verbosity --n=$nsims \
-  --no-initial-plan --heuristic=hmin --hmin-solve-all
+#   echo "${track}|lrtdp"
+#   ../testsolver.out --track=../data/tracks/$track.track \
+#   --algorithm=lrtdp --v=$verbosity --n=$nsims \
+#   --no-initial-plan --heuristic=hmin --hmin-solve-all
   
   # FLARES
   for horizon in `seq 0 1`; do
