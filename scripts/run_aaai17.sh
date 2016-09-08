@@ -1,7 +1,7 @@
 #!/bin/bash
 
 nsims=100
-verbosity=1
+verbosity=0
 
 tracks=(known/square-4-error known/square-5-error \
         known/ring-5-error known/ring-6-error)
@@ -14,30 +14,23 @@ for track in ${tracks[@]}; do
   --no-initial-plan --heuristic=hmin --hmin-solve-all
   
   # FLARES
-  for horizon in `seq 0 1`; do
+  for horizon in `seq 0 1 2`; do
     echo "${track}|flares(${horizon})"
       ../testsolver.out --track=../data/tracks/$track.track \
-      --algorithm=flares --horizon=$horizon --v=$verbosity --n=$nsims \
-       --heuristic=hmin --hmin-solve-all 
+      --algorithm=flares --horizon=$horizon --v=$verbosity --n=$nsims
   done
        
-  # HDP(i,j)
-  for i in `seq 0 1`; do
-    for j in `seq 0 1`; do
-      echo "${track}|hdp(${i},${j})"
-        ../testsolver.out --track=../data/tracks/$track.track \
-        --algorithm=hdp --i=$i --j=$j --v=$verbosity --n=$nsims \
-        --heuristic=hmin --hmin-solve-all 
-    done
-  done
+  # HDP(0)
+  echo "${track}|hdp(0)"
+  ../testsolver.out --track=../data/tracks/$track.track \
+  --algorithm=hdp --i=0 --v=$verbosity --n=$nsims
   
   # SSiPP(t)
   t=2
   for i in `seq 0 2`; do
     echo "${track}|ssipp(${t})"
       ../testsolver.out --track=../data/tracks/$track.track \
-      --algorithm=ssipp --horizon=$t --v=$verbosity --n=$nsims \
-      --heuristic=hmin --hmin-solve-all 
+      --algorithm=ssipp --horizon=$t --v=$verbosity --n=$nsims
     let "t *= 2"
   done  
 done

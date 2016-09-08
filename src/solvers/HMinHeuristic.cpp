@@ -13,7 +13,7 @@ namespace mlsolvers
 {
 
 void
- HMinHeuristic::hminUpdate(State* s)
+HMinHeuristic::hminUpdate(State* s)
 {
     if (problem_->goal(s)) {
         costs_[s] = 0.0;

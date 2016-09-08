@@ -41,9 +41,10 @@ using namespace mlsolvers;
 using namespace std;
 
 
-Problem* problem;
-Heuristic* heuristic;
-Solver* solver;
+Problem* problem = nullptr;
+Heuristic* heuristic = nullptr;
+Solver* solver = nullptr;
+string algorithm = "greedy";
 
 int verbosity = 0;
 bool useOnline = false;
@@ -157,7 +158,6 @@ void setupProblem()
 bool mustReplan(State* s, int plausTrial) {
   if (flag_is_registered("online"))
       return true;
-  string algorithm = flag_value("algorithm");
   if (algorithm == "flares") {
       return !s->checkBits(mdplib::SOLVED_FLARES);
   }
@@ -184,7 +184,7 @@ void initSolver()
 {
     double tol = 1.0e-3;
     assert(flag_is_registered_with_value("algorithm"));
-    string algorithm = flag_value("algorithm");
+    algorithm = flag_value("algorithm");
 
     int horizon = 0, expansions = 1, trials = 1000;
     if (flag_is_registered_with_value("horizon"))
@@ -222,7 +222,7 @@ void initSolver()
         solver = new DeterministicSolver(problem,
                                          mlsolvers::det_most_likely,
                                          heuristic);
-    } else {
+    } else if (algorithm != "greedy") {
         cerr << "Unknown algorithm: " << algorithm << endl;
         assert(false);
     }
@@ -244,8 +244,8 @@ int main(int argc, char* args[])
     verbosity = 0;
     if (flag_is_registered_with_value("v"))
         verbosity = stoi(flag_value("v"));
-
-    mdplib_debug = true;
+    if (flag_is_registered("debug"))
+        mdplib_debug = true;
     setupProblem();
     if (!flag_is_registered("dont-generate"))
         problem->generateAll();
@@ -287,13 +287,9 @@ int main(int argc, char* args[])
         if (i == 0 || !flag_is_registered("no-initial-plan")) {
             for (State* s : problem->states())
                 s->reset();
-            if (flag_is_registered_with_value("heuristic") &&
-                    flag_value("heuristic") == "hmin" &&
-                    !flag_is_registered("hmin-solve-all")) {
-                static_cast<HMinHeuristic*>(heuristic)->reset();
-            }
             startTime = clock();
-            solver->solve(problem->initialState());
+            if (algorithm != "greedy")
+                solver->solve(problem->initialState());
             endTime = clock();
             expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
             numDecisions++;
@@ -313,7 +309,10 @@ int main(int argc, char* args[])
             Action* a;
             if (mustReplan(tmp, plausTrial)) {
                 startTime = clock();
-                a = solver->solve(tmp);
+                if (algorithm != "greedy")
+                    a = solver->solve(tmp);
+                else
+                    a = greedyAction(problem, tmp);
                 endTime = clock();
                 expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
                 numDecisions++;

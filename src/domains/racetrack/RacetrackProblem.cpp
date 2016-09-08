@@ -74,6 +74,8 @@ void RacetrackProblem::printTrack(std::ostream& os)
 
 bool RacetrackProblem::goal(mlcore::State* s) const
 {
+    if (s == absorbing_)
+        return true;
     RacetrackState* rts = static_cast<RacetrackState*>(s);
     std::pair<int, int> pos(rts->x(), rts->y());
     return goals_.find(pos) != goals_.end();
