@@ -249,17 +249,19 @@ int main(int argc, char* args[])
     setupProblem();
     if (!flag_is_registered("dont-generate"))
         problem->generateAll();
-    if (flag_is_registered_with_value("heuristic") &&
-            flag_value("heuristic") == "hmin") {
-        clock_t startTime = clock();
-        bool solveAll = flag_is_registered("hmin-solve-all");
-        heuristic = new HMinHeuristic(problem, solveAll);
-        clock_t endTime = clock();
-        if (verbosity > 100) {
-            cout << "Heuristic took " <<
-                (double(endTime - startTime) / CLOCKS_PER_SEC) <<
-                " seconds."  << endl;
-        }
+    if (flag_is_registered_with_value("heuristic")) {
+        if (flag_value("heuristic") == "hmin") {
+            clock_t startTime = clock();
+            bool solveAll = flag_is_registered("hmin-solve-all");
+            heuristic = new HMinHeuristic(problem, solveAll);
+            clock_t endTime = clock();
+            if (verbosity > 100) {
+                cout << "Heuristic took " <<
+                    (double(endTime - startTime) / CLOCKS_PER_SEC) <<
+                    " seconds."  << endl;
+            }
+        } else if (flag_value("heuristic") == "zero")
+            heuristic = nullptr;
     }
     problem->setHeuristic(heuristic);
 
