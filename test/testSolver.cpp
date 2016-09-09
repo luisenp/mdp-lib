@@ -56,8 +56,8 @@ void setupRacetrack()
     if (verbosity > 100)
         cout << "Setting up racetrack " << trackName << endl;
     problem = new RacetrackProblem(trackName.c_str());
-    ((RacetrackProblem*) problem)->pError(0.50);
-    ((RacetrackProblem*) problem)->pSlip(0.50);
+    ((RacetrackProblem*) problem)->pError(0.20);
+    ((RacetrackProblem*) problem)->pSlip(0.10);
     ((RacetrackProblem*) problem)->mds(-1);
     if (!flag_is_registered_with_value("heuristic") ||
             flag_value("heuristic") == "domain")
