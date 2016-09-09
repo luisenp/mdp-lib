@@ -133,7 +133,7 @@ public:
      *
      * @param bitMask A mask that specifies the bits to be checked.
      */
-    bool checkBits(unsigned long bitMask)
+    bool checkBits(unsigned long bitMask) const
     {
         return bits_ & bitMask;
     }

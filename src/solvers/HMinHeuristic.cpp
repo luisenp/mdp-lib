@@ -1,5 +1,6 @@
 #include<list>
 
+#include "../include/MDPLib.h"
 #include "../include/State.h"
 
 #include "../../include/solvers/HMinHeuristic.h"
@@ -11,6 +12,18 @@ using namespace std;
 
 namespace mlsolvers
 {
+
+double HMinHeuristic::hminQvalue(mlcore::State* s, mlcore::Action* a)
+{
+    double qAction = problem_->cost(s, a);
+    double costSuccessor = mdplib::dead_end_cost;
+    for (auto const & successor : problem_->transition(s, a)) {
+        costSuccessor = std::min(costSuccessor, costs_[successor.su_state]);
+    }
+    qAction += costSuccessor;
+    return std::min(qAction, mdplib::dead_end_cost);
+}
+
 
 void
 HMinHeuristic::hminUpdate(State* s)
@@ -70,48 +83,110 @@ double HMinHeuristic::cost(const State* s)
 {
     if (problem_->goal(const_cast<State*>(s)))
         return 0.0;
-    auto it = costs_.find(const_cast<State*> (s));
-    if (it != costs_.end())
-        return it->second;
+
+    if (s->checkBits(mdplib::SOLVED_HMIN))
+        return costs_.at(const_cast<State*>(s));
 
     State* currentState = nullptr;
     while (true) {
         // Starting a LRTA* trial.
         currentState = const_cast<State*> (s);
-        bool noActionChange = true;
-        double maxResidual = 0.0;
+        list<State*> visited;
+        visited.push_back(currentState);
         while (!problem_->goal(currentState)) {
-            Action* bestAction = nullptr;
-            if (bestActions_.count(currentState) > 0)
-                bestAction = bestActions_[currentState];
-            double prevCost = costs_[currentState];
             hminUpdate(currentState);
             if (currentState->deadEnd())
                 break;
-            if (bestAction != bestActions_.at(currentState))
-                noActionChange == false;
-            maxResidual = std::max(maxResidual,
-                                   fabs(prevCost - costs_.at(currentState)));
             // Getting the successor of the best action.
-            bestAction = bestActions_.at(currentState);
-            double minCost = mdplib::dead_end_cost;
-            State* nextState = nullptr;
-            for (auto const & successor :
-                    problem_->transition(currentState, bestAction)) {
-                double successorCost = costs_.at(successor.su_state);
-                if (successorCost < minCost) {
-                    nextState = successor.su_state;
-                    minCost = successorCost;
-                }
-            }
-            currentState = nextState;
+            currentState = hminSuccessor(currentState,
+                                         bestActions_.at(currentState));
+            visited.push_back(currentState);
         }
-        if (noActionChange && maxResidual < 1.0e-6)
+
+        // Checking if the state was solved.
+        while (!visited.empty()) {
+            currentState = visited.back(); visited.pop_back();
+            if (!checkSolved(currentState))
+                break;
+        }
+
+        if (currentState->checkBits(mdplib::SOLVED_HMIN))
             break;
     }
 
-    it = costs_.find(const_cast<State*> (s));
-    return it->second;
+    return costs_.at(const_cast<State*>(s));
+}
+
+
+State* HMinHeuristic::hminSuccessor(State* s, Action* a)
+{
+    double minCost = mdplib::dead_end_cost;
+    State* minCostSuccessor = nullptr;
+    for (auto const & successor : problem_->transition(s, a)) {
+        double successorCost = costs_.at(successor.su_state);
+        if (successorCost < minCost) {
+            minCostSuccessor = successor.su_state;
+            minCost = successorCost;
+        }
+    }
+    return minCostSuccessor;
+}
+
+
+bool HMinHeuristic::checkSolved(State* s)
+{
+    std::list<State*> open, closed;
+
+    State* tmp = s;
+    if (!tmp->checkBits(mdplib::SOLVED_HMIN)) {
+        open.push_front(s);
+    }
+
+    bool rv = true;
+    while (!open.empty()) {
+        tmp = open.front();
+        open.pop_front();
+
+        if (problem_->goal(tmp))
+            continue;
+
+        if (tmp->deadEnd())
+            continue;
+
+        closed.push_front(tmp);
+        tmp->setBits(mdplib::CLOSED);
+
+        if (bestActions_.count(tmp) == 0) {
+            rv = false;
+            break;
+        }
+        Action* a = bestActions_.at(tmp);
+
+        if (fabs(costs_[tmp] - hminQvalue(tmp, a)) > 1.0e-3)
+            rv = false;
+
+        State* next = hminSuccessor(tmp, a);
+        if (!next->checkBits(mdplib::SOLVED) &&
+                !next->checkBits(mdplib::CLOSED)) {
+            open.push_front(next);
+        }
+    }
+
+    if (rv) {
+        for (State* sc : closed) {
+            sc->setBits(mdplib::SOLVED_HMIN);
+            sc->clearBits(mdplib::CLOSED);
+        }
+    } else {
+        while (!closed.empty()) {
+            tmp = closed.front();
+            closed.pop_front();
+            tmp->clearBits(mdplib::CLOSED);
+            hminUpdate(tmp);
+        }
+    }
+
+    return rv;
 }
 
 } // namespace mlsovers

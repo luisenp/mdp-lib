@@ -31,8 +31,17 @@ private:
     /* Stores the best actions for each state. */
     mlcore::StateActionMap bestActions_;
 
+    /* Computes the hmin q-value for the given state and action. */
+    double hminQvalue(mlcore::State* s, mlcore::Action* a);
+
     /* Performs a hmin update. */
     void hminUpdate(mlcore::State* s);
+
+    /* Returns the successor with the minimum estimated cost. */
+    mlcore::State* hminSuccessor(mlcore::State* s, mlcore::Action* a);
+
+    /* Checks if the state has been solved by LRTA*. */
+    bool checkSolved(mlcore::State* s);
 
 public:
     HMinHeuristic(mlcore::Problem* problem_, bool solveAll = true);

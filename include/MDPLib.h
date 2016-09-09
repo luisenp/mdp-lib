@@ -14,6 +14,7 @@ namespace mdplib
     const unsigned long SOLVED_SSiPP = 1ul<<4;
     const unsigned long CLOSED_SSiPP = 1ul<<5;
     const unsigned long SOLVED_FLARES = 1ul<<6;
+    const unsigned long SOLVED_HMIN = 1ul<<7;
 }
 
 #endif // MDPLIB_MDPLIB_H
