@@ -98,6 +98,9 @@ double HMinHeuristic::cost(const State* s)
             if (currentState->deadEnd())
                 break;
             // Getting the successor of the best action.
+                                                                                if (hminSuccessor(currentState, bestActions_.at(currentState)) == nullptr) {
+                                                                                    dprint2("successsor is null", currentState);
+                                                                                }
             currentState = hminSuccessor(currentState,
                                          bestActions_.at(currentState));
             visited.push_back(currentState);
@@ -124,7 +127,7 @@ State* HMinHeuristic::hminSuccessor(State* s, Action* a)
     State* minCostSuccessor = nullptr;
     for (auto const & successor : problem_->transition(s, a)) {
         double successorCost = costs_.at(successor.su_state);
-        if (successorCost < minCost) {
+        if (successorCost <= minCost) {
             minCostSuccessor = successor.su_state;
             minCost = successorCost;
         }

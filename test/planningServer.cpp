@@ -16,9 +16,10 @@
 #include "../include/ppddl/PPDDLProblem.h"
 #include "../include/ppddl/PPDDLState.h"
 
-#include "../include/solvers/Solver.h"
 #include "../include/solvers/FLARESSolver.h"
+#include "../include/solvers/HDPSolver.h"
 #include "../include/solvers/LAOStarSolver.h"
+#include "../include/solvers/Solver.h"
 #include "../include/solvers/SSiPPSolver.h"
 
 #include "../include/State.h"
@@ -173,14 +174,21 @@ int main(int argc, char **argv)
 
     /* Planner to use. */
     Solver* solver = nullptr;
-    if (algorithm == "flares")
-        solver = new FLARESSolver(MLProblem, 100, 1.0e-3, 1);
+    if (algorithm == "flares") {
+        int horizon = 1;
+        if (argc > 4) {
+            horizon = atoi(argv[4]);
+        }
+        solver = new FLARESSolver(MLProblem, 100, 1.0e-3, horizon);
+    }
     else if (algorithm == "ssipp") {
         int horizon = 2;
         if (argc > 4) {
             horizon = atoi(argv[4]);
         }
         solver = new SSiPPSolver(MLProblem, 1.0e-3, horizon);
+    } else if (algorithm == "hdp") {
+        solver =  new HDPSolver(MLProblem, 1.0e-3, 0);
     }
     else
         solver = new LAOStarSolver(MLProblem);

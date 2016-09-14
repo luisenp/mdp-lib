@@ -58,6 +58,7 @@ bool HDPSolver::dfs(mlcore::State* s, double plaus)
     index_++;
 
     Action* a = greedyAction(problem_, s);
+
     list<Successor> successors = problem_->transition(s, a);
     if (minPlaus_ != INT_MAX)
         computeKappa(successors, kappaList_);

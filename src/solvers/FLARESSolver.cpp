@@ -84,14 +84,16 @@ bool FLARESSolver::checkSolved(State* s)
             continue;
         }
 
-        if (problem_->goal(currentState) || currentState->deadEnd())
+        if (problem_->goal(currentState))
             continue;
 
         closed.push_front(pp);
         currentState->setBits(mdplib::CLOSED);
 
-
         Action* a = greedyAction(problem_, currentState);
+
+        if (currentState->deadEnd())
+            continue;
 
         if (residual(problem_, currentState) > epsilon_)
             rv = false;
