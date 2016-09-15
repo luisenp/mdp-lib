@@ -11,7 +11,7 @@ namespace mlsolvers
 
 int HDPSolver::kappa(double prob, double maxProb)
 {
-    return int(floor(log2(maxProb) -log2(prob)));
+    return int(floor(log2(maxProb) - log2(prob)));
 }
 
 
@@ -58,6 +58,10 @@ bool HDPSolver::dfs(mlcore::State* s, double plaus)
     index_++;
 
     Action* a = greedyAction(problem_, s);
+
+    if (s->deadEnd()) {
+        return false;   // state is a dead-end, nothing to do
+    }
 
     list<Successor> successors = problem_->transition(s, a);
     if (minPlaus_ != INT_MAX)
@@ -108,6 +112,7 @@ Action* HDPSolver::solve(State* s0)
         low_.clear();
         stateStack_.clear();
     }
+    return s0->bestAction();
 }
 
 } // namespace mlsolvers

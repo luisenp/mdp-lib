@@ -228,7 +228,7 @@ int main(int argc, char **argv)
             oss << "(done)";
         bzero(buffer, BUFFER_SIZE);
         sprintf(buffer, "%s", oss.str().c_str());
-        cout << buffer << "." << endl;
+        cout << "action: " << buffer << "." << endl;
         n = write(newsockfd, buffer, strlen(buffer));
         if (n < 0) {
             cerr << "ERROR: couldn't write to socket." << endl;
