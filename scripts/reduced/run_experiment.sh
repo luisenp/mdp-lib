@@ -1,9 +1,29 @@
 #!/bin/bash
 
+# The folder where the PPDDL files are stored. The contents should be 
+# structured as follows:
+#
+# pddl_folder/domain-name-1/*.pddl
+# pddl_folder/domain-name-2/*.pddl
+#
+# The PPDDL files must contain both domain and problem definitions and
+# the problem name in the file must match the PPDDL filename.
+#
 pddl_folder=$1
+
+
+# The domain name.
 domain=$2
+
+# The problem name.
 problem=$3
+
+# The index of the determinization to use. The script assumes the 
+# determinizations are stored in folder /tmp/, with the following naming
+# convention: "domain-name"_det"determinization_index".pddl.
 determinization_index=$4
+
+# The exception bound to use.
 k=$5
 
 # Setups the template problem for FF (removes PPDDL features not supported 

@@ -1,9 +1,24 @@
 #!/bin/bash
 
-pddl_folder=../../data/ppddl/ippc2008
-domain=ex-blocksworld
+# The folder where the PPDDL files are stored. The contents should be 
+# structured as follows:
+#
+# pddl_folder/domain-name-1/*.pddl
+# pddl_folder/domain-name-2/*.pddl
+#
+# The PPDDL files must contain both domain and problem definitions and
+# the problem name in the file must match the PPDDL filename.
+#
+pddl_folder=/home/lpineda/Desktop/skeren
+
+# The domain name.
+domain=triangle-tireworld
+
+# The name of the problem used to learn the best determinization. 
 problem=p01
-k=2
+
+# The exception bound to use. 
+k=0
 
 # Creating all possible determinizations
 ./create_all_determinizations.py -d $pddl_folder/$domain/domain.pddl \
@@ -32,7 +47,7 @@ best_n_determinizations=`./get_index_n_best_results.py \\
 best_determinization=`echo $best_n_determinizations | { read x _ ; echo $x; }`
 
 # Solving all problems with the best determinization
-for i in {01..10}; do
+for i in {01..03}; do
   echo `./run_experiment.sh $pddl_folder $domain p$i $best_determinization $k \\
     | tail -n 1`
 done

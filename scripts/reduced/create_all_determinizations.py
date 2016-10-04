@@ -69,7 +69,7 @@ def get_all_probabilistic_effects(ppddl_tree,
   The effects are added in pre-order traversal.
   We assume no nesting of probabilistic effect.
   """
-  if not isinstance(ppddl_tree, list):
+  if not isinstance(ppddl_tree, list) or not ppddl_tree:
     return
   if ppddl_tree[0] == ':action':
     action = ppddl_tree[1].rstrip('\r')
@@ -137,7 +137,7 @@ def determinize_tree(determinization, ppddl_tree, index = 0):
   index of the probabilistic effect in the PPDDL tree. The index parameter
   is passed and returned to keep track of this.
   """
-  if not isinstance(ppddl_tree, list):
+  if not isinstance(ppddl_tree, list) or not ppddl_tree:
     return index
   if ppddl_tree[0] == 'probabilistic':
     ppddl_tree[:] = []
