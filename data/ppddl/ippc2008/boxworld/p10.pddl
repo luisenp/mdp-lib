@@ -97,7 +97,7 @@
  )
 )
 (define
- (problem box-p10)
+ (problem p10)
   (:domain boxworld)
   (:objects box0 - box
             box1 - box

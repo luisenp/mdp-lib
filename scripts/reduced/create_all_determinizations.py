@@ -57,6 +57,8 @@ def make_str(ppddl_tree, level=0):
       ppddlstr += element
       if i != len(ppddl_tree) - 1:
         ppddlstr += ' '
+        if element == ':parameters' and ppddl_tree[i + 1] == []:
+          ppddlstr += '()'
   ppddlstr += ') '
   return ppddlstr
 
@@ -101,7 +103,7 @@ def get_all_determinizations_effect(probabilistic_effect_info):
 
 def get_all_determinizations_comb(determinizations_of_all_effects):
   """
-  Generates all possible combinations of the given list with of probabilistic 
+  Generates all possible combinations of the given list of probabilistic 
   effects determinizations.
   """
   # Base case for the recursion, only determinizations for one effect.  

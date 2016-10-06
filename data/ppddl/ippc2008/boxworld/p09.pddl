@@ -38,7 +38,7 @@
                 (and (box-at-city ?b ?c)
                (not (box-on-truck ?b ?t))
                (when (destination ?b ?c)
-                     (increase (reward) 50)
+                     (increase (reward) 100)
                )
                 )
           )
@@ -62,7 +62,7 @@
                 (and (box-at-city ?b ?c)
                (not (box-on-plane ?b ?p))
                (when (destination ?b ?c)
-                     (increase (reward) 50)
+                     (increase (reward) 100)
                )
                 )
           )
@@ -72,7 +72,7 @@
   :effect (when (and (truck-at-city ?t ?src)
                      (can-drive ?src ?dst)
                 )
-          (and (decrease (reward) 8)
+          (and (decrease (reward) 5)
                (not (truck-at-city ?t ?src))
                (probabilistic
                 0.2 (forall (?wrongdst1 - city)
@@ -105,7 +105,7 @@
  )
 )
 (define
- (problem box-p05)
+ (problem p09)
   (:domain boxworld)
   (:objects box0 - box
             box1 - box
@@ -117,6 +117,11 @@
             box7 - box
             box8 - box
             box9 - box
+            box10 - box
+            box11 - box
+            box12 - box
+            box13 - box
+            box14 - box
             truck0 - truck
             truck1 - truck
             plane0 - plane
@@ -154,6 +159,16 @@
          (destination box8 city4)
          (box-at-city box9 city2)
          (destination box9 city3)
+         (box-at-city box10 city7)
+         (destination box10 city6)
+         (box-at-city box11 city4)
+         (destination box11 city6)
+         (box-at-city box12 city2)
+         (destination box12 city8)
+         (box-at-city box13 city9)
+         (destination box13 city5)
+         (box-at-city box14 city9)
+         (destination box14 city7)
          (truck-at-city truck0 city0)
          (truck-at-city truck1 city0)
          (plane-at-city plane0 city0)

@@ -9,10 +9,13 @@
 # The PPDDL files must contain both domain and problem definitions and
 # the problem name in the file must match the PPDDL filename.
 #
-pddl_folder=/home/lpineda/Desktop/skeren
+# pddl_folder=/home/lpineda/Desktop/skeren
+pddl_folder=../../data/ppddl/ippc2008
 
 # The domain name.
-domain=triangle-tireworld
+# domain=triangle-tireworld
+# domain=blocksworld
+domain=boxworld
 
 # The name of the problem used to learn the best determinization. 
 problem=p01
@@ -46,8 +49,9 @@ best_n_determinizations=`./get_index_n_best_results.py \\
   -s ${all_successes::-1} -c ${all_costs::-1} -n $n `
 best_determinization=`echo $best_n_determinizations | { read x _ ; echo $x; }`
 
+echo 'best determinization: '$best_determinization
 # Solving all problems with the best determinization
-for i in {01..03}; do
+for i in {01..05}; do
   echo `./run_experiment.sh $pddl_folder $domain p$i $best_determinization $k \\
     | tail -n 1`
 done
