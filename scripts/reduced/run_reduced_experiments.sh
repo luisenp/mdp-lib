@@ -28,7 +28,7 @@ problem=p01
 k=0
 
 # The name of the domain file to determinize
-domain_file_name=domain-design-all
+domain_file_name=domain
 
 # Creating all possible determinizations
 ./create_all_determinizations.py -d $pddl_folder/$domain/$domain_file_name.pddl \
@@ -48,6 +48,7 @@ for i in `seq 0 $num_det`; do
   echo $successes_and_costs
   all_successes=$all_successes`echo $successes_and_costs | awk '{print $1}'`,
   all_costs=$all_costs`echo $successes_and_costs | awk '{print $2}'`,
+  rm $pddl_folder/$domain/p01.pddl
 done
 echo $all_successes
 echo $all_costs
@@ -65,4 +66,5 @@ for i in {01..10}; do
     $pddl_folder/$domain/problems/p$i.pddl > $pddl_folder/$domain/p$i.pddl
   echo `./run_experiment.sh $pddl_folder $domain p$i $best_determinization $k \\
     | tail -n 1`
+  rm $pddl_folder/$domain/p$i.pddl
 done
