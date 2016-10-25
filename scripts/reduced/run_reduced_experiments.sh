@@ -9,16 +9,17 @@
 # The PPDDL files must contain both domain and problem definitions and
 # the problem name in the file must match the PPDDL filename.
 #
-pddl_folder=/home/lpineda/Desktop/skeren
+# pddl_folder=/home/lpineda/Desktop/skeren
 # pddl_folder=../../data/ppddl/ippc2008
+pddl_folder=../../data/ppddl/ippc2006
 
 # The domain name.
 # domain=triangle-tireworld
 # domain=zenotravel
 # domain=boxworld
-domain=blocksworld
+# domain=blocksworld
 # domain=ex-blocksworld
-# domain=elevators
+domain=elevators
 
 # The name of the problem used to learn the best determinization. 
 problem=p01
