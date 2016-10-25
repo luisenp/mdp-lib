@@ -3,14 +3,12 @@
 # The folder where the PPDDL files are stored. The contents should be 
 # structured as follows:
 #
-# pddl_folder/domain-name-1/*.pddl
-# pddl_folder/domain-name-2/*.pddl
+# pddl_folder/domain/problem.pddl
 #
 # The PPDDL files must contain both domain and problem definitions and
 # the problem name in the file must match the PPDDL filename.
 #
 pddl_folder=$1
-
 
 # The domain name.
 domain=$2
