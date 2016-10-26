@@ -14,8 +14,8 @@ pddl_folder=../../data/ppddl/ippc2008
 # pddl_folder=../../data/ppddl/ippc2006
 
 # The domain name.
-domain=triangle-tireworld
-# domain=zenotravel
+# domain=triangle-tireworld
+domain=zenotravel
 # domain=boxworld
 # domain=blocksworld
 # domain=ex-blocksworld
