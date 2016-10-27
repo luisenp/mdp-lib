@@ -15,17 +15,17 @@ pddl_folder=../../data/ppddl/ippc2008
 
 # The domain name.
 # domain=triangle-tireworld
-domain=zenotravel
+# domain=zenotravel
 # domain=boxworld
 # domain=blocksworld
-# domain=ex-blocksworld
+domain=ex-blocksworld
 # domain=elevators
 
 # The name of the problem used to learn the best determinization. 
 problem=p01
 
 # The exception bound to use. 
-k=0
+k=3
 
 # The name of the domain file to determinize
 domain_file_name=domain
