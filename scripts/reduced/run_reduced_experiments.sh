@@ -14,8 +14,8 @@ pddl_folder=/home/lpineda/Desktop/skeren
 # pddl_folder=../../data/ppddl/ippc2006
 
 # The domain name.
-# domain=triangle-tireworld
-domain=zenotravel
+domain=triangle-tireworld
+# domain=zenotravel
 # domain=boxworld
 # domain=blocksworld
 # domain=ex-blocksworld
@@ -26,10 +26,10 @@ problem=p01
 
 # The exception bound to use.
 k_learn=0
-k=1
+k=0
 
 # The name of the domain file to determinize
-domain_file_name=domain-2
+domain_file_name=domain-design-all-2
 
 # The folder where the problems are stored (w/o the domain definition)
 problem_subfolder=problems
