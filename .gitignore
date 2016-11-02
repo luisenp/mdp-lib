@@ -41,3 +41,4 @@ testclient
 planserv
 *.pyc
 *.h.gch
+*last_id

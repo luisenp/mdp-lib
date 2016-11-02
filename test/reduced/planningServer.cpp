@@ -314,6 +314,8 @@ int main(int argc, char* args[])
     fillStringAtomMap(static_cast<PPDDLProblem*> (problem)->pProblem(),
                       stringAtomMap);
     double cost = 0.0;
+    double expectedCost = 0.0;
+    int countRounds = 0;
     while (true) {
         // Reading communication from the client.
         char buffer[BUFFER_SIZE];
@@ -331,6 +333,8 @@ int main(int argc, char* args[])
         } else if (msg.substr(0, 5) == "stop") { // Stop the program.
             break;
         } else if (msg.substr(0, 9) == "end-round") {
+            countRounds++;
+            expectedCost += cost;
             cost = 0;
             bzero(buffer, BUFFER_SIZE);
             sprintf(buffer, "%s", "round-ended");
@@ -369,6 +373,7 @@ int main(int argc, char* args[])
             cost += problem->cost(state, action);
         } else {
             cout << "DEAD-END." << endl;
+            cost = mdplib::dead_end_cost;
             oss << "(done)";
         }
         bzero(buffer, BUFFER_SIZE);
@@ -380,6 +385,9 @@ int main(int argc, char* args[])
             break;
         }
     }
+
+    cout << "Total rounds: " << countRounds << endl;
+    cout << "Expected cost: " << expectedCost / countRounds << endl;
 
     // Releasing memory
     reducedModel->cleanup();

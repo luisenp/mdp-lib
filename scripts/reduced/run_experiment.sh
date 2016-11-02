@@ -33,7 +33,7 @@ k=$5
 ../../planserv_red.out --problem=$pddl_folder/$domain/$problem.pddl:$problem \
   --det_problem=${domain}_det${determinization_index}.pddl \
   --det_descriptor=/tmp/${domain}_det${determinization_index}.desc \
-  --dir=/tmp --k=$k --max-time=1200 &
+  --dir=/tmp --k=$k --max-time=1200 > planserv_log.txt &
 
 # Starts the mdpsim server
 ../../../mdpsim-2.2/mdpsim --port=2323 --time-limit=1200000 --round-limit=50 \
@@ -59,4 +59,8 @@ if [ -z "$cost" ]; then
   cost=10000.0
 fi
 
-echo "$successes $cost"
+
+#Debugging
+cost_planserv=`grep -o "Expected cost: [0-9.]*" planserv_log.txt | grep -o "[0-9.]*"`
+
+echo "$successes $cost $cost_planserv"
