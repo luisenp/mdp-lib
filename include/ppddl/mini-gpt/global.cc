@@ -20,7 +20,7 @@ namespace gpt
   int simulations = 0;
   unsigned verbosity = 0;
   unsigned warning_level = 0;
-  double heuristic_weight = 4;
+  double heuristic_weight = 1;
   size_t xtra = 0;
   std::stack<heuristic_t*> hstack;
 };
