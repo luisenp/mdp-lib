@@ -34,7 +34,7 @@ private:
     std::string templateProblemFilename_;
 
     /* The file name of the updated problems solved by FF. */
-    const std::string currentProblemFilename_ = "/tmp/fftmpfile";
+    const std::string currentProblemFilename_ = "/tmp/rff_tmpfile";
 
     /* The total time available for planning (in seconds). */
     int maxPlanningTime_;
