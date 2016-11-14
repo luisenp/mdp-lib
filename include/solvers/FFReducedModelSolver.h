@@ -100,9 +100,6 @@ private:
     //                               FUNCTIONS                                //
     ////////////////////////////////////////////////////////////////////////////
 
-    /* Returns the action with the given name. */
-    mlcore::Action* getActionFromName(std::string actionName);
-
     /* Returns an action greedily on estimatedCosts_. */
     mlcore::Action* greedyAction_(mlcore::State* s, int horizon);
 

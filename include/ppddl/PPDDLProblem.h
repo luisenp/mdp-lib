@@ -33,6 +33,11 @@ public:
     problem_t* pProblem()  { return pProblem_; }
 
     /**
+     * Returns the action with the given name.
+     */
+    mlcore::Action* getActionFromName(std::string actionName);
+
+    /**
      * Overrides method from Problem.
      */
     virtual bool goal(mlcore::State* s) const;

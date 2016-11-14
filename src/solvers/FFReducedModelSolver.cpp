@@ -28,20 +28,6 @@ using namespace std;
 namespace mlsolvers
 {
 
-mlcore::Action* FFReducedModelSolver::getActionFromName(string actionName)
-{
-    ostringstream oss;
-    for (mlcore::Action* a : problem_->actions()) {
-        oss.str("");
-        oss.clear();
-        oss << a;
-        if (oss.str().find(actionName) != string::npos)
-            return a;
-    }
-    return nullptr;
-}
-
-
 mlcore::Action* FFReducedModelSolver::solve(mlcore::State* s0)
 {
     startingPlanningTime_ = time(nullptr);
@@ -142,10 +128,9 @@ double FFReducedModelSolver::bellmanUpdate(mlcore::State* s)
     mlreduced::ReducedState* reducedState = (mlreduced::ReducedState* ) s;
     if (useFF_ && reducedState->exceptionCount() == maxHorizon_) {
         // For exceptionCount = k we just call FF.
-        PPDDLState* pState =
+        PPDDLState* ppddlState =
             static_cast<PPDDLState*> (reducedState->originalState());
-        string stateAtoms = extractStateAtoms(
-            static_cast<PPDDLState*> (pState));
+        string stateAtoms = extractStateAtoms(ppddlState);
         replaceInitStateInProblemFile(templateProblemFilename_,
                                       stateAtoms + removedInitAtoms_,
                                       currentProblemFilename_);
@@ -165,7 +150,11 @@ double FFReducedModelSolver::bellmanUpdate(mlcore::State* s)
             // If FF finds this state is a dead-end,
             // getActionNameAndCostFromFF() returns "__mdplib-dead-end__"
             // and getActionFromName() returns a nullptr.
-            stateFFAction = getActionFromName(actionNameAndCost.first);
+            stateFFAction =
+                static_cast<mlppddl::PPDDLProblem*> (
+                    static_cast<mlreduced::ReducedModel*> (problem_)->
+                        originalProblem()
+                )->getActionFromName(actionNameAndCost.first);
             if (stateFFAction == nullptr) {
                 s->markDeadEnd();
             }
