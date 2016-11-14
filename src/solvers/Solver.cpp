@@ -174,7 +174,7 @@ double residual(mlcore::Problem* problem, mlcore::State* s)
 
 
 mlcore::State* mostLikelyOutcome(mlcore::Problem* problem, mlcore::State* s,
-                                 mlcore::Action* a)
+                                 mlcore::Action* a, bool noTies)
 {
     double prob = -1.0;
     double eps = 1.0e-6;
@@ -188,6 +188,8 @@ mlcore::State* mostLikelyOutcome(mlcore::Problem* problem, mlcore::State* s,
             outcomes.push_back(sccr.su_state);
         }
     }
+    if (noTies)
+        return outcomes[0];
     return outcomes[rand() % outcomes.size()];
 }
 

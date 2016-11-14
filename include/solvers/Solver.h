@@ -178,11 +178,16 @@ double residual(mlcore::Problem* problem, mlcore::State* s);
  * @param problem The problem that defines the transition function.
  * @param s The state for which the most likely outcome will be obtained.
  * @param a The action executed in the given state.
+ * @param noTies If true, then in the case of several outcomes tied with the
+ *               largest probability, the method will return the first one
+ *               in the order of the transition function. Otherwise, a random
+ *               outcome will be returned (out of the most likely ones).
  * @return The most likely outcome of the state and action pair.
  */
 mlcore::State* mostLikelyOutcome(mlcore::Problem* problem,
                                  mlcore::State* s,
-                                 mlcore::Action* a);
+                                 mlcore::Action* a,
+                                 bool noTies = false);
 
 
 /**
