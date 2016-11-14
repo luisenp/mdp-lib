@@ -26,6 +26,7 @@
 
 #include "../../include/solvers/FFReducedModelSolver.h"
 #include "../../include/solvers/LAOStarSolver.h"
+#include "../../include/solvers/RFFSolver.h"
 
 #include "../../include/util/flags.h"
 #include "../../include/util/general.h"
@@ -202,14 +203,19 @@ int main(int argc, char* args[])
     // Solving reduced model using LAO* + FF.
     double totalPlanningTime = 0.0;
     clock_t startTime = clock();
-    FFReducedModelSolver solver(reducedModel,
-                                ffExec,
-                                directory + "/" + detProblem,
-                                directory + "/ff-template.pddl",
-                                k,
-                                1.0e-3,
-                                useFF);
-    solver.solve(reducedModel->initialState());
+//    FFReducedModelSolver solver(reducedModel,
+//                                ffExec,
+//                                directory + "/" + detProblem,
+//                                directory + "/ff-template.pddl",
+//                                k,
+//                                1.0e-3,
+//                                useFF);
+//    solver.solve(reducedModel->initialState());
+    RFFSolver solver(static_cast<mlppddl::PPDDLProblem*> (problem),
+              ffExec,
+              directory + "/" + detProblem,
+              directory + "/ff-template.pddl");
+    solver.solve(problem->initialState());
     clock_t endTime = clock();
     totalPlanningTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
     cout << "cost " << reducedModel->initialState()->cost() <<
@@ -250,7 +256,8 @@ int main(int argc, char* args[])
                 currentState->exceptionCount(0);
                 currentState = static_cast<ReducedState*> (
                     reducedModel->addState(currentState));
-                solver.solve(currentState);
+//                solver.solve(currentState);
+                solver.solve(currentState->originalState());
             }
 
             if (currentState->deadEnd()) {
