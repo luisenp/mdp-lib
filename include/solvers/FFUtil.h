@@ -159,6 +159,8 @@ static void sigchld_hdl(int sig)
  *                             started. Used if a planning limit is desired.
  * @param maxPlanningTime The maximum time allowed for planning, counting from
  *                        startingPlanningTime.
+ * @param fullPlan An array to store the full plan computed by FF. If a nullptr
+ *                 is passed (default value), then this will be ignored.
  *
  * @return A pair storing the action name and the computed cost.
  */
@@ -167,7 +169,8 @@ inline std::pair<std::string, int> getActionNameAndCostFromFF(
     std::string determinizedDomainFilename,
     std::string currentProblemFilename,
     int startingPlanningTime = 0,
-    int maxPlanningTime = 1000000)
+    int maxPlanningTime = 1000000,
+    std::vector<std::string>* fullPlan = nullptr)
 {
     pid_t child_pid;
     int fds[2];
@@ -216,6 +219,8 @@ inline std::pair<std::string, int> getActionNameAndCostFromFF(
         FILE* ff_output = fdopen(fds[0], "r");
         if (ff_output) {
             char lineBuffer[1024];
+            // used to check if FF is still returning actions
+            // (since they are numbered).
             int currentLineAction = -1;
             while (fgets(lineBuffer, 1024, ff_output)) {
                 if (strstr(lineBuffer, "goal can be simplified to FALSE.") !=
@@ -229,7 +234,10 @@ inline std::pair<std::string, int> getActionNameAndCostFromFF(
                         continue;
                     pch += 3;
                     actionName += pch;
+                    // removing the line break character at the end.
                     actionName = actionName.substr(0, actionName.size() - 1);
+                    if (fullPlan)
+                        fullPlan->push_back(actionName);
                     currentLineAction = 0;
                 } else if (currentLineAction != -1) {
                     currentLineAction++;
@@ -239,6 +247,16 @@ inline std::pair<std::string, int> getActionNameAndCostFromFF(
                     if (pch == nullptr) {
                         costFF = currentLineAction;
                         currentLineAction = -1;
+                    } else if (fullPlan) {
+                        // ignore the step number
+                        // (size = number of digits + 2 characters)
+                        pch += int(log10(currentLineAction)) + 1 + 2;
+                        std::string thisActionName = "";
+                        thisActionName += pch;
+                        // removing the line break character at the end.
+                        thisActionName =
+                            thisActionName.substr(0, thisActionName.size() - 1);
+                        fullPlan->push_back(thisActionName);
                     }
                 }
             }
