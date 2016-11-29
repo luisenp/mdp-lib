@@ -26,7 +26,7 @@
   )
   (:action put-on-block
    :parameters (?b1 ?b2 - block)
-   :precondition (and (holding ?b1) (clear ?b2) (no-destroyed ?b2))
+   :precondition (and (holding ?b1) (clear ?b2) (no-destroyed ?b2) (not (= ?b1 ?b2)) )
    :effect (and (emptyhand) (on ?b1 ?b2) (not (holding ?b1)) (not (clear ?b2))
                 (probabilistic 1/10 (when (no-detonated ?b1) (and (not (no-destroyed ?b2)) (not (no-detonated ?b1))))))
   )

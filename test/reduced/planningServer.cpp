@@ -315,6 +315,7 @@ int main(int argc, char* args[])
                       stringAtomMap);
     double cost = 0.0;
     double expectedCost = 0.0;
+    double variance = 0.0;
     int countRounds = 0;
     while (true) {
         // Reading communication from the client.
@@ -334,11 +335,14 @@ int main(int argc, char* args[])
             break;
         } else if (msg.substr(0, 9) == "end-round") {
             countRounds++;
-            expectedCost += cost;
-            cost = 0;
+            double delta = cost - expectedCost;
+            expectedCost += delta / countRounds;
+            variance += delta * (cost - expectedCost);
+            //expectedCost += cost;
             bzero(buffer, BUFFER_SIZE);
             sprintf(buffer, "%s", "round-ended");
-            cout << "SENDING: " << buffer << "." << endl;
+            cout << "SENDING: " << buffer << ". cost " << cost << endl;
+            cost = 0;
             n = write(newsockfd, buffer, strlen(buffer));
             if (n < 0) {
                 cerr << "ERROR: couldn't write to socket." << endl;
@@ -378,7 +382,7 @@ int main(int argc, char* args[])
         }
         bzero(buffer, BUFFER_SIZE);
         sprintf(buffer, "%s", oss.str().c_str());
-        cout << buffer << "." << endl;
+        cout << buffer << endl;
         n = write(newsockfd, buffer, strlen(buffer));
         if (n < 0) {
             cerr << "ERROR: couldn't write to socket." << endl;
@@ -387,7 +391,9 @@ int main(int argc, char* args[])
     }
 
     cout << "Total rounds: " << countRounds << endl;
-    cout << "Expected cost: " << expectedCost / countRounds << endl;
+//    cout << "Expected cost: " << expectedCost / countRounds << endl;
+    cout << "Expected cost: " << expectedCost << endl;
+    cout << "StDev: " << sqrt(variance / (countRounds - 1)) << endl;
 
     // Releasing memory
     reducedModel->cleanup();

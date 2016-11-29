@@ -24,6 +24,8 @@ determinization_index=$4
 # The exception bound to use.
 k=$5
 
+rlimit=$6
+
 # Setups the template problem for FF (removes PPDDL features not supported 
 # by FF and other cleanup)
 ./setup_ff_template.py -p $pddl_folder/$domain/$problem.pddl \
@@ -36,8 +38,8 @@ k=$5
   --dir=/tmp --k=$k --max-time=1200 > planserv_log.txt &
 
 # Starts the mdpsim server
-../../../mdpsim-2.2/mdpsim --port=2323 --time-limit=1200000 --round-limit=50 \
-  --turn-limit=2500 $pddl_folder/$domain/$problem.pddl &
+../../../mdpsim-2.2/mdpsim --port=2323 --time-limit=1200000 \
+  --round-limit=$rlimit --turn-limit=2500 $pddl_folder/$domain/$problem.pddl &
 
 # This might not be necessary, but just in case
 sleep 1
@@ -45,7 +47,7 @@ sleep 1
 # Starts the mdpsim client
 ../../../mdpsim-2.2/mdpclient --host=localhost --port=2323 \
   $pddl_folder/$domain/$problem.pddl &> log.txt
-
+  
 # Kill the planning and mdpsim servers
 kill $(ps aux | grep '[p]lanserv' | awk '{print $2}')
 kill $(ps aux | grep '[l]t-mdpsim' | awk '{print $2}')
@@ -59,8 +61,8 @@ if [ -z "$cost" ]; then
   cost=10000.0
 fi
 
-
 #Debugging
 cost_planserv=`grep -o "Expected cost: [0-9.]*" planserv_log.txt | grep -o "[0-9.]*"`
+std_planserv=`grep -o "StDev: [0-9.]*" planserv_log.txt | grep -o "[0-9.]*"`
 
-echo "$successes $cost $cost_planserv"
+echo "$successes $cost $cost_planserv $std_planserv"
