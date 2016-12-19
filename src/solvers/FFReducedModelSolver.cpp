@@ -66,8 +66,12 @@ void FFReducedModelSolver::lao(mlcore::State* s0)
                     continue;
                 } else {
                     mlcore::Action* a = s->bestAction();
+                    mlreduced::ReducedState* reducedState =
+                        (mlreduced::ReducedState* ) s;
                     for (Successor sccr : problem_->transition(s, a)) {
-                        stateStack.push_back(sccr.su_state);
+                        if (!(useFF_ &&
+                            reducedState->exceptionCount() == maxHorizon_))
+                            stateStack.push_back(sccr.su_state);
                     }
                 }
                 this->bellmanUpdate(s);
@@ -92,8 +96,12 @@ void FFReducedModelSolver::lao(mlcore::State* s0)
                     // if it reaches this point it hasn't converged yet.
                     error = mdplib::dead_end_cost + 1;
                 } else {
+                    mlreduced::ReducedState* reducedState =
+                        (mlreduced::ReducedState* ) s;
                     for (Successor sccr : problem_->transition(s, prevAction)) {
-                        stateStack.push_back(sccr.su_state);
+                        if (!(useFF_ &&
+                            reducedState->exceptionCount() == maxHorizon_))
+                            stateStack.push_back(sccr.su_state);
                     }
                 }
                 error = std::max(error, this->bellmanUpdate(s));
