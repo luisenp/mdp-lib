@@ -6,6 +6,7 @@
  * FF planner.
  */
 
+#include <algorithm>
 #include <cerrno>
 #include <chrono>
 #include <cmath>
@@ -236,6 +237,10 @@ inline std::pair<std::string, int> getActionNameAndCostFromFF(
                     actionName += pch;
                     // removing the line break character at the end.
                     actionName = actionName.substr(0, actionName.size() - 1);
+                    transform(actionName.begin(),
+                              actionName.end(),
+                              actionName.begin(),
+                              ::tolower);
                     if (fullPlan)
                         fullPlan->push_back(actionName);
                     currentLineAction = 0;
@@ -256,6 +261,10 @@ inline std::pair<std::string, int> getActionNameAndCostFromFF(
                         // removing the line break character at the end.
                         thisActionName =
                             thisActionName.substr(0, thisActionName.size() - 1);
+                        transform(thisActionName.begin(),
+                                  thisActionName.end(),
+                                  thisActionName.begin(),
+                                  ::tolower);
                         fullPlan->push_back(thisActionName);
                     }
                 }
@@ -264,9 +273,6 @@ inline std::pair<std::string, int> getActionNameAndCostFromFF(
         } else {
             std::cerr << "Error reading the output of FF." << std::endl;
             exit(-1);
-        }
-        for (int i = 0; i < actionName.size(); i++) {
-            actionName[i] = tolower(actionName[i]);
         }
         return std::make_pair(actionName, costFF);
     } else {    // child process (the one that calls FF)

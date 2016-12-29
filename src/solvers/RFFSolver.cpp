@@ -14,15 +14,13 @@ namespace mlsolvers
 mlcore::Action* RFFSolver::solve(mlcore::State* s0)
 {
                                                                                 mdplib_debug = true;
-                                                                                dprint1("here1");
+    startingPlanningTime_ = time(nullptr);
     string stateAtoms =
         extractStateAtoms(static_cast<mlppddl::PPDDLState*> (s0));
-                                                                                dprint1("here2");
 
     replaceInitStateInProblemFile(templateProblemFilename_,
                                   stateAtoms + removedInitAtoms_,
                                   currentProblemFilename_);
-                                                                                dprint1("here3");
     vector<string> fullPlanFF;
     pair<string, int> actionNameAndCost =
         getActionNameAndCostFromFF(ffExecFilename_,
@@ -31,16 +29,20 @@ mlcore::Action* RFFSolver::solve(mlcore::State* s0)
                                    startingPlanningTime_,
                                    maxPlanningTime_,
                                    &fullPlanFF);
-                                                                                dprint1("here4");
 
     mlcore::State* currentState = s0;
+                                                                                dprint2("here5", fullPlanFF.size());
     for (string actionName : fullPlanFF) {
-        std::cerr << currentState << " " << actionName << " ";
+                                                                                dprint1("here6");
+        std::cerr << currentState << "===" << actionName << "===";
         mlcore::Action* action = problem_->getActionFromName(actionName);
+        currentState->setBestAction(action);
         std::cerr << action << std::endl;
         currentState =
             mostLikelyOutcome(problem_, currentState, action, true);
+                                                                                dprint1("here7");
     }
+                                                                                dprint3("here8", s0, actionNameAndCost.first);
     return problem_->getActionFromName(actionNameAndCost.first);
 
 }
