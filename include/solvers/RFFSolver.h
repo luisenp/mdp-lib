@@ -45,9 +45,30 @@ private:
     /* The initial atoms that are removed during the PPDDL parsing. */
     std::string removedInitAtoms_;
 
+    /* The terminal states of the current policy. */
+    mlcore::StateSet terminalStates_;
+
+    /* Stores the probability of reaching each terminal state. */
+    mlcore::StateDoubleMap probabilitiesTerminals_;
+
     ////////////////////////////////////////////////////////////////////////////
     //                               FUNCTIONS                                //
     ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Calls FF to find a plan for state s. The output parameter
+     * fullPlan stores the complete plan for the determinized domain, starting
+     * from state s.
+     */
+    void callFF(mlcore::State* s, std::vector<std::string>& fullPlan) const;
+
+    /*
+     * Computes the probability of reaching terminal states under the current
+     * policy, using N MonteCarlo simulations.
+     * For each state, the probability is stored in variable
+     * probabilitiesTerminals_. The return value is the total probability
+     * of reaching terminal states.
+     */
+    double failProb(mlcore::State* s, int N);
 
 public:
 
