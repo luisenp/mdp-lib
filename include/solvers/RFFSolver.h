@@ -28,10 +28,16 @@ private:
     std::string determinizedDomainFilename_;
 
     /*
-     * The file name with the template used to create the problems to be solved
+     * The file name of the template used to create the problems to be solved
      * by FF.
      */
     std::string templateProblemFilename_;
+
+    /* The threshold probability for reaching a terminal state. */
+    double rho_;
+
+    /* The maximum number of sub-goals to add to the FF problems. */
+    int k_;
 
     /* The file name of the updated problems solved by FF. */
     const std::string currentProblemFilename_ = "/tmp/rff_tmpfile";
@@ -55,11 +61,16 @@ private:
     //                               FUNCTIONS                                //
     ////////////////////////////////////////////////////////////////////////////
     /*
-     * Calls FF to find a plan for state s. The output parameter
-     * fullPlan stores the complete plan for the determinized domain, starting
-     * from state s.
+     * Calls FF on the deterministic version of the problem to find a plan
+     * for state s. The method receives a set of
+     * subgoals to add to the original problem, so that it becomes
+     * easier to solve (as explained in the RFF paper).
+     * The output parameter fullPlan stores the complete plan for the
+     * determinized domain, starting from state s.
      */
-    void callFF(mlcore::State* s, std::vector<std::string>& fullPlan) const;
+    void callFF(mlcore::State* s,
+                std::vector<mlcore::State*> subgoals,
+                std::vector<std::string>& fullPlan) const;
 
     /*
      * Computes the probability of reaching terminal states under the current
@@ -76,11 +87,15 @@ public:
               std::string ffExecFilename,
               std::string determinizedDomainFilename,
               std::string templateProblemFilename,
+              double rho = 0.2,
+              double k = 100,
               time_t maxPlanningTime = 3600) :
         problem_(problem),
         ffExecFilename_(ffExecFilename),
         determinizedDomainFilename_(determinizedDomainFilename),
         templateProblemFilename_(templateProblemFilename),
+        rho_(rho),
+        k_(k),
         maxPlanningTime_(maxPlanningTime)
 
     {

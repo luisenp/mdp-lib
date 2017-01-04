@@ -98,7 +98,7 @@ inline std::string extractStateAtoms(mlppddl::PPDDLState* state)
         // [ atom_1_Id:(atom_1),
         //   atom_2_Id:(atom_2),
         //   ...,
-        ///  atom_N_Id:(atom_N) ]
+        //  atom_N_Id:(atom_N) ]
         if (stateStr[i] == ':') {
             i++;
             do {
@@ -113,8 +113,11 @@ inline std::string extractStateAtoms(mlppddl::PPDDLState* state)
 
 /**
  * Replaces the initial state in the given template PPDDL filename
- * with the given state atoms. Then writes the output to the given
+ * with the given state atoms. Then writes the result to the given
  * output file.
+ *
+ * This function assumes the original initial state was described in a single
+ * line.
  */
 inline void replaceInitStateInProblemFile(
     std::string templateProblemFilename_,
@@ -129,6 +132,69 @@ inline void replaceInitStateInProblemFile(
         while (getline(problemTemplateFile, line)) {
             if (line.find("init") != std::string::npos) {
                 line = "(:init " + atomsCurrentState + ")";
+            }
+            newProblemText += line + "\n";
+        }
+        problemTemplateFile.close();
+    }
+    std::ofstream newProblemFile;
+    newProblemFile.open(outputProblemFile);
+    newProblemFile << newProblemText;
+    newProblemFile.close();
+}
+
+
+/**
+ * Replaces the goal state in the given template PPDDL filename with additional
+ * sub-goal states. Then writes the result to the given output file.
+ *
+ * This function assumes the original goal state was described in a single
+ * line.
+ */
+inline void addSubGoalsToProblemFile(
+    std::string templateProblemFilename_,
+    std::vector<mlcore::State*> additionalGoals,
+    std::string outputProblemFile)
+{
+    std::ifstream problemTemplateFile;
+    problemTemplateFile.open(templateProblemFilename_, std::ifstream::in);
+    std::string line;
+    std::string newProblemText = "";
+    if (problemTemplateFile.is_open()) {
+        while (getline(problemTemplateFile, line)) {
+            size_t idxGoalText = line.find("goal");
+            if (idxGoalText != std::string::npos) {
+                std::string newLine = "(:goal (or ";
+                // Adding original goal state
+                size_t idxStartAtoms = line.find('(', idxGoalText + 4);
+                size_t idxEndAtoms = -1;
+                bool firstCloseParens = true;
+                // The goal state is described as "(:goal (atom1) (atom2) ).
+                // Must find second to last parenthesis, to extract the atoms.
+                for (size_t i = line.size() - 1; i > idxStartAtoms; i--) {
+                    if (line[i] == ')') {
+                        if (firstCloseParens)
+                            firstCloseParens = false;
+                        else {
+                            idxEndAtoms = i;
+                            break;
+                        }
+                    }
+                }
+                // These adds the original atoms in the goal state as a new
+                // subgoal
+                newLine += "(and " +
+                    line.substr(idxStartAtoms,
+                                idxEndAtoms - idxStartAtoms + 1) + ')';
+                // Adding additional states
+                for (auto const state : additionalGoals) {
+                    std::string atoms =
+                        extractStateAtoms(
+                            static_cast<mlppddl::PPDDLState*> (state));
+                    newLine += " (and " + atoms + ')';
+                }
+                newLine += "))";
+                line = newLine;
             }
             newProblemText += line + "\n";
         }

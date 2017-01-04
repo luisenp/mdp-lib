@@ -17,6 +17,8 @@ mlcore::Action* RFFSolver::solve(mlcore::State* s0)
                                                                                 mdplib_debug = true;
     startingPlanningTime_ = time(nullptr);
     terminalStates_.insert(s0);
+    mlcore::StateSet policyGraphSeen;
+    vector<mlcore::State*> statesPolicyGraph;
 
     for (int i = 0; i < 10; i++) {
         mlcore::StateSet expandedStates;
@@ -24,56 +26,75 @@ mlcore::Action* RFFSolver::solve(mlcore::State* s0)
         for (mlcore::State* s : terminalStates_) {
             // Solving using FF
             vector<string> fullPlan;
-            callFF(s, fullPlan);
+                                                                                    for (auto const pupu : statesPolicyGraph)
+                                                                                        dprint2("graph ", pupu);
+            callFF(s, statesPolicyGraph, fullPlan);
+                                                                                    dprint1("done");
 
             // Extract policy
             mlcore::State* sPrime = s;
-                                                                                dprint2("fullplan", fullPlan.size());
             for (string actionName : fullPlan) {
                 expandedStates.insert(sPrime);
-//                                                                                dprint2("expanded", sPrime);
-//                                                                                    std::cerr << sPrime << "===" << actionName << "===";
                 mlcore::Action* action =
                     problem_->getActionFromName(actionName);
+                                                                                    dprint3("------expanding ", sPrime, actionName);
                 if (action == nullptr) {
                     sPrime->markDeadEnd();
                     continue;
                 }
                 sPrime->setBestAction(action);
-//                                                                                    std::cerr << action << std::endl;
                 // Add new set of terminal states
                 for (auto const succ : problem_->transition(sPrime, action)) {
                     if (succ.su_state->bestAction() == nullptr &&
                         !problem_->goal(succ.su_state)) {
                         newTerminalStates.insert(succ.su_state);
-//                                                                                dprint2("new terminal", succ.su_state);
                     }
                 }
                 sPrime = mostLikelyOutcome(problem_, sPrime, action, true);
-//                                                                                    std::cerr << "added all successors" << std::endl;
             }
         }
-                                                                                    std::cerr << "done with the terminal states" << std::endl;
-                                                                                    std::cerr << "newterm " << newTerminalStates.size() << std::endl;
-                                                                                    std::cerr << "expand " << expandedStates.size() << std::endl;
+                                                                                for (auto const pupu : newTerminalStates)
+                                                                                    dprint2("new terminal", pupu);
+                                                                                for (auto const pupu : expandedStates) {
+                                                                                    dprint2("expanded ", pupu);
+                                                                                    if (pupu->bestAction())
+                                                                                        dprint1(pupu->bestAction());
+                                                                                    else
+                                                                                        dprint1("null");
+                                                                                }
         terminalStates_.insert(newTerminalStates.begin(),
                                newTerminalStates.end());
-        for (mlcore::State* sRemove : expandedStates)
-            terminalStates_.erase(terminalStates_.find(sRemove));
+        for (mlcore::State* sExpanded : expandedStates) {
+            terminalStates_.erase(terminalStates_.find(sExpanded));
+            if (policyGraphSeen.insert(sExpanded).second)
+                statesPolicyGraph.push_back(sExpanded);
+        }
                                                                                     dprint2("terminalStates", terminalStates_.size());
+                                                                                    dprint2("policy graph ", statesPolicyGraph.size());
         double totalProb = failProb(s0, 50);
                                                                                     dprint2("totalProb", totalProb);
+                                                                                    dprint1("*************************************");
+                                                                                    dprint1("*************************************");
+        if (totalProb < rho_)
+            break;
     }
     return s0->bestAction();
 }
 
 
-void RFFSolver::callFF(mlcore::State* s, vector<string>& fullPlan) const
+void RFFSolver::callFF(mlcore::State* s,
+                       vector<mlcore::State*> subgoals,
+                       vector<string>& fullPlan) const
 {
     string atoms = extractStateAtoms(static_cast<mlppddl::PPDDLState*> (s));
     replaceInitStateInProblemFile(templateProblemFilename_,
                                   atoms + removedInitAtoms_,
                                   currentProblemFilename_);
+
+    addSubGoalsToProblemFile(templateProblemFilename_,
+                             subgoals,
+                             currentProblemFilename_);
+
     pair<string, int> actionNameAndCost =
         getActionNameAndCostFromFF(ffExecFilename_,
                                    determinizedDomainFilename_,
@@ -94,6 +115,7 @@ double RFFSolver::failProb(mlcore::State* s, int N)
         mlcore::State* currentState = s;
         while (!problem_->goal(currentState) &&
                terminalStates_.count(currentState) == 0) {
+                                                                                dprint2(currentState, currentState->bestAction());
             currentState = randomSuccessor(problem_,
                                            currentState,
                                            currentState->bestAction());
@@ -102,6 +124,7 @@ double RFFSolver::failProb(mlcore::State* s, int N)
             probabilitiesTerminals_[s] += delta;
             totalProbabilityTerminals += delta;
         }
+                                                                                dprint1("*********************************");
     }
     return totalProbabilityTerminals;
 }
