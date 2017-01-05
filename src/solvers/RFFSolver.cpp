@@ -26,10 +26,10 @@ mlcore::Action* RFFSolver::solve(mlcore::State* s0)
         for (mlcore::State* s : terminalStates_) {
             // Solving using FF
             vector<string> fullPlan;
-                                                                                    for (auto const pupu : statesPolicyGraph)
-                                                                                        dprint2("graph ", pupu);
+                                                                                for (auto const pupu : statesPolicyGraph)
+                                                                                    dprint2("graph ", pupu);
             callFF(s, statesPolicyGraph, fullPlan);
-                                                                                    dprint1("done");
+                                                                                dprint1("done");
 
             // Extract policy
             mlcore::State* sPrime = s;
@@ -37,7 +37,7 @@ mlcore::Action* RFFSolver::solve(mlcore::State* s0)
                 expandedStates.insert(sPrime);
                 mlcore::Action* action =
                     problem_->getActionFromName(actionName);
-                                                                                    dprint3("------expanding ", sPrime, actionName);
+                                                                                dprint3("------expanding ", sPrime, actionName);
                 if (action == nullptr) {
                     sPrime->markDeadEnd();
                     continue;
@@ -69,12 +69,12 @@ mlcore::Action* RFFSolver::solve(mlcore::State* s0)
             if (policyGraphSeen.insert(sExpanded).second)
                 statesPolicyGraph.push_back(sExpanded);
         }
-                                                                                    dprint2("terminalStates", terminalStates_.size());
-                                                                                    dprint2("policy graph ", statesPolicyGraph.size());
+                                                                                dprint2("terminalStates", terminalStates_.size());
+                                                                                dprint2("policy graph ", statesPolicyGraph.size());
         double totalProb = failProb(s0, 50);
-                                                                                    dprint2("totalProb", totalProb);
-                                                                                    dprint1("*************************************");
-                                                                                    dprint1("*************************************");
+                                                                                dprint2("totalProb", totalProb);
+                                                                                dprint1("*************************************");
+                                                                                dprint1("*************************************");
         if (totalProb < rho_)
             break;
     }
@@ -93,6 +93,7 @@ void RFFSolver::callFF(mlcore::State* s,
 
     addSubGoalsToProblemFile(templateProblemFilename_,
                              subgoals,
+                             problem_,
                              currentProblemFilename_);
 
     pair<string, int> actionNameAndCost =

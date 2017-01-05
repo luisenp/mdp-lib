@@ -40,7 +40,7 @@ namespace mlsolvers
 inline std::string storeRemovedInitAtoms(
     std::string problemFilename, mlppddl::PPDDLProblem* problem)
 {
-    // Storing all atoms in the initial state
+    // Storing all the atoms present in the initial state
     std::ifstream problemFile;
     problemFile.open(problemFilename, std::ifstream::in);
     std::string line;
@@ -66,8 +66,8 @@ inline std::string storeRemovedInitAtoms(
 
     // Figuring out which atoms were removed from the PPDDL parser
     problem_t* pProblem = problem->pProblem();
-    Domain dom = pProblem->domain();
-    PredicateTable& preds = dom.predicates();
+    const Domain& dom = pProblem->domain();
+    const PredicateTable& preds = dom.predicates();
     TermTable& terms = pProblem->terms();
     for (auto const & atom : problem_t::atom_hash()) {
         std::ostringstream oss;
@@ -112,6 +112,29 @@ inline std::string extractStateAtoms(mlppddl::PPDDLState* state)
 
 
 /**
+ * Extracts the atoms that doesn't hold in the given PPDDL state
+ * and returns them as a string.
+ */
+inline std::string extractAtomsNotInState(mlppddl::PPDDLState* state,
+                                          mlppddl::PPDDLProblem* problem)
+{
+    problem_t* pProblem = problem->pProblem();
+    const Domain& dom = pProblem->domain();
+    const PredicateTable& preds = dom.predicates();
+    TermTable& terms = pProblem->terms();
+    std::string atomsNotCurrentState = "";
+    for (auto const & atom : problem_t::atom_hash()) {
+        if (!state->pState()->holds(*atom.first)) {
+            std::ostringstream oss;
+            atom.first->print(oss, preds, dom.functions(), terms);
+            atomsNotCurrentState += "(not " + oss.str() + ") ";
+        }
+    }
+    return atomsNotCurrentState;
+}
+
+
+/**
  * Replaces the initial state in the given template PPDDL filename
  * with the given state atoms. Then writes the result to the given
  * output file.
@@ -152,12 +175,13 @@ inline void replaceInitStateInProblemFile(
  * line.
  */
 inline void addSubGoalsToProblemFile(
-    std::string templateProblemFilename_,
+    std::string templateProblemFilename,
     std::vector<mlcore::State*> additionalGoals,
+    mlppddl::PPDDLProblem* problem,
     std::string outputProblemFile)
 {
     std::ifstream problemTemplateFile;
-    problemTemplateFile.open(templateProblemFilename_, std::ifstream::in);
+    problemTemplateFile.open(templateProblemFilename, std::ifstream::in);
     std::string line;
     std::string newProblemText = "";
     if (problemTemplateFile.is_open()) {
@@ -191,8 +215,14 @@ inline void addSubGoalsToProblemFile(
                     std::string atoms =
                         extractStateAtoms(
                             static_cast<mlppddl::PPDDLState*> (state));
-                    newLine += " (and " + atoms + ')';
+                    std::string atomsNot = extractAtomsNotInState(
+                            static_cast<mlppddl::PPDDLState*> (state),
+                            problem);
+//                                                                                std::cerr << "atomsnot ";
+//                                                                                std::cerr << atomsNot << std::endl;
+                    newLine += " (and " + atoms + " " + atomsNot + ')';
                 }
+                                                                                std::cerr << "newline " << newLine << std::endl;
                 newLine += "))";
                 line = newLine;
             }
@@ -200,6 +230,7 @@ inline void addSubGoalsToProblemFile(
         }
         problemTemplateFile.close();
     }
+//                                                                                std::cerr << "newproblemdone" << std::endl;
     std::ofstream newProblemFile;
     newProblemFile.open(outputProblemFile);
     newProblemFile << newProblemText;
@@ -290,6 +321,7 @@ inline std::pair<std::string, int> getActionNameAndCostFromFF(
             // (since they are numbered).
             int currentLineAction = -1;
             while (fgets(lineBuffer, 1024, ff_output)) {
+//                                                                                std::cerr << lineBuffer << std::endl;
                 if (strstr(lineBuffer, "goal can be simplified to FALSE.") !=
                         nullptr) {
                     break;  // This makes actionName = "__mdplib-dead-end__"
