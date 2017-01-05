@@ -40,3 +40,4 @@ mdp-lib.layout
 testclient
 planserv
 *.pyc
+*.gch

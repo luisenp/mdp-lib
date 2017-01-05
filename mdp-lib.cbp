@@ -570,11 +570,13 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/solvers/DeterministicSolver.h" />
 		<Unit filename="include/solvers/EpicSolver.h" />
 		<Unit filename="include/solvers/FFReducedModelSolver.h" />
+		<Unit filename="include/solvers/FFUtil.h" />
 		<Unit filename="include/solvers/FLARESSolver.h" />
 		<Unit filename="include/solvers/HDPSolver.h" />
 		<Unit filename="include/solvers/HMinHeuristic.h" />
 		<Unit filename="include/solvers/LAOStarSolver.h" />
 		<Unit filename="include/solvers/LRTDPSolver.h" />
+		<Unit filename="include/solvers/RFFSolver.h" />
 		<Unit filename="include/solvers/RandomPolicy.h" />
 		<Unit filename="include/solvers/SSiPPSolver.h" />
 		<Unit filename="include/solvers/Solver.h" />
@@ -633,6 +635,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="src/solvers/HMinHeuristic.cpp" />
 		<Unit filename="src/solvers/LAOStarSolver.cpp" />
 		<Unit filename="src/solvers/LRTDPSolver.cpp" />
+		<Unit filename="src/solvers/RFFSolver.cpp" />
 		<Unit filename="src/solvers/RandomPolicy.cpp" />
 		<Unit filename="src/solvers/SSiPPSolver.cpp" />
 		<Unit filename="src/solvers/Solver.cpp" />

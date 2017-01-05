@@ -142,7 +142,10 @@ public:
     /**
      * Clears the set of override goals.
      */
-    void clearOverrideGoals() { overrideGoals_->clear(); }
+    void clearOverrideGoals() {
+        if (overrideGoals_)
+            overrideGoals_->clear();
+    }
 
     /**
      * Sets the given state as the initial state of the problem.

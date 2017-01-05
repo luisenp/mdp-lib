@@ -53,6 +53,8 @@ int warning_level = 0;
 
 static int verbosity = 0;
 static int k = 0;
+double tau = 1.2;
+int l = 2;
 
 mlcore::Problem* problem = nullptr;
 mlcore::Heuristic* heuristic = nullptr;
@@ -77,22 +79,30 @@ void findBestReductionGreedy(mlcore::Problem* problem,
 {
     // Evaluating expected cost of full reduction
     reducedModel = new ReducedModel(problem, bestReductionGreedy, k);
-    double result = ReducedModel::evaluateMarkovChain(reducedModel);
-    for (int i = 0; i < 10; i++) {
+    double previousResult = ReducedModel::evaluateMarkovChain(reducedModel);
+                                                                                dprint2("original", previousResult);
+    int numOutcomes = 0;
+    for (unsigned int idx = 0; idx < actionGroups.size(); idx++)
+        numOutcomes +=
+            bestReductionGreedy->
+                primaryIndicatorsActions()[actionGroups[idx][0]].size();
+                                                                                dprint2("num outcomes", numOutcomes);
+    for (int i = 0; i < numOutcomes; i++) {
         double bestResult = mdplib::dead_end_cost + 1;
         int bestGroup = -1;
         int bestOutcomeIndex = -1;
         unordered_map< mlcore::Action*, vector <bool> > &
             primaryIndicatorsActions =
                 bestReductionGreedy->primaryIndicatorsActions();
-        for (unsigned int groupIndex = 0; groupIndex < actionGroups.size();
+        for (size_t groupIndex = 0; groupIndex < actionGroups.size();
              groupIndex++) {
             vector<mlcore::Action*> & actionGroup = actionGroups[groupIndex];
+            int numPrimaryInGroup = 0;
             // Testing a new reduced model for each outcome of the actions in
             // this group. We use actionGroup[0] to get the number of outcomes,
             // because all actions in the same group should have the same
             // number of outcomes
-            for (unsigned int outcomeIdx = 0;
+            for (size_t outcomeIdx = 0;
                  outcomeIdx < primaryIndicatorsActions[actionGroup[0]].size();
                  outcomeIdx++) {
                 // The greedy method works by removing outcomes. If it is
@@ -109,24 +119,64 @@ void findBestReductionGreedy(mlcore::Problem* problem,
                 for (mlcore::Action* a : actionGroup)
                     testPrimaryIndicatorsActions[a][outcomeIdx] = false;
                 reducedModel = new ReducedModel(problem, testReduction, k);
-                result = ReducedModel::evaluateMarkovChain(reducedModel);
-                cout << result << endl;
+                double result = ReducedModel::evaluateMarkovChain(reducedModel);
                 if (result < bestResult) {
-                    bestGroup = groupIndex;
-                    bestOutcomeIndex = outcomeIdx;
-                    bestResult = result;
+                    if (result < tau * previousResult) {
+                        bestGroup = groupIndex;
+                        bestOutcomeIndex = outcomeIdx;
+                        bestResult = result;
+                    }
                 }
                 // Set the outcome back to true to try a new model
                 for (mlcore::Action* a : actionGroup)
                     testPrimaryIndicatorsActions[a][outcomeIdx] = false;
             }
         }
-        for (mlcore::Action* a : actionGroups[bestGroup]) {
-            bestReductionGreedy->
-                primaryIndicatorsActions()[a][bestOutcomeIndex] = false;
+        // Checking if the current reduction satisfies the desired number of
+        // primary outcomes
+        bool satisfiesL = true;
+        for (size_t groupIndex = 0; groupIndex < actionGroups.size();
+             groupIndex++) {
+            vector<mlcore::Action*> & actionGroup = actionGroups[groupIndex];
+            int primaryCount = 0;
+            for (size_t outcomeIdx = 0;
+                 outcomeIdx < primaryIndicatorsActions[actionGroup[0]].size();
+                 outcomeIdx++) {
+                if (primaryIndicatorsActions[actionGroup[0]][outcomeIdx])
+                    primaryCount++;
+            }
+            if (primaryCount > l)
+                satisfiesL = false;
         }
-                                                                                dprint1("*************");
+        // Checking if the decrement was too large to justify the new model.
+        if (bestOutcomeIndex == -1) {
+            // Couldn't find outcome to remove and maintain the cost
+            // within the threshold
+            break;
+        } else {
+            // Update best reduction/result and keep going.
+            previousResult = bestResult;
+            for (mlcore::Action* a : actionGroups[bestGroup]) {
+                bestReductionGreedy->
+                    primaryIndicatorsActions()[a][bestOutcomeIndex] = false;
+            }
+        }
+        if (satisfiesL)
+            break;
     }
+
+                                                                                unordered_map< mlcore::Action*, vector <bool> > &
+                                                                                    primaryIndicatorsActions = bestReductionGreedy->primaryIndicatorsActions();
+                                                                                for (size_t idx1 = 0; idx1 < actionGroups.size(); idx1++) {
+                                                                                    cout << "group " << idx1 << ": ";
+                                                                                    for (size_t idx2 = 0;
+                                                                                         idx2 < primaryIndicatorsActions[actionGroups[idx1][0]].size();
+                                                                                         idx2++) {
+                                                                                        cout << primaryIndicatorsActions[actionGroups[idx1][0]][idx2] << " ";
+                                                                                    }
+                                                                                    cout << endl;
+                                                                                }
+                                                                                dprint2("greedy", previousResult);
 }
 
 
@@ -159,11 +209,11 @@ void createRacetrackReductionsTemplate(RacetrackProblem* rtp)
 }
 
 
-void initRacetrack(string trackName, int mds)
+void initRacetrack(string trackName, int mds, double pslip, double perror)
 {
     problem = new RacetrackProblem(trackName.c_str());
-    static_cast<RacetrackProblem*>(problem)->pError(0.05);
-    static_cast<RacetrackProblem*>(problem)->pSlip(0.10);
+    static_cast<RacetrackProblem*>(problem)->pError(perror);
+    static_cast<RacetrackProblem*>(problem)->pSlip(pslip);
     static_cast<RacetrackProblem*>(problem)->mds(mds);
     heuristic = new RTrackDetHeuristic(trackName.c_str());
     static_cast<RacetrackProblem*>(problem)->useFlatTransition(true);
@@ -193,15 +243,27 @@ int main(int argc, char* args[])
     if (flag_is_registered_with_value("k"))
         k = stoi(flag_value("k"));
 
+    if (flag_is_registered_with_value("l"))
+        l = stoi(flag_value("l"));
+
     // Creating problem
     vector< vector<mlcore::Action*> >
     actionGroups(3, vector<mlcore::Action*> ());
     if (domainName == "racetrack") {
         int mds = -1;
+        double perror = 0.05;
+        double pslip = 0.10;
         if (flag_is_registered_with_value("mds"))
             mds = stoi(flag_value("mds"));
+        if (flag_is_registered_with_value("pslip"))
+            pslip = stoi(flag_value("pslip"));
+        if (flag_is_registered_with_value("perror"))
+            perror = stoi(flag_value("perror"));
         string trackName = flag_value("problem");
-        initRacetrack(trackName, mds);
+        initRacetrack(trackName, mds, pslip, perror);
+        // Actions with the same magnitude will be considered part of the
+        // same group. Then the same reduction will be applied to all actions
+        // in the same group
         for (mlcore::Action* a : problem->actions()) {
             RacetrackAction* rta = static_cast<RacetrackAction*> (a);
             int magnitude = abs(rta->ax()) + abs(rta->ay());
@@ -219,25 +281,28 @@ int main(int argc, char* args[])
     double totalPlanningTime = 0.0;
     mlcore::StateSet reachableStates, tipStates;
     getReachableStates(problem, reachableStates, tipStates, 4);
-    wrapperProblem->overrideGoals(&tipStates);
-    cout << "reachable/tip states: " << reachableStates.size() <<
-        "/" << tipStates.size() << endl;
+//    wrapperProblem->overrideGoals(&tipStates);
+//    cout << "reachable/tip states: " << reachableStates.size() <<
+//        "/" << tipStates.size() << endl;
     clock_t startTime = clock();
+    // Finds the best reduction using the greedy approach and then stores it
+    // in global variable bestReductionGreedy
     findBestReductionGreedy(wrapperProblem, actionGroups, k);
-    for (auto const & reduction : reductions) {
-        reducedModel = new ReducedModel(wrapperProblem, reduction, k);
-        double result = reducedModel->evaluateMonteCarlo(20);
-        cout << result << endl;
-    }
     clock_t endTime = clock();
+                                                                                dprint1("found best reduction greedy");
+
+//    for (auto const & reduction : reductions) {
+//        reducedModel = new ReducedModel(wrapperProblem, reduction, k);
+//        double result = reducedModel->evaluateMonteCarlo(20);
+//        cout << result << endl;
+//    }
+
     double timeReductions = double(endTime - startTime) / CLOCKS_PER_SEC;
     totalPlanningTime += timeReductions;
-    cout << "time finding reductions " <<
-        wrapperProblem->initialState()->cost() <<
-        " time " << timeReductions << endl;
+    cout << "time finding reductions " << timeReductions << endl;
 
     // Setting up the final reduced model to use
-    reducedModel = new ReducedModel(problem, bestReduction, k);
+    reducedModel = new ReducedModel(problem, bestReductionGreedy, k);
     reducedHeuristic = new ReducedHeuristicWrapper(heuristic);
     reducedModel->setHeuristic(reducedHeuristic);
     static_cast<ReducedModel*>(reducedModel)->
@@ -268,8 +333,8 @@ int main(int argc, char* args[])
             reducedModel->trial(solver, wrapperProblem);
         expectedCost += costAndTime.first;
     }
-    cout << expectedCost / nsims << endl;
-    cout << totalPlanningTime << endl;
+    cout << "expected cost " << expectedCost / nsims << endl;
+    cout << "total planning time " << totalPlanningTime << endl;
 
     // Releasing memory
     for (auto reduction : reductions)
