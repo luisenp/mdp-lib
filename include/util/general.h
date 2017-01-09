@@ -90,7 +90,7 @@ struct pair_int_equal {
 
 struct pair_int_hash {
     std::size_t operator()(const std::pair<int,int> & v) const {
-        return v.first*31+v.second;
+        return v.first * 31 + v.second;
     }
 };
 
