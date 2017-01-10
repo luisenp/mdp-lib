@@ -194,7 +194,7 @@ void findBestReductionLOutcomes(mlcore::Problem* problem,
     getAllCombinations(groupSizes, reductions);
     // Evaluating all possible reductions
     double bestResult = mdplib::dead_end_cost + 1;
-    const vector < vector<int> >* bestReduction = nullptr;
+    const vector < vector<int> >* bestReduction;
     for (auto const & reduction : reductions ) {
         assert(reduction.size() == actionGroups.size());
         CustomReduction* testReduction =
@@ -221,8 +221,8 @@ void findBestReductionLOutcomes(mlcore::Problem* problem,
                                                                                 cerr << "; ";
         }
         reducedModel = new ReducedModel(problem, testReduction, k);
-//        double result = ReducedModel::evaluateMarkovChain(reducedModel);
-        double result = reducedModel->evaluateMonteCarlo(100);
+        double result = ReducedModel::evaluateMarkovChain(reducedModel);
+//        double result = reducedModel->evaluateMonteCarlo(100);
                                                                                 dprint1(result);
         if (result < bestResult) {
                                                                                 dprint2("*********", result);
@@ -231,24 +231,30 @@ void findBestReductionLOutcomes(mlcore::Problem* problem,
         }
     }
 
+                                                                                dprint1("**************************");
     // Assigning the best primary outcomes found to the best reduction
     // template
     for (size_t groupIdx = 0; groupIdx < actionGroups.size(); groupIdx++) {
-        for (auto const primaryIndicesForGroup : bestReduction[groupIdx]) {
-            vector<mlcore::Action*> & actionGroup = actionGroups[groupIdx];
-            unordered_map< mlcore::Action*, vector<bool> > &
-                primaryIndicatorsTempl =
-                    bestReductionTemplate->primaryIndicatorsActions();
-            for (mlcore::Action* a : actionGroup) {
-                for (size_t j = 0; j < primaryIndicatorsTempl[a].size(); j++) {
-                    primaryIndicatorsTempl[a][j] = false;
-                }
-                for (auto const primaryIndex : primaryIndicesForGroup) {
-                    primaryIndicatorsTempl[a][primaryIndex] = true;
-                }
+        const vector<int>& primaryIndicesForGroup = (*bestReduction)[groupIdx];
+        vector<mlcore::Action*> & actionGroup = actionGroups[groupIdx];
+        unordered_map< mlcore::Action*, vector<bool> > &
+            primaryIndicatorsTempl =
+                bestReductionTemplate->primaryIndicatorsActions();
+        for (mlcore::Action* a : actionGroup) {
+            for (size_t j = 0; j < primaryIndicatorsTempl[a].size(); j++) {
+                primaryIndicatorsTempl[a][j] = false;
+            }
+            for (auto const primaryIndex : primaryIndicesForGroup) {
+                                                                                if (a == *(actionGroup.begin()))
+                                                                                    cerr << primaryIndex << ",";
+                primaryIndicatorsTempl[a][primaryIndex] = true;
             }
         }
+                                                                                cerr << "; ";
     }
+    reducedModel = new ReducedModel(problem, bestReductionTemplate, k);
+    double result = ReducedModel::evaluateMarkovChain(reducedModel);
+                                                                                dprint2("best result", result);
 }
 
 
