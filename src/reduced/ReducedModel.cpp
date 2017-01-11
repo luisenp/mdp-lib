@@ -183,13 +183,16 @@ double ReducedModel::evaluateMonteCarlo(int numTrials)
 }
 
 
-std::pair<double, double> ReducedModel::trial(
-    mlsolvers::Solver & solver, WrapperProblem* wrapperProblem)
+std::pair<double, double> ReducedModel::trial(mlsolvers::Solver & solver,
+                                              WrapperProblem* wrapperProblem,
+                                              double* maxPlanningTime)
 {
     assert(wrapperProblem->problem() == this);
 
     double cost = 0.0;
     double totalPlanningTime = 0.0;
+    if (maxPlanningTime)
+        *maxPlanningTime = 0.0;
     ReducedState* currentState =
         static_cast<ReducedState*>(this->initialState());
     if (currentState->deadEnd())
@@ -259,13 +262,20 @@ std::pair<double, double> ReducedModel::trial(
             auxState->exceptionCount(0);
             nextState = static_cast<ReducedState*>(
                 this->addState(new ReducedState(*auxState)));
-            totalPlanningTime +=
+            double planningTime =
                 triggerReplan(solver, nextState, false, wrapperProblem);
+            totalPlanningTime += planningTime;
+            if (maxPlanningTime)
+                *maxPlanningTime = std::max(*maxPlanningTime, planningTime);
+
             assert(nextState != nullptr);
         } else if (!this->useFullTransition_) {
             if (this->k_ != 0 && nextState->exceptionCount() == this->k_) {
-                totalPlanningTime +=
+                double planningTime =
                     triggerReplan(solver, nextState, true, wrapperProblem);
+                totalPlanningTime += planningTime;
+                if (maxPlanningTime)
+                    *maxPlanningTime = std::max(*maxPlanningTime, planningTime);
                 resetExceptionCounter = true;
             }
         }

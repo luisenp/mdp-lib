@@ -125,30 +125,11 @@ void getAllCombinations(vector<size_t>& groupSizes,
         } while (nextComb(currentCombination, groupSizes[i], l));
         primaryCombSizes.push_back(allCombinationsPrimaryGroups.back().size());
     }
-//
-//                                                                                for (int i = 0; i < allCombinationsPrimaryGroups.size(); i++) {
-//                                                                                    for (int j = 0; j < allCombinationsPrimaryGroups[i].size(); j++) {
-//                                                                                        for (int k = 0; k < allCombinationsPrimaryGroups[i][j].size(); k++) {
-//                                                                                            std::cerr << allCombinationsPrimaryGroups[i][j][k] << " ";
-//                                                                                        }
-//                                                                                        std::cerr << ", ";
-//                                                                                    }
-//                                                                                    std::cerr << std::endl;
-//                                                                                }
-
 
     // Now we get all combinations of indices across the combinations of
     // primary outcomes
     list<list <int> > fullIndicesCombination;
     getFullFactorialIndices(primaryCombSizes, fullIndicesCombination);
-//                                                                                cerr << "****************************";
-//                                                                                for (auto const xxx : fullIndicesCombination) {
-//                                                                                    for (int yyy : xxx) {
-//                                                                                        cerr << yyy << " ";
-//                                                                                    }
-//                                                                                    cerr << endl;
-//                                                                                }
-//                                                                                cerr << "****************************";
 
     // Now we compute the full set of combinations of primary outcomes
     // matching the full indices to the corresponding set of primary outcomes
@@ -161,25 +142,45 @@ void getAllCombinations(vector<size_t>& groupSizes,
         }
         combinations.push_back(newCombination);
     }
+}
 
-//                                                                                for (int i = 0; i < combinations.size(); i++) {
-//                                                                                    cerr << ": ";
-//                                                                                    for (int j = 0; j < combinations[i].size(); j++) {
-//                                                                                        for (int k = 0; k < combinations[i][j].size(); k++) {
-//                                                                                            cerr << combinations[i][j][k] << " ";
-//                                                                                        }
-//                                                                                        cerr << ", ";
-//                                                                                    }
-//                                                                                    cerr << endl;
-//                                                                                }
+
+/*
+ * Assigns the set of primary outcomes to use for each action group to the
+ * given reduction.
+ */
+void assignPrimaryOutcomesToReduction(
+    const vector<vector<int> > & primaryOutcomesForGroups,
+    const vector<vector<mlcore::Action*> > & actionGroups,
+    CustomReduction* reduction)
+{
+    for (size_t groupIdx = 0; groupIdx < actionGroups.size(); groupIdx++) {
+        const vector<int>& primaryIndicesForGroup =
+            primaryOutcomesForGroups[groupIdx];
+        const vector<mlcore::Action*> & actionGroup = actionGroups[groupIdx];
+        unordered_map< mlcore::Action*, vector<bool> > &
+            primaryIndicatorsTempl =
+                reduction->primaryIndicatorsActions();
+        for (mlcore::Action* a : actionGroup) {
+            for (size_t j = 0; j < primaryIndicatorsTempl[a].size(); j++) {
+                primaryIndicatorsTempl[a][j] = false;
+            }
+            for (auto const primaryIndex : primaryIndicesForGroup) {
+                                                                                if (a == *(actionGroup.begin()))
+                                                                                    cerr << primaryIndex << ",";
+                primaryIndicatorsTempl[a][primaryIndex] = true;
+            }
+        }
+                                                                                cerr << "; ";
+    }
 }
 
 
 /*
  * This functions finds the best Mkl reduction, using brute force.
  */
-void findBestReductionLOutcomes(mlcore::Problem* problem,
-                             vector<vector<mlcore::Action*> > & actionGroups)
+void findBestReductionBruteForce(
+    mlcore::Problem* problem, vector<vector<mlcore::Action*> > & actionGroups)
 {
     // Getting all possible combination indices of l primary outcomes
     // across all action groups (each combination represents a reduction)
@@ -200,29 +201,11 @@ void findBestReductionLOutcomes(mlcore::Problem* problem,
         CustomReduction* testReduction =
             new CustomReduction(bestReductionTemplate);
         size_t groupIdx = 0;
-        for (auto const primaryIndicesForGroup : reduction) {
-            vector<mlcore::Action*> & actionGroup = actionGroups[groupIdx];
-            unordered_map< mlcore::Action*, vector<bool> > &
-                testPrimaryIndicatorsActions =
-                    testReduction->primaryIndicatorsActions();
-            for (mlcore::Action* a : actionGroup) {
-                for (size_t j = 0;
-                        j < testPrimaryIndicatorsActions[a].size();
-                        j++) {
-                    testPrimaryIndicatorsActions[a][j] = false;
-                }
-                for (auto const primaryIndex : primaryIndicesForGroup) {
-                                                                                if (a == *(actionGroup.begin()))
-                                                                                    cerr << primaryIndex << ",";
-                    testPrimaryIndicatorsActions[a][primaryIndex] = true;
-                }
-            }
-            groupIdx++;
-                                                                                cerr << "; ";
-        }
+        assignPrimaryOutcomesToReduction(reduction,
+                                         actionGroups,
+                                         testReduction);
         reducedModel = new ReducedModel(problem, testReduction, k);
         double result = ReducedModel::evaluateMarkovChain(reducedModel);
-//        double result = reducedModel->evaluateMonteCarlo(100);
                                                                                 dprint1(result);
         if (result < bestResult) {
                                                                                 dprint2("*********", result);
@@ -230,28 +213,10 @@ void findBestReductionLOutcomes(mlcore::Problem* problem,
             bestReduction = &reduction;
         }
     }
-
                                                                                 dprint1("**************************");
-    // Assigning the best primary outcomes found to the best reduction
-    // template
-    for (size_t groupIdx = 0; groupIdx < actionGroups.size(); groupIdx++) {
-        const vector<int>& primaryIndicesForGroup = (*bestReduction)[groupIdx];
-        vector<mlcore::Action*> & actionGroup = actionGroups[groupIdx];
-        unordered_map< mlcore::Action*, vector<bool> > &
-            primaryIndicatorsTempl =
-                bestReductionTemplate->primaryIndicatorsActions();
-        for (mlcore::Action* a : actionGroup) {
-            for (size_t j = 0; j < primaryIndicatorsTempl[a].size(); j++) {
-                primaryIndicatorsTempl[a][j] = false;
-            }
-            for (auto const primaryIndex : primaryIndicesForGroup) {
-                                                                                if (a == *(actionGroup.begin()))
-                                                                                    cerr << primaryIndex << ",";
-                primaryIndicatorsTempl[a][primaryIndex] = true;
-            }
-        }
-                                                                                cerr << "; ";
-    }
+    assignPrimaryOutcomesToReduction(*bestReduction,
+                                     actionGroups,
+                                     bestReductionTemplate);
     reducedModel = new ReducedModel(problem, bestReductionTemplate, k);
     double result = ReducedModel::evaluateMarkovChain(reducedModel);
                                                                                 dprint2("best result", result);
@@ -353,9 +318,9 @@ void findBestReductionGreedy(mlcore::Problem* problem,
                     primaryIndicatorsActions()[a][bestOutcomeIndex] = false;
             }
         }
+                                                                                dprint2("result ", bestResult);
         if (satisfiesL)
             break;
-                                                                                dprint2("result ", bestResult);
     }
 
                                                                                 unordered_map< mlcore::Action*, vector <bool> > &
@@ -468,7 +433,7 @@ int main(int argc, char* args[])
         }
     }
 
-    bool useFullTransition = flag_is_registered("use_full");
+    bool useFullTransition = flag_is_registered("use-full");
 
     ReducedTransition* bestReduction = nullptr;
     bestReduction = reductions.front();
@@ -484,16 +449,26 @@ int main(int argc, char* args[])
     clock_t startTime = clock();
     // Finds the best reduction using the greedy approach and then stores it
     // in global variable bestReductionTemplate
-//    findBestReductionGreedy(wrapperProblem, actionGroups);
-    findBestReductionLOutcomes(wrapperProblem, actionGroups);
-    clock_t endTime = clock();
-                                                                                dprint1("found best reduction greedy");
+    if (flag_is_registered("use-brute-force")) {
+        findBestReductionBruteForce(wrapperProblem, actionGroups);
+    } else if (flag_is_registered("best-m02")) {
+        vector<vector<int> > primaryOutcomes;
+        primaryOutcomes.push_back(vector<int>{1});
+        primaryOutcomes.push_back(vector<int>{1});
+        primaryOutcomes.push_back(vector<int>{0,1});
+        assignPrimaryOutcomesToReduction(primaryOutcomes, actionGroups, bestReductionTemplate);
+    } else if (flag_is_registered("best-det")) {
+        vector<vector<int> > primaryOutcomes;
+        primaryOutcomes.push_back(vector<int>{1});
+        primaryOutcomes.push_back(vector<int>{1});
+        primaryOutcomes.push_back(vector<int>{1});
+        assignPrimaryOutcomesToReduction(primaryOutcomes, actionGroups, bestReductionTemplate);
+    } else if (flag_is_registered("greedy")){
+        findBestReductionGreedy(wrapperProblem, actionGroups);
+    }
 
-//    for (auto const & reduction : reductions) {
-//        reducedModel = new ReducedModel(wrapperProblem, reduction, k);
-//        double result = reducedModel->evaluateMonteCarlo(20);
-//        cout << result << endl;
-//    }
+    clock_t endTime = clock();
+                                                                                dprint1("found best reduction");
 
     double timeReductions = double(endTime - startTime) / CLOCKS_PER_SEC;
     totalPlanningTime += timeReductions;
@@ -512,26 +487,53 @@ int main(int argc, char* args[])
     wrapperProblem->clearOverrideGoals();
     wrapperProblem->setNewProblem(reducedModel);
 
-    // Solving reduced model using LAO*
+    // Solving off-line using full models
+    Solver* solver;
     startTime = clock();
-    LAOStarSolver solver(wrapperProblem);
-    solver.solve(wrapperProblem->initialState());
+    if (flag_is_registered("use-vi")) {
+        reducedModel->generateAll();
+        solver = new VISolver(wrapperProblem);
+    } else {
+        solver = new LAOStarSolver(wrapperProblem);
+    }
+    if (useFullTransition)
+        solver->solve(wrapperProblem->initialState());
     endTime = clock();
     double timeInitialPlan = (double(endTime - startTime) / CLOCKS_PER_SEC);
     totalPlanningTime += timeInitialPlan;
     cout << "cost " << wrapperProblem->initialState()->cost() <<
         " time " << timeInitialPlan << endl;
 
-
     // Running a trial of the continual planning approach.
     double expectedCost = 0.0;
+    double expectedTime = 0.0;
+    double maxReplanningTime = 0.0;
     for (int i = 0; i < nsims; i++) {
+        // We don't want the simulations to re-use the computed values
+        if (!useFullTransition) {
+            for (mlcore::State* s : wrapperProblem->states())
+                s->reset();
+            startTime = clock();
+            solver->solve(wrapperProblem->initialState());
+            endTime = clock();
+            // Initial time always counts
+            expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
+        }
+        double maxReplanningTimeCurrent = 0.0;
         pair<double, double> costAndTime =
-            reducedModel->trial(solver, wrapperProblem);
+            reducedModel->trial(
+                *solver, wrapperProblem, &maxReplanningTimeCurrent);
         expectedCost += costAndTime.first;
+        maxReplanningTime = max(maxReplanningTime, maxReplanningTimeCurrent);
+
+        // For determinization, replanning time counts
+        // (doesn't happen in parallel)
+        if (flag_is_registered("best-det") && k == 0)
+            expectedTime += costAndTime.second;
     }
     cout << "expected cost " << expectedCost / nsims << endl;
-    cout << "total planning time " << totalPlanningTime << endl;
+    cout << "expected planning time " << expectedTime / nsims << endl;
+    cout << "max re-planning time " << maxReplanningTime << endl;
 
     // Releasing memory
     for (auto reduction : reductions)
@@ -541,5 +543,6 @@ int main(int argc, char* args[])
     wrapperProblem->cleanup();
     delete wrapperProblem;
     delete problem;
+    delete solver;
     return 0;
 }
