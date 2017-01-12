@@ -194,7 +194,7 @@ int main(int argc, char* args[])
 
     // Creating the reduced model.
     ReducedTransition* reduction =
-        new PPDDLTaggedReduction(problem, detDescriptor);
+        new PPDDLTaggedReduction(problem, directory + "/" + detDescriptor);
     reducedModel = new ReducedModel(problem, reduction, k);
     reducedHeuristic = new ReducedHeuristicWrapper(heuristic);
     reducedModel->setHeuristic(reducedHeuristic);
@@ -218,6 +218,7 @@ int main(int argc, char* args[])
 
     // Running a trial of the continual planning approach.
     double expectedCost = 0.0;
+    int countSuccess = 0;
     for (int i = 0; i < nsims; i++) {
         double cost = 0.0;
         ReducedState* currentState =
@@ -230,6 +231,7 @@ int main(int argc, char* args[])
                 randomSuccessor(problem, currentState->originalState(), action);
 
             if (problem->goal(nextOriginalState)) {
+                countSuccess++;
                 dprint1("GOAL!");
                 break;
             }
@@ -260,9 +262,12 @@ int main(int argc, char* args[])
             action = currentState->bestAction();
         }
         expectedCost += cost;
+        if (verbosity > 1)
+            cout << "sim " << i << ", success: " << countSuccess << endl;
     }
     cout << expectedCost / nsims << endl;
     cout << totalPlanningTime << endl;
+    cout << countSuccess << endl;
 
     // Releasing memory
     for (auto reduction : reductions)
