@@ -160,10 +160,10 @@ inline void replaceInitStateInProblemFile(
         }
         problemTemplateFile.close();
     }
-    std::ofstream newProblemFile;
-    newProblemFile.open(outputProblemFile);
-    newProblemFile << newProblemText;
-    newProblemFile.close();
+    std::ofstream os;
+    os.open(outputProblemFile);
+    os << newProblemText;
+    os.close();
 }
 
 
@@ -218,11 +218,8 @@ inline void addSubGoalsToProblemFile(
                     std::string atomsNot = extractAtomsNotInState(
                             static_cast<mlppddl::PPDDLState*> (state),
                             problem);
-//                                                                                std::cerr << "atomsnot ";
-//                                                                                std::cerr << atomsNot << std::endl;
                     newLine += " (and " + atoms + " " + atomsNot + ')';
                 }
-                                                                                std::cerr << "newline " << newLine << std::endl;
                 newLine += "))";
                 line = newLine;
             }
@@ -230,7 +227,6 @@ inline void addSubGoalsToProblemFile(
         }
         problemTemplateFile.close();
     }
-//                                                                                std::cerr << "newproblemdone" << std::endl;
     std::ofstream newProblemFile;
     newProblemFile.open(outputProblemFile);
     newProblemFile << newProblemText;
@@ -321,7 +317,6 @@ inline std::pair<std::string, int> getActionNameAndCostFromFF(
             // (since they are numbered).
             int currentLineAction = -1;
             while (fgets(lineBuffer, 1024, ff_output)) {
-//                                                                                std::cerr << lineBuffer << std::endl;
                 if (strstr(lineBuffer, "goal can be simplified to FALSE.") !=
                         nullptr) {
                     break;  // This makes actionName = "__mdplib-dead-end__"

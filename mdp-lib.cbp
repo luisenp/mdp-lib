@@ -664,6 +664,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="test/testConc.cpp" />
 		<Unit filename="test/testGridWorld.cpp" />
 		<Unit filename="test/testPPDDL.cpp" />
+		<Unit filename="test/testRFF.cpp" />
 		<Unit filename="test/testRace.cpp" />
 		<Unit filename="test/testSail.cpp" />
 		<Unit filename="test/testSolver.cpp" />

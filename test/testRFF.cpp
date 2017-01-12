@@ -180,7 +180,6 @@ int main(int argc, char* args[])
         mlcore::State* currentState = problem->initialState();
         mlcore::Action* action = currentState->bestAction();
         while (cost < mdplib::dead_end_cost) {
-                                                                                dprint2(currentState, action);
             cost += problem->cost(currentState, action);
             // The successor state according to the original transition model.
             mlcore::State* nextState =
