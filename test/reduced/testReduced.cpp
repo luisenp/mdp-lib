@@ -275,7 +275,8 @@ void findBestReductionGreedy(mlcore::Problem* problem,
                 for (mlcore::Action* a : actionGroup)
                     testPrimaryIndicatorsActions[a][outcomeIdx] = false;
                 reducedModel = new ReducedModel(problem, testReduction, k);
-                double result = ReducedModel::evaluateMarkovChain(reducedModel);
+//                double result = ReducedModel::evaluateMarkovChain(reducedModel);
+                double result = reducedModel->evaluateMonteCarlo(50);
                 if (result < bestResult) {
                     if (result < tau * previousResult) {
                         bestGroup = groupIdx;
@@ -439,14 +440,23 @@ int main(int argc, char* args[])
     bestReduction = reductions.front();
     wrapperProblem = new WrapperProblem(problem);
 
-    // Finding the best reduction using Monte Carlo simulations
     double totalPlanningTime = 0.0;
-    mlcore::StateSet reachableStates, tipStates;
-    getReachableStates(problem, reachableStates, tipStates, 4);
-//    wrapperProblem->overrideGoals(&tipStates);
-//    cout << "reachable/tip states: " << reachableStates.size() <<
-//        "/" << tipStates.size() << endl;
+    mlcore::StateSet reachableStates, tipStates, subgoals;
     clock_t startTime = clock();
+    if (flag_is_registered("use-subgoals")) {
+        int depth = 4;
+        if (flag_is_registered_with_value("d"))
+            depth = stoi(flag_value("d"));
+        getReachableStates(problem, reachableStates, tipStates, depth);
+        while (subgoals.size() < tipStates.size() / 10) {
+            auto it = tipStates.begin();
+            advance(it, rand() % (tipStates.size() - 1));
+            subgoals.insert(*it);
+        }
+        cout << subgoals.size() << endl;
+        wrapperProblem->overrideGoals(&subgoals);
+    }
+    cout << reachableStates.size() << " " << tipStates.size() << endl;
     // Finds the best reduction using the greedy approach and then stores it
     // in global variable bestReductionTemplate
     if (flag_is_registered("use-brute-force")) {
