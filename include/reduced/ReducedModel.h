@@ -167,12 +167,15 @@ public:
      *                      used for setting new successors during
      *                      re-planning. The internal problem of this wrapper
      *                      must correspond to the reduced model.
+     * @param maxPlanningTime A pointer to store the maximum amount of time
+     *                        used for planning during the trials.
      * @return A pair that contains the cost of the trial and the time
      *        spent planning (not-concurrently with execution)
      *        during this trial.
      */
-    std::pair<double, double>
-    trial(mlsolvers::Solver & solver, WrapperProblem* wrapperProblem);
+    std::pair<double, double> trial(mlsolvers::Solver & solver,
+                                    WrapperProblem* wrapperProblem,
+                                    double* maxPlanningTime = nullptr);
 
     /**
      * Computes the true expected cost of the continual planning approach

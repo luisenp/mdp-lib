@@ -31,7 +31,9 @@ ReducedModel::transition(State* s, Action* a)
     int i = 0;
     for (Successor const & origSucc : originalSuccessors) {
         State* next = nullptr;
-        bool isPrimaryOutcome = useFullTransition_ || primaryIndicators[i];
+        bool isPrimaryOutcome =
+            useFullTransition_ || primaryIndicators.empty() ||
+            primaryIndicators.at(i);
         if (useContPlanEvaluationTransition_) {
             int add = isPrimaryOutcome && rs->exceptionCount() != k_ ? 0 : 1;
             next = addState(
@@ -181,13 +183,16 @@ double ReducedModel::evaluateMonteCarlo(int numTrials)
 }
 
 
-std::pair<double, double> ReducedModel::trial(
-    mlsolvers::Solver & solver, WrapperProblem* wrapperProblem)
+std::pair<double, double> ReducedModel::trial(mlsolvers::Solver & solver,
+                                              WrapperProblem* wrapperProblem,
+                                              double* maxPlanningTime)
 {
     assert(wrapperProblem->problem() == this);
 
     double cost = 0.0;
     double totalPlanningTime = 0.0;
+    if (maxPlanningTime)
+        *maxPlanningTime = 0.0;
     ReducedState* currentState =
         static_cast<ReducedState*>(this->initialState());
     if (currentState->deadEnd())
@@ -199,9 +204,6 @@ std::pair<double, double> ReducedModel::trial(
     // making it a copy of the current state and adjusting the exception counter
     // accordingly.
     ReducedState* auxState = new ReducedState(*currentState);
-
-                                                                                mlcore::State* foo = currentState->originalState();
-
     bool resetExceptionCounter = false;
     while (true) {
         Action* bestAction = currentState->bestAction();
@@ -226,8 +228,6 @@ std::pair<double, double> ReducedModel::trial(
             mlsolvers::randomSuccessor(this, auxState, bestAction));
         auxState->originalState(nextState->originalState());
         auxState->exceptionCount(nextState->exceptionCount());
-                                                                                mlcore::State* bar = nextState->originalState();
-                                                                                isException(foo, bar, bestAction);
 
         // Adjusting the result to the current exception count.
         if (resetExceptionCounter) {
@@ -240,6 +240,7 @@ std::pair<double, double> ReducedModel::trial(
             else
                 auxState->exceptionCount(exceptionCount + 1);
         }
+
         nextState =
             static_cast<ReducedState*>(this->getState(auxState));
 
@@ -255,20 +256,26 @@ std::pair<double, double> ReducedModel::trial(
 
         // Re-planning
         // Checking if the state has already been considered during planning.
-
         if (nextState == nullptr || nextState->bestAction() == nullptr) {
             // State wasn't considered before.
             assert(this->k_ == 0);  // Only determinization should reach here.
             auxState->exceptionCount(0);
             nextState = static_cast<ReducedState*>(
                 this->addState(new ReducedState(*auxState)));
-            totalPlanningTime +=
+            double planningTime =
                 triggerReplan(solver, nextState, false, wrapperProblem);
+            totalPlanningTime += planningTime;
+            if (maxPlanningTime)
+                *maxPlanningTime = std::max(*maxPlanningTime, planningTime);
+
             assert(nextState != nullptr);
         } else if (!this->useFullTransition_) {
-            if (nextState->exceptionCount() == this->k_) {
-                totalPlanningTime +=
+            if (this->k_ != 0 && nextState->exceptionCount() == this->k_) {
+                double planningTime =
                     triggerReplan(solver, nextState, true, wrapperProblem);
+                totalPlanningTime += planningTime;
+                if (maxPlanningTime)
+                    *maxPlanningTime = std::max(*maxPlanningTime, planningTime);
                 resetExceptionCounter = true;
             }
         }
@@ -287,6 +294,7 @@ double ReducedModel::triggerReplan(mlsolvers::Solver& solver,
 {
     if (this->goal(nextState))
         return 0.0;
+
     if (proactive) {
         Action* bestAction = nextState->bestAction();
         // This action can't be null because we are planning pro-actively.
@@ -341,7 +349,6 @@ bool ReducedModel::isException(
             }
         }
     }
-                                                                                assert(!isExcept || !isNotExcept);
     return isExcept;
 }
 

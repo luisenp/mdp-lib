@@ -9,6 +9,7 @@
 #include "../../Problem.h"
 #include "../../State.h"
 
+#include "RacetrackAction.h"
 #include "RacetrackState.h"
 
 namespace rtrack
@@ -67,6 +68,9 @@ private:
     /* Probability of picking wrong action */
     double pError_ = 0.05;
 
+    /* If true, the flat transition function will be used */
+    bool useFlatTransition_ = false;
+
     /* Stores the track to be used in this problem */
     std::vector<std::vector <char> > track_;
 
@@ -81,6 +85,13 @@ private:
      * the given state
      */
     RacetrackState* resultingState(RacetrackState* rts, int ax, int ay);
+
+    /*
+     * A flat transition function where every action has the same number
+     * of successors in all states.
+     */
+    virtual std::list<mlcore::Successor> flatTransition(mlcore::State* s,
+                                                        mlcore::Action* a);
 
 public:
 
@@ -111,7 +122,15 @@ public:
 
     void starts(const IntPairSet theStarts) { starts_ = theStarts; }
 
+    void useFlatTransition(bool value) { useFlatTransition_ = value; }
+
     IntPairSet& starts() { return starts_; }
+
+    /*
+     * Returns the number of successors of the action, under the flat
+     * transition, which is the same for every state but the initial state.
+     */
+    int numSuccessorsAction(RacetrackAction* a);
 
     /**
      * Sets the goal locations.

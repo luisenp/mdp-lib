@@ -85,6 +85,9 @@ bool RacetrackProblem::goal(mlcore::State* s) const
 std::list<mlcore::Successor>
 RacetrackProblem::transition(mlcore::State* s, mlcore::Action* a)
 {
+    if (useFlatTransition_)
+        return flatTransition(s, a);
+
     assert(applicable(s, a));
 
     if (s == s0) {
@@ -242,3 +245,103 @@ RacetrackProblem::resultingState(RacetrackState* rts, int ax, int ay)
     }
     return new RacetrackState(x1 + vx, y1 + vy, vx, vy, this);
 }
+
+
+std::list<mlcore::Successor>
+RacetrackProblem::flatTransition(mlcore::State* s, mlcore::Action* a)
+{
+    assert(applicable(s, a));
+
+    RacetrackState* rts = static_cast<RacetrackState*>(s);
+    RacetrackAction* rta = static_cast<RacetrackAction*>(a);
+
+    if (s == s0) {
+        std::list<mlcore::Successor> successors;
+        for (std::pair<int,int> start : starts_) {
+            mlcore::State* next =
+                new RacetrackState(start.first, start.second, 0, 0, this);
+            successors.push_back(mlcore::Successor(this->addState(next),
+                                 1.0 / starts_.size()));
+        }
+        return successors;
+    }
+
+    int numSuccessors = numSuccessorsAction(rta);
+
+    if (goal(s) || s == absorbing_) {
+        std::list<mlcore::Successor> successors;
+        for (int i = 0; i < numSuccessors; i++)
+            successors.push_back(
+                mlcore::Successor(this->addState(absorbing_),
+                                  1.0 / numSuccessors));
+        return successors;
+    }
+
+    int idAction = rta->hashValue();
+    std::vector<mlcore::SuccessorsList>* allSuccessors = rts->allSuccessors();
+
+    if (!allSuccessors->at(idAction).empty()) {
+        return allSuccessors->at(idAction);
+    }
+
+    /* At walls the car can deterministically move to the track again */
+    if (track_[rts->x()][rts->y()] == rtrack::wall ||
+            track_[rts->x()][rts->y()] == rtrack::pothole) {
+        int x = rts->x(), y = rts->y();
+        int ax = rta->ax(), ay = rta->ay();
+        mlcore::State* next =
+          this->addState(new RacetrackState(x + ax, y + ay, ax, ay, this));
+        for (int i = 0; i < numSuccessors; i++)
+            allSuccessors->at(idAction).
+                push_back(mlcore::Successor(next, 1.0 / numSuccessors));
+        return allSuccessors->at(idAction);
+    }
+
+    bool isDet = (abs(rts->vx()) + abs(rts->vy())) < mds_;
+    bool isErr = track_[rts->x()][rts->y()] == rtrack::error;
+    double p_err = isDet ? 0.0 : pError_ * (1 - pSlip_);
+    double p_slip = isDet ? 0.0 : pSlip_;
+    double p_int = isDet ? 1.0 : (1.0 - pSlip_) * (1.0 - pError_);
+
+    if (!isErr) {
+        p_int = 1.0 - p_slip;
+        p_err = 0.0;
+    }
+
+    double acc = 0.0;
+    mlcore::State* next = this->addState(resultingState(rts, 0, 0));
+    allSuccessors->at(idAction).push_back(mlcore::Successor(next, pSlip_));
+    acc += pSlip_;
+
+    next = this->addState(resultingState(rts, rta->ax(), rta->ay()));
+    allSuccessors->at(idAction).push_back(mlcore::Successor(next, p_int));
+    acc += p_int;
+
+    for (mlcore::Action* a2 : actions_) {
+        RacetrackAction* rtaE = static_cast<RacetrackAction*>(a2);
+        int dist =
+            abs(rtaE->ax() - rta->ax()) + abs(rtaE->ay() - rta->ay());
+        if (dist == 0 || dist > 1)
+            continue;
+        next = this->addState(resultingState(rts, rtaE->ax(), rtaE->ay()));
+        allSuccessors->at(idAction).
+            push_back(mlcore::Successor(next, p_err / (numSuccessors - 2)));
+        acc += p_err / (numSuccessors - 2);
+    }
+    assert(fabs(acc - 1.0) < 1.0e-6);
+
+    return allSuccessors->at(idAction);
+}
+
+
+int RacetrackProblem::numSuccessorsAction(RacetrackAction* rta)
+{
+    int actionNeighbors = abs(rta->ax()) + abs(rta->ay());
+    if (actionNeighbors == 1)
+        return 5;
+    else if (actionNeighbors == 2)
+        return 4;
+    return 6;
+
+}
+
