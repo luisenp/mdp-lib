@@ -73,6 +73,15 @@ private:
                 std::vector<std::string>& fullPlan) const;
 
     /*
+     * Picks n states from "states" at random and stores them in the
+     * "picked" vector. If the number of states is less than n, it will pick
+     * all states.
+     */
+    void pickRandomStates(mlcore::StateSet& states,
+                          int n,
+                          std::vector<mlcore::State*>& picked);
+
+    /*
      * Computes the probability of reaching terminal states under the current
      * policy, using N MonteCarlo simulations.
      * For each state, the probability is stored in variable

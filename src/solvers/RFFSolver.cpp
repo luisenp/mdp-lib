@@ -17,8 +17,7 @@ mlcore::Action* RFFSolver::solve(mlcore::State* s0)
                                                                                 mdplib_debug = true;
     startingPlanningTime_ = time(nullptr);
     terminalStates_.insert(s0);
-    mlcore::StateSet policyGraphSeen;
-    vector<mlcore::State*> statesPolicyGraph;
+    mlcore::StateSet statesPolicyGraph;
 
     for (int i = 0; i < 10; i++) {
         mlcore::StateSet expandedStates;
@@ -26,21 +25,27 @@ mlcore::Action* RFFSolver::solve(mlcore::State* s0)
         for (mlcore::State* s : terminalStates_) {
             // Solving using FF
             vector<string> fullPlan;
-//                                                                                dprint2("call-FF with", s);
-//                                                                                for (auto const pupu : statesPolicyGraph)
-//                                                                                    dprint2("graph ", pupu);
-            callFF(s, statesPolicyGraph, fullPlan);
-//                                                                                dprint1("done");
+            vector<mlcore::State*> subgoals;
+                                                                                dprint1("here0");
+            if (!statesPolicyGraph.empty())
+                pickRandomStates(statesPolicyGraph, 100, subgoals);
+                                                                                dprint2("here4", subgoals.size());
+            callFF(s, subgoals, fullPlan);
+                                                                                dprint2("here5", fullPlan.size());
 
             // Extract policy
             mlcore::State* sPrime = s;
             for (string actionName : fullPlan) {
-                if (problem_->goal(sPrime))
+                // Don't expand goal states or states that have been expanded
+                // before
+                                                                                dprint3("trying", sPrime, (void *) sPrime->bestAction());
+                if (problem_->goal(sPrime) ||
+                        statesPolicyGraph.count(sPrime) > 0)
                     continue;
                 expandedStates.insert(sPrime);
+                                                                                dprint3("expanding", sPrime, actionName);
                 mlcore::Action* action =
                     problem_->getActionFromName(actionName);
-//                                                                                dprint3("------expanding ", sPrime, actionName);
                 if (action == nullptr) {
                     sPrime->markDeadEnd();
                     continue;
@@ -50,34 +55,26 @@ mlcore::Action* RFFSolver::solve(mlcore::State* s0)
                 for (auto const succ : problem_->transition(sPrime, action)) {
                     if (succ.su_state->bestAction() == nullptr &&
                         !problem_->goal(succ.su_state)) {
+                                                                                dprint2("adding terminal", succ.su_state);
                         newTerminalStates.insert(succ.su_state);
                     }
                 }
                 sPrime = mostLikelyOutcome(problem_, sPrime, action, true);
             }
         }
-//                                                                                for (auto const pupu : newTerminalStates)
-//                                                                                    dprint2("new terminal", pupu);
-//                                                                                for (auto const pupu : expandedStates) {
-//                                                                                    dprint2("expanded ", pupu);
-//                                                                                    if (pupu->bestAction())
-//                                                                                        dprint1(pupu->bestAction());
-//                                                                                    else
-//                                                                                        dprint1("null");
-//                                                                                }
+                                                                                dprint2("new terminals", newTerminalStates.size());
+                                                                                dprint2("allexpanded", expandedStates.size());
         terminalStates_.insert(newTerminalStates.begin(),
                                newTerminalStates.end());
         for (mlcore::State* sExpanded : expandedStates) {
+                                                                                dprint2("expanded", sExpanded);
             terminalStates_.erase(terminalStates_.find(sExpanded));
-            if (policyGraphSeen.insert(sExpanded).second)
-                statesPolicyGraph.push_back(sExpanded);
+            statesPolicyGraph.insert(sExpanded);
         }
-//                                                                                dprint2("terminalStates", terminalStates_.size());
-//                                                                                dprint2("policy graph ", statesPolicyGraph.size());
+                                                                                for (auto const & pupu : terminalStates_)
+                                                                                    dprint2("++++ terminal", pupu);
         double totalProb = failProb(s0, 50);
-//                                                                                dprint2("totalProb", totalProb);
-//                                                                                dprint1("*************************************");
-//                                                                                dprint1("*************************************");
+                                                                                dprint2("totalProb", totalProb);
         if (totalProb < rho_)
             break;
     }
@@ -119,7 +116,6 @@ double RFFSolver::failProb(mlcore::State* s, int N)
         mlcore::State* currentState = s;
         while (!problem_->goal(currentState) &&
                terminalStates_.count(currentState) == 0) {
-//                                                                                dprint2(currentState, currentState->bestAction());
             currentState = randomSuccessor(problem_,
                                            currentState,
                                            currentState->bestAction());
@@ -128,9 +124,48 @@ double RFFSolver::failProb(mlcore::State* s, int N)
             probabilitiesTerminals_[s] += delta;
             totalProbabilityTerminals += delta;
         }
-//                                                                                dprint1("*********************************");
     }
     return totalProbabilityTerminals;
+}
+
+
+void RFFSolver::pickRandomStates(mlcore::StateSet& states,
+                                 int n,
+                                 vector<mlcore::State*>& pickedStates)
+{
+    // If there are not n states to pick, just pick them all
+    if (states.size() < n) {
+        for (mlcore::State* s : states)
+            pickedStates.push_back(s);
+        return;
+    }
+    // Trick taken from RFF's original code.
+    // Here we make a list of random indices from 0 to S-1 as follows:
+    // Every time a pick is made, the range of values is decreased by 1, to
+    // simulate the previous indices already taken out of the pool. But then we
+    // increase the pick value for every previous pick that was lower, to
+    // simulate the "space" that was taken by removing the previous lower pick
+    list<size_t> pickedIdx;
+    for (size_t pickedCnt = 0; pickedCnt < n; pickedCnt++) {
+        size_t pick =
+            static_cast<size_t> (rand() % (states.size() - pickedCnt));
+        for (int idx : pickedIdx) {
+            if (pick < idx)
+                break;
+            else
+                pick++;
+        }
+        pickedIdx.push_back(pick);
+    }
+    // Now we just have to add the states with the chosen indices
+    size_t stateCnt = 0;
+    for (mlcore::State* s : states) {
+        if (stateCnt == pickedIdx.front()) {
+            pickedStates.push_back(s);
+            pickedIdx.pop_front();
+        }
+        stateCnt++;
+    }
 }
 
 }
