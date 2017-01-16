@@ -26,12 +26,12 @@ mlcore::Action* RFFSolver::solve(mlcore::State* s0)
             // Solving using FF
             vector<string> fullPlan;
             vector<mlcore::State*> subgoals;
-                                                                                dprint1("here0");
+//                                                                                dprint1("here0");
             if (!statesPolicyGraph.empty())
                 pickRandomStates(statesPolicyGraph, 100, subgoals);
-                                                                                dprint2("here4", subgoals.size());
+                                                                                dprint2("calling FF ", subgoals.size());
             callFF(s, subgoals, fullPlan);
-                                                                                dprint2("here5", fullPlan.size());
+                                                                                dprint2("done with plan of size ", fullPlan.size());
 
             // Extract policy
             mlcore::State* sPrime = s;
@@ -75,6 +75,7 @@ mlcore::Action* RFFSolver::solve(mlcore::State* s0)
                                                                                     dprint2("++++ terminal", pupu);
         double totalProb = failProb(s0, 50);
                                                                                 dprint2("totalProb", totalProb);
+                                                                                dsleep(500);
         if (totalProb < rho_)
             break;
     }

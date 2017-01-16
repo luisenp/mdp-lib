@@ -175,6 +175,7 @@ int main(int argc, char* args[])
 
     // Running a trial of the continual planning approach.
     double expectedCost = 0.0;
+    int countSuccess = 0;
     for (int i = 0; i < nsims; i++) {
         double cost = 0.0;
         mlcore::State* currentState = problem->initialState();
@@ -185,7 +186,8 @@ int main(int argc, char* args[])
             mlcore::State* nextState =
                 randomSuccessor(problem, currentState, action);
             if (problem->goal(nextState)) {
-                dprint1("GOAL!");
+                countSuccess++;
+                dprint2("GOAL!", countSuccess);
                 break;
             }
             currentState = nextState;
@@ -199,9 +201,12 @@ int main(int argc, char* args[])
             action = currentState->bestAction();
         }
         expectedCost += cost;
+        if (verbosity > 10)
+            cout << "sim " << i << ", successes " << countSuccess << endl;
     }
     cout << expectedCost / nsims << endl;
     cout << totalPlanningTime << endl;
+    cout << countSuccess << endl;
 
     // Releasing memory
     delete problem;

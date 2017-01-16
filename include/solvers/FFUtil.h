@@ -173,6 +173,10 @@ inline void replaceInitStateInProblemFile(
  *
  * This function assumes the original goal state was described in a single
  * line.
+ *
+ * This functions assumes that the (:goal  ) list in the PPDDL file is described
+ * in its own line, without any extra parenthesis at the end (such as the
+ * end of the (define ) list.
  */
 inline void addSubGoalsToProblemFile(
     std::string templateProblemFilename,
@@ -194,18 +198,24 @@ inline void addSubGoalsToProblemFile(
                 size_t idxEndAtoms = -1;
                 bool firstCloseParens = true;
                 // The goal state is described as "(:goal (atom1) (atom2) ).
-                // Must find second to last parenthesis, to extract the atoms.
-                for (size_t i = line.size() - 1; i > idxStartAtoms; i--) {
-                    if (line[i] == ')') {
-                        if (firstCloseParens)
-                            firstCloseParens = false;
-                        else {
-                            idxEndAtoms = i;
+                // Must find the ')' character before the one that closes
+                // the goal list
+                int parenCount = 0;
+                bool firstOpenParen = true;
+                for (size_t i = 0; i < line.size(); i++) {
+                    if (line[i] == '(') {
+                        if (parenCount == 0)
+                            firstOpenParen = false;
+                        parenCount++;
+                    }
+                    else if (line[i] == ')') {
+                        parenCount--;
+                        if (parenCount == 0 && !firstOpenParen)
                             break;
-                        }
+                        idxEndAtoms = i;
                     }
                 }
-                // These adds the original atoms in the goal state as a new
+                // These add the original atoms in the goal state as a new
                 // subgoal
                 newLine += "(and " +
                     line.substr(idxStartAtoms,
@@ -317,6 +327,7 @@ inline std::pair<std::string, int> getActionNameAndCostFromFF(
             // (since they are numbered).
             int currentLineAction = -1;
             while (fgets(lineBuffer, 1024, ff_output)) {
+                                                                                std::cerr << lineBuffer << std::endl;
                 if (strstr(lineBuffer, "goal can be simplified to FALSE.") !=
                         nullptr) {
                     break;  // This makes actionName = "__mdplib-dead-end__"
