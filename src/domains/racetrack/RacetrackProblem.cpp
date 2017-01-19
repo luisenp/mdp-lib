@@ -336,10 +336,10 @@ RacetrackProblem::flatTransition(mlcore::State* s, mlcore::Action* a)
 
 int RacetrackProblem::numSuccessorsAction(RacetrackAction* rta)
 {
-    int actionNeighbors = abs(rta->ax()) + abs(rta->ay());
-    if (actionNeighbors == 1)
+    int actionMagnitude = abs(rta->ax()) + abs(rta->ay());
+    if (actionMagnitude == 1)
         return 5;
-    else if (actionNeighbors == 2)
+    else if (actionMagnitude == 2)
         return 4;
     return 6;
 

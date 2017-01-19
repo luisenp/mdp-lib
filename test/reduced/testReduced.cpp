@@ -9,6 +9,7 @@
 
 #include "../../include/domains/racetrack/RacetrackProblem.h"
 #include "../../include/domains/racetrack/RTrackDetHeuristic.h"
+#include "../../include/domains/sailing/SailingProblem.h"
 #include "../../include/domains/DummyState.h"
 #include "../../include/domains/WrapperProblem.h"
 
@@ -368,6 +369,21 @@ void createRacetrackReductionsTemplate(RacetrackProblem* rtp)
 }
 
 
+void createSailingReductionsTemplate(SailingProblem* sp)
+{
+    CustomReduction* reductionsTemplate = new CustomReduction(sp);
+    vector<bool> primaryIndicators;
+    bool first = true;
+    for (mlcore::Action* a : sp->actions()) {
+        for (int i = 0; i < 8; i++)
+            primaryIndicators.push_back(true);
+        reductionsTemplate->setPrimaryForAction(a, primaryIndicators);
+    }
+    reductions.push_back(reductionsTemplate);
+    bestReductionTemplate = reductionsTemplate;
+}
+
+
 void initRacetrack(string trackName, int mds, double pslip, double perror)
 {
     problem = new RacetrackProblem(trackName.c_str());
@@ -384,6 +400,58 @@ void initRacetrack(string trackName, int mds, double pslip, double perror)
 }
 
 
+void initSailing()
+{
+    static vector<double> costs;
+    costs.push_back(1);
+    costs.push_back(2);
+    costs.push_back(5);
+    costs.push_back(10);
+    costs.push_back(mdplib::dead_end_cost + 1);
+
+    static double windTransition[] = {
+        0.20, 0.20, 0.20, 0.00, 0.00, 0.00, 0.20, 0.20,
+        0.20, 0.20, 0.20, 0.20, 0.00, 0.00, 0.00, 0.20,
+        0.20, 0.20, 0.20, 0.20, 0.20, 0.00, 0.00, 0.00,
+        0.00, 0.20, 0.20, 0.20, 0.20, 0.20, 0.00, 0.00,
+        0.00, 0.00, 0.20, 0.20, 0.20, 0.20, 0.20, 0.00,
+        0.00, 0.00, 0.00, 0.20, 0.20, 0.20, 0.20, 0.20,
+        0.20, 0.00, 0.00, 0.00, 0.20, 0.20, 0.20, 0.20,
+        0.20, 0.20, 0.00, 0.00, 0.00, 0.20, 0.20, 0.20};
+
+    if (!flag_is_registered_with_value("sailing-goal")) {
+        cerr << "Must specify sailing-goal argument flag" << endl;
+        exit(-1);
+    }
+    int goalSailing = atoi(flag_value("sailing-goal").c_str());
+
+    if (!flag_is_registered_with_value("sailing-size")) {
+        cerr << "Must specify sailing-size argument flag" << endl;
+        exit(-1);
+    }
+    int sizeSailing = atoi(flag_value("sailing-size").c_str());
+
+    if (verbosity > 100) {
+        cout << "Setting up sailing domain with size " << sizeSailing <<
+            " with goal " << goalSailing << endl;
+    }
+
+    problem = new SailingProblem(0, 0, 0,
+                                 goalSailing, goalSailing,
+                                 sizeSailing, sizeSailing,
+                                 costs,
+                                 windTransition,
+                                 true);
+    problem->generateAll();
+
+    if (!flag_is_registered_with_value("heuristic") ||
+            flag_value("heuristic") == "no-wind")
+        heuristic =
+            new SailingNoWindHeuristic(static_cast<SailingProblem*>(problem));
+    createSailingReductionsTemplate(static_cast<SailingProblem*> (problem));
+}
+
+
 int main(int argc, char* args[])
 {
     register_flags(argc, args);
@@ -393,8 +461,6 @@ int main(int argc, char* args[])
     // Reading flags.
     assert(flag_is_registered_with_value("domain"));
     string domainName = flag_value("domain");
-
-    assert(flag_is_registered_with_value("problem"));
 
     if (flag_is_registered_with_value("v"))
         verbosity = stoi(flag_value("v"));
@@ -413,6 +479,7 @@ int main(int argc, char* args[])
     vector< vector<mlcore::Action*> >
     actionGroups(3, vector<mlcore::Action*> ());
     if (domainName == "racetrack") {
+        assert(flag_is_registered_with_value("problem"));
         int mds = -1;
         double perror = 0.05;
         double pslip = 0.10;
@@ -431,6 +498,13 @@ int main(int argc, char* args[])
             RacetrackAction* rta = static_cast<RacetrackAction*> (a);
             int magnitude = abs(rta->ax()) + abs(rta->ay());
             actionGroups[magnitude].push_back(a);
+        }
+    } else if (domainName == "sailing") {
+        initSailing();
+        vector< vector<mlcore::Action*> >
+            actionGroups(1, vector<mlcore::Action*> ());
+        for (mlcore::Action* a : problem->actions()) {
+            actionGroups[0].push_back(a);
         }
     }
 
@@ -466,13 +540,17 @@ int main(int argc, char* args[])
         primaryOutcomes.push_back(vector<int>{1});
         primaryOutcomes.push_back(vector<int>{1});
         primaryOutcomes.push_back(vector<int>{0,1});
-        assignPrimaryOutcomesToReduction(primaryOutcomes, actionGroups, bestReductionTemplate);
+        assignPrimaryOutcomesToReduction(primaryOutcomes,
+                                         actionGroups,
+                                         bestReductionTemplate);
     } else if (flag_is_registered("best-det")) {
         vector<vector<int> > primaryOutcomes;
         primaryOutcomes.push_back(vector<int>{1});
         primaryOutcomes.push_back(vector<int>{1});
         primaryOutcomes.push_back(vector<int>{1});
-        assignPrimaryOutcomesToReduction(primaryOutcomes, actionGroups, bestReductionTemplate);
+        assignPrimaryOutcomesToReduction(primaryOutcomes,
+                                         actionGroups,
+                                         bestReductionTemplate);
     } else if (flag_is_registered("greedy")){
         findBestReductionGreedy(wrapperProblem, actionGroups);
     }
@@ -536,7 +614,7 @@ int main(int argc, char* args[])
         expectedCost += costAndTime.first;
         maxReplanningTime = max(maxReplanningTime, maxReplanningTimeCurrent);
 
-        // For determinization, replanning time counts
+        // For determinization, re-planning time counts
         // (doesn't happen in parallel)
         if (flag_is_registered("best-det") && k == 0)
             expectedTime += costAndTime.second;

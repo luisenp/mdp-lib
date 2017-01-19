@@ -38,12 +38,19 @@ private:
 
     mlcore::State* absorbing_;
 
+    /*
+     * If true, the transition funtion returns the same number of successors
+     * for all states.
+     */
+    bool useFlatTransition_;
+
 public:
     SailingProblem(short startX, short startY, short startWind,
                    short goalX, short goalY,
                    short rows, short cols,
                    std::vector<double> & costs,
-                   double* windTransition);
+                   double* windTransition,
+                   bool useFlatTransition = false);
 
     virtual ~SailingProblem() {}
 

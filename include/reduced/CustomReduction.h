@@ -97,6 +97,7 @@ public:
         if (!problem_->applicable(s, a))
             return;
         const std::vector<bool>& indicators = primaryIndicatorsActions_.at(a);
+                                                                                std::cerr << s << "; " << problem_->transition(s, a).size() << " " << indicators.size() << std::endl;
         assert(problem_->transition(s, a).size() == indicators.size());
         primaryIndicators = indicators;
     }
