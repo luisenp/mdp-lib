@@ -89,7 +89,7 @@ SailingProblem::transition(mlcore::State* s, mlcore::Action* a)
                         mlcore::Successor(this->addState(next), p));
                 } else if (useFlatTransition_) {
                     successors.push_back(
-                        mlcore::Successor(mlcore::Successor(state, 1.0));
+                        mlcore::Successor(mlcore::Successor(state, 0.0)));
                 }
             }
         } else {
@@ -104,6 +104,7 @@ SailingProblem::transition(mlcore::State* s, mlcore::Action* a)
         if (useFlatTransition_) {
             for (int i = 1; i < 8; i++)
                 successors.push_back(mlcore::Successor(state, 0.0));
+        }
     }
     return successors;
 }

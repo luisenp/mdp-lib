@@ -61,8 +61,9 @@ mlcore::Problem* problem = nullptr;
 mlcore::Heuristic* heuristic = nullptr;
 ReducedModel* reducedModel = nullptr;
 ReducedHeuristicWrapper* reducedHeuristic = nullptr;
-WrapperProblem* wrapperProblem = nullptr;
+WrapperProblem* originalProblemWrapper = nullptr;
 CustomReduction* bestReductionTemplate = nullptr;
+ReducedTransition* bestReduction = nullptr;
 list<ReducedTransition *> reductions;
 
 
@@ -276,8 +277,8 @@ void findBestReductionGreedy(mlcore::Problem* problem,
                 for (mlcore::Action* a : actionGroup)
                     testPrimaryIndicatorsActions[a][outcomeIdx] = false;
                 reducedModel = new ReducedModel(problem, testReduction, k);
-//                double result = ReducedModel::evaluateMarkovChain(reducedModel);
-                double result = reducedModel->evaluateMonteCarlo(50);
+                double result = ReducedModel::evaluateMarkovChain(reducedModel);
+//                double result = reducedModel->evaluateMonteCarlo(50);
                 if (result < bestResult) {
                     if (result < tau * previousResult) {
                         bestGroup = groupIdx;
@@ -340,6 +341,23 @@ void findBestReductionGreedy(mlcore::Problem* problem,
 }
 
 
+ReducedTransition* chooseBestReduction(mlcore::Problem* problem)
+{
+    double bestValue = mdplib::dead_end_cost + 1;
+    ReducedTransition* bestReduction = nullptr;
+    for (auto const& reduction : reductions) {
+        ReducedModel* reducedModel = new ReducedModel(problem, reduction, k);
+        double valueReduction = ReducedModel::evaluateMarkovChain(reducedModel);
+                                                                                dprint2((void *) reduction, valueReduction);
+        if (valueReduction < bestValue) {
+            bestReduction = reduction;
+            bestValue = valueReduction;
+        }
+    }
+    return bestReduction;
+}
+
+
 void createRacetrackReductionsTemplate(RacetrackProblem* rtp)
 {
     CustomReduction* reductionsTemplate = new CustomReduction(rtp);
@@ -364,7 +382,6 @@ void createRacetrackReductionsTemplate(RacetrackProblem* rtp)
             primaryIndicators.push_back(true);
         reductionsTemplate->setPrimaryForAction(a, primaryIndicators);
     }
-    reductions.push_back(reductionsTemplate);
     bestReductionTemplate = reductionsTemplate;
 }
 
@@ -379,7 +396,6 @@ void createSailingReductionsTemplate(SailingProblem* sp)
             primaryIndicators.push_back(true);
         reductionsTemplate->setPrimaryForAction(a, primaryIndicators);
     }
-    reductions.push_back(reductionsTemplate);
     bestReductionTemplate = reductionsTemplate;
 }
 
@@ -395,7 +411,6 @@ void initRacetrack(string trackName, int mds, double pslip, double perror)
     problem->generateAll();
     if (verbosity > 100)
         cout << "Generated " << problem->states().size() << " states." << endl;
-    reductions.push_back(new LeastLikelyOutcomeReduction(problem));
     createRacetrackReductionsTemplate(static_cast<RacetrackProblem*> (problem));
 }
 
@@ -441,7 +456,7 @@ void initSailing()
                                  sizeSailing, sizeSailing,
                                  costs,
                                  windTransition,
-                                 true);
+                                 true); // using flat transition
     problem->generateAll();
 
     if (!flag_is_registered_with_value("heuristic") ||
@@ -476,9 +491,10 @@ int main(int argc, char* args[])
         nsims = stoi(flag_value("n"));
 
     // Creating problem
-    vector< vector<mlcore::Action*> >
-    actionGroups(3, vector<mlcore::Action*> ());
+    vector< vector<mlcore::Action*> > actionGroups;
     if (domainName == "racetrack") {
+        for (int i = 0; i < 3; i++)
+            actionGroups.push_back(vector<mlcore::Action*> ());
         assert(flag_is_registered_with_value("problem"));
         int mds = -1;
         double perror = 0.05;
@@ -501,8 +517,7 @@ int main(int argc, char* args[])
         }
     } else if (domainName == "sailing") {
         initSailing();
-        vector< vector<mlcore::Action*> >
-            actionGroups(1, vector<mlcore::Action*> ());
+        actionGroups.push_back(vector<mlcore::Action*> ());
         for (mlcore::Action* a : problem->actions()) {
             actionGroups[0].push_back(a);
         }
@@ -512,30 +527,29 @@ int main(int argc, char* args[])
 
     ReducedTransition* bestReduction = nullptr;
     bestReduction = reductions.front();
-    wrapperProblem = new WrapperProblem(problem);
+    originalProblemWrapper = new WrapperProblem(problem);
 
     double totalPlanningTime = 0.0;
     mlcore::StateSet reachableStates, tipStates, subgoals;
     clock_t startTime = clock();
-    if (flag_is_registered("use-subgoals")) {
+    if (flag_is_registered("subgoals")) {
         int depth = 4;
         if (flag_is_registered_with_value("d"))
             depth = stoi(flag_value("d"));
         getReachableStates(problem, reachableStates, tipStates, depth);
-        while (subgoals.size() < tipStates.size() / 10) {
-            auto it = tipStates.begin();
-            advance(it, rand() % (tipStates.size() - 1));
-            subgoals.insert(*it);
-        }
-        cout << subgoals.size() << endl;
-        wrapperProblem->overrideGoals(&subgoals);
+//        while (subgoals.size() < tipStates.size() / 10) {
+//            auto it = tipStates.begin();
+//            advance(it, rand() % (tipStates.size() - 1));
+//            subgoals.insert(*it);
+//        }
+//        cout << subgoals.size() << endl;
+        originalProblemWrapper->overrideGoals(&tipStates);
     }
     cout << reachableStates.size() << " " << tipStates.size() << endl;
-    // Finds the best reduction using the greedy approach and then stores it
-    // in global variable bestReductionTemplate
     if (flag_is_registered("use-brute-force")) {
-        findBestReductionBruteForce(wrapperProblem, actionGroups);
-    } else if (flag_is_registered("best-m02")) {
+        findBestReductionBruteForce(originalProblemWrapper, actionGroups);
+        bestReduction = bestReductionTemplate;
+    } else if (flag_is_registered("best-m02-racing")) {
         vector<vector<int> > primaryOutcomes;
         primaryOutcomes.push_back(vector<int>{1});
         primaryOutcomes.push_back(vector<int>{1});
@@ -543,7 +557,8 @@ int main(int argc, char* args[])
         assignPrimaryOutcomesToReduction(primaryOutcomes,
                                          actionGroups,
                                          bestReductionTemplate);
-    } else if (flag_is_registered("best-det")) {
+        bestReduction = bestReductionTemplate;
+    } else if (flag_is_registered("best-det-racing")) {
         vector<vector<int> > primaryOutcomes;
         primaryOutcomes.push_back(vector<int>{1});
         primaryOutcomes.push_back(vector<int>{1});
@@ -551,8 +566,20 @@ int main(int argc, char* args[])
         assignPrimaryOutcomesToReduction(primaryOutcomes,
                                          actionGroups,
                                          bestReductionTemplate);
+        bestReduction = bestReductionTemplate;
     } else if (flag_is_registered("greedy")){
-        findBestReductionGreedy(wrapperProblem, actionGroups);
+        findBestReductionGreedy(originalProblemWrapper, actionGroups);
+        bestReduction = bestReductionTemplate;
+    } else if (flag_is_registered("choose")) {
+        reductions.push_back(
+            new LeastLikelyOutcomeReduction(originalProblemWrapper, 1));
+        reductions.push_back(
+            new LeastLikelyOutcomeReduction(originalProblemWrapper, 2));
+        reductions.push_back(
+            new MostLikelyOutcomeReduction(originalProblemWrapper, 1));
+        reductions.push_back(
+            new MostLikelyOutcomeReduction(originalProblemWrapper, 2));
+        bestReduction = chooseBestReduction(originalProblemWrapper);
     }
 
     clock_t endTime = clock();
@@ -562,8 +589,9 @@ int main(int argc, char* args[])
     totalPlanningTime += timeReductions;
     cout << "time finding reductions " << timeReductions << endl;
 
+
     // Setting up the final reduced model to use
-    reducedModel = new ReducedModel(problem, bestReductionTemplate, k);
+    reducedModel = new ReducedModel(problem, bestReduction, k);
     reducedHeuristic = new ReducedHeuristicWrapper(heuristic);
     reducedModel->setHeuristic(reducedHeuristic);
     static_cast<ReducedModel*>(reducedModel)->
@@ -572,24 +600,28 @@ int main(int argc, char* args[])
     // We will now use the wrapper for the pro-active re-planning approach. It
     // will allow us to plan in advance for the set of successors of a
     // state-action
-    wrapperProblem->clearOverrideGoals();
-    wrapperProblem->setNewProblem(reducedModel);
+    originalProblemWrapper->clearOverrideGoals();
+
+    WrapperProblem* reducedModelWrapper = new WrapperProblem(reducedModel);
+//    wrapperProblem->setNewProblem(reducedModel);
 
     // Solving off-line using full models
     Solver* solver;
     startTime = clock();
     if (flag_is_registered("use-vi")) {
         reducedModel->generateAll();
-        solver = new VISolver(wrapperProblem);
+//        solver = new VISolver(wrapperProblem);
+        solver = new VISolver(reducedModel);
     } else {
-        solver = new LAOStarSolver(wrapperProblem);
+//        solver = new LAOStarSolver(wrapperProblem);
+        solver = new LAOStarSolver(reducedModel);
     }
     if (useFullTransition)
-        solver->solve(wrapperProblem->initialState());
+        solver->solve(reducedModel->initialState());
     endTime = clock();
     double timeInitialPlan = (double(endTime - startTime) / CLOCKS_PER_SEC);
     totalPlanningTime += timeInitialPlan;
-    cout << "cost " << wrapperProblem->initialState()->cost() <<
+    cout << "cost " << reducedModel->initialState()->cost() <<
         " time " << timeInitialPlan << endl;
 
     // Running a trial of the continual planning approach.
@@ -599,10 +631,10 @@ int main(int argc, char* args[])
     for (int i = 0; i < nsims; i++) {
         // We don't want the simulations to re-use the computed values
         if (!useFullTransition) {
-            for (mlcore::State* s : wrapperProblem->states())
+            for (mlcore::State* s : reducedModel->states())
                 s->reset();
             startTime = clock();
-            solver->solve(wrapperProblem->initialState());
+            solver->solve(reducedModel->initialState());
             endTime = clock();
             // Initial time always counts
             expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
@@ -610,7 +642,7 @@ int main(int argc, char* args[])
         double maxReplanningTimeCurrent = 0.0;
         pair<double, double> costAndTime =
             reducedModel->trial(
-                *solver, wrapperProblem, &maxReplanningTimeCurrent);
+                *solver, reducedModelWrapper, &maxReplanningTimeCurrent);
         expectedCost += costAndTime.first;
         maxReplanningTime = max(maxReplanningTime, maxReplanningTimeCurrent);
 
@@ -628,8 +660,12 @@ int main(int argc, char* args[])
         delete reduction;
     reducedModel->cleanup();
     delete reducedModel;
-    wrapperProblem->cleanup();
-    delete wrapperProblem;
+    originalProblemWrapper->cleanup();
+    delete originalProblemWrapper;
+    reducedModelWrapper->cleanup();
+    delete reducedModelWrapper;
+//    wrapperProblem->cleanup();
+//    delete wrapperProblem;
     delete problem;
     delete solver;
     return 0;
