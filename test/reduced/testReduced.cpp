@@ -168,12 +168,9 @@ void assignPrimaryOutcomesToReduction(
                 primaryIndicatorsTempl[a][j] = false;
             }
             for (auto const primaryIndex : primaryIndicesForGroup) {
-                                                                                if (a == *(actionGroup.begin()))
-                                                                                    cerr << primaryIndex << ",";
                 primaryIndicatorsTempl[a][primaryIndex] = true;
             }
         }
-                                                                                cerr << "; ";
     }
 }
 
@@ -278,7 +275,6 @@ void findBestReductionGreedy(mlcore::Problem* problem,
                     testPrimaryIndicatorsActions[a][outcomeIdx] = false;
                 reducedModel = new ReducedModel(problem, testReduction, k);
                 double result = ReducedModel::evaluateMarkovChain(reducedModel);
-//                double result = reducedModel->evaluateMonteCarlo(50);
                 if (result < bestResult) {
                     if (result < tau * previousResult) {
                         bestGroup = groupIdx;
@@ -358,7 +354,11 @@ ReducedTransition* chooseBestReduction(mlcore::Problem* problem)
 }
 
 
-void createRacetrackReductionsTemplate(RacetrackProblem* rtp)
+/*
+ * Creates a template for racetrack reductions with 3 action groups.
+ */
+void createRacetrackReductionsTemplate(RacetrackProblem* rtp,
+                                       CustomReduction** createdReduction)
 {
     CustomReduction* reductionsTemplate = new CustomReduction(rtp);
     vector<bool> primaryIndicators;
@@ -382,11 +382,73 @@ void createRacetrackReductionsTemplate(RacetrackProblem* rtp)
             primaryIndicators.push_back(true);
         reductionsTemplate->setPrimaryForAction(a, primaryIndicators);
     }
-    bestReductionTemplate = reductionsTemplate;
+    *createdReduction = reductionsTemplate;
 }
 
 
-void createSailingReductionsTemplate(SailingProblem* sp)
+/*
+ * Creates a pool of reductions to choose for the racetrack problem
+ */
+void createReductionsPoolForRacetrack(
+    RacetrackProblem* rtp, vector<vector<mlcore::Action*> > & actionGroups)
+{
+    // This code assumes that pslip > perr
+    // most-likely-outcome determinization
+    CustomReduction* reduction1 = nullptr;
+    createRacetrackReductionsTemplate(
+        static_cast<RacetrackProblem*> (problem), &reduction1);
+    vector<vector<int> > primaryOutcomes;
+    primaryOutcomes.push_back(vector<int>{1});
+    primaryOutcomes.push_back(vector<int>{1});
+    primaryOutcomes.push_back(vector<int>{1});
+    assignPrimaryOutcomesToReduction(primaryOutcomes,
+                                     actionGroups,
+                                     reduction1);
+    reductions.push_back(reduction1);
+
+    // two most-likely-outcomes Mk2
+    CustomReduction* reduction2 = nullptr;
+    createRacetrackReductionsTemplate(
+        static_cast<RacetrackProblem*> (problem), &reduction2);
+    primaryOutcomes.clear();
+    primaryOutcomes.push_back(vector<int>{0, 1});
+    primaryOutcomes.push_back(vector<int>{0, 1});
+    primaryOutcomes.push_back(vector<int>{0, 1});
+    assignPrimaryOutcomesToReduction(primaryOutcomes,
+                                     actionGroups,
+                                     reduction2);
+    reductions.push_back(reduction2);
+
+    // least-likely-outcome determinization
+    CustomReduction* reduction3 = nullptr;
+    createRacetrackReductionsTemplate(
+        static_cast<RacetrackProblem*> (problem), &reduction3);
+    primaryOutcomes.clear();
+    primaryOutcomes.push_back(vector<int>{2});
+    primaryOutcomes.push_back(vector<int>{2});
+    primaryOutcomes.push_back(vector<int>{2});
+    assignPrimaryOutcomesToReduction(primaryOutcomes,
+                                     actionGroups,
+                                     reduction3);
+    reductions.push_back(reduction3);
+
+    // two least-likely-outcomes Mk2
+    CustomReduction* reduction4 = nullptr;
+    createRacetrackReductionsTemplate(
+        static_cast<RacetrackProblem*> (problem), &reduction4);
+    primaryOutcomes.clear();
+    primaryOutcomes.push_back(vector<int>{2, 3});
+    primaryOutcomes.push_back(vector<int>{2, 3});
+    primaryOutcomes.push_back(vector<int>{2, 3});
+    assignPrimaryOutcomesToReduction(primaryOutcomes,
+                                     actionGroups,
+                                     reduction4);
+    reductions.push_back(reduction4);
+}
+
+
+void createSailingReductionsTemplate(SailingProblem* sp,
+                                     CustomReduction* createdReduction)
 {
     CustomReduction* reductionsTemplate = new CustomReduction(sp);
     vector<bool> primaryIndicators;
@@ -396,7 +458,7 @@ void createSailingReductionsTemplate(SailingProblem* sp)
             primaryIndicators.push_back(true);
         reductionsTemplate->setPrimaryForAction(a, primaryIndicators);
     }
-    bestReductionTemplate = reductionsTemplate;
+    createdReduction = reductionsTemplate;
 }
 
 
@@ -411,7 +473,8 @@ void initRacetrack(string trackName, int mds, double pslip, double perror)
     problem->generateAll();
     if (verbosity > 100)
         cout << "Generated " << problem->states().size() << " states." << endl;
-    createRacetrackReductionsTemplate(static_cast<RacetrackProblem*> (problem));
+    createRacetrackReductionsTemplate(static_cast<RacetrackProblem*> (problem),
+                                      &bestReductionTemplate);
 }
 
 
@@ -463,7 +526,8 @@ void initSailing()
             flag_value("heuristic") == "no-wind")
         heuristic =
             new SailingNoWindHeuristic(static_cast<SailingProblem*>(problem));
-    createSailingReductionsTemplate(static_cast<SailingProblem*> (problem));
+    createSailingReductionsTemplate(static_cast<SailingProblem*> (problem),
+                                    bestReductionTemplate);
 }
 
 
@@ -537,12 +601,6 @@ int main(int argc, char* args[])
         if (flag_is_registered_with_value("d"))
             depth = stoi(flag_value("d"));
         getReachableStates(problem, reachableStates, tipStates, depth);
-//        while (subgoals.size() < tipStates.size() / 10) {
-//            auto it = tipStates.begin();
-//            advance(it, rand() % (tipStates.size() - 1));
-//            subgoals.insert(*it);
-//        }
-//        cout << subgoals.size() << endl;
         originalProblemWrapper->overrideGoals(&tipStates);
     }
     cout << reachableStates.size() << " " << tipStates.size() << endl;
@@ -580,6 +638,10 @@ int main(int argc, char* args[])
         reductions.push_back(
             new MostLikelyOutcomeReduction(originalProblemWrapper, 2));
         bestReduction = chooseBestReduction(originalProblemWrapper);
+    } else if (flag_is_registered("choose-racetrack")) {
+        createReductionsPoolForRacetrack(
+            static_cast<RacetrackProblem*> (problem), actionGroups);
+        bestReduction = chooseBestReduction(originalProblemWrapper);
     }
 
     clock_t endTime = clock();
@@ -603,17 +665,14 @@ int main(int argc, char* args[])
     originalProblemWrapper->clearOverrideGoals();
 
     WrapperProblem* reducedModelWrapper = new WrapperProblem(reducedModel);
-//    wrapperProblem->setNewProblem(reducedModel);
 
     // Solving off-line using full models
     Solver* solver;
     startTime = clock();
     if (flag_is_registered("use-vi")) {
         reducedModel->generateAll();
-//        solver = new VISolver(wrapperProblem);
         solver = new VISolver(reducedModel);
     } else {
-//        solver = new LAOStarSolver(wrapperProblem);
         solver = new LAOStarSolver(reducedModel);
     }
     if (useFullTransition)
@@ -629,6 +688,8 @@ int main(int argc, char* args[])
     double expectedTime = 0.0;
     double maxReplanningTime = 0.0;
     for (int i = 0; i < nsims; i++) {
+        if (verbosity >= 10)
+            cout << i << endl;
         // We don't want the simulations to re-use the computed values
         if (!useFullTransition) {
             for (mlcore::State* s : reducedModel->states())
@@ -648,7 +709,7 @@ int main(int argc, char* args[])
 
         // For determinization, re-planning time counts
         // (doesn't happen in parallel)
-        if (flag_is_registered("best-det") && k == 0)
+        if (flag_is_registered("best-det-racing") && k == 0)
             expectedTime += costAndTime.second;
     }
     cout << "expected cost " << expectedCost / nsims << endl;

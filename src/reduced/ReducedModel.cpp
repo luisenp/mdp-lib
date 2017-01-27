@@ -241,8 +241,7 @@ std::pair<double, double> ReducedModel::trial(mlsolvers::Solver & solver,
                 auxState->exceptionCount(exceptionCount + 1);
         }
 
-        nextState =
-            static_cast<ReducedState*>(this->getState(auxState));
+        nextState = static_cast<ReducedState*>(this->getState(auxState));
 
         if ((nextState != nullptr && nextState->deadEnd()) ||
                 cost >= mdplib::dead_end_cost) {
@@ -279,6 +278,8 @@ std::pair<double, double> ReducedModel::trial(mlsolvers::Solver & solver,
                 resetExceptionCounter = true;
             }
         }
+        if (this->goal(nextState))
+            break;
         currentState = nextState;
     }
     if (auxState != nullptr)
