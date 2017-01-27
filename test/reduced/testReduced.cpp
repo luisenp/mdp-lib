@@ -714,6 +714,8 @@ int main(int argc, char* args[])
     }
     cout << "expected cost " << expectedCost / nsims << endl;
     cout << "expected planning time " << expectedTime / nsims << endl;
+    cout << "expected planning time + reductions " <<
+        expectedTime / nsims + timeReductions << endl;
     cout << "max re-planning time " << maxReplanningTime << endl;
 
     // Releasing memory
