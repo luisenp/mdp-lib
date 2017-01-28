@@ -12,6 +12,7 @@
 #include "../Action.h"
 #include "../Problem.h"
 
+#include "FFUtil.h"
 #include "Solver.h"
 
 
@@ -99,37 +100,6 @@ private:
     //                               FUNCTIONS                                //
     ////////////////////////////////////////////////////////////////////////////
 
-    /*
-     * Checks the init state in the problem file and stores the atoms that are
-     * removed by the PPDDL parser. These are the atoms that are not part of
-     * the PPDDL problem object (problem_t type) atom_hash.
-    */
-    void storeRemovedAtoms();
-
-    /*
-     * Returns a string with the atoms in the given state.
-     */
-    std::string extractStateAtoms(mlppddl::PPDDLState* state);
-
-    /*
-     * Replaces the initial state in the problem file with the current state
-     * and creates a new file with the new state.
-     */
-    void replaceInitStateInProblemFile(std::string atomsCurrentState);
-
-    /*
-     * Calls the FF planner and gets a cost and action estimate for
-     * the current state. This function assumes that a PDDL file has already
-     * been set up for FF corresponding to the state to be solved.
-     * This is done by replaceInitStateInProblemFile()0.
-     */
-    std::pair<std::string, int> getActionNameAndCostFromFF();
-
-    /*
-     * Returns the action with the given name.
-     */
-    mlcore::Action* getActionFromName(std::string actionName);
-
     /* Returns an action greedily on estimatedCosts_. */
     mlcore::Action* greedyAction_(mlcore::State* s, int horizon);
 
@@ -153,20 +123,6 @@ private:
     /* A Bellman update that calls FF on states with maximum exception count. */
     double bellmanUpdate(mlcore::State* s);
 
-    /*
-     * Stores the initial atoms that the PPDDL parser removes from the internal
-     * representation because they can't be changed by actions. We need to
-     * include these in the problem given to FF, otherwise it might not be
-     * able to solve the determinization.
-     */
-    void storeRemovedInitAtoms();
-
-    /*
-     * Returns true if the planning time has run out. If passed and not
-     * nullptr, the parameter stores the time left for planning.
-     */
-    bool planningTimeHasRunOut(time_t* timeLeft = nullptr);
-
 public:
     FFReducedModelSolver(mlcore::Problem* problem,
                          std::string ffExecFilename,
@@ -186,11 +142,21 @@ public:
         maxPlanningTime_(maxPlanningTime)
 
     {
-        // initializing memoization table
+        // Initializing memoization table.
         for (int i = 0; i <= maxHorizon_; i++) {
             estimatedCosts_.push_back(mlcore::StateDoubleMap());
         }
-        storeRemovedInitAtoms();
+
+        // Retrieving removed initial atoms.
+        mlreduced::ReducedModel* reducedModel =
+            dynamic_cast<mlreduced::ReducedModel*> (problem_);
+        assert(reducedModel);
+        mlppddl::PPDDLProblem* originalProblem =
+            dynamic_cast<mlppddl::PPDDLProblem*>
+                (reducedModel->originalProblem());
+        assert(originalProblem);
+        removedInitAtoms_ =
+            storeRemovedInitAtoms(templateProblemFilename_, originalProblem);
     }
 
     virtual ~FFReducedModelSolver() {}
@@ -200,7 +166,7 @@ public:
     void maxHorizon(int value) { maxHorizon_ = value; }
 
     /**
-     * Fids the best action for the given state. If the state is a
+     * Finds the best action for the given state. If the state is a
      * dead-end according to the given determinization, the method
      * returns a nullptr.
      */

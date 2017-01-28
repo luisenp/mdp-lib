@@ -9,10 +9,10 @@
 # The PPDDL files must contain both domain and problem definitions and
 # the problem name in the file must match the PPDDL filename.
 #
-pddl_folder=/home/lpineda/Documents/code/mdp-lib/data/ppddl/ippc2008
+pddl_folder=../../data/ppddl/ippc2008
 
 # The domain name.
-domain=ex-blocksworld
+domain=blocksworld
 
 # The name of the problem used to learn the best determinization. 
 problem=p01
@@ -48,6 +48,6 @@ best_determinization=`echo $best_n_determinizations | { read x _ ; echo $x; }`
 
 # Solving all problems with the best determinization
 for i in {01..10}; do
-  echo `./run_experiment.sh $pddl_folder $domain p$i $best_determinization $k \\
+  echo `time ./run_experiment.sh $pddl_folder $domain p$i $best_determinization $k \\
     | tail -n 1`
 done

@@ -281,6 +281,12 @@ lib/libmdp_reduced.a: lib/libmdp.a domains ppddl $(SD_REDUCED)/*.cpp $(ID_REDUCE
       $(SD)/Action.cpp \
       $(ID_PPDDL)/mini-gpt/heuristics.cc \
       $(LIBS) lib/libminigpt.a lib/libmdp_reduced.a lib/libmdp_ppddl.a
+	$(CC) $(CFLAGS) -I$(ID_REDUCED) $(INCLUDE_CORE) $(INCLUDE_PPDDL) \
+      -o testrff.out $(TD)/testRFF.cpp $(OD_DOMAINS)/*.o \
+      $(SD_SOLV)/LAOStarSolver.cpp \
+      $(SD)/Action.cpp \
+      $(ID_PPDDL)/mini-gpt/heuristics.cc \
+      $(LIBS) lib/libminigpt.a lib/libmdp_reduced.a lib/libmdp_ppddl.a
 
 .PHONY: clean
 clean:

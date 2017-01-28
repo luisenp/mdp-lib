@@ -40,30 +40,25 @@ def main(argv):
   # Getting all possible probabilistic effects.
   ppddl_util.get_all_probabilistic_effects(domain_tree, all_prob_effects_list)
   
-  # Getting all possible determinizations.
-  determinizations_of_all_effects = []
+  # Getting the most likely outcome determinization.
+  mlo_determinization = []
   for probabilistic_effect_info in all_prob_effects_list:
-    determinizations_of_all_effects.append(
-      ppddl_util.get_all_determinizations_effect(probabilistic_effect_info))
-  all_determinizations = (
-    ppddl_util.get_all_determinizations_comb(determinizations_of_all_effects))  
+    mlo_determinization.append(
+      ppddl_util.get_mlo_determinization_effect(probabilistic_effect_info))
   
-  # Writing all possible determinizations to a single PPDDL file each.
-  idx = 0
-  for determinization in all_determinizations:
-    determinization_ppddl_tree = copy.deepcopy(domain_tree)
-    description_text = ""
-    for effect_info in determinization:
-      description_text += "%s %d\n" % (effect_info[0], effect_info[1][0])
-    ppddl_util.determinize_tree(determinization, determinization_ppddl_tree)
-    ppddl_util.clean_up_tree(determinization_ppddl_tree)
-    f = open('%s_det%d.pddl' % (output_file_name, idx), 'w')
-    fd = open('%s_det%d.desc' % (output_file_name, idx), 'w')
-    f.write(ppddl_util.make_str(determinization_ppddl_tree[0]))
-    fd.write(description_text)
-    f.close()
-    fd.close()
-    idx += 1
+  # Writing the MLO determinization to a PPDDL file.
+  determinization_ppddl_tree = copy.deepcopy(domain_tree)
+  description_text = ""
+  for effect_info in mlo_determinization:
+    description_text += "%s %d\n" % (effect_info[0], effect_info[1][0])
+  ppddl_util.determinize_tree(mlo_determinization, determinization_ppddl_tree)
+  ppddl_util.clean_up_tree(determinization_ppddl_tree)
+  f = open('%s_mlo_det.pddl' % (output_file_name), 'w')
+  fd = open('%s_mlo_det.desc' % (output_file_name), 'w')
+  f.write(ppddl_util.make_str(determinization_ppddl_tree[0]))
+  fd.write(description_text)
+  f.close()
+  fd.close()
   
 
 if __name__ == "__main__":

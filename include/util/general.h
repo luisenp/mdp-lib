@@ -2,6 +2,7 @@
 #define MDPLIB_GENERAL_H
 
 #include <cstring>
+#include <ctime>
 #include <iostream>
 #include <unordered_set>
 #include <unordered_map>
@@ -81,6 +82,16 @@ bool nextComb(std::vector<int>& comb, int n, int k);
  * returns true, while calling nextComb(<1,1>, 2) returns false.
  */
 bool nextCombRep(std::vector<int>& comb, int k);
+
+
+/**
+ * Computes the time left on a clock, according to the current time,
+ * the given starting time and the given max time.
+ * If the time left is <= 0, the method returns true,
+ * otherwise it returns false.
+ */
+bool timeHasRunOut(
+    time_t startingTime, time_t maxTime, time_t* timeLeft = nullptr);
 
 struct pair_int_equal {
   bool operator() (std::pair<int,int> p1, std::pair<int,int> p2) const {
