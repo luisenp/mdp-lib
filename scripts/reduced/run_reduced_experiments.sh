@@ -18,7 +18,7 @@ domain=ex-blocksworld
 problem=p01
 
 # The exception bound to use. 
-k=0
+k=2
 
 # Creating all possible determinizations
 ./create_all_determinizations.py -d $pddl_folder/$domain/domain.pddl \

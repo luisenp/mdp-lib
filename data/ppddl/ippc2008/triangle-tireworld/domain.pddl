@@ -1,4 +1,4 @@
-(define (domain triangle-tire)
+(define (domain triangle-tireworld)
   (:requirements :typing :strips :equality :probabilistic-effects :rewards)
   (:types location)
   (:predicates (vehicle-at ?loc - location)

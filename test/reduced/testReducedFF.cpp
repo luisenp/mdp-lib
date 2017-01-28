@@ -230,6 +230,9 @@ int main(int argc, char* args[])
             mlcore::State* nextOriginalState =
                 randomSuccessor(problem, currentState->originalState(), action);
 
+            if (verbosity > 10)
+                dprint3("     ", currentState, currentState->bestAction());
+
             if (problem->goal(nextOriginalState)) {
                 countSuccess++;
                 dprint1("GOAL!");
