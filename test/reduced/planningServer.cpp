@@ -29,6 +29,7 @@
 #include "../../include/reduced/ReducedTransition.h"
 
 #include "../../include/solvers/FFReducedModelSolver.h"
+#include "../../include/solvers/RFFSolver.h"
 
 #include "../../include/util/flags.h"
 #include "../../include/util/general.h"
@@ -290,17 +291,27 @@ int main(int argc, char* args[])
     // Solving reduced model using LAO* + FF.
     time_t totalPlanningTime = 0.0;
     time_t startTime = time(nullptr);
-     // using half of the time fot the initial plan (last argument)
-    FFReducedModelSolver solver(reducedModel,
-                                ffExec,
-                                directory + "/" + detProblem,
-                                directory + "/ff-template.pddl",
-                                k,
-                                1.0e-3,
-                                useFF,
-                                maxPlanningTime / 2);
+
     cout << "SOLVING" << endl;
-    solver.solve(reducedModel->initialState());
+    Solver* solver;
+    if (flag_is_registered("rff")) {
+        solver = new RFFSolver(static_cast<mlppddl::PPDDLProblem*> (problem),
+                               ffExec,
+                               directory + "/" + detProblem,
+                               directory + "/ff-template.pddl");
+        solver->solve(problem->initialState());
+    } else {
+    // using half of the time for the initial plan (last argument)
+        solver = new FFReducedModelSolver (reducedModel,
+                                           ffExec,
+                                           directory + "/" + detProblem,
+                                           directory + "/ff-template.pddl",
+                                           k,
+                                           1.0e-3,
+                                           useFF,
+                                           maxPlanningTime / 2);
+        solver->solve(reducedModel->initialState());
+    }
     time_t endTime = time(nullptr);
     totalPlanningTime += endTime - startTime;
     remainingPlanningTime -= totalPlanningTime;
@@ -355,9 +366,15 @@ int main(int argc, char* args[])
         ReducedState* reducedState = static_cast<ReducedState*> (
             reducedModel->addState(new ReducedState(state, 0, reducedModel)));
         cout << "PLANNING." << endl;
-        solver.maxPlanningTime(remainingPlanningTime);
+        mlcore::Action* action;
         startTime = time(nullptr);
-        mlcore::Action* action = solver.solve(reducedState);
+        if (flag_is_registered("rff")) {
+            action = solver->solve(reducedState->originalState());
+        } else {
+            static_cast<FFReducedModelSolver*> (solver)->
+                maxPlanningTime(remainingPlanningTime);
+            action = solver->solve(reducedState);
+        }
         endTime = time(nullptr);
         remainingPlanningTime -= endTime - startTime;
         cout << "DONE. Remaining time: " << remainingPlanningTime << endl;

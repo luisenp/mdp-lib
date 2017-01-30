@@ -11,7 +11,6 @@
 #
 pddl_folder=$1
 
-
 # The domain name.
 domain=$2
 
@@ -23,19 +22,28 @@ problem=$3
 # convention: "domain-name"_det"determinization_index".pddl.
 determinization_index=$4
 
-# The exception bound to use.
+# The exception bound to use. (If the value is "rff", then the RFF algorithm
+# will be used.
 k=$5
 
 # Setups the template problem for FF (removes PPDDL features not supported 
 # by FF and other cleanup)
 ./setup_ff_template.py -p $pddl_folder/$domain/$problem.pddl \
   -o /tmp/ff-template.pddl
-
+  
 # Starts the planning server to connect to mdpsim
-../../planserv_red.out --problem=$pddl_folder/$domain/$problem.pddl:$problem \
-  --det_problem=${domain}_det${determinization_index}.pddl \
-  --det_descriptor=/tmp/${domain}_det${determinization_index}.desc \
-  --dir=/tmp --k=$k --max-time=1200 &
+if [ "$k" == "rff" ]
+then
+  ../../planserv_red.out --problem=$pddl_folder/$domain/$problem.pddl:$problem \
+    --det_problem=${domain}_mlo_det.pddl \
+    --det_descriptor=/tmp/${domain}_mlo_det.desc \
+    --dir=/tmp --rff --k=0 &> rfflog.txt & 
+else
+  ../../planserv_red.out --problem=$pddl_folder/$domain/$problem.pddl:$problem \
+    --det_problem=${domain}_det${determinization_index}.pddl \
+    --det_descriptor=/tmp/${domain}_det${determinization_index}.desc \
+    --dir=/tmp --k=$k --max-time=1200 &
+fi
 
 # Starts the mdpsim server
 ../../../mdpsim-2.2/mdpsim --port=2323 --time-limit=1200000 --round-limit=50 \
@@ -49,9 +57,7 @@ sleep 1
   $pddl_folder/$domain/$problem.pddl &> log.txt
 
 # Kill the planning and mdpsim servers
-kill $(ps aux | grep '[p]lanserv' | awk '{print $2}')
-kill $(ps aux | grep '[l]t-mdpsim' | awk '{print $2}')
-rm -f last_id
+./kill_servers.sh
 
 # Extract the number of successes and turns (cost) resulting from this 
 # determinization

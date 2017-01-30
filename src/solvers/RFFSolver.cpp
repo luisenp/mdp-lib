@@ -14,7 +14,6 @@ namespace mlsolvers
 // TODO: For now, the GFF set will be only the goal. Modify this.
 mlcore::Action* RFFSolver::solve(mlcore::State* s0)
 {
-                                                                                mdplib_debug = true;
     startingPlanningTime_ = time(nullptr);
     terminalStates_.insert(s0);
     mlcore::StateSet statesPolicyGraph;
@@ -29,9 +28,7 @@ mlcore::Action* RFFSolver::solve(mlcore::State* s0)
 //                                                                                dprint1("here0");
             if (!statesPolicyGraph.empty())
                 pickRandomStates(statesPolicyGraph, 100, subgoals);
-                                                                                dprint2("calling FF ", subgoals.size());
             callFF(s, subgoals, fullPlan);
-                                                                                dprint2("done with plan of size ", fullPlan.size());
 
             // Extract policy
             mlcore::State* sPrime = s;
@@ -66,16 +63,18 @@ mlcore::Action* RFFSolver::solve(mlcore::State* s0)
                                                                                 dprint2("allexpanded", expandedStates.size());
         terminalStates_.insert(newTerminalStates.begin(),
                                newTerminalStates.end());
+                                                                                dprint2("old terminals", terminalStates_.size());
         for (mlcore::State* sExpanded : expandedStates) {
                                                                                 dprint2("expanded", sExpanded);
-            terminalStates_.erase(terminalStates_.find(sExpanded));
+            auto const & it = terminalStates_.find(sExpanded);
+            if (it != terminalStates_.end())
+                terminalStates_.erase(it);
             statesPolicyGraph.insert(sExpanded);
         }
                                                                                 for (auto const & pupu : terminalStates_)
                                                                                     dprint2("++++ terminal", pupu);
         double totalProb = failProb(s0, 50);
                                                                                 dprint2("totalProb", totalProb);
-                                                                                dsleep(500);
         if (totalProb < rho_)
             break;
     }
