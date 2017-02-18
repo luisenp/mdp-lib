@@ -114,6 +114,8 @@ public:
 
     virtual ~RFFSolver() {}
 
+    virtual void maxPlanningTime(time_t theTime) { maxPlanningTime_ = theTime; }
+
     /**
      * Finds the best action for the given state. If the state is a
      * dead-end according to the given determinization, the method

@@ -161,7 +161,9 @@ public:
 
     virtual ~FFReducedModelSolver() {}
 
-    void maxPlanningTime(time_t theTime) { maxPlanningTime_ = theTime; }
+    virtual void maxPlanningTime(time_t theTime) {
+        std::cerr << "FOOOOOOOOOOOOOOOOOOOOOOO" << std::endl;
+        maxPlanningTime_ = theTime; }
 
     void maxHorizon(int value) { maxHorizon_ = value; }
 
