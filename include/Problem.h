@@ -133,11 +133,14 @@ public:
             state->clearBits(mdplib::VISITED);
         std::list<State *> queue;
         queue.push_front(s0);
+                                                                                int cnt = 0;
         while (!queue.empty()) {
             State* cur = queue.front();
             queue.pop_front();
             if (cur->checkBits(mdplib::VISITED))
                 continue;
+                                                                                if (cnt++ % 1000 == 0)
+                                                                                    std::cerr << cnt << std::endl;
             cur->setBits(mdplib::VISITED);
             for (Action* a : actions_) {
                 if (!applicable(cur, a))

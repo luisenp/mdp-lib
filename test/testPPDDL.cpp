@@ -86,20 +86,23 @@ int main(int argc, char **argv)
         new mlppddl::PPDDLHeuristic(MLProblem, mlppddl::FF);
     MLProblem->setHeuristic(heuristic);
 
-    cout << "HEURISTIC s0: " << MLProblem->initialState()->cost() << endl;
+    cerr << "HEURISTIC s0: " << MLProblem->initialState()->cost() << endl;
 
     int ntrials = 5000;
     if (argc > 3) {
         ntrials = atoi(argv[3]);
     }
 
-    cout << "INITIAL: " << MLProblem->initialState() << " ";
+    MLProblem->generateAll();
+    cerr << "STATES: " << MLProblem->states().size() << endl;
+
+    cerr << "INITIAL: " << MLProblem->initialState() << " ";
     mlsolvers::LRTDPSolver solver(MLProblem, ntrials, 0.0001);
 
     mdplib_debug = true;
     solver.solve(MLProblem->initialState());
 
-    cout << MLProblem->initialState()->cost() << endl;
+    cerr << MLProblem->initialState()->cost() << endl;
 
 
     int nsims = argc > 4 ? atoi(argv[4]) : 1;
@@ -114,40 +117,40 @@ int main(int argc, char **argv)
             mlcore::Action* a = tmp->bestAction();
 
             if (verbosity > 100)
-                cout << tmp << " " << tmp->cost() << endl;
+                cerr << tmp << " " << tmp->cost() << endl;
 
             if (MLProblem->goal(tmp)) {
                 if (verbosity > 1)
-                    cout << "GOAL :-)" << endl;
+                    cerr << "GOAL :-)" << endl;
                 expectedCost += cost;
                 totalSuccess++;
                 break;
             }
             if (a == nullptr) {
                 if (verbosity > 1)
-                    cout << "REPLANNING..." << endl;
+                    cerr << "REPLANNING..." << endl;
                 solver.solve(tmp);
                 a = tmp->bestAction();
                 if (tmp->deadEnd() || a == nullptr) {
                     if (verbosity > 100)
-                      cout << "DEAD END!! giving up :-( " << endl;
+                      cerr << "DEAD END!! giving up :-( " << endl;
                     break;
                 }
             }
             cost += MLProblem->cost(tmp, a);
 
             if (cost > mdplib::dead_end_cost) {
-                cout << "Too long... giving up " << endl;
+                cerr << "Too long... giving up " << endl;
                 break;
             }
 
             if (verbosity > 100)
-                cout << tmp->bestAction() << endl;
+                cerr << tmp->bestAction() << endl;
             tmp = mlsolvers::randomSuccessor(MLProblem, tmp, a);
         }
     }
-    cout << "Expected Cost: " << expectedCost / totalSuccess << endl;
-    cout << "Total Successes " << totalSuccess << "/" << nsims << endl;
+    cerr << "Expected Cost: " << expectedCost / totalSuccess << endl;
+    cerr << "Total Successes " << totalSuccess << "/" << nsims << endl;
 
     state_t::finalize();
     problem_t::unregister_use(problem);

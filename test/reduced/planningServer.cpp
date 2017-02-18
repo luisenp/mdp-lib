@@ -99,6 +99,7 @@ bool initPPDDL(string ppddlArgs)
     string file = ppddlArgs.substr(0, pos_equals);
     string prob =
         ppddlArgs.substr(pos_equals + 1, ppddlArgs.size() - pos_equals);
+                                                                                dprint2(file, prob);
 
     pair<state_t *,Rational> *initial = nullptr;
 
@@ -108,6 +109,7 @@ bool initPPDDL(string ppddlArgs)
     }
     problem_t* internalPPDDLProblem =
         (problem_t *)(problem_t::find(prob.c_str()));
+                                                                                dprint1("found problem");
     if( !internalPPDDLProblem ) {
         cerr << "<main>: ERROR: problem `" << prob <<
             "' is not defined in file '" << file << "'" << endl;
@@ -115,9 +117,12 @@ bool initPPDDL(string ppddlArgs)
     }
 
     problem = new PPDDLProblem(internalPPDDLProblem);
+                                                                                dprint1("created problem");
     heuristic = new mlppddl::PPDDLHeuristic(static_cast<PPDDLProblem*>(problem),
                                             mlppddl::FF);
+                                                                                dprint1("created heuristic");
     problem->setHeuristic(heuristic);
+                                                                                dprint1("set heuristic");
 }
 
 
@@ -230,6 +235,8 @@ int main(int argc, char* args[])
     if (flag_is_registered_with_value("v"))
         verbosity = stoi(flag_value("v"));
 
+                                                                                dprint5(ppddlArgs, detProblem, detDescriptor, directory, k);
+
     time_t maxPlanningTime = 60 * 5;
     if (flag_is_registered("max-time"))
         maxPlanningTime = stoi(flag_value("max-time"));
@@ -246,7 +253,9 @@ int main(int argc, char* args[])
     if (flag_is_registered_with_value("n"))
         nsims = stoi(flag_value("n"));
 
+                                                                                dprint1("test1");
     initPPDDL(ppddlArgs);
+                                                                                dprint1("test2");
 
     // Creating the reduced model.
     ReducedTransition* reduction =
@@ -254,6 +263,7 @@ int main(int argc, char* args[])
     reducedModel = new ReducedModel(problem, reduction, k);
     reducedHeuristic = new ReducedHeuristicWrapper(heuristic);
     reducedModel->setHeuristic(reducedHeuristic);
+                                                                                dprint1("test3");
 
     /* *********************** SERVER INITIALIZATION ********************** */
 
@@ -291,6 +301,7 @@ int main(int argc, char* args[])
     time_t totalPlanningTime = 0.0;
     time_t startTime = time(nullptr);
      // using half of the time fot the initial plan (last argument)
+                                                                                dprint1("test4");
     FFReducedModelSolver solver(reducedModel,
                                 ffExec,
                                 directory + "/" + detProblem,
@@ -299,6 +310,7 @@ int main(int argc, char* args[])
                                 1.0e-3,
                                 useFF,
                                 maxPlanningTime / 2);
+                                                                                dprint1("test5");
     cout << "SOLVING" << endl;
     solver.solve(reducedModel->initialState());
     time_t endTime = time(nullptr);

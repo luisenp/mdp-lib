@@ -4,8 +4,8 @@ OBJ	=	actions.o algorithms.o client.o domains.o effects.o exceptions.o \
 		problems.o rational.o requirements.o strxml.o terms.o types.o
 
 LDFLAGS	=	
-CFLAGS	=	-g -Wall -DMEM_DEBUG -DFULL_STATES
-#CFLAGS	=	-O3 -Wall -DNDEBUG -DFULL_STATES
+#CFLAGS	=	-g -Wall -DMEM_DEBUG -DFULL_STATES
+CFLAGS	=	-O3 -Wall -DNDEBUG -DFULL_STATES
 LIBS	=	-lnsl -lsocket
 INCLUDE	=	#-I ../mdpsim-1.1
 CC	=	gcc

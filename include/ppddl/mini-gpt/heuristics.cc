@@ -291,7 +291,7 @@ atomMin1ForwardHeuristic_t::atomMin1ForwardHeuristic_t( const problem_t &problem
 	    if( *ai % 2 == 0 )
 	      state.add( *ai );
 
-	  // apply random operators 
+	  // apply random operators
 	  for( size_t steps = 0; steps < 1250; ++steps )
 	    for( actionList_t::const_iterator ai = relax.actionsT().begin(); ai != relax.actionsT().end(); ++ai )
 	      if( (*ai)->enabled( state ) && (drand48() > 0.5) )
@@ -755,7 +755,7 @@ atomMinMBackwardHeuristic_t::atomMinMBackwardHeuristic_t( const problem_t &probl
 	    if( *ai % 2 == 0 )
 	      state.add( *ai );
 
-	  // apply random operators 
+	  // apply random operators
 	  for( size_t steps = 0; steps < 1250; ++steps )
 	    for( actionList_t::const_iterator ai = relaxation_.actionsT().begin(); ai != relaxation_.actionsT().end(); ++ai )
 	      if( (*ai)->enabled( state ) && (drand48() > 0.5) )
@@ -918,7 +918,7 @@ atomMinMBackwardHeuristic_t::regression( const atomList_t &alist,
 }
 
 void
-atomMinMBackwardHeuristic_t::compute_mutexes( atomList_t &reachable, 
+atomMinMBackwardHeuristic_t::compute_mutexes( atomList_t &reachable,
 					      std::vector<unsigned> &mutexes,
 					      std::pair<state_t*,Rational> *initial ) const
 {
@@ -1067,7 +1067,7 @@ atomMinMBackwardHeuristic_t::compute_mutexes( atomList_t &reachable,
       std::cout << "<initial-mutex-set>: end" << std::endl;
     }
 
-  // refine initial set; i.e. remove all pairs that do not satisfy condition 2 
+  // refine initial set; i.e. remove all pairs that do not satisfy condition 2
   // from [bonet,geffner. Planning as Heuristic Search.AIJ 129 (2001).]
   bool change = true;
   unsigned number = initial_mutexes.size();
@@ -1085,7 +1085,7 @@ atomMinMBackwardHeuristic_t::compute_mutexes( atomList_t &reachable,
 		  size_t j;
 		  const deterministicAction_t *a = (const deterministicAction_t*)(*ai);
 		  for( j = 0; j < a->precondition().atom_list( 0 ).size(); ++j )
-		    if( (a->precondition().atom_list( 0 ).atom( j ) % 2 == 0) && 
+		    if( (a->precondition().atom_list( 0 ).atom( j ) % 2 == 0) &&
 			!reachable.find( a->precondition().atom_list( 0 ).atom( j ) ) )
 		      break;
 		  if( j == a->precondition().atom_list( 0 ).size() )
@@ -1117,7 +1117,7 @@ atomMinMBackwardHeuristic_t::compute_mutexes( atomList_t &reachable,
 			}
 		    }
 		}
-	      
+
 	      if( ai != relaxation_.actionsT().end() )
 		{
 		  change = true;
@@ -1189,7 +1189,7 @@ atomMinMBackwardHeuristic_t::compute_orbits( void )
 	  size_t i;
 	  const deterministicAction_t *a = (const deterministicAction_t*)(*ai);
 	  for( i = 0; i < a->precondition().atom_list( 0 ).size(); ++i )
-	    if( (a->precondition().atom_list( 0 ).atom( i ) % 2 == 0) && 
+	    if( (a->precondition().atom_list( 0 ).atom( i ) % 2 == 0) &&
 		!reachable.find( a->precondition().atom_list( 0 ).atom( i ) ) )
 	      break;
 	  if( i == a->precondition().atom_list( 0 ).size() )
@@ -1386,7 +1386,7 @@ atomMinMBackwardHeuristic_t::generate_systems( void )
 	  bool goal = true;
 	  system_t *system = new system_t;
 	  std::vector<const std::string*>::const_iterator ni;
-	  
+
 	  for( ni = (*si).second->focus().begin(); ni != (*si).second->focus().end(); ++ni )
 	    {
 	      std::map<const std::string,std::pair<const atomList_t*,bool> >::const_iterator oi = orbits_.find( *(*ni) );
@@ -1818,7 +1818,7 @@ lookaheadHeuristic_t::value( const state_t &state, unsigned depth )
   if( depth == 0 )
     return( heur_.value( state ) );
 
-  if( problem_.goalT().holds( state ) ) 
+  if( problem_.goalT().holds( state ) )
     return( 0 );
 
   double min = 0;
@@ -1831,7 +1831,7 @@ lookaheadHeuristic_t::value( const state_t &state, unsigned depth )
 	double qvalue = 0;
 	problem_.expand( **ai, state, display_[ddepth] );
 	for( size_t i = 0; display_[ddepth][i].second != Rational( -1 ); ++i )
-	  qvalue += 
+	  qvalue +=
 	    value(*display_[ddepth][i].first,depth-1) * display_[ddepth][i].second.double_value();
 	qvalue = (*ai)->cost( state ) + qvalue;
 

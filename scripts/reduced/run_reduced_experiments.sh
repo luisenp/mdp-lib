@@ -17,20 +17,21 @@ pddl_folder=/home/lpineda/Desktop/skeren
 # domain=triangle-tireworld
 # domain=zenotravel
 # domain=blocksworld
-domain=ex-blocksworld
+# domain=ex-blocksworld
+domain=vacuum-no-fuel
 # domain=elevators
 
 # The name of the problem used to learn the best determinization. 
 problem=p01
 
 # The exception bound to use.
-k_learn=3
-k=3
+k_learn=0
+k=0
 
 # The name of the domain file to determinize
 # domain_file_name=domain-design-all-design-affect-all-blocks
 # domain_file_name=domain-design-all-two-choices-2
-domain_file_name=domain-design-all
+domain_file_name=domain-design-all-no-safety
 
 # The folder where the problems are stored (w/o the domain definition)
 problem_subfolder=problems
@@ -48,15 +49,15 @@ all_costs=""
 all_costs_planserv=""
 for i in `seq 0 $num_det`; do
   cat $pddl_folder/$domain/$domain_file_name.pddl \
-    $pddl_folder/$domain/$problem_subfolder/p01.pddl > $pddl_folder/$domain/p01.pddl
-  successes_and_costs=`./run_experiment.sh $pddl_folder $domain p01 $i $k_learn 50 \
+    $pddl_folder/$domain/$problem_subfolder/$problem.pddl > $pddl_folder/$domain/$problem.pddl
+  successes_and_costs=`./run_experiment.sh $pddl_folder $domain $problem $i $k_learn 50 \
     | tail -n 1`
   echo $successes_and_costs
   all_successes=$all_successes`echo $successes_and_costs | awk '{print $1}'`,
   all_costs=$all_costs`echo $successes_and_costs | awk '{print $2}'`,
   all_costs_planserv=$all_costs_planserv`echo $successes_and_costs | awk '{print $3}'`,
   all_std_planserv=$all_std_planserv`echo $successes_and_costs | awk '{print $4}'`,
-  rm $pddl_folder/$domain/p01.pddl
+  rm $pddl_folder/$domain/$problem.pddl
 done
 echo "Successes: "$all_successes
 echo "Costs(mdpsim): "$all_costs
@@ -68,11 +69,10 @@ n=3
 best_n_determinizations=`./get_index_n_best_results.py \\
   -s ${all_successes::-1} -c ${all_costs_planserv::-1} -n $n `
 best_determinization=`echo $best_n_determinizations | { read x _ ; echo $x; }`
-
-# best_determinization=2
 echo 'best determinization: '$best_determinization
+
 # Solving all problems with the best determinization
-for i in {09..10}; do
+for i in {11..15}; do
   cat $pddl_folder/$domain/$domain_file_name.pddl \
     $pddl_folder/$domain/$problem_subfolder/p$i.pddl \
     > $pddl_folder/$domain/p$i.pddl

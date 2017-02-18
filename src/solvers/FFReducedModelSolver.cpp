@@ -180,6 +180,7 @@ pair<string, int> FFReducedModelSolver::getActionNameAndCostFromFF()
             char lineBuffer[1024];
             int currentLineAction = -1;
             while (fgets(lineBuffer, 1024, ff_output)) {
+                                                                                std::cerr << lineBuffer;
                 if (strstr(lineBuffer, "goal can be simplified to FALSE.") !=
                         nullptr) {
                     break;
@@ -345,6 +346,7 @@ double FFReducedModelSolver::bellmanUpdate(mlcore::State* s)
 
     mlreduced::ReducedState* reducedState = (mlreduced::ReducedState* ) s;
     if (useFF_ && reducedState->exceptionCount() == maxHorizon_) {
+                                                                                dprint1(s);
         // For exceptionCount = k we just call FF.
         PPDDLState* pState =
             static_cast<PPDDLState*> (reducedState->originalState());

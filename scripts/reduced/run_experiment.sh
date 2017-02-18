@@ -31,18 +31,18 @@ rlimit=$6
 ./setup_ff_template.py -p $pddl_folder/$domain/$problem.pddl \
   -o /tmp/ff-template.pddl
 
-# Starts the planning server to connect to mdpsim
-../../planserv_red.out --problem=$pddl_folder/$domain/$problem.pddl:$problem \
-  --det_problem=${domain}_det${determinization_index}.pddl \
-  --det_descriptor=/tmp/${domain}_det${determinization_index}.desc \
-  --dir=/tmp --k=$k --max-time=1200 > planserv_log.txt &
-
 # Starts the mdpsim server
 ../../../mdpsim-2.2/mdpsim --port=2323 --time-limit=1200000 \
   --round-limit=$rlimit --turn-limit=2500 $pddl_folder/$domain/$problem.pddl &
 
+# Starts the planning server to connect to mdpsim
+../../planserv_red.out --problem=$pddl_folder/$domain/$problem.pddl:$problem \
+  --det_problem=${domain}_det${determinization_index}.pddl \
+  --det_descriptor=/tmp/${domain}_det${determinization_index}.desc \
+  --dir=/tmp --k=$k --max-time=1200 --debug &> planserv_log.txt &
+  
 # This might not be necessary, but just in case
-sleep 1
+sleep 15
 
 # Starts the mdpsim client
 ../../../mdpsim-2.2/mdpclient --host=localhost --port=2323 \
