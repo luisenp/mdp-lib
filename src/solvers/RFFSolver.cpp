@@ -11,10 +11,11 @@ namespace mlsolvers
 
 {
 
-// TODO: For now, the GFF set will be only the goal. Modify this.
 mlcore::Action* RFFSolver::solve(mlcore::State* s0)
 {
                                                                                 mdplib_debug = true;
+    if (s0->bestAction() != nullptr)
+        return s0->bestAction();
     startingPlanningTime_ = time(nullptr);
     terminalStates_.insert(s0);
     mlcore::StateSet statesPolicyGraph;
