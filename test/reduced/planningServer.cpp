@@ -29,6 +29,8 @@
 #include "../../include/reduced/ReducedTransition.h"
 
 #include "../../include/solvers/FFReducedModelSolver.h"
+#include "../../include/solvers/FFReplanSolver.h"
+#include "../../include/solvers/RFFSolver.h"
 
 #include "../../include/util/flags.h"
 #include "../../include/util/general.h"
@@ -230,11 +232,15 @@ int main(int argc, char* args[])
     if (flag_is_registered_with_value("v"))
         verbosity = stoi(flag_value("v"));
 
+    string algorithm = "reduced";
+    if (flag_is_registered("alg")) {
+        algorithm = flag_value("alg");
+    }
+
     time_t maxPlanningTime = 60 * 5;
     if (flag_is_registered("max-time"))
         maxPlanningTime = stoi(flag_value("max-time"));
     time_t remainingPlanningTime = maxPlanningTime;
-
 
     // If true, FF will be used for the states with exception_counter = k.
     bool useFF = true;
@@ -249,11 +255,13 @@ int main(int argc, char* args[])
     initPPDDL(ppddlArgs);
 
     // Creating the reduced model.
-    ReducedTransition* reduction =
-        new PPDDLTaggedReduction(problem, detDescriptor);
-    reducedModel = new ReducedModel(problem, reduction, k);
-    reducedHeuristic = new ReducedHeuristicWrapper(heuristic);
-    reducedModel->setHeuristic(reducedHeuristic);
+    ReducedTransition* reduction = nullptr;
+    if (algorithm == "reduced") {
+        reduction = new PPDDLTaggedReduction(problem, detDescriptor);
+        reducedModel = new ReducedModel(problem, reduction, k);
+        reducedHeuristic = new ReducedHeuristicWrapper(heuristic);
+        reducedModel->setHeuristic(reducedHeuristic);
+    }
 
     /* *********************** SERVER INITIALIZATION ********************** */
 
@@ -291,16 +299,27 @@ int main(int argc, char* args[])
     time_t totalPlanningTime = 0.0;
     time_t startTime = time(nullptr);
      // using half of the time fot the initial plan (last argument)
-    FFReducedModelSolver solver(reducedModel,
-                                ffExec,
-                                directory + "/" + detProblem,
-                                directory + "/ff-template.pddl",
-                                k,
-                                1.0e-3,
-                                useFF,
-                                maxPlanningTime / 2);
+
     cout << "SOLVING" << endl;
-    solver.solve(reducedModel->initialState());
+    Solver* solver = nullptr;
+    if (algorithm == "reduced") {
+        solver = new FFReducedModelSolver(reducedModel,
+                                          ffExec,
+                                          directory + "/" + detProblem,
+                                          directory + "/ff-template.pddl",
+                                          k,
+                                          1.0e-3,
+                                          useFF,
+                                          maxPlanningTime / 2);
+        solver->solve(reducedModel->initialState());
+    } else if (algorithm == "rff") {
+        solver = new RFFSolver(static_cast<mlppddl::PPDDLProblem*> (problem),
+                               ffExec,
+                               directory + "/" + detProblem,
+                               directory + "/ff-template.pddl",
+                               maxPlanningTime / 2);
+        solver->solve(problem->initialState());
+    }
     time_t endTime = time(nullptr);
     totalPlanningTime += endTime - startTime;
     remainingPlanningTime -= totalPlanningTime;
@@ -351,13 +370,19 @@ int main(int argc, char* args[])
                                static_cast<PPDDLProblem*> (problem),
                                stringAtomMap);
 
-        // For now, always set the exception counter to 0 and re-plan.
-        ReducedState* reducedState = static_cast<ReducedState*> (
-            reducedModel->addState(new ReducedState(state, 0, reducedModel)));
         cout << "PLANNING." << endl;
-        solver.maxPlanningTime(remainingPlanningTime);
+        solver->maxPlanningTime(remainingPlanningTime);
         startTime = time(nullptr);
-        mlcore::Action* action = solver.solve(reducedState);
+        mlcore::Action* action = nullptr;
+        if (algorithm == "reduced") {
+            // For now, always set the exception counter to 0 and re-plan.
+            ReducedState* reducedState = static_cast<ReducedState*> (
+                reducedModel->addState(
+                    new ReducedState(state, 0, reducedModel)));
+            action = solver->solve(reducedState);
+        } else {
+            action = solver->solve(state);
+        }
         endTime = time(nullptr);
         remainingPlanningTime -= endTime - startTime;
         cout << "DONE. Remaining time: " << remainingPlanningTime << endl;
@@ -382,8 +407,11 @@ int main(int argc, char* args[])
     }
 
     // Releasing memory
-    reducedModel->cleanup();
-    delete reducedModel;
+    if (reducedModel != nullptr) {
+        reducedModel->cleanup();
+        delete reducedModel;
+    }
+    delete solver;
     delete problem;
     return 0;
 }
