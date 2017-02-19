@@ -12,14 +12,14 @@
 pddl_folder=../../data/ppddl/ippc2008
 
 # The domain name.
-domain=blocksworld
+domain=ex-blocksworld
 
 # The name of the problem used to learn the best determinization. 
 problem=p01
 
 # The exception bound to use.
 klearn=0
-k=1
+k=0
 
 # Creating all possible determinizations
 ./create_all_determinizations.py -d $pddl_folder/$domain/domain.pddl \

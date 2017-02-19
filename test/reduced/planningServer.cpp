@@ -327,6 +327,7 @@ int main(int argc, char* args[])
         solver->solve(problem->initialState());
                                                                                 dprint1("rff-done");
     } else if (planner == "ff-replan") {
+                                                                                dprint1("ff-replan");
         solver = new FFReplanSolver
             (static_cast<mlppddl::PPDDLProblem*> (problem),
              ffExec,
@@ -334,6 +335,7 @@ int main(int argc, char* args[])
              directory + "/ff-template.pddl",
              maxPlanningTime / 2);
         solver->solve(problem->initialState());
+                                                                                dprint1("ff-replan-done");
     }
     time_t endTime = time(nullptr);
     totalPlanningTime += endTime - startTime;

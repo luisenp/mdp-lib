@@ -330,7 +330,8 @@ inline std::pair<std::string, int> getActionNameAndCostFromFF(
 //                                                                                std::cerr << lineBuffer;
                 if (strstr(lineBuffer, "goal can be simplified to FALSE.") !=
                         nullptr) {
-                    break;  // This makes actionName = "__mdplib-dead-end__"
+                    fullPlan->push_back(actionName);
+                    break;  // At this point actionName = "__mdplib-dead-end__"
                 }
                 if (strstr(lineBuffer, "step") != nullptr) {
                     actionName = "";

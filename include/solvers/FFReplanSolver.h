@@ -67,8 +67,10 @@ public:
         maxPlanningTime_(maxPlanningTime)
 
     {
+                                                                                dprint1("o");
         removedInitAtoms_ =
             storeRemovedInitAtoms(templateProblemFilename_, problem);
+                                                                                dprint1("p");
     }
 
     virtual ~FFReplanSolver() {}

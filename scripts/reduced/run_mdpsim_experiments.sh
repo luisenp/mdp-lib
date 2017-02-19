@@ -12,10 +12,10 @@
 pddl_folder=../../data/ppddl/ippc2008
 
 # The domain name.
-domain=triangle-tireworld
+domain=ex-blocksworld
 
 # The planner to use
-planner=rff
+planner=ff-replan
 
 # The determinization to use. The script assumes 
 # determinizations are stored in folder /tmp/, with the following naming
@@ -24,7 +24,7 @@ determinization_name=mlo
 
 ulimit -Sv 2048000 
 
-for i in {01..10}; do
+for i in {01..01}; do
   problem=p$i
   
   # Setups the template problem for FF (removes PPDDL features not supported 
@@ -44,7 +44,7 @@ for i in {01..10}; do
     --turn-limit=2500 $pddl_folder/$domain/$problem.pddl &
 
   # This might not be necessary, but just in case
-  sleep 1
+  sleep 5
 
   # Starts the mdpsim client
   ../../../mdpsim-2.2/mdpclient --host=localhost --port=2323 \
