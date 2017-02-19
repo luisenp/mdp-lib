@@ -22,8 +22,6 @@ planner=ssipp-ff
 # convention: <domain-name>_det<determinization_name>.pddl.
 determinization_name=mlo
 
-ulimit -Sv 2048000 
-
 for i in {01..10}; do
   problem=p$i
   

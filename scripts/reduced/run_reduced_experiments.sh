@@ -12,7 +12,7 @@
 pddl_folder=../../data/ppddl/ippc2008
 
 # The domain name.
-domain=ex-blocksworld
+domain=zenotravel
 
 # The name of the problem used to learn the best determinization. 
 problem=p01
