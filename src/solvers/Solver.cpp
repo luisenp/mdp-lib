@@ -191,6 +191,7 @@ mlcore::State* mostLikelyOutcome(mlcore::Problem* problem, mlcore::State* s,
     if (noTies)
         return outcomes[0];
     return outcomes[0];
+    //TODO: move it back to this version
 //    return outcomes[rand() % outcomes.size()];
 }
 

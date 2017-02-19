@@ -17,8 +17,9 @@ domain=blocksworld
 # The name of the problem used to learn the best determinization. 
 problem=p01
 
-# The exception bound to use. 
-k=0
+# The exception bound to use.
+klearn=0
+k=1
 
 # Creating all possible determinizations
 ./create_all_determinizations.py -d $pddl_folder/$domain/domain.pddl \
@@ -31,7 +32,7 @@ let "num_det=$num_det-1"
 all_successes=""
 all_costs=""
 for i in `seq 0 $num_det`; do
-  successes_and_costs=`./run_experiment.sh $pddl_folder $domain p01 $i $k \
+  successes_and_costs=`./run_experiment.sh $pddl_folder $domain p01 $i $klearn \
     | tail -n 1`
   echo $successes_and_costs
   all_successes=$all_successes`echo $successes_and_costs | awk '{print $1}'`,
@@ -45,7 +46,7 @@ n=3
 best_n_determinizations=`./get_index_n_best_results.py \\
   -s ${all_successes::-1} -c ${all_costs::-1} -n $n `
 best_determinization=`echo $best_n_determinizations | { read x _ ; echo $x; }`
-
+echo "best determinization :"$best_determinization
 # Solving all problems with the best determinization
 for i in {01..10}; do
   echo `time ./run_experiment.sh $pddl_folder $domain p$i $best_determinization $k \\
