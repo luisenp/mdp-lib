@@ -70,7 +70,7 @@ static bool read_file( const char* ppddlFileName )
 {
     yyin = fopen( ppddlFileName, "r" );
     if( yyin == NULL ) {
-        cout << "parser:" << ppddlFileName <<
+        cerr << "parser:" << ppddlFileName <<
             ": " << strerror( errno ) << endl;
         return( false );
     }
@@ -82,7 +82,7 @@ static bool read_file( const char* ppddlFileName )
         }
         catch( Exception exception ) {
             fclose( yyin );
-            cout << exception << endl;
+            cerr << exception << endl;
             return( false );
         }
         fclose( yyin );
@@ -224,18 +224,21 @@ int main(int argc, char* args[])
     assert(flag_is_registered_with_value("dir"));
     string directory = flag_value("dir");
 
-    //The maximum number of exceptions.
-    assert(flag_is_registered_with_value("k"));
-    int k = stoi(flag_value("k"));
-
     // The verbosity level.
     if (flag_is_registered_with_value("v"))
         verbosity = stoi(flag_value("v"));
 
-    string algorithm = "reduced";
-    if (flag_is_registered("alg")) {
-        algorithm = flag_value("alg");
+    // The planner to use.
+    string planner = "reduced";
+    if (flag_is_registered("planner")) {
+        planner = flag_value("planner");
     }
+    cerr << "..." << planner << "..." << endl;
+
+    //The maximum number of exceptions for the reduced model solver.
+    int k = 0;
+    if (flag_is_registered_with_value("k"))
+        k = stoi(flag_value("k"));
 
     time_t maxPlanningTime = 60 * 5;
     if (flag_is_registered("max-time"))
@@ -256,7 +259,7 @@ int main(int argc, char* args[])
 
     // Creating the reduced model.
     ReducedTransition* reduction = nullptr;
-    if (algorithm == "reduced") {
+    if (planner == "reduced") {
         reduction = new PPDDLTaggedReduction(problem, detDescriptor);
         reducedModel = new ReducedModel(problem, reduction, k);
         reducedHeuristic = new ReducedHeuristicWrapper(heuristic);
@@ -300,9 +303,9 @@ int main(int argc, char* args[])
     time_t startTime = time(nullptr);
      // using half of the time fot the initial plan (last argument)
 
-    cout << "SOLVING" << endl;
+    cerr << "SOLVING" << endl;
     Solver* solver = nullptr;
-    if (algorithm == "reduced") {
+    if (planner == "reduced") {
         solver = new FFReducedModelSolver(reducedModel,
                                           ffExec,
                                           directory + "/" + detProblem,
@@ -312,20 +315,29 @@ int main(int argc, char* args[])
                                           useFF,
                                           maxPlanningTime / 2);
         solver->solve(reducedModel->initialState());
-    } else if (algorithm == "rff") {
+    } else if (planner == "rff") {
+                                                                                dprint1("rff");
         solver = new RFFSolver(static_cast<mlppddl::PPDDLProblem*> (problem),
                                ffExec,
                                directory + "/" + detProblem,
                                directory + "/ff-template.pddl",
+                               0.2,
+                               100,
                                maxPlanningTime / 2);
+        solver->solve(problem->initialState());
+                                                                                dprint1("rff-done");
+    } else if (planner == "ff-replan") {
+        solver = new FFReplanSolver
+            (static_cast<mlppddl::PPDDLProblem*> (problem),
+             ffExec,
+             directory + "/" + detProblem,
+             directory + "/ff-template.pddl",
+             maxPlanningTime / 2);
         solver->solve(problem->initialState());
     }
     time_t endTime = time(nullptr);
     totalPlanningTime += endTime - startTime;
     remainingPlanningTime -= totalPlanningTime;
-    cout << "cost " << reducedModel->initialState()->cost() <<
-        " time " << totalPlanningTime << endl;
-
 
     /* *********************** SEVER LOOP ********************** */
     // Initializing a map from atom names to atom indices.
@@ -342,7 +354,7 @@ int main(int argc, char* args[])
             cerr << "ERROR: couldn't read from socket." << endl;
             break;
         }
-        cout << "RECEIVED: " << buffer << endl;
+        cerr << "RECEIVED: " << buffer << endl;
         string msg(buffer);
         string atomsString;
         if (msg.substr(0, 6) == "state:") { // Received a state to plan for.
@@ -353,7 +365,7 @@ int main(int argc, char* args[])
             cost = 0;
             bzero(buffer, BUFFER_SIZE);
             sprintf(buffer, "%s", "round-ended");
-            cout << "SENDING: " << buffer << "." << endl;
+            cerr << "SENDING: " << buffer << "." << endl;
             n = write(newsockfd, buffer, strlen(buffer));
             if (n < 0) {
                 cerr << "ERROR: couldn't write to socket." << endl;
@@ -370,11 +382,11 @@ int main(int argc, char* args[])
                                static_cast<PPDDLProblem*> (problem),
                                stringAtomMap);
 
-        cout << "PLANNING." << endl;
+        cerr << "PLANNING." << endl;
         solver->maxPlanningTime(remainingPlanningTime);
         startTime = time(nullptr);
         mlcore::Action* action = nullptr;
-        if (algorithm == "reduced") {
+        if (planner == "reduced") {
             // For now, always set the exception counter to 0 and re-plan.
             ReducedState* reducedState = static_cast<ReducedState*> (
                 reducedModel->addState(
@@ -385,7 +397,7 @@ int main(int argc, char* args[])
         }
         endTime = time(nullptr);
         remainingPlanningTime -= endTime - startTime;
-        cout << "DONE. Remaining time: " << remainingPlanningTime << endl;
+        cerr << "DONE. Remaining time: " << remainingPlanningTime << endl;
 
         // Sending the action to the client.
         ostringstream oss;
@@ -393,12 +405,12 @@ int main(int argc, char* args[])
             oss << action;
             cost += problem->cost(state, action);
         } else {
-            cout << "DEAD-END." << endl;
+            cerr << "DEAD-END." << endl;
             oss << "(done)";
         }
         bzero(buffer, BUFFER_SIZE);
         sprintf(buffer, "%s", oss.str().c_str());
-        cout << buffer << "." << endl;
+        cerr << buffer << "." << endl;
         n = write(newsockfd, buffer, strlen(buffer));
         if (n < 0) {
             cerr << "ERROR: couldn't write to socket." << endl;
