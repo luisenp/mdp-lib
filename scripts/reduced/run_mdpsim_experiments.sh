@@ -15,12 +15,12 @@ pddl_folder=../../data/ppddl/ippc2008
 domain=blocksworld
 
 # The planner to use
-planner=ssipp-ff
+planner=ff-replan
 
 # The determinization to use. The script assumes 
 # determinizations are stored in folder /tmp/, with the following naming
 # convention: <domain-name>_det<determinization_name>.pddl.
-determinization_name=mlo
+determinization_name=ao
 
 for i in {01..10}; do
   problem=p$i
@@ -39,7 +39,7 @@ for i in {01..10}; do
 
   # Starts the mdpsim server
   ../../../mdpsim-2.2/mdpsim --port=2323 --time-limit=1200000 --round-limit=50 \
-    --turn-limit=2500 $pddl_folder/$domain/$problem.pddl &
+    --turn-limit=2500 $pddl_folder/$domain/$problem.pddl &> sever_log.txt &
 
   # This might not be necessary, but just in case
   sleep 5

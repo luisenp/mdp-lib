@@ -76,6 +76,14 @@ bool PPDDLProblem::applicable(mlcore::State* s, mlcore::Action* a) const
 
 mlcore::Action* PPDDLProblem::getActionFromName(std::string actionName)
 {
+    std::cerr << "a " << actionName << std::endl;
+    size_t sepIdx = actionName.find("-xxdetxx-");
+    if (sepIdx != std::string::npos) {
+        std::string parameters = actionName.substr(sepIdx);
+        parameters = parameters.substr(parameters.find(" "));
+        actionName = actionName.substr(0, sepIdx) + parameters;
+    }
+    std::cerr << "b " << actionName << std::endl;
     std::ostringstream oss;
     for (mlcore::Action* a : this->actions()) {
         oss.str("");
