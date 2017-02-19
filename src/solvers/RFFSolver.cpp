@@ -27,24 +27,24 @@ mlcore::Action* RFFSolver::solve(mlcore::State* s0)
             // Solving using FF
             vector<string> fullPlan;
             vector<mlcore::State*> subgoals;
-                                                                                dprint1("here0");
+//                                                                                dprint1("here0");
             if (!statesPolicyGraph.empty())
                 pickRandomStates(statesPolicyGraph, 100, subgoals);
-                                                                                dprint2("calling FF ", subgoals.size());
+//                                                                                dprint2("calling FF ", subgoals.size());
             callFF(s, subgoals, fullPlan);
-                                                                                dprint2("done with plan of size ", fullPlan.size());
+//                                                                                dprint2("done with plan of size ", fullPlan.size());
 
             // Extract policy
             mlcore::State* sPrime = s;
             for (string actionName : fullPlan) {
                 // Don't expand goal states or states that have been expanded
                 // before
-                                                                                dprint3("trying", sPrime, (void *) sPrime->bestAction());
+//                                                                                dprint3("trying", sPrime, (void *) sPrime->bestAction());
                 if (problem_->goal(sPrime) ||
                         statesPolicyGraph.count(sPrime) > 0)
                     continue;
                 expandedStates.insert(sPrime);
-                                                                                dprint3("expanding", sPrime, actionName);
+//                                                                                dprint3("expanding", sPrime, actionName);
                 mlcore::Action* action =
                     problem_->getActionFromName(actionName);
                 if (action == nullptr) {
@@ -56,7 +56,7 @@ mlcore::Action* RFFSolver::solve(mlcore::State* s0)
                 for (auto const succ : problem_->transition(sPrime, action)) {
                     if (succ.su_state->bestAction() == nullptr &&
                         !problem_->goal(succ.su_state)) {
-                                                                                dprint2("adding terminal", succ.su_state);
+//                                                                                dprint2("adding terminal", succ.su_state);
                         newTerminalStates.insert(succ.su_state);
                     }
                 }
@@ -68,18 +68,17 @@ mlcore::Action* RFFSolver::solve(mlcore::State* s0)
         terminalStates_.insert(newTerminalStates.begin(),
                                newTerminalStates.end());
         for (mlcore::State* sExpanded : expandedStates) {
-                                                                                dprint2("expanded", sExpanded);
+//                                                                                dprint2("expanded", sExpanded);
             terminalStates_.erase(terminalStates_.find(sExpanded));
             statesPolicyGraph.insert(sExpanded);
         }
-                                                                                for (auto const & pupu : terminalStates_)
-                                                                                    dprint2("++++ terminal", pupu);
+//                                                                                for (auto const & pupu : terminalStates_)
+//                                                                                    dprint2("++++ terminal", pupu);
         double totalProb = failProb(s0, 50);
                                                                                 dprint3("totalProb", totalProb, rho_);
         if (totalProb < rho_)
             break;
     }
-                                                                                dprint1((void *) s0->bestAction());
     return s0->bestAction();
 }
 

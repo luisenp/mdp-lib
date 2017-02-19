@@ -24,7 +24,7 @@ determinization_name=mlo
 
 ulimit -Sv 2048000 
 
-for i in {01..01}; do
+for i in {01..10}; do
   problem=p$i
   
   # Setups the template problem for FF (removes PPDDL features not supported 
