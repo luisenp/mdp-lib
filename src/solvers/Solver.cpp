@@ -184,13 +184,14 @@ mlcore::State* mostLikelyOutcome(mlcore::Problem* problem, mlcore::State* s,
             prob = sccr.su_prob;
             outcomes.clear();
             outcomes.push_back(sccr.su_state);
-        } else if (sccr.su_prob > prob - eps) {
+        } else if (sccr.su_prob >= prob - eps) {
             outcomes.push_back(sccr.su_state);
         }
     }
     if (noTies)
         return outcomes[0];
-    return outcomes[rand() % outcomes.size()];
+    return outcomes[0];
+//    return outcomes[rand() % outcomes.size()];
 }
 
 
