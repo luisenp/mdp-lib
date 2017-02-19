@@ -25,6 +25,12 @@ Action* SSiPPSolver::solveOriginal(State* s0)
     wrapper->overrideGoals(&tipStates);
     VISolver vi(wrapper);
     vi.solve();
+    for (State* tipState : tipStates)   {
+        // VI performs Bellman updates of goals.
+        // TODO: Doing that seems incorrect, but I don't want
+        // to break old code right now. There is a deadline tomorrow :)
+        tipState->reset();
+    }
     wrapper->cleanup();
     return s0->bestAction();
 }

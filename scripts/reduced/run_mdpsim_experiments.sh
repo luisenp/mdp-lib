@@ -12,10 +12,10 @@
 pddl_folder=../../data/ppddl/ippc2008
 
 # The domain name.
-domain=ex-blocksworld
+domain=blocksworld
 
 # The planner to use
-planner=ff-replan
+planner=ssipp-ff
 
 # The determinization to use. The script assumes 
 # determinizations are stored in folder /tmp/, with the following naming
@@ -24,7 +24,7 @@ determinization_name=mlo
 
 ulimit -Sv 2048000 
 
-for i in {01..01}; do
+for i in {01..10}; do
   problem=p$i
   
   # Setups the template problem for FF (removes PPDDL features not supported 

@@ -31,6 +31,7 @@
 #include "../../include/solvers/FFReducedModelSolver.h"
 #include "../../include/solvers/FFReplanSolver.h"
 #include "../../include/solvers/RFFSolver.h"
+#include "../../include/solvers/SSiPPFFSolver.h"
 
 #include "../../include/util/flags.h"
 #include "../../include/util/general.h"
@@ -328,14 +329,29 @@ int main(int argc, char* args[])
                                                                                 dprint1("rff-done");
     } else if (planner == "ff-replan") {
                                                                                 dprint1("ff-replan");
-        solver = new FFReplanSolver
-            (static_cast<mlppddl::PPDDLProblem*> (problem),
-             ffExec,
-             directory + "/" + detProblem,
-             directory + "/ff-template.pddl",
-             maxPlanningTime / 2);
+        solver = new FFReplanSolver(
+            static_cast<mlppddl::PPDDLProblem*> (problem),
+            ffExec,
+            directory + "/" + detProblem,
+            directory + "/ff-template.pddl",
+            maxPlanningTime / 2);
         solver->solve(problem->initialState());
                                                                                 dprint1("ff-replan-done");
+    } else if (planner == "ssipp-ff") {
+                                                                                dprint1("ssipp-ff");
+//        problem->setHeuristic(nullptr);
+        problem->setHeuristic(new mlppddl::PPDDLHeuristic(static_cast<PPDDLProblem*>(problem),
+                                            mlppddl::atomMin1Forward));
+        solver = new SSiPPFFSolver(
+            static_cast<mlppddl::PPDDLProblem*> (problem),
+            ffExec,
+            directory + "/" + detProblem,
+            directory + "/ff-template.pddl",
+            3,
+            1.0e-3,
+            maxPlanningTime / 2);
+        solver->solve(problem->initialState());
+                                                                                dprint1("ssipp-ff-done");
     }
     time_t endTime = time(nullptr);
     totalPlanningTime += endTime - startTime;

@@ -43,8 +43,9 @@ private:
     time_t startingPlanningTime_;
 
     /* The initial atoms that are removed during the PPDDL parsing. */
-    std::string removedInitAtoms_;/*
+    std::string removedInitAtoms_;
 
+    /*
      * Calls FF on the deterministic version of the problem to find a plan
      * for state s. The output parameter fullPlan stores the complete plan for
      * the determinized domain, starting from state s.
@@ -67,10 +68,8 @@ public:
         maxPlanningTime_(maxPlanningTime)
 
     {
-                                                                                dprint1("o");
         removedInitAtoms_ =
             storeRemovedInitAtoms(templateProblemFilename_, problem);
-                                                                                dprint1("p");
     }
 
     virtual ~FFReplanSolver() {}
