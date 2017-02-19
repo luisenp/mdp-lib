@@ -14,7 +14,7 @@ namespace mlsolvers
  * Implements the FF-Replan solver as described in
  * https://vvvvw.aaai.org/Papers/ICAPS/2007/ICAPS07-045.pdf
  */
-class FFReplanSolver : Solver
+class FFReplanSolver : public Solver
 {
 
 private:

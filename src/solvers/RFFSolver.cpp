@@ -20,14 +20,14 @@ mlcore::Action* RFFSolver::solve(mlcore::State* s0)
     terminalStates_.insert(s0);
     mlcore::StateSet statesPolicyGraph;
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 100; i++) {
         mlcore::StateSet expandedStates;
         mlcore::StateSet newTerminalStates;
         for (mlcore::State* s : terminalStates_) {
             // Solving using FF
             vector<string> fullPlan;
             vector<mlcore::State*> subgoals;
-//                                                                                dprint1("here0");
+                                                                                dprint1("here0");
             if (!statesPolicyGraph.empty())
                 pickRandomStates(statesPolicyGraph, 100, subgoals);
                                                                                 dprint2("calling FF ", subgoals.size());
@@ -75,11 +75,11 @@ mlcore::Action* RFFSolver::solve(mlcore::State* s0)
                                                                                 for (auto const & pupu : terminalStates_)
                                                                                     dprint2("++++ terminal", pupu);
         double totalProb = failProb(s0, 50);
-                                                                                dprint2("totalProb", totalProb);
-                                                                                dsleep(500);
+                                                                                dprint3("totalProb", totalProb, rho_);
         if (totalProb < rho_)
             break;
     }
+                                                                                dprint1((void *) s0->bestAction());
     return s0->bestAction();
 }
 
