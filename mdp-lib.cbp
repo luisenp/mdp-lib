@@ -568,8 +568,8 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/reduced/ReducedTransition.h" />
 		<Unit filename="include/solvers/ConcurrentSolver.h" />
 		<Unit filename="include/solvers/DeterministicSolver.h" />
-		<Unit filename="include/solvers/EpicSolver.h" />
 		<Unit filename="include/solvers/FFReducedModelSolver.h" />
+		<Unit filename="include/solvers/FFReplanSolver.h" />
 		<Unit filename="include/solvers/FFUtil.h" />
 		<Unit filename="include/solvers/FLARESSolver.h" />
 		<Unit filename="include/solvers/HDPSolver.h" />
@@ -578,6 +578,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/solvers/LRTDPSolver.h" />
 		<Unit filename="include/solvers/RFFSolver.h" />
 		<Unit filename="include/solvers/RandomPolicy.h" />
+		<Unit filename="include/solvers/SSiPPFFSolver.h" />
 		<Unit filename="include/solvers/SSiPPSolver.h" />
 		<Unit filename="include/solvers/Solver.h" />
 		<Unit filename="include/solvers/UCTSolver.h" />
@@ -630,6 +631,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="src/solvers/ConcurrentSolver.cpp" />
 		<Unit filename="src/solvers/DeterministicSolver.cpp" />
 		<Unit filename="src/solvers/FFReducedModelSolver.cpp" />
+		<Unit filename="src/solvers/FFReplanSolver.cpp" />
 		<Unit filename="src/solvers/FLARESSolver.cpp" />
 		<Unit filename="src/solvers/HDPSolver.cpp" />
 		<Unit filename="src/solvers/HMinHeuristic.cpp" />
@@ -637,6 +639,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="src/solvers/LRTDPSolver.cpp" />
 		<Unit filename="src/solvers/RFFSolver.cpp" />
 		<Unit filename="src/solvers/RandomPolicy.cpp" />
+		<Unit filename="src/solvers/SSiPPFFSolver.cpp" />
 		<Unit filename="src/solvers/SSiPPSolver.cpp" />
 		<Unit filename="src/solvers/Solver.cpp" />
 		<Unit filename="src/solvers/UCTSolver.cpp" />
@@ -665,6 +668,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="test/testConc.cpp" />
 		<Unit filename="test/testGridWorld.cpp" />
 		<Unit filename="test/testPPDDL.cpp" />
+		<Unit filename="test/testRFF.cpp" />
 		<Unit filename="test/testRace.cpp" />
 		<Unit filename="test/testSail.cpp" />
 		<Unit filename="test/testSolver.cpp" />

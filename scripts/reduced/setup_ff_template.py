@@ -4,8 +4,8 @@ import argparse
 import copy
 import sys
 
-from create_all_determinizations import parse_sexp
-from create_all_determinizations import make_str
+from ppddl_util import parse_sexp
+from ppddl_util import make_str
 
 
 def convert_list_to_single_line(list_str):

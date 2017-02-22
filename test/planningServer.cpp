@@ -190,8 +190,9 @@ int main(int argc, char **argv)
     } else if (algorithm == "hdp") {
         solver =  new HDPSolver(MLProblem, 1.0e-3, 0);
     }
-    else
+    else {
         solver = new LAOStarSolver(MLProblem);
+    }
 
     /* Solving states on demand. */
     while (true) {

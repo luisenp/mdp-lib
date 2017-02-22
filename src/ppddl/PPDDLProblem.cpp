@@ -1,6 +1,9 @@
+#include <sstream>
+
 #include "../../include/ppddl/PPDDLAction.h"
 #include "../../include/ppddl/PPDDLProblem.h"
 #include "../../include/ppddl/PPDDLState.h"
+
 
 namespace mlppddl
 {
@@ -68,6 +71,28 @@ bool PPDDLProblem::applicable(mlcore::State* s, mlcore::Action* a) const
     PPDDLState* state = (PPDDLState *) s;
 
     return action->pAction()->enabled(*state->pState());
+}
+
+
+mlcore::Action* PPDDLProblem::getActionFromName(std::string actionName)
+{
+    std::cerr << "a " << actionName << std::endl;
+    size_t sepIdx = actionName.find("-xxdetxx-");
+    if (sepIdx != std::string::npos) {
+        std::string parameters = actionName.substr(sepIdx);
+        parameters = parameters.substr(parameters.find(" "));
+        actionName = actionName.substr(0, sepIdx) + parameters;
+    }
+    std::cerr << "b " << actionName << std::endl;
+    std::ostringstream oss;
+    for (mlcore::Action* a : this->actions()) {
+        oss.str("");
+        oss.clear();
+        oss << a;
+        if (oss.str().find(actionName) != std::string::npos)
+            return a;
+    }
+    return nullptr;
 }
 
 }
