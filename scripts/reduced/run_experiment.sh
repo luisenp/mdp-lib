@@ -42,7 +42,7 @@ rlimit=$6
   --dir=/tmp --k=$k --max-time=1200 --debug &> planserv_log.txt &
   
 # This might not be necessary, but just in case
-sleep 15
+sleep 1
 
 # Starts the mdpsim client
 ../../../mdpsim-2.2/mdpclient --host=localhost --port=2323 \

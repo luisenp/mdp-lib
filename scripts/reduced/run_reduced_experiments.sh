@@ -18,8 +18,8 @@ pddl_folder=/home/lpineda/Desktop/skeren
 # domain=zenotravel
 # domain=blocksworld
 # domain=ex-blocksworld
-domain=vacuum-no-fuel
-# domain=elevators
+# domain=vacuum-no-fuel
+domain=elevators
 
 # The name of the problem used to learn the best determinization. 
 problem=p01
@@ -31,7 +31,7 @@ k=0
 # The name of the domain file to determinize
 # domain_file_name=domain-design-all-design-affect-all-blocks
 # domain_file_name=domain-design-all-two-choices-2
-domain_file_name=domain-design-all-no-safety
+domain_file_name=domain-design-all
 
 # The folder where the problems are stored (w/o the domain definition)
 problem_subfolder=problems
@@ -72,7 +72,7 @@ best_determinization=`echo $best_n_determinizations | { read x _ ; echo $x; }`
 echo 'best determinization: '$best_determinization
 
 # Solving all problems with the best determinization
-for i in {11..15}; do
+for i in {01..10}; do
   cat $pddl_folder/$domain/$domain_file_name.pddl \
     $pddl_folder/$domain/$problem_subfolder/p$i.pddl \
     > $pddl_folder/$domain/p$i.pddl
