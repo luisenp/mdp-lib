@@ -568,8 +568,9 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/reduced/ReducedTransition.h" />
 		<Unit filename="include/solvers/ConcurrentSolver.h" />
 		<Unit filename="include/solvers/DeterministicSolver.h" />
-		<Unit filename="include/solvers/EpicSolver.h" />
 		<Unit filename="include/solvers/FFReducedModelSolver.h" />
+		<Unit filename="include/solvers/FFReplanSolver.h" />
+		<Unit filename="include/solvers/FFUtil.h" />
 		<Unit filename="include/solvers/FLARESSolver.h" />
 		<Unit filename="include/solvers/HDPSolver.h" />
 		<Unit filename="include/solvers/HMinHeuristic.h" />
@@ -577,6 +578,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/solvers/LRTDPSolver.h" />
 		<Unit filename="include/solvers/RFFSolver.h" />
 		<Unit filename="include/solvers/RandomPolicy.h" />
+		<Unit filename="include/solvers/SSiPPFFSolver.h" />
 		<Unit filename="include/solvers/SSiPPSolver.h" />
 		<Unit filename="include/solvers/Solver.h" />
 		<Unit filename="include/solvers/UCTSolver.h" />

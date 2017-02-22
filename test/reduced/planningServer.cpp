@@ -118,8 +118,11 @@ bool initPPDDL(string ppddlArgs)
     }
 
     problem = new PPDDLProblem(internalPPDDLProblem);
-    heuristic = new mlppddl::PPDDLHeuristic(static_cast<PPDDLProblem*>(problem),
-                                            mlppddl::FF);
+    if (flag_is_registered("heuristic") && flag_value("heuristic") == "zero")
+            problem->setHeuristic(nullptr);
+    else
+        heuristic = new mlppddl::PPDDLHeuristic(
+            static_cast<PPDDLProblem*>(problem), mlppddl::FF);
     problem->setHeuristic(heuristic);
 }
 
@@ -167,35 +170,42 @@ mlcore::State* getStatefromString(
 }
 
 
-/**
- * This program creates a reduced model for a given PPDDL file and solves
- * using LAO* and FF.
+/*
+ * Server used to connect to the MDPSIM client program and compute plans for
+ * states sent by the MDPSIM server. The planner to choose is specified by the
+ * "planner" argument flag. Options are:
  *
- * The type of model is a Mk1 reduction (at most one primary outcome),
- * which implies that after k exceptions a deterministic model is used. LAO*
- * will solve this model and use FF on states with k-exceptions so that they
- * can be treated as tip nodes with a fixed cost.
+ *    --"ff-lao": FF-LAO*
+ *    --"rff": RFF
+ *    --"ff-replan": FF-Replan
+ *    --"ssipp-ff": SSiPP-FF
  *
- * The reduction to use is specified by a set of command line arguments:
+ * Additionally, the following flags are required:
  *
- *    --det_problem: the path to a PDDL file describing the deterministic
- *        model to be passed to FF after k-exceptions.
+ *    --problem: the PPDDL domain/problem to solve. The format is
+ *        ppddlFilename:problemName
+ *    --dir: the directory to use for FF. This directory must contain the file
+ *        "det_problem" as well as a file called "ff-template.pddl"
+ *        containing only the PPDDL problem description (i.e., the (problem ...)
+ *        list but not the domain).
+ *        The init state must be described in a single line.
+ *        The user of planserv_det.out is responsible for ensuring consistency
+ *        between ff-template.pddl and the file passed in the "problem" flag.
+ *    --det_problem: the path to a PDDL file describing which deterministic
+ *        problem to be passed to FF.
  *    --det_descriptor: a configuration file describing the determinization
  *        in a simple format. The user of testReducedFF is responsible for
  *        ensuring consistency between the files det_problem and
  *        det_descriptor. The format of this file will be one action name per
  *        line followed by a number specifying which of the outcomes is primary.
- *    --k: The maximum number of exceptions.
+ *
+ * Other optional flags:
+ *    --k: The maximum number of exceptions to use for FF-LAO* (default = 0).
+ *    --heuristic: The heuristic to use (default = FF). Options are:
+ *        -"zero": Zero heuristic.
+ *        -"ff": FF heuristic.
  *
  * Other required command line arguments are:
- *    --problem: the PPDDL domain/problem to solve. The format is
- *        ppddlFilename:problemName
- *    --dir: the directory to use for FF. This directory must contain the file
- *        at "det_problem" as well as a file called "p01.pddl" containing only
- *        the PPDDL problem description (i.e., init and goal, not the domain).
- *        The init state must be described in a single line.
- *        The user of testReducedFF is responsible for ensuring consistency
- *        between p01.pddl and the file passed in the "problem" flag.
  */
 int main(int argc, char* args[])
 {
@@ -230,17 +240,16 @@ int main(int argc, char* args[])
         verbosity = stoi(flag_value("v"));
 
     // The planner to use.
-    string planner = "reduced";
-    if (flag_is_registered("planner")) {
+    string planner = "ff-lao";
+    if (flag_is_registered("planner"))
         planner = flag_value("planner");
-    }
-    cerr << "..." << planner << "..." << endl;
 
     //The maximum number of exceptions for the reduced model solver.
     int k = 0;
     if (flag_is_registered_with_value("k"))
         k = stoi(flag_value("k"));
 
+    // The maximum planning time allowed to the planner.
     time_t maxPlanningTime = 60 * 5;
     if (flag_is_registered("max-time"))
         maxPlanningTime = stoi(flag_value("max-time"));
@@ -248,7 +257,7 @@ int main(int argc, char* args[])
 
     // If true, FF will be used for the states with exception_counter = k.
     bool useFF = true;
-    if (flag_is_registered("no-ff"))
+    if (flag_is_registered("reduced-no-ff"))
         useFF = false;
 
     // The number of simulations for the experiments.
@@ -260,7 +269,7 @@ int main(int argc, char* args[])
 
     // Creating the reduced model.
     ReducedTransition* reduction = nullptr;
-    if (planner == "reduced") {
+    if (planner == "ff-lao") {
         reduction = new PPDDLTaggedReduction(problem, detDescriptor);
         reducedModel = new ReducedModel(problem, reduction, k);
         reducedHeuristic = new ReducedHeuristicWrapper(heuristic);
@@ -306,7 +315,7 @@ int main(int argc, char* args[])
 
     cerr << "SOLVING" << endl;
     Solver* solver = nullptr;
-    if (planner == "reduced") {
+    if (planner == "ff-lao") {
         solver = new FFReducedModelSolver(reducedModel,
                                           ffExec,
                                           directory + "/" + detProblem,
@@ -317,7 +326,6 @@ int main(int argc, char* args[])
                                           maxPlanningTime / 2);
         solver->solve(reducedModel->initialState());
     } else if (planner == "rff") {
-                                                                                dprint1("rff");
         solver = new RFFSolver(static_cast<mlppddl::PPDDLProblem*> (problem),
                                ffExec,
                                directory + "/" + detProblem,
@@ -326,9 +334,7 @@ int main(int argc, char* args[])
                                100,
                                maxPlanningTime / 2);
         solver->solve(problem->initialState());
-                                                                                dprint1("rff-done");
     } else if (planner == "ff-replan") {
-                                                                                dprint1("ff-replan");
         solver = new FFReplanSolver(
             static_cast<mlppddl::PPDDLProblem*> (problem),
             ffExec,
@@ -336,12 +342,7 @@ int main(int argc, char* args[])
             directory + "/ff-template.pddl",
             maxPlanningTime / 2);
         solver->solve(problem->initialState());
-                                                                                dprint1("ff-replan-done");
     } else if (planner == "ssipp-ff") {
-                                                                                dprint1("ssipp-ff");
-//        problem->setHeuristic(nullptr);
-        problem->setHeuristic(new mlppddl::PPDDLHeuristic(static_cast<PPDDLProblem*>(problem),
-                                            mlppddl::atomMin1Forward));
         solver = new SSiPPFFSolver(
             static_cast<mlppddl::PPDDLProblem*> (problem),
             ffExec,
@@ -351,7 +352,6 @@ int main(int argc, char* args[])
             1.0e-3,
             maxPlanningTime / 2);
         solver->solve(problem->initialState());
-                                                                                dprint1("ssipp-ff-done");
     }
     time_t endTime = time(nullptr);
     totalPlanningTime += endTime - startTime;
@@ -404,7 +404,7 @@ int main(int argc, char* args[])
         solver->maxPlanningTime(remainingPlanningTime);
         startTime = time(nullptr);
         mlcore::Action* action = nullptr;
-        if (planner == "reduced") {
+        if (planner == "ff-lao") {
             // For now, always set the exception counter to 0 and re-plan.
             ReducedState* reducedState = static_cast<ReducedState*> (
                 reducedModel->addState(
