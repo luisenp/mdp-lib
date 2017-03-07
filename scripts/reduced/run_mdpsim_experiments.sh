@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#
+# Script used to run experiments with FF-Replan and RFF.
+#
 # The folder where the PPDDL files are stored. The contents should be 
 # structured as follows:
 #
