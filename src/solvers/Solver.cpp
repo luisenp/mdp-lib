@@ -17,7 +17,7 @@ std::uniform_real_distribution<> dis(0, 1);
 double qvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
 {
     double qAction = 0.0;
-    for (mlcore::Successor su : problem->transition(s, a)) {
+    for (const mlcore::Successor& su : problem->transition(s, a)) {
         qAction += su.su_prob * su.su_state->cost();
     }
     qAction = (qAction * problem->gamma()) + problem->cost(s, a);
@@ -28,7 +28,7 @@ std::pair<double, double>
 weightedQvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
 {
     double g = 0.0, h = 0.0;
-    for (mlcore::Successor su : problem->transition(s, a)) {
+    for (const mlcore::Successor& su : problem->transition(s, a)) {
         g += su.su_prob * su.su_state->gValue();
         h += su.su_prob * su.su_state->hValue();
     }
