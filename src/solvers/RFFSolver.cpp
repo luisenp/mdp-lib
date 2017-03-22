@@ -11,14 +11,16 @@ namespace mlsolvers
 
 {
 
-// TODO: For now, the GFF set will be only the goal. Modify this.
 mlcore::Action* RFFSolver::solve(mlcore::State* s0)
 {
+                                                                                mdplib_debug = true;
+    if (s0->bestAction() != nullptr)
+        return s0->bestAction();
     startingPlanningTime_ = time(nullptr);
     terminalStates_.insert(s0);
     mlcore::StateSet statesPolicyGraph;
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 100; i++) {
         mlcore::StateSet expandedStates;
         mlcore::StateSet newTerminalStates;
         for (mlcore::State* s : terminalStates_) {
@@ -28,19 +30,21 @@ mlcore::Action* RFFSolver::solve(mlcore::State* s0)
 //                                                                                dprint1("here0");
             if (!statesPolicyGraph.empty())
                 pickRandomStates(statesPolicyGraph, 100, subgoals);
+//                                                                                dprint2("calling FF ", subgoals.size());
             callFF(s, subgoals, fullPlan);
+//                                                                                dprint2("done with plan of size ", fullPlan.size());
 
             // Extract policy
             mlcore::State* sPrime = s;
             for (string actionName : fullPlan) {
                 // Don't expand goal states or states that have been expanded
                 // before
-                                                                                dprint3("trying", sPrime, (void *) sPrime->bestAction());
+//                                                                                dprint3("trying", sPrime, (void *) sPrime->bestAction());
                 if (problem_->goal(sPrime) ||
                         statesPolicyGraph.count(sPrime) > 0)
                     continue;
                 expandedStates.insert(sPrime);
-                                                                                dprint3("expanding", sPrime, actionName);
+//                                                                                dprint3("expanding", sPrime, actionName);
                 mlcore::Action* action =
                     problem_->getActionFromName(actionName);
                 if (action == nullptr) {
@@ -52,7 +56,7 @@ mlcore::Action* RFFSolver::solve(mlcore::State* s0)
                 for (auto const succ : problem_->transition(sPrime, action)) {
                     if (succ.su_state->bestAction() == nullptr &&
                         !problem_->goal(succ.su_state)) {
-                                                                                dprint2("adding terminal", succ.su_state);
+//                                                                                dprint2("adding terminal", succ.su_state);
                         newTerminalStates.insert(succ.su_state);
                     }
                 }
@@ -65,16 +69,14 @@ mlcore::Action* RFFSolver::solve(mlcore::State* s0)
                                newTerminalStates.end());
                                                                                 dprint2("old terminals", terminalStates_.size());
         for (mlcore::State* sExpanded : expandedStates) {
-                                                                                dprint2("expanded", sExpanded);
-            auto const & it = terminalStates_.find(sExpanded);
-            if (it != terminalStates_.end())
-                terminalStates_.erase(it);
+//                                                                                dprint2("expanded", sExpanded);
+            terminalStates_.erase(terminalStates_.find(sExpanded));
             statesPolicyGraph.insert(sExpanded);
         }
-                                                                                for (auto const & pupu : terminalStates_)
-                                                                                    dprint2("++++ terminal", pupu);
+//                                                                                for (auto const & pupu : terminalStates_)
+//                                                                                    dprint2("++++ terminal", pupu);
         double totalProb = failProb(s0, 50);
-                                                                                dprint2("totalProb", totalProb);
+                                                                                dprint3("totalProb", totalProb, rho_);
         if (totalProb < rho_)
             break;
     }

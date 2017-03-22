@@ -32,18 +32,10 @@ k=$5
   -o /tmp/ff-template.pddl
   
 # Starts the planning server to connect to mdpsim
-if [ "$k" == "rff" ]
-then
-  ../../planserv_red.out --problem=$pddl_folder/$domain/$problem.pddl:$problem \
-    --det_problem=${domain}_mlo_det.pddl \
-    --det_descriptor=/tmp/${domain}_mlo_det.desc \
-    --dir=/tmp --rff --k=0 &> rfflog.txt & 
-else
-  ../../planserv_red.out --problem=$pddl_folder/$domain/$problem.pddl:$problem \
-    --det_problem=${domain}_det${determinization_index}.pddl \
-    --det_descriptor=/tmp/${domain}_det${determinization_index}.desc \
-    --dir=/tmp --k=$k --max-time=1200 &
-fi
+../../planserv_red.out --problem=$pddl_folder/$domain/$problem.pddl:$problem \
+  --det_problem=${domain}_det${determinization_index}.pddl \
+  --det_descriptor=/tmp/${domain}_det${determinization_index}.desc \
+  --dir=/tmp --k=$k --max-time=1200 &> planserv_log.txt &
 
 # Starts the mdpsim server
 ../../../mdpsim-2.2/mdpsim --port=2323 --time-limit=1200000 --round-limit=50 \

@@ -29,7 +29,9 @@
 #include "../../include/reduced/ReducedTransition.h"
 
 #include "../../include/solvers/FFReducedModelSolver.h"
+#include "../../include/solvers/FFReplanSolver.h"
 #include "../../include/solvers/RFFSolver.h"
+#include "../../include/solvers/SSiPPFFSolver.h"
 
 #include "../../include/util/flags.h"
 #include "../../include/util/general.h"
@@ -69,7 +71,7 @@ static bool read_file( const char* ppddlFileName )
 {
     yyin = fopen( ppddlFileName, "r" );
     if( yyin == NULL ) {
-        cout << "parser:" << ppddlFileName <<
+        cerr << "parser:" << ppddlFileName <<
             ": " << strerror( errno ) << endl;
         return( false );
     }
@@ -81,7 +83,7 @@ static bool read_file( const char* ppddlFileName )
         }
         catch( Exception exception ) {
             fclose( yyin );
-            cout << exception << endl;
+            cerr << exception << endl;
             return( false );
         }
         fclose( yyin );
@@ -116,8 +118,11 @@ bool initPPDDL(string ppddlArgs)
     }
 
     problem = new PPDDLProblem(internalPPDDLProblem);
-    heuristic = new mlppddl::PPDDLHeuristic(static_cast<PPDDLProblem*>(problem),
-                                            mlppddl::FF);
+    if (flag_is_registered("heuristic") && flag_value("heuristic") == "zero")
+            problem->setHeuristic(nullptr);
+    else
+        heuristic = new mlppddl::PPDDLHeuristic(
+            static_cast<PPDDLProblem*>(problem), mlppddl::FF);
     problem->setHeuristic(heuristic);
 }
 
@@ -165,35 +170,42 @@ mlcore::State* getStatefromString(
 }
 
 
-/**
- * This program creates a reduced model for a given PPDDL file and solves
- * using LAO* and FF.
+/*
+ * Server used to connect to the MDPSIM client program and compute plans for
+ * states sent by the MDPSIM server. The planner to choose is specified by the
+ * "planner" argument flag. Options are:
  *
- * The type of model is a Mk1 reduction (at most one primary outcome),
- * which implies that after k exceptions a deterministic model is used. LAO*
- * will solve this model and use FF on states with k-exceptions so that they
- * can be treated as tip nodes with a fixed cost.
+ *    --"ff-lao": FF-LAO*
+ *    --"rff": RFF
+ *    --"ff-replan": FF-Replan
+ *    --"ssipp-ff": SSiPP-FF
  *
- * The reduction to use is specified by a set of command line arguments:
+ * Additionally, the following flags are required:
  *
- *    --det_problem: the path to a PDDL file describing the deterministic
- *        model to be passed to FF after k-exceptions.
+ *    --problem: the PPDDL domain/problem to solve. The format is
+ *        ppddlFilename:problemName
+ *    --dir: the directory to use for FF. This directory must contain the file
+ *        "det_problem" as well as a file called "ff-template.pddl"
+ *        containing only the PPDDL problem description (i.e., the (problem ...)
+ *        list but not the domain).
+ *        The init state must be described in a single line.
+ *        The user of planserv_det.out is responsible for ensuring consistency
+ *        between ff-template.pddl and the file passed in the "problem" flag.
+ *    --det_problem: the path to a PDDL file describing which deterministic
+ *        problem to be passed to FF.
  *    --det_descriptor: a configuration file describing the determinization
  *        in a simple format. The user of testReducedFF is responsible for
  *        ensuring consistency between the files det_problem and
  *        det_descriptor. The format of this file will be one action name per
  *        line followed by a number specifying which of the outcomes is primary.
- *    --k: The maximum number of exceptions.
+ *
+ * Other optional flags:
+ *    --k: The maximum number of exceptions to use for FF-LAO* (default = 0).
+ *    --heuristic: The heuristic to use (default = FF). Options are:
+ *        -"zero": Zero heuristic.
+ *        -"ff": FF heuristic.
  *
  * Other required command line arguments are:
- *    --problem: the PPDDL domain/problem to solve. The format is
- *        ppddlFilename:problemName
- *    --dir: the directory to use for FF. This directory must contain the file
- *        at "det_problem" as well as a file called "p01.pddl" containing only
- *        the PPDDL problem description (i.e., init and goal, not the domain).
- *        The init state must be described in a single line.
- *        The user of testReducedFF is responsible for ensuring consistency
- *        between p01.pddl and the file passed in the "problem" flag.
  */
 int main(int argc, char* args[])
 {
@@ -223,23 +235,29 @@ int main(int argc, char* args[])
     assert(flag_is_registered_with_value("dir"));
     string directory = flag_value("dir");
 
-    //The maximum number of exceptions.
-    assert(flag_is_registered_with_value("k"));
-    int k = stoi(flag_value("k"));
-
     // The verbosity level.
     if (flag_is_registered_with_value("v"))
         verbosity = stoi(flag_value("v"));
 
+    // The planner to use.
+    string planner = "ff-lao";
+    if (flag_is_registered("planner"))
+        planner = flag_value("planner");
+
+    //The maximum number of exceptions for the reduced model solver.
+    int k = 0;
+    if (flag_is_registered_with_value("k"))
+        k = stoi(flag_value("k"));
+
+    // The maximum planning time allowed to the planner.
     time_t maxPlanningTime = 60 * 5;
     if (flag_is_registered("max-time"))
         maxPlanningTime = stoi(flag_value("max-time"));
     time_t remainingPlanningTime = maxPlanningTime;
 
-
     // If true, FF will be used for the states with exception_counter = k.
     bool useFF = true;
-    if (flag_is_registered("no-ff"))
+    if (flag_is_registered("reduced-no-ff"))
         useFF = false;
 
     // The number of simulations for the experiments.
@@ -250,11 +268,13 @@ int main(int argc, char* args[])
     initPPDDL(ppddlArgs);
 
     // Creating the reduced model.
-    ReducedTransition* reduction =
-        new PPDDLTaggedReduction(problem, detDescriptor);
-    reducedModel = new ReducedModel(problem, reduction, k);
-    reducedHeuristic = new ReducedHeuristicWrapper(heuristic);
-    reducedModel->setHeuristic(reducedHeuristic);
+    ReducedTransition* reduction = nullptr;
+    if (planner == "ff-lao") {
+        reduction = new PPDDLTaggedReduction(problem, detDescriptor);
+        reducedModel = new ReducedModel(problem, reduction, k);
+        reducedHeuristic = new ReducedHeuristicWrapper(heuristic);
+        reducedModel->setHeuristic(reducedHeuristic);
+    }
 
     /* *********************** SERVER INITIALIZATION ********************** */
 
@@ -291,33 +311,51 @@ int main(int argc, char* args[])
     // Solving reduced model using LAO* + FF.
     time_t totalPlanningTime = 0.0;
     time_t startTime = time(nullptr);
+     // using half of the time fot the initial plan (last argument)
 
-    cout << "SOLVING" << endl;
-    Solver* solver;
-    if (flag_is_registered("rff")) {
+    cerr << "SOLVING" << endl;
+    Solver* solver = nullptr;
+    if (planner == "ff-lao") {
+        solver = new FFReducedModelSolver(reducedModel,
+                                          ffExec,
+                                          directory + "/" + detProblem,
+                                          directory + "/ff-template.pddl",
+                                          k,
+                                          1.0e-3,
+                                          useFF,
+                                          maxPlanningTime / 2);
+        solver->solve(reducedModel->initialState());
+    } else if (planner == "rff") {
         solver = new RFFSolver(static_cast<mlppddl::PPDDLProblem*> (problem),
                                ffExec,
                                directory + "/" + detProblem,
-                               directory + "/ff-template.pddl");
+                               directory + "/ff-template.pddl",
+                               0.2,
+                               100,
+                               maxPlanningTime / 2);
         solver->solve(problem->initialState());
-    } else {
-    // using half of the time for the initial plan (last argument)
-        solver = new FFReducedModelSolver (reducedModel,
-                                           ffExec,
-                                           directory + "/" + detProblem,
-                                           directory + "/ff-template.pddl",
-                                           k,
-                                           1.0e-3,
-                                           useFF,
-                                           maxPlanningTime / 2);
-        solver->solve(reducedModel->initialState());
+    } else if (planner == "ff-replan") {
+        solver = new FFReplanSolver(
+            static_cast<mlppddl::PPDDLProblem*> (problem),
+            ffExec,
+            directory + "/" + detProblem,
+            directory + "/ff-template.pddl",
+            maxPlanningTime / 2);
+        solver->solve(problem->initialState());
+    } else if (planner == "ssipp-ff") {
+        solver = new SSiPPFFSolver(
+            static_cast<mlppddl::PPDDLProblem*> (problem),
+            ffExec,
+            directory + "/" + detProblem,
+            directory + "/ff-template.pddl",
+            3,
+            1.0e-3,
+            maxPlanningTime / 2);
+        solver->solve(problem->initialState());
     }
     time_t endTime = time(nullptr);
     totalPlanningTime += endTime - startTime;
     remainingPlanningTime -= totalPlanningTime;
-    cout << "cost " << reducedModel->initialState()->cost() <<
-        " time " << totalPlanningTime << endl;
-
 
     /* *********************** SEVER LOOP ********************** */
     // Initializing a map from atom names to atom indices.
@@ -334,7 +372,7 @@ int main(int argc, char* args[])
             cerr << "ERROR: couldn't read from socket." << endl;
             break;
         }
-        cout << "RECEIVED: " << buffer << endl;
+        cerr << "RECEIVED: " << buffer << endl;
         string msg(buffer);
         string atomsString;
         if (msg.substr(0, 6) == "state:") { // Received a state to plan for.
@@ -345,7 +383,7 @@ int main(int argc, char* args[])
             cost = 0;
             bzero(buffer, BUFFER_SIZE);
             sprintf(buffer, "%s", "round-ended");
-            cout << "SENDING: " << buffer << "." << endl;
+            cerr << "SENDING: " << buffer << "." << endl;
             n = write(newsockfd, buffer, strlen(buffer));
             if (n < 0) {
                 cerr << "ERROR: couldn't write to socket." << endl;
@@ -362,22 +400,22 @@ int main(int argc, char* args[])
                                static_cast<PPDDLProblem*> (problem),
                                stringAtomMap);
 
-        // For now, always set the exception counter to 0 and re-plan.
-        ReducedState* reducedState = static_cast<ReducedState*> (
-            reducedModel->addState(new ReducedState(state, 0, reducedModel)));
-        cout << "PLANNING." << endl;
-        mlcore::Action* action;
+        cerr << "PLANNING." << endl;
+        solver->maxPlanningTime(remainingPlanningTime);
         startTime = time(nullptr);
-        if (flag_is_registered("rff")) {
-            action = solver->solve(reducedState->originalState());
-        } else {
-            static_cast<FFReducedModelSolver*> (solver)->
-                maxPlanningTime(remainingPlanningTime);
+        mlcore::Action* action = nullptr;
+        if (planner == "ff-lao") {
+            // For now, always set the exception counter to 0 and re-plan.
+            ReducedState* reducedState = static_cast<ReducedState*> (
+                reducedModel->addState(
+                    new ReducedState(state, 0, reducedModel)));
             action = solver->solve(reducedState);
+        } else {
+            action = solver->solve(state);
         }
         endTime = time(nullptr);
         remainingPlanningTime -= endTime - startTime;
-        cout << "DONE. Remaining time: " << remainingPlanningTime << endl;
+        cerr << "DONE. Remaining time: " << remainingPlanningTime << endl;
 
         // Sending the action to the client.
         ostringstream oss;
@@ -385,12 +423,12 @@ int main(int argc, char* args[])
             oss << action;
             cost += problem->cost(state, action);
         } else {
-            cout << "DEAD-END." << endl;
+            cerr << "DEAD-END." << endl;
             oss << "(done)";
         }
         bzero(buffer, BUFFER_SIZE);
         sprintf(buffer, "%s", oss.str().c_str());
-        cout << buffer << "." << endl;
+        cerr << buffer << "." << endl;
         n = write(newsockfd, buffer, strlen(buffer));
         if (n < 0) {
             cerr << "ERROR: couldn't write to socket." << endl;
@@ -399,8 +437,11 @@ int main(int argc, char* args[])
     }
 
     // Releasing memory
-    reducedModel->cleanup();
-    delete reducedModel;
+    if (reducedModel != nullptr) {
+        reducedModel->cleanup();
+        delete reducedModel;
+    }
+    delete solver;
     delete problem;
     return 0;
 }

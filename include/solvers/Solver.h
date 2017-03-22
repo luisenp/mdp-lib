@@ -51,6 +51,8 @@ public:
      * @return The action recommended by this algorithm for state s0.
      */
     virtual mlcore::Action* solve(mlcore::State* s0) =0;
+
+    virtual void maxPlanningTime(time_t theTime) { }
 };
 
 /**

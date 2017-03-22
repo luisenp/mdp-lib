@@ -329,7 +329,15 @@ inline std::pair<std::string, int> getActionNameAndCostFromFF(
             while (fgets(lineBuffer, 1024, ff_output)) {
                 if (strstr(lineBuffer, "goal can be simplified to FALSE.") !=
                         nullptr) {
-                    break;  // This makes actionName = "__mdplib-dead-end__"
+                    if (fullPlan)
+                        fullPlan->push_back(actionName);
+                    break;  // At this point actionName = "__mdplib-dead-end__"
+                }
+                if (strstr(lineBuffer, "problem proven unsolvable.") !=
+                        nullptr) {
+                    if (fullPlan)
+                        fullPlan->push_back(actionName);
+                    break;  // At this point actionName = "__mdplib-dead-end__"
                 }
                 if (strstr(lineBuffer, "step") != nullptr) {
                     actionName = "";

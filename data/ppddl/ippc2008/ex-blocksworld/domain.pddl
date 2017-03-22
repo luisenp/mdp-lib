@@ -31,4 +31,3 @@
                 (probabilistic 1/10 (when (no-detonated ?b1) (and (not (no-destroyed ?b2)) (not (no-detonated ?b1))))))
   )
 )
-

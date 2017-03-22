@@ -279,7 +279,6 @@ RacetrackProblem::flatTransition(mlcore::State* s, mlcore::Action* a)
 
     int idAction = rta->hashValue();
     std::vector<mlcore::SuccessorsList>* allSuccessors = rts->allSuccessors();
-
     if (!allSuccessors->at(idAction).empty()) {
         return allSuccessors->at(idAction);
     }

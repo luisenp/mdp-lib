@@ -66,7 +66,7 @@ SailingProblem::transition(mlcore::State* s, mlcore::Action* a)
         successors.push_back(mlcore::Successor(absorbing_, 1.0));
         if (useFlatTransition_)
             for (int i = 1; i < 8; i++)
-                successors.push_back(mlcore::Successor(absorbing_, 1.0));
+                successors.push_back(mlcore::Successor(absorbing_, 0.125));
         return successors;
     }
 
@@ -82,28 +82,25 @@ SailingProblem::transition(mlcore::State* s, mlcore::Action* a)
         if (inLake(nextX, nextY)) {
             for (short nextWind = 0; nextWind < 8; nextWind++) {
                 double p = windTransition_[8 * state->wind() + nextWind];
-                if (p > 0.0) {
+                if (p > 0.0 || useFlatTransition_) {
                     mlcore::State* next =
                         new SailingState(nextX, nextY, nextWind, this);
                     successors.push_back(
                         mlcore::Successor(this->addState(next), p));
-                } else if (useFlatTransition_) {
-                    successors.push_back(
-                        mlcore::Successor(mlcore::Successor(state, 0.0)));
                 }
             }
         } else {
             successors.push_back(mlcore::Successor(state, 1.0));
             if (useFlatTransition_) {
                 for (int i = 1; i < 8; i++)
-                    successors.push_back(mlcore::Successor(state, 0.0));
+                    successors.push_back(mlcore::Successor(state, 0.125));
             }
         }
     } else {
         successors.push_back(mlcore::Successor(state, 1.0));
         if (useFlatTransition_) {
             for (int i = 1; i < 8; i++)
-                successors.push_back(mlcore::Successor(state, 0.0));
+                successors.push_back(mlcore::Successor(state, 0.125));
         }
     }
     return successors;
