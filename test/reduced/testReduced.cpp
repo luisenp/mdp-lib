@@ -235,14 +235,19 @@ void findBestReductionGreedy(mlcore::Problem* problem,
 {
     // Evaluating expected cost of full reduction
     reducedModel = new ReducedModel(problem, bestReductionTemplate, k);
-    double previousResult = ReducedModel::evaluateMarkovChain(reducedModel);
-                                                                                dprint2("original", previousResult);
+    int numMCTrials = 20;
+    double originalResult = ReducedModel::evaluateMarkovChain(reducedModel);
+//    double previousResult = reducedModel->evaluateMonteCarlo(numMCTrials);
+                                                                                dprint2("original", originalResult);
     int numOutcomes = 0;
     for (size_t i = 0; i < actionGroups.size(); i++)
         numOutcomes +=
             bestReductionTemplate->
                 primaryIndicatorsActions()[actionGroups[i][0]].size();
                                                                                 dprint2("num outcomes", numOutcomes);
+                                                                                int cnt = 0;
+    bool currentSatisfiesL = false;
+    double previousResult = originalResult;
     for (int i = 0; i < numOutcomes; i++) {
         double bestResult = mdplib::dead_end_cost + 1;
         int bestGroup = -1;
@@ -274,22 +279,38 @@ void findBestReductionGreedy(mlcore::Problem* problem,
                 for (mlcore::Action* a : actionGroup)
                     testPrimaryIndicatorsActions[a][outcomeIdx] = false;
                 reducedModel = new ReducedModel(problem, testReduction, k);
+                                                                                cnt++;
                 double result = ReducedModel::evaluateMarkovChain(reducedModel);
+//                double result = reducedModel->evaluateMonteCarlo(numMCTrials);
                 if (result < bestResult) {
-                    if (result < tau * previousResult) {
-                        bestGroup = groupIdx;
-                        bestOutcomeIndex = outcomeIdx;
-                        bestResult = result;
-                    }
+                    bestGroup = groupIdx;
+                    bestOutcomeIndex = outcomeIdx;
+                    bestResult = result;
                 }
                 // Set the outcome back to true to try a new model
                 for (mlcore::Action* a : actionGroup)
                     testPrimaryIndicatorsActions[a][outcomeIdx] = false;
             }
         }
-        // Checking if the current reduction satisfies the desired number of
-        // primary outcomes (one of the stopping criteria)
-        bool satisfiesL = true;
+                                                                                dprint2("result ", bestResult);
+                                                                                dprint2("cnt ", cnt);
+        // If the best reduction in this iteration increases the cost too much
+        // and the current best reduction satisfies the desired number of
+        // primary outcomes, then stop
+        if (bestResult > tau * originalResult && currentSatisfiesL) {
+            break;
+        } else {
+            // Update best reduction/result and keep going.
+            previousResult = bestResult;
+            for (mlcore::Action* a : actionGroups[bestGroup]) {
+                bestReductionTemplate->
+                    primaryIndicatorsActions()[a][bestOutcomeIndex] = false;
+            }
+        }
+
+        // Checking if the new reduction satisfies the desired number of
+        // primary outcomes
+        currentSatisfiesL = true;
         for (size_t groupIdx = 0; groupIdx < actionGroups.size();
              groupIdx++) {
             vector<mlcore::Action*> & actionGroup = actionGroups[groupIdx];
@@ -301,25 +322,8 @@ void findBestReductionGreedy(mlcore::Problem* problem,
                     primaryCount++;
             }
             if (primaryCount > l)
-                satisfiesL = false;
+                currentSatisfiesL = false;
         }
-        // Checking if the decrement was too large to justify the new model
-        // (the other stopping criterion)
-        if (bestOutcomeIndex == -1) {
-            // Couldn't find outcome to remove and maintain the cost
-            // within the threshold
-            break;
-        } else {
-            // Update best reduction/result and keep going.
-            previousResult = bestResult;
-            for (mlcore::Action* a : actionGroups[bestGroup]) {
-                bestReductionTemplate->
-                    primaryIndicatorsActions()[a][bestOutcomeIndex] = false;
-            }
-        }
-                                                                                dprint2("result ", bestResult);
-        if (satisfiesL)
-            break;
     }
 
                                                                                 unordered_map< mlcore::Action*, vector <bool> > &
@@ -366,7 +370,8 @@ void createRacetrackReductionsTemplate(RacetrackProblem* rtp,
     for (mlcore::Action* a : rtp->actions()) {
         // Setting primary outcomes for initial state
         if (first) {
-            // All action work the same for this state, choose the first
+            // All actions work the same for this state, use the first one
+            // as template
             for (auto const & successor :
                  rtp->transition(rtp->initialState(), a)) {
                 primaryIndicators.push_back(true);
@@ -378,8 +383,9 @@ void createRacetrackReductionsTemplate(RacetrackProblem* rtp,
         primaryIndicators.clear();
         RacetrackAction* rta = static_cast<RacetrackAction*> (a);
         int numSuccessors = rtp->numSuccessorsAction(rta);
-        for (int i = 0; i < numSuccessors; i++)
-            primaryIndicators.push_back(true);
+        for (int i = 0; i < numSuccessors; i++) {
+            primaryIndicators.push_back((i < 2));
+        }
         reductionsTemplate->setPrimaryForAction(a, primaryIndicators);
     }
     *createdReduction = reductionsTemplate;
@@ -625,7 +631,7 @@ int main(int argc, char* args[])
                                          actionGroups,
                                          bestReductionTemplate);
         bestReduction = bestReductionTemplate;
-    } else if (flag_is_registered("greedy")){
+    } else if (flag_is_registered("greedy")) {
         findBestReductionGreedy(originalProblemWrapper, actionGroups);
         bestReduction = bestReductionTemplate;
     } else if (flag_is_registered("choose")) {
@@ -727,8 +733,6 @@ int main(int argc, char* args[])
     delete originalProblemWrapper;
     reducedModelWrapper->cleanup();
     delete reducedModelWrapper;
-//    wrapperProblem->cleanup();
-//    delete wrapperProblem;
     delete problem;
     delete solver;
     return 0;

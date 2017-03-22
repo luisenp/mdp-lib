@@ -16,7 +16,7 @@ class MostLikelyOutcomeReduction : public ReducedTransition
 private:
     mlcore::Problem* problem_;
 
-    /* How many of the least likely outcomes to choose. */
+    /* How many of the most likely outcomes to choose. */
     int howMany_;
 
     /*
