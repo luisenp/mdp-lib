@@ -12,14 +12,14 @@
 pddl_folder=../../data/ppddl/ippc2008
 
 # The domain name.
-domain=zenotravel
+domain=ex-blocksworld
 
 # The name of the problem used to learn the best determinization. 
 problem=p01
 
 # The exception bound to use.
 klearn=0
-k=0
+k=3
 
 # Creating all possible determinizations
 ./create_all_determinizations.py -d $pddl_folder/$domain/domain.pddl \
@@ -48,7 +48,7 @@ best_n_determinizations=`./get_index_n_best_results.py \\
 best_determinization=`echo $best_n_determinizations | { read x _ ; echo $x; }`
 echo "best determinization :"$best_determinization
 # Solving all problems with the best determinization
-for i in {01..10}; do
+for i in {08..10}; do
   echo `time ./run_experiment.sh $pddl_folder $domain p$i $best_determinization $k \\
     | tail -n 1`
 done
