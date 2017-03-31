@@ -2,7 +2,7 @@
 
 nsims=20
 verbosity=1
-heur=zero
+heur=hmin
 
 # tracks=(known/square-4-error known/square-5-error \
 #         known/ring-5-error known/ring-6-error)
