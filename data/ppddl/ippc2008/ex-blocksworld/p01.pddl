@@ -25,9 +25,8 @@
                 (probabilistic 2/5 (when (no-detonated ?b) (and (not (no-destroyed-table)) (not (no-detonated ?b))))))
   )
   (:action put-on-block
-   :parameters (?b1 ?b2 - block)   
-   ;; Remove (not (= ?b1 ?b2)) from precondition (not in original)
-   :precondition (and (holding ?b1) (clear ?b2) (no-destroyed ?b2) (not (= ?b1 ?b2)))
+   :parameters (?b1 ?b2 - block)
+   :precondition (and (holding ?b1) (clear ?b2) (no-destroyed ?b2))
    :effect (and (emptyhand) (on ?b1 ?b2) (not (holding ?b1)) (not (clear ?b2))
                 (probabilistic 1/10 (when (no-detonated ?b1) (and (not (no-destroyed ?b2)) (not (no-detonated ?b1))))))
   )
