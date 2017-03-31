@@ -12,7 +12,7 @@
 pddl_folder=../../data/ppddl/ippc2008
 
 # The domain name.
-domain=zenotravel
+domain=ex-blocksworld
 
 # The name of the problem used to learn the best determinization. 
 problem=p01
@@ -37,6 +37,7 @@ for i in `seq 0 $num_det`; do
   echo $successes_and_costs
   all_successes=$all_successes`echo $successes_and_costs | awk '{print $1}'`,
   all_costs=$all_costs`echo $successes_and_costs | awk '{print $2}'`,
+  sleep 10
 done
 echo $all_successes
 echo $all_costs
