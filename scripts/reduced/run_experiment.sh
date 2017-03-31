@@ -48,9 +48,7 @@ sleep 1
   $pddl_folder/$domain/$problem.pddl &> log.txt
 
 # Kill the planning and mdpsim servers
-kill $(ps aux | grep '[p]lanserv' | awk '{print $2}')
-kill $(ps aux | grep '[l]t-mdpsim' | awk '{print $2}')
-rm -f last_id
+./kill_servers.sh
 
 # Extract the number of successes and turns (cost) resulting from this 
 # determinization
