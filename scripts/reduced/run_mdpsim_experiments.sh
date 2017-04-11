@@ -15,15 +15,17 @@
 pddl_folder=../../data/ppddl/ippc2008
 
 # The domain name.
-domain=blocksworld
+domain=ex-blocksworld
 
 # The planner to use
-planner=ff-replan
+planner=rff
 
 # The determinization to use. The script assumes 
 # determinizations are stored in folder /tmp/, with the following naming
-# convention: <domain-name>_det<determinization_name>.pddl.
-determinization_name=ao
+# convention: <domain-name>_<determinization_name>_det.pddl.
+determinization_name=mlo
+
+test "$determinization_name" == 'mlo' && (./create_mlo_determinization.py -d $pddl_folder/$domain/domain.pddl -o /tmp/$domain)
 
 for i in {01..10}; do
   problem=p$i
@@ -52,9 +54,7 @@ for i in {01..10}; do
     $pddl_folder/$domain/$problem.pddl &> log.txt
 
   # Kill the planning and mdpsim servers
-  kill $(ps aux | grep '[p]lanserv' | awk '{print $2}')
-  kill $(ps aux | grep '[l]t-mdpsim' | awk '{print $2}')
-  rm -f last_id
+  ./kill_servers.sh
 
   # Extract the number of successes and turns (cost) resulting from this 
   # determinization
@@ -63,6 +63,5 @@ for i in {01..10}; do
   if [ -z "$cost" ]; then
     cost=10000.0
   fi
-
   echo "$successes $cost"
 done
