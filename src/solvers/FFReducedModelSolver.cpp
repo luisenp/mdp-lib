@@ -173,9 +173,11 @@ double FFReducedModelSolver::bellmanUpdate(mlcore::State* s)
                 sPrime->setCost(planLength);
                 sPrime->setBestAction(action);
                 if (action == nullptr) {
+                    sPrime->setCost(mdplib::dead_end_cost);
                     sPrime->markDeadEnd();
                     continue;
                 }
+//                                                                                break;
                 int cnt = 0;
                 for (auto const succ : problem_->transition(sPrime, action)) {
                     sPrime = succ.su_state;
