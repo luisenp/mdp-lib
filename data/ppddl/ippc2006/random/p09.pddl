@@ -1,0 +1,122 @@
+(define (domain prob_domain) 
+ (:requirements :strips :probabilistic-effects :conditional-effects) 
+ (:constants OV TZ NO QS IE RF MW KG RU VM )
+ (:predicates 
+	 (OC ?X ) 
+	 (QX ?X ?Y ) 
+	 (TO ?X ) 
+	 (VC ?X ) 
+	 (GL ?X ) 
+(clear)
+(not-clear)
+ )
+(:action UCF
+ :parameters (?X ?Y ?Z )
+ :precondition (and 
+		 (TO ?Y) 
+  )
+ :effect (probabilistic 
+		 80/100 (and (TO ?X) (not (TO ?Y)) (QX ?X ?Y) (OC ?X) )  
+		 20/100 (and (GL ?X) (TO ?X) (GL ?Z) (QX ?Y ?X) (QX ?Z ?Z) )  
+          )
+ )
+(:action RWW
+ :parameters (?X ?Y ?Z )
+ :precondition (and 
+		 (GL ?X) 
+  )
+ :effect (probabilistic 
+		 100/100 (and (OC ?Z) (GL ?Z) (VC ?X) (QX ?Z ?Y) (QX ?Z ?X) )  
+          )
+ )
+(:action MOH
+ :parameters (?X )
+ :precondition (and 
+		 (VC ?X) 
+		 (QX ?X ?X) 
+		 (GL ?X) 
+  )
+ :effect (probabilistic 
+		 100/100 (and (not (QX ?X ?X)) )  
+          )
+ )
+(:action ZMQ
+ :parameters (?X ?Y ?Z )
+ :precondition (and 
+		 (OC ?X) 
+		 (GL ?Z) 
+  )
+ :effect (probabilistic 
+		 100/100 (and (VC ?Y) (OC ?Y) )  
+          )
+ )
+(:action OGK
+ :parameters (?X ?Y ?Z )
+ :precondition (and 
+		 (VC ?Y) 
+		 (QX ?Y ?Z) 
+  )
+ :effect (probabilistic 
+		 41/100 (and (QX ?Y ?X) (TO ?X) (GL ?Y) (QX ?Z ?Y) )  
+		 59/100 (and (not (VC ?Y)) )  
+          )
+ )
+(:action reset1 
+ :precondition (not-clear)
+ :effect (and 
+	     (forall (?x) (and 
+      (not (OC ?x)) 
+      (not (QX ?x OV)) 
+      (not (QX ?x TZ)) 
+      (not (QX ?x NO)) 
+      (not (QX ?x QS)) 
+      (not (QX ?x IE)) 
+      (not (QX ?x RF)) 
+      (not (QX ?x MW)) 
+      (not (QX ?x KG)) 
+      (not (QX ?x RU)) 
+      (not (QX ?x VM)) 
+      (not (TO ?x)) 
+      (not (VC ?x)) 
+      (not (GL ?x)) 
+))
+(not (not-clear))
+(clear)))
+
+(:action reset2 
+ :precondition (clear) 
+ :effect (and (not-clear)
+              (not (clear))
+(OC NO) 
+(VC QS) 
+(TO NO) 
+(VC IE) 
+(TO MW) 
+(OC RF) 
+(QX MW TZ) 
+(QX TZ RF) 
+(QX TZ RU) 
+(VC TZ) 
+(OC KG) 
+(OC MW) 
+(GL IE) 
+(GL NO) 
+(OC OV) 
+(OC TZ) 
+(GL RU) 
+(GL KG) 
+(VC NO) 
+(QX NO QS) 
+)))
+(define (problem random-problem99) 
+ (:domain prob_domain) 
+ (:init 
+(not-clear)
+(OC NO) (VC QS) (TO NO) (VC IE) (TO MW) (OC RF) (QX MW TZ) (QX TZ RF) (QX TZ RU) (VC TZ) (OC KG) (OC MW) (GL IE) (GL NO) (OC OV) (OC TZ) (GL RU) (GL KG) (VC NO) (QX NO QS)  
+)
+ (:goal (and 
+(GL TZ ) 
+(VC KG ) 
+(VC RU ) 
+(VC VM ) 
+)))

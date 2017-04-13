@@ -1,0 +1,23 @@
+
+Making the binary
+"make" will generate the binary "drive"
+
+Usage
+drive -x x_coordinate_size -y y_coordinate_size
+
+From our experience 
+3 by 3 or less  problems are easy, e.g. "drive -x 3 -y 3"
+6 by 6 or less  problems are medium, "drive -x 5 -y 5"
+7 by 7 or more class problems are hard, "drive -x 7 -y 7"
+
+Examples
+We provide 5 easy problems, easy*, 5 medium problems, medium* 
+and 5 hard problems, hard*.
+These can easily be generated with "drive -x x -y y" commands.
+
+
+
+
+
+
+
