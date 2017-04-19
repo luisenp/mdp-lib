@@ -133,7 +133,8 @@ double FFReducedModelSolver::bellmanUpdate(mlcore::State* s)
         }
     }
 
-    mlreduced::ReducedState* reducedState = (mlreduced::ReducedState* ) s;
+    mlreduced::ReducedState* reducedState =
+        static_cast<mlreduced::ReducedState*> (s);
     if (useFF_ && reducedState->exceptionCount() == maxHorizon_) {
         // For exceptionCount = k we just call FF.
         PPDDLState* ppddlState =
@@ -148,29 +149,44 @@ double FFReducedModelSolver::bellmanUpdate(mlcore::State* s)
             stateFFAction = ffStateActions_[s];
             stateFFCost = ffStateCosts_[s];
         } else {
+            vector<string> fullPlan;
             pair<string, int> actionNameAndCost =
                 getActionNameAndCostFromFF(ffExecFilename_,
                                            determinizedDomainFilename_,
                                            currentProblemFilename_,
                                            startingPlanningTime_,
-                                           maxPlanningTime_);
+                                           maxPlanningTime_,
+                                           &fullPlan);
 
-            // If FF finds this state is a dead-end,
-            // getActionNameAndCostFromFF() returns "__mdplib-dead-end__"
-            // and getActionFromName() returns a nullptr.
-            stateFFAction =
+            // Extract policy
+            mlcore::State* sPrime = s;
+            mlppddl::PPDDLProblem* originalProblem =
                 static_cast<mlppddl::PPDDLProblem*> (
                     static_cast<mlreduced::ReducedModel*> (problem_)->
-                        originalProblem()
-                )->getActionFromName(actionNameAndCost.first);
-            if (stateFFAction == nullptr) {
-                s->markDeadEnd();
+                        originalProblem());
+            int planLength = fullPlan.size();
+            for (string actionName : fullPlan) {
+                mlcore::Action* action =
+                    originalProblem->getActionFromName(actionName);
+                ffStateActions_[sPrime] = action;
+                ffStateCosts_[sPrime] = planLength;
+                sPrime->setCost(planLength);
+                sPrime->setBestAction(action);
+                if (action == nullptr) {
+                    sPrime->setCost(mdplib::dead_end_cost);
+                    sPrime->markDeadEnd();
+                    continue;
+                }
+//                                                                                break;
+                int cnt = 0;
+                for (auto const succ : problem_->transition(sPrime, action)) {
+                    sPrime = succ.su_state;
+                    cnt++;
+                }
+                planLength--;
+                assert(cnt <= 1);
             }
-            ffStateActions_[s] = stateFFAction;
-            ffStateCosts_[s] = actionNameAndCost.second;
         }
-        s->setCost(ffStateCosts_[s]);
-        s->setBestAction(ffStateActions_[s]);
         return 0.0;
     }
     std::pair<double, mlcore::Action*> best = bellmanBackup(problem_, s);

@@ -60,6 +60,7 @@ def main(argv):
   f.close()
   fd.close()
   
+  print 'Created MLO determinization for %s' % domain_file_name
 
 if __name__ == "__main__":
   main(sys.argv[1:])

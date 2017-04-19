@@ -72,8 +72,10 @@ mlcore::Action* RFFSolver::solve(mlcore::State* s0)
             terminalStates_.erase(terminalStates_.find(sExpanded));
             statesPolicyGraph.insert(sExpanded);
         }
-//                                                                                for (auto const & pupu : terminalStates_)
-//                                                                                    dprint2("++++ terminal", pupu);
+                                                                                dprint2("size terminals ", terminalStates_.size());
+                                                                                for (auto const & term : terminalStates_)
+                                                                                    dprint2("++ terminal", term);
+                                                                                dprint1("computing totalProb");
         double totalProb = failProb(s0, 50);
                                                                                 dprint3("totalProb", totalProb, rho_);
         if (totalProb < rho_)
@@ -114,9 +116,24 @@ double RFFSolver::failProb(mlcore::State* s, int N)
     double totalProbabilityTerminals = 0.0;
     double delta = 1.0 / N;
     for (int i = 0; i < N; i++) {
+                                                                                dprint2("  ",  i);
         mlcore::State* currentState = s;
         while (!problem_->goal(currentState) &&
                terminalStates_.count(currentState) == 0) {
+            if (currentState->deadEnd()) {
+                // Treat dead-ends as goals, otherwise this method
+                // might loop endlessly when there are unavoidable dead-ends
+                break;
+            }
+                                                                                dprint2("  ** ",  currentState);
+                                                                                if (currentState->bestAction() != nullptr)
+                                                                                    dprint2("      ", currentState->bestAction());
+                                                                                else {
+                                                                                    dprint1("      null action");
+                                                                                    dprint1(currentState->deadEnd());
+                                                                                    dsleep(1000);
+                                                                                    exit(0);
+                                                                                }
             currentState = randomSuccessor(problem_,
                                            currentState,
                                            currentState->bestAction());
