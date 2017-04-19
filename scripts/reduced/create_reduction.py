@@ -187,8 +187,6 @@ def main(argv):
   reduce_ppddl_tree(domain_tree)
   print make_str(domain_tree[0])
   
-  
-    
 
 if __name__ == "__main__":
   main(sys.argv[1:])
