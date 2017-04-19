@@ -1,0 +1,123 @@
+(define (domain prob_domain) 
+ (:requirements :strips :probabilistic-effects :conditional-effects) 
+ (:constants PX WL EA VE EW FY MM GU RV GF )
+ (:predicates 
+	 (XZ ?X ) 
+	 (IV ?X ) 
+	 (UF ?X ?Y ) 
+	 (XL ?X ) 
+	 (MK ?X ) 
+(clear)
+(not-clear)
+ )
+(:action OVR
+ :parameters (?X ?Y ?Z )
+ :precondition (and 
+		 (XL ?Y) 
+		 (IV ?Z) 
+  )
+ :effect (probabilistic 
+		 88/100 (and (UF ?X ?X) )  
+		 0/100 (and (MK ?X) )  
+		 12/100 (and (MK ?Z) (XL ?Z) (not (XL ?Y)) )  
+          )
+ )
+(:action AGQ
+ :parameters (?X ?Y )
+ :precondition (and 
+		 (IV ?X) 
+		 (XZ ?X) 
+  )
+ :effect (probabilistic 
+		 31/100 (and (UF ?X ?Y) )  
+		 69/100 (and (MK ?Y) (MK ?X) )  
+          )
+ )
+(:action CJX
+ :parameters (?X )
+ :precondition (and 
+		 (IV ?X) 
+  )
+ :effect (probabilistic 
+		 38/100 (and (MK ?X) (UF ?X ?X) (not (IV ?X)) )  
+		 27/100 (and (not (IV ?X)) )  
+		 35/100 (and (MK ?X) (XZ ?X) (not (IV ?X)) )  
+          )
+ )
+(:action QGT
+ :parameters (?X ?Y )
+ :precondition (and 
+		 (MK ?Y) 
+  )
+ :effect (probabilistic 
+		 17/100 (and (UF ?Y ?Y) (MK ?X) )  
+		 55/100 (and (UF ?X ?X) )  
+		 28/100 (and (IV ?X) )  
+          )
+ )
+(:action HBX
+ :parameters (?X )
+ :precondition (and 
+		 (UF ?X ?X) 
+  )
+ :effect (probabilistic 
+		 100/100 (and (not (UF ?X ?X)) (XZ ?X) (MK ?X) )  
+          )
+ )
+(:action reset1 
+ :precondition (not-clear)
+ :effect (and 
+	     (forall (?x) (and 
+      (not (XZ ?x)) 
+      (not (IV ?x)) 
+      (not (UF ?x PX)) 
+      (not (UF ?x WL)) 
+      (not (UF ?x EA)) 
+      (not (UF ?x VE)) 
+      (not (UF ?x EW)) 
+      (not (UF ?x FY)) 
+      (not (UF ?x MM)) 
+      (not (UF ?x GU)) 
+      (not (UF ?x RV)) 
+      (not (UF ?x GF)) 
+      (not (XL ?x)) 
+      (not (MK ?x)) 
+))
+(not (not-clear))
+(clear)))
+
+(:action reset2 
+ :precondition (clear) 
+ :effect (and (not-clear)
+              (not (clear))
+(UF WL MM) 
+(IV RV) 
+(XZ EW) 
+(XZ GU) 
+(IV MM) 
+(MK GU) 
+(XL FY) 
+(XL EW) 
+(MK VE) 
+(XL EA) 
+(MK GF) 
+(IV EW) 
+(IV GF) 
+(UF GF GU) 
+(UF FY GF) 
+(IV GU) 
+(UF FY EA) 
+(IV FY) 
+(IV PX) 
+(XZ RV) 
+)))
+(define (problem random-problem256) 
+ (:domain prob_domain) 
+ (:init 
+(not-clear)
+(UF WL MM) (IV RV) (XZ EW) (XZ GU) (IV MM) (MK GU) (XL FY) (XL EW) (MK VE) (XL EA) (MK GF) (IV EW) (IV GF) (UF GF GU) (UF FY GF) (IV GU) (UF FY EA) (IV FY) (IV PX) (XZ RV)  
+)
+ (:goal (and 
+(MK PX ) 
+(XL PX ) 
+)))

@@ -48,6 +48,8 @@ best_n_determinizations=`./get_index_n_best_results.py \\
   -s ${all_successes::-1} -c ${all_costs::-1} -n $n `
 best_determinization=`echo $best_n_determinizations | { read x _ ; echo $x; }`
 echo "best determinization :"$best_determinization
+
+
 # Solving all problems with the best determinization
 for i in {01..10}; do
   echo `time ./run_experiment.sh $pddl_folder $domain p$i $best_determinization $k \\
