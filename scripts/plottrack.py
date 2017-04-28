@@ -31,7 +31,6 @@ def main(argv):
     numGoals += line.count('G')
     numSquares += line.count(' ')
     track_strings.append(line)
-  print track_strings
 
   Walls = np.zeros((numWalls,2), np.int8)
   Slips = np.zeros((numSlips,2), np.int8)
@@ -58,15 +57,16 @@ def main(argv):
               Squares[cnt[4],:] = [i,Y-j-1]
               cnt[4] = cnt[4] + 1
         
-  square_size=10
+  print X, Y
+  square_size=8
+  fig = plt.figure(figsize=(X / 6, Y / 6), dpi=100)
   # plt.plot(Walls[:,0],Walls[:,1],'s', color = '0.55', ms=square_size, mec='0.25')
   plt.plot(Slips[:,0],Slips[:,1],'.', color='0.65', ms=9, mec='0.25')
   plt.plot(Starts[:,0],Starts[:,1],'gs', ms=square_size)
   plt.plot(Goals[:,0],Goals[:,1],'rs', ms=square_size)
   plt.plot(Squares[:,0],Squares[:,1],'ws', ms=square_size)
-  #plt.text(3,20, 'Start')
-  #plt.text(60,20, 'Goal')
-  plt.axis([-1,X,-1,Y])
+  ax = plt.axis([0, X, 0, Y])
+  plt.axis("off")
   plt.show()
 
   ftrack.close()

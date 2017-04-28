@@ -12,13 +12,13 @@
 # The PPDDL files must contain both domain and problem definitions and
 # the problem name in the file must match the PPDDL filename.
 #
-pddl_folder=../../data/ppddl/ippc2006
+pddl_folder=../../data/ppddl/ippc2008
 
 # The domain name.
-domain=pitchcatch
+domain=triangle-tireworld
 
 # The planner to use
-planner=ff-replan
+planner=rff
 
 # The determinization to use. The script assumes 
 # determinizations are stored in folder /tmp/, with the following naming
