@@ -63,10 +63,12 @@ SailingProblem::transition(mlcore::State* s, mlcore::Action* a)
     std::list<mlcore::Successor> successors;
 
     if (goal(s) || s == absorbing_) {
-        successors.push_back(mlcore::Successor(absorbing_, 1.0));
         if (useFlatTransition_)
-            for (int i = 1; i < 8; i++)
+            for (int i = 0; i < 8; i++)
                 successors.push_back(mlcore::Successor(absorbing_, 0.125));
+        else {
+            successors.push_back(mlcore::Successor(absorbing_, 1.0));
+        }
         return successors;
     }
 
@@ -90,17 +92,19 @@ SailingProblem::transition(mlcore::State* s, mlcore::Action* a)
                 }
             }
         } else {
-            successors.push_back(mlcore::Successor(state, 1.0));
             if (useFlatTransition_) {
-                for (int i = 1; i < 8; i++)
+                for (int i = 0; i < 8; i++)
                     successors.push_back(mlcore::Successor(state, 0.125));
+            } else {
+                successors.push_back(mlcore::Successor(state, 1.0));
             }
         }
     } else {
-        successors.push_back(mlcore::Successor(state, 1.0));
         if (useFlatTransition_) {
-            for (int i = 1; i < 8; i++)
+            for (int i = 0; i < 8; i++)
                 successors.push_back(mlcore::Successor(state, 0.125));
+        } else {
+            successors.push_back(mlcore::Successor(state, 1.0));
         }
     }
     return successors;
