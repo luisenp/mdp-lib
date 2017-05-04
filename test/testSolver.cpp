@@ -205,7 +205,17 @@ void initSolver()
         solver = new LRTDPSolver(problem, trials, tol);
     } else if (algorithm == "flares") {
         bool optimal = flag_is_registered("optimal");
-        solver = new FLARESSolver(problem, trials, tol, horizon, optimal);
+        bool useProbsDepth = flag_is_registered("use-prob-depth");
+        double depth = horizon;
+        if (flag_is_registered("prob")) {
+            depth = stof(flag_value("prob"));
+        }
+        solver = new FLARESSolver(problem,
+                                  trials,
+                                  tol,
+                                  depth,
+                                  optimal,
+                                  useProbsDepth);
     } else if (algorithm == "hdp") {
         int plaus;
         if (flag_is_registered_with_value("i"))

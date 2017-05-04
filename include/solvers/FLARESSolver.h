@@ -26,10 +26,16 @@ private:
     double epsilon_;
 
     /* The max depth for the checkSolved procedure */
-    int horizon_;
+    double horizon_;
 
     /* If true the algorithm returns an optimal policy. */
     bool optimal_;
+
+    /*
+     * If true, the depth of states will be the log probability of reaching
+     * the state. Otherwise, it is the number of steps.
+     */
+    bool useProbsForDepth_;
 
     /* Stores all states that have been solved to the latest horizon. */
     mlcore::StateSet depthSolved_;
@@ -49,6 +55,12 @@ private:
     /* Finds an approximate policy for the problem. */
     mlcore::Action* solveApproximate(mlcore::State* s0);
 
+    /*
+     * Computes the depth of the given successor state for the given depth of
+     * its parent state.
+     */
+    double computeNewDepth(mlcore::Successor& su, double depth);
+
 public:
     /**
      * Creates a FLARES solver for the given problem.
@@ -61,8 +73,9 @@ public:
     FLARESSolver(mlcore::Problem* problem,
                  int maxTrials,
                  double epsilon,
-                 int horizon_,
-                 bool optimal = false);
+                 double horizon_,
+                 bool optimal = false,
+                 bool useProbsForDepth = false);
 
     /**
      * Solves the associated problem using the Labeled RTDP algorithm.
