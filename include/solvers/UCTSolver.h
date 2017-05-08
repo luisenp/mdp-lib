@@ -22,7 +22,7 @@ namespace mlsolvers
                                 mlcore::StateEqual> StateActionDoubleMap;
 
     /**
-     * A SSSP solver using the UCT algorithm.
+     * An SSP solver using the UCT algorithm.
      *
      * See http://link.springer.com/chapter/10.1007/11871842_29
      *
@@ -44,6 +44,7 @@ namespace mlsolvers
         StateActionDoubleMap qvalues_;
 
         mlcore::Action* pickUCB1Action(mlcore::State* s);
+
         mlcore::Action* pickAction(mlcore::State* s, double C);
 
     public:
@@ -57,14 +58,15 @@ namespace mlsolvers
          * (maximum rollout depth).
          *
          * @param problem The problem to be solved.
-         * @param C The value of the exploration parameter.
          * @param maxRollouts The maximum number trajectories to sample.
          * @param cutoff The maximum depth allowed for each rollout.
+         * @param C The value of the exploration parameter. If not passed, the
+         *          Q-values will be used as the parameter value.
          */
         UCTSolver(mlcore::Problem* problem,
-                  double C,
                   int maxRollouts,
-                  int cutoff);
+                  int cutoff,
+                  double C = -1.0);
 
         /**
          * Returns the Q-values estimated by the UCT algorithm.

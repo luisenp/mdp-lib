@@ -232,9 +232,14 @@ void initSolver()
         solver = new DeterministicSolver(problem,
                                          mlsolvers::det_most_likely,
                                          heuristic);
-    } else if (algorithm != "greedy") {
+    } else if (algorithm == "uct") {
+        int rollouts = 1000;
+        if (flag_is_registered("rollouts"))
+            rollouts = stoi(flag_value("rollouts"));
+        solver = new UCTSolver(problem, rollouts, 100);
+    }else if (algorithm != "greedy") {
         cerr << "Unknown algorithm: " << algorithm << endl;
-        assert(false);
+        exit(0);
     }
 }
 

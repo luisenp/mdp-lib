@@ -8,12 +8,12 @@ namespace mlsolvers
 {
 
 UCTSolver::UCTSolver(
-    mlcore::Problem* problem, double C, int maxRollouts, int cutoff)
+    mlcore::Problem* problem, int maxRollouts, int cutoff, double C)
 {
     problem_ = problem;
-    C_ = C;
     maxRollouts_ = maxRollouts;
     cutoff_ = cutoff;
+    C_ = C;
 }
 
 
@@ -31,7 +31,10 @@ mlcore::Action* UCTSolver::pickAction(mlcore::State* s, double C)
         mlcore::Action* a = entry.first;
         if (counterSA_[s][a] == 0)
             return a;
-        double ucb1 = ucb1Cost(s, a, entry.second);
+                                                                                if (C_ != -1.0)
+                                                                                    dprint1("error");
+        double C = C_ == -1.0 ? entry.second : C_;
+        double ucb1 = ucb1Cost(s, a, C);
         if (ucb1 < best) {
             bestAction = a;
             best = ucb1;
