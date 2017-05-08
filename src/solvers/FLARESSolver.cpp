@@ -11,13 +11,15 @@ namespace mlsolvers
 FLARESSolver::FLARESSolver(Problem* problem,
                          int maxTrials,
                          double epsilon,
-                         int horizon,
-                         bool optimal) :
+                         double horizon,
+                         bool optimal,
+                         bool useProbsForDepth) :
     problem_(problem),
     maxTrials_(maxTrials),
     epsilon_(epsilon),
     horizon_(horizon),
-    optimal_(optimal)
+    optimal_(optimal),
+    useProbsForDepth_(useProbsForDepth)
 { }
 
 
@@ -62,26 +64,37 @@ bool FLARESSolver::labeledSolved(State* s)
 }
 
 
+double FLARESSolver::computeNewDepth(Successor& su, double depth)
+{
+    if (useProbsForDepth_) {
+        return depth + log(su.su_prob);
+    } else {
+        return depth + 1;
+    }
+}
+
+
 bool FLARESSolver::checkSolved(State* s)
 {
-    list< pair<State*,int > > open, closed;
+    list< pair<State*,double > > open, closed;
 
     State* currentState = s;
     if (!labeledSolved(currentState))
-        open.push_front(make_pair(s, 0));
+        open.push_front(make_pair(s, 0.0));
     else return true;
 
     bool rv = true;
     bool subgraphWithinSearchHorizon = optimal_ & true;
     while (!open.empty()) {
-        pair<State*, int> pp = open.front();
+        pair<State*, double> pp = open.front();
         open.pop_front();
         currentState = pp.first;
-        int depth = pp.second;
+        double depth = pp.second;
 
-        if (depth > 2 * horizon_) {
-            subgraphWithinSearchHorizon = false;
-            continue;
+        if ( (useProbsForDepth_ && depth < 2 * log(horizon_)) ||
+             (!useProbsForDepth_ && depth > 2 * horizon_) ) {
+                subgraphWithinSearchHorizon = false;
+                continue;
         }
 
         if (problem_->goal(currentState))
@@ -102,7 +115,8 @@ bool FLARESSolver::checkSolved(State* s)
             State* next = su.su_state;
             if (!labeledSolved(next) &&
                     !next->checkBits(mdplib::CLOSED)) {
-                open.push_front(make_pair(next, depth + 1));
+                double newDepth = computeNewDepth(su, depth);
+                open.push_front(make_pair(next, newDepth));
             } else if (next->checkBits(mdplib::SOLVED_FLARES) &&
                           !next->checkBits(mdplib::SOLVED)) {
                 subgraphWithinSearchHorizon = false;
@@ -117,14 +131,17 @@ bool FLARESSolver::checkSolved(State* s)
                 pp.first->setBits(mdplib::SOLVED_FLARES);
                 pp.first->setBits(mdplib::SOLVED);
                 depthSolved_.insert(pp.first);
-            } else if (pp.second <= horizon_) {
-                pp.first->setBits(mdplib::SOLVED_FLARES);
-                depthSolved_.insert(pp.first);
+            } else {
+                if ( (useProbsForDepth_ && pp.second > log(horizon_)) ||
+                     (!useProbsForDepth_ && pp.second <= horizon_) ) {
+                        pp.first->setBits(mdplib::SOLVED_FLARES);
+                        depthSolved_.insert(pp.first);
+                }
             }
         }
     } else {
         while (!closed.empty()) {
-            pair<State*, int> pp;
+            pair<State*, double> pp;
             pp = closed.front();
             closed.pop_front();
             pp.first->clearBits(mdplib::CLOSED);

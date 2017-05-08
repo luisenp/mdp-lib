@@ -65,6 +65,8 @@ public:
     virtual std::list<mlcore::Successor>
     transition(mlcore::State* s, mlcore::Action* a);
 
+    void useFlatTransition(bool value) { useFlatTransition_ = value; }
+
     /**
      * Overrides method from Problem.
      */
