@@ -3,7 +3,7 @@ mdp-lib
 
 A Library of algorithms for AI Planning using Markov Decision Procceses. 
 
-The library provides implementation of several MDP solvers, such as Value Iteration, LAO*, LRTDP and UCT. It also supports reading problems described in the <a href="http://www.tempastic.org/papers/CMU-CS-04-167.pdf">PPDDL format</a>. 
+The library provides abstractions for representing MDPs and implementations of several popular MDP solvers, such as Value Iteration, LAO*, LRTDP and HDP. It also supports problems described in the <a href="http://www.tempastic.org/papers/CMU-CS-04-167.pdf">PPDDL format</a>. For these, a variety of determinization-based solvers are provided, such as FF-Replan, RFF and FF-LAO*.
 
 The library has been tested in Ubuntu 12.04 and 14.04 (64-bit).
 
