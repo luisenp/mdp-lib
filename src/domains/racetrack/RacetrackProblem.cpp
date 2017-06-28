@@ -309,8 +309,8 @@ RacetrackProblem::flatTransition(mlcore::State* s, mlcore::Action* a)
 
     double acc = 0.0;
     mlcore::State* next = this->addState(resultingState(rts, 0, 0));
-    allSuccessors->at(idAction).push_back(mlcore::Successor(next, pSlip_));
-    acc += pSlip_;
+    allSuccessors->at(idAction).push_back(mlcore::Successor(next, p_slip));
+    acc += p_slip;
 
     next = this->addState(resultingState(rts, rta->ax(), rta->ay()));
     allSuccessors->at(idAction).push_back(mlcore::Successor(next, p_int));

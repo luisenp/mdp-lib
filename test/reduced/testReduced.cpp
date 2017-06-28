@@ -1,4 +1,5 @@
 #include <cassert>
+#include <cfloat>
 #include <ctime>
 #include <list>
 #include <sstream>
@@ -597,7 +598,10 @@ int main(int argc, char* args[])
     cout << "time finding reductions " << timeReductions << endl;
 
     // Setting up the final reduced model to use
-    reducedModel = new ReducedModel(problem, bestReductionTemplate, k);
+    double kappa = DBL_MAX;
+    if (flag_is_registered_with_value("kappa"))
+        kappa = stof(flag_value("kappa"));
+    reducedModel = new ReducedModel(problem, bestReductionTemplate, k, tau);
     reducedHeuristic = new ReducedHeuristicWrapper(heuristic);
     reducedModel->setHeuristic(reducedHeuristic);
     static_cast<ReducedModel*>(reducedModel)->
@@ -630,7 +634,9 @@ int main(int argc, char* args[])
     double expectedCost = 0.0;
     double expectedTime = 0.0;
     double maxReplanningTime = 0.0;
+    int cntMaxTimeOverKappa = 0;
     for (int i = 0; i < nsims; i++) {
+        double planningTime = 0.0;
         // We don't want the simulations to re-use the computed values
         if (!useFullTransition) {
             for (mlcore::State* s : wrapperProblem->states())
@@ -639,8 +645,8 @@ int main(int argc, char* args[])
             solver->solve(wrapperProblem->initialState());
             endTime = clock();
             // Initial time always counts
-            expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
-            if (verbosity >= 100)
+            planningTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
+            if (verbosity >= 1000)
             cout << "initial planning time: cost " <<
                 (double(endTime - startTime) / CLOCKS_PER_SEC) << endl;
         }
@@ -648,21 +654,23 @@ int main(int argc, char* args[])
         pair<double, double> costAndTime =
             reducedModel->trial(
                 *solver, wrapperProblem, &maxReplanningTimeCurrent);
-        if (verbosity >= 100)
-            cout << "trial ended: cost " << costAndTime.first << " " <<
-                ", time " << costAndTime.second << endl;
 
         expectedCost += costAndTime.first;
         maxReplanningTime = max(maxReplanningTime, maxReplanningTimeCurrent);
+        planningTime += costAndTime.second;
+        expectedTime += planningTime;
+        if (maxReplanningTimeCurrent > kappa)
+            cntMaxTimeOverKappa++;
 
-        // For determinization, re-planning time counts
-        // (doesn't happen in parallel)
-        if (isDeterminization && k == 0)
-            expectedTime += costAndTime.second;
+        if (verbosity >= 100)
+            cout << "trial ended: cost " << costAndTime.first << " " <<
+                ", time " << planningTime << endl;
     }
     cout << "expected cost " << expectedCost / nsims << endl;
     cout << "expected planning time " << expectedTime / nsims << endl;
     cout << "max re-planning time " << maxReplanningTime << endl;
+    cout << "cnt max re-planning time over kappa " <<
+        cntMaxTimeOverKappa << endl;
 
     // Releasing memory
     for (auto reduction : reductions)

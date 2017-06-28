@@ -1,6 +1,7 @@
 #ifndef MDPLIB_REDUCEDMODEL_H
 #define MDPLIB_REDUCEDMODEL_H
 
+#include <cfloat>
 #include <list>
 
 #include "../domains/WrapperProblem.h"
@@ -27,6 +28,18 @@ class ReducedModel : public mlcore::Problem
 private:
 
     /*
+     * If true, then the destructor can be called safely.
+     */
+    bool clean_ = false;
+
+    /*
+     * The time it takes to execute an action (default to DBL_MAX).
+     * It is used to account for the time using for planning not
+     * concurrently with execution in the trial() method.
+     */
+    double kappa_ = DBL_MAX;
+
+    /*
      * Triggers a re-planning computation using this reduced model
      * an returns the time spent planning.
      * Proactive re-planning plans for the set of successors of the given
@@ -42,18 +55,13 @@ private:
      *                 plan is found for nextState directly.
      * @param wrapperProblem A WrapperProblem object used for setting new
      *                      successors for the pro-active planning approach.
-     * @return The time spent planning.
+     * @return The time spent planning (in seconds).
      *
      */
     double triggerReplan(mlsolvers::Solver& solver,
                          ReducedState* nextState,
                          bool proactive,
                          WrapperProblem* wrapperProblem);
-
-    /*
-     * If true, then the destructor can be called safely.
-     */
-    bool clean_ = false;
 
 protected:
     /**
@@ -91,13 +99,16 @@ protected:
 
 public:
     ReducedModel(mlcore::Problem* originalProblem,
-                 ReducedTransition* reducedTransition, int k) :
+                 ReducedTransition* reducedTransition,
+                 int k,
+                 double kappa = DBL_MAX) :
         originalProblem_(originalProblem),
         reducedTransition_(reducedTransition),
         k_(k),
         useFullTransition_(false),
         useContPlanEvaluationTransition_(false),
-        clean_(false)
+        clean_(false),
+        kappa_(kappa)
     {
         s0 = new ReducedState(originalProblem_->initialState(), 0, this);
         this->addState(s0);
@@ -171,7 +182,7 @@ public:
      *                        used for planning during the trials.
      * @return A pair that contains the cost of the trial and the time
      *        spent planning (not-concurrently with execution)
-     *        during this trial.
+     *        during this trial (in seconds).
      */
     std::pair<double, double> trial(mlsolvers::Solver & solver,
                                     WrapperProblem* wrapperProblem,

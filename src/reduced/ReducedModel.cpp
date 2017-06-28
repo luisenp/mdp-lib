@@ -273,9 +273,13 @@ std::pair<double, double> ReducedModel::trial(mlsolvers::Solver & solver,
             if (this->k_ != 0 && nextState->exceptionCount() == this->k_) {
                 double planningTime =
                     triggerReplan(solver, nextState, true, wrapperProblem);
-                totalPlanningTime += planningTime;
-                if (maxPlanningTime)
+                if (planningTime > kappa_) {
+                    // Assumes agent idles while waiting for planning to end
+                    totalPlanningTime += (planningTime - kappa_);
+                }
+                if (maxPlanningTime) {
                     *maxPlanningTime = std::max(*maxPlanningTime, planningTime);
+                }
                 resetExceptionCounter = true;
             }
         }
@@ -320,8 +324,10 @@ double ReducedModel::triggerReplan(mlsolvers::Solver& solver,
         }
         wrapperProblem->setDummyAction(bestAction);
         wrapperProblem->dummyState()->setSuccessors(dummySuccessors);
+        clock_t startTime = clock();
         solver.solve(wrapperProblem->dummyState());
-        return 0.0;  // This happens in parallel to action execution.
+        clock_t endTime = clock();
+        return (double(endTime - startTime) / CLOCKS_PER_SEC);
     } else {
         clock_t startTime = clock();
         solver.solve(nextState);
