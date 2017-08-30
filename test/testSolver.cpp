@@ -235,11 +235,14 @@ void initSolver()
     } else if (algorithm == "uct") {
         int rollouts = 1000;
         int cutoff = 50;
+        int delta = 5;
         if (flag_is_registered_with_value("rollouts"))
             rollouts = stoi(flag_value("rollouts"));
         if (flag_is_registered_with_value("cutoff"))
             cutoff = stoi(flag_value("cutoff"));
-        solver = new UCTSolver(problem, rollouts, cutoff);
+        if (flag_is_registered_with_value("delta"))
+            delta = stoi(flag_value("delta"));
+        solver = new UCTSolver(problem, rollouts, cutoff, 0.0, true, delta);
     } else if (algorithm != "greedy") {
         cerr << "Unknown algorithm: " << algorithm << endl;
         exit(-1);

@@ -83,30 +83,45 @@ typedef std::unordered_map<UCTNode*,
 typedef std::unordered_set<UCTNode*, UCTNodeHash, UCTNodeEqual> UCTNodeSet;
 
 /**
- * A SSSP solver using the UCT algorithm.
+ * An SSP solver using the UCT algorithm.
  *
  * See http://link.springer.com/chapter/10.1007/11871842_29
- *
- * Implementation based on pseudocode given by
- * http://www.morganclaypool.com/doi/pdf/10.2200/S00426ED1V01Y201206AIM017
- *
  */
 class UCTSolver : public Solver
 {
 
 private:
     mlcore::Problem* problem_;
+
+    // Exploration constant.
     double C_;
-    int maxRollouts_;
+
+    // Maximum number of rollouts.
+    int max_rollouts_;
+
+    // Maximum depth for the rollouts.
     int cutoff_;
+
+    // If true, C will always be set to the current Q(s,a,d).
     bool use_qvalues_for_c_;
 
-    UCTNodeSet visited_;
-    UCTNodeIntMap counters_node_;
-    UCTNodeActionIntMap counters_node_action_;
-    UCTNodeActionDoubleMap qvalues_;
+    // The number of "virtual rollouts" for Q-value initialization,
+    // as used in PROST.
+    int delta_;
 
-    mlcore::Action* pickUCB1Action(UCTNode* node);
+    // Stores the nodes visited by the algorithm.
+    UCTNodeSet visited_;
+
+    // The counters for the nodes (number of times visited).
+    UCTNodeIntMap counters_node_;
+
+    // The counters for the node-action pairs.
+    UCTNodeActionIntMap counters_node_action_;
+
+    // The estimated Q-values of the actions.
+    UCTNodeActionDoubleMap action_qvalues_;
+
+    // Returns an action using the given exploration constant.
     mlcore::Action* pickAction(UCTNode* node, double C);
 
 public:
@@ -121,23 +136,24 @@ public:
      *
      * @param problem The problem to be solved.
      * @param C The value of the exploration parameter.
-     * @param maxRollouts The maximum number trajectories to sample.
+     * @param max_rollouts The maximum number trajectories to sample.
      * @param cutoff The maximum depth allowed for each rollout.
      * @param use_qvalues_for_c If true, the given C will be ignored and the
      *        Q-values will be used for the exploration parameter.
      */
     UCTSolver(mlcore::Problem* problem,
-              int maxRollouts,
+              int max_rollouts,
               int cutoff,
               double C = 0.0,
-              bool use_qvalues_for_c = true) :
-        problem_(problem), C_(C), maxRollouts_(maxRollouts),
+              bool use_qvalues_for_c = true,
+              int delta = 0) :
+        problem_(problem), C_(C), max_rollouts_(max_rollouts),
         cutoff_(cutoff), use_qvalues_for_c_(use_qvalues_for_c) { }
 
     /**
      * Returns the Q-values estimated by the UCT algorithm.
      */
-    UCTNodeActionDoubleMap& qvalues() { return qvalues_; }
+    UCTNodeActionDoubleMap& action_qvalues() { return action_qvalues_; }
 
     /**
      * Returns the counter for state-action pair visits.
@@ -150,9 +166,9 @@ public:
     /**
     * Sets the maximum number of sample trajectories to gather.
     *
-    * @param maxRollouts The maximum number of trajectories to sample.
+    * @param max_rollouts The maximum number of trajectories to sample.
     */
-    void setMaxRollouts(int maxRollouts) { maxRollouts_ = maxRollouts; }
+    void setmax_rollouts(int max_rollouts) { max_rollouts_ = max_rollouts; }
 
     /**
     * Sets the cutoff for the algorithm (i.e., the maximum depth of
