@@ -180,10 +180,11 @@ public:
      *
      * @return The action chosen by UCT.
      */
+
     virtual mlcore::Action* solve(mlcore::State* s0);
 };
 
-}
+}   // namespace mlsolvers
 
 
 #endif // MDPLIB_UCTSOLVER_H

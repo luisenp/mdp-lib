@@ -22,6 +22,9 @@ mlcore::Action* UCTSolver::pickAction(UCTNode* node, double C)
         if (counters_node_action_[node][a] == 0)   // unexplored action
             return a;
         double ucb1 = ucb1Cost(node, a, entry.second);
+                                                                                if (C_ != -1.0)
+                                                                                    dprint1("error");
+        double C = C_ == -1.0 ? entry.second : C_;
         if (ucb1 < best) {
             bestAction = a;
             best = ucb1;
