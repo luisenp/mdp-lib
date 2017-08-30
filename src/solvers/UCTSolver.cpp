@@ -7,31 +7,21 @@
 namespace mlsolvers
 {
 
-UCTSolver::UCTSolver(
-    mlcore::Problem* problem, double C, int maxRollouts, int cutoff)
+mlcore::Action* UCTSolver::pickUCB1Action(UCTNode* node)
 {
-    problem_ = problem;
-    C_ = C;
-    maxRollouts_ = maxRollouts;
-    cutoff_ = cutoff;
+    return pickAction(node, C_);
 }
 
 
-mlcore::Action* UCTSolver::pickUCB1Action(mlcore::State* s)
-{
-    return pickAction(s, C_);
-}
-
-
-mlcore::Action* UCTSolver::pickAction(mlcore::State* s, double C)
+mlcore::Action* UCTSolver::pickAction(UCTNode* node, double C)
 {
     double best = mdplib::dead_end_cost + 1;
     mlcore::Action* bestAction = nullptr;
-    for (std::pair<mlcore::Action*,double> entry : qvalues_[s]) {
+    for (std::pair<mlcore::Action*, double> entry : qvalues_[node]) {
         mlcore::Action* a = entry.first;
-        if (counterSA_[s][a] == 0)
+        if (counters_node_action_[node][a] == 0)   // unexplored action
             return a;
-        double ucb1 = ucb1Cost(s, a, entry.second);
+        double ucb1 = ucb1Cost(node, a, entry.second);
         if (ucb1 < best) {
             bestAction = a;
             best = ucb1;
@@ -41,10 +31,13 @@ mlcore::Action* UCTSolver::pickAction(mlcore::State* s, double C)
 }
 
 
-double UCTSolver::ucb1Cost(mlcore::State* s, mlcore::Action* a, double C)
+double UCTSolver::ucb1Cost(UCTNode* node, mlcore::Action* a, double C)
 {
-    double cost = qvalues_[s][a] - C *
-        std::sqrt(2 * std::log(counterS_[s]) / counterSA_[s][a]);
+    if (use_qvalues_for_c_)
+        C = qvalues_[node][a];
+    double cost = qvalues_[node][a] - C
+        * std::sqrt(2 * std::log(counters_node_[node])
+                    / counters_node_action_[node][a]);
     if (cost > mdplib::dead_end_cost)
         cost = mdplib::dead_end_cost;
     return cost;
@@ -53,45 +46,65 @@ double UCTSolver::ucb1Cost(mlcore::State* s, mlcore::Action* a, double C)
 
 mlcore::Action* UCTSolver::solve(mlcore::State* s0)
 {
+                                                                                dprint1("solving");
+    UCTNode* root = new UCTNode(s0, 0);
     for (int r = 0; r < maxRollouts_; r++) {
-        mlcore::State* tmp = s0;
+        UCTNode* tmp_node = root;
         std::vector<int> cumCost(cutoff_ + 1);
-        std::vector<mlcore::State*> statesRoll(cutoff_ + 1);
+        std::vector<UCTNode*> nodesRoll(cutoff_ + 1);
         std::vector<mlcore::Action*> actionsRoll(cutoff_ + 1);
         int maxSteps = 0;
         for (int i = 1; i <= cutoff_; i++) {
-            if (visited_.insert(tmp).second) {
-                counterS_[tmp] = 0;
+            bool first_time_seen = visited_.insert(tmp_node).second;
+                                                                                dprint3("  ", i, tmp_node->state_);
+            if (first_time_seen) {
+                counters_node_[tmp_node] = 0;
+                                                                                dprint1("     expanding");
                 for (mlcore::Action* a : problem_->actions()) {
-                    if (!problem_->applicable(tmp, a))
+                    if (!problem_->applicable(tmp_node->state_, a))
                         continue;
-                    counterSA_[tmp][a] = 0;
-                    qvalues_[tmp][a] = qvalue(problem_, tmp, a);
+                    counters_node_action_[tmp_node][a] = 0;
+                    qvalues_[tmp_node][a] =
+                        qvalue(problem_, tmp_node->state_, a);
                 }
+                                                                                dprint1("     expanded");
             }
-            maxSteps = i;
-            mlcore::Action* a = pickUCB1Action(tmp);
-            mlcore::State* next = randomSuccessor(problem_, tmp, a);
-            cumCost[i] = cumCost[i - 1] + problem_->cost(tmp, a);
-            statesRoll[i] = tmp;
-            actionsRoll[i] = a;
-            tmp = next;
-            if (problem_->goal(tmp))
+                                                                                dprint1("  was-created");
+            if (problem_->goal(tmp_node->state_))
                 break;
+            maxSteps = i;
+            mlcore::Action* a = pickUCB1Action(tmp_node);
+                                                                                if (a == nullptr) {
+                                                                                    dprint3(" found null for", tmp_node->state_, problem_->goal(tmp_node->state_));
+                                                                                }
+            mlcore::State* next =
+                randomSuccessor(problem_, tmp_node->state_, a);
+            cumCost[i] = cumCost[i - 1] + problem_->cost(tmp_node->state_, a);
+            nodesRoll[i] = tmp_node;
+            actionsRoll[i] = a;
+            tmp_node = new UCTNode(next, tmp_node->depth_ + 1);
         }
+                                                                                dprint1("rollout-ended");
 
         for (int i = 1; i <= maxSteps; i++) {
-            mlcore::State* s = statesRoll[i];
+            dprint2("  ", i);
+            UCTNode* node = nodesRoll[i];
+                                                                                dprint2("  got node ", node->state_);
             mlcore::Action* a = actionsRoll[i];
-            double newq = counterSA_[s][a] * qvalues_[s][a] +
+                                                                                dprint2("  got action", (void *) a);
+            double newq = counters_node_action_[node][a] * qvalues_[node][a] +
                 cumCost[maxSteps] - cumCost[i - 1];
-            newq /= (counterSA_[s][a] + 1);
-            qvalues_[s][a] = newq;
-            counterS_[s]++;
-            counterSA_[s][a]++;
+                                                                                dprint1("  new-q step-1");
+            newq /= (counters_node_action_[node][a] + 1);
+                                                                                dprint1("  new-q computed");
+            qvalues_[node][a] = newq;
+            counters_node_[node]++;
+            counters_node_action_[node][a]++;
         }
+                                                                                dprint1("updates ended");
     }
-    return pickAction(s0, 0.0);
+                                                                                dprint1("done");
+    return pickAction(root, 0.0);
 }
 
 }

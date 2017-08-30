@@ -57,7 +57,7 @@ void setupRacetrack()
         cout << "Setting up racetrack " << trackName << endl;
     problem = new RacetrackProblem(trackName.c_str());
     ((RacetrackProblem*) problem)->pError(0.20);
-    ((RacetrackProblem*) problem)->pSlip(0.35);
+    ((RacetrackProblem*) problem)->pSlip(0.10);
     ((RacetrackProblem*) problem)->mds(-1);
     if (!flag_is_registered_with_value("heuristic") ||
             flag_value("heuristic") == "domain")
@@ -232,9 +232,17 @@ void initSolver()
         solver = new DeterministicSolver(problem,
                                          mlsolvers::det_most_likely,
                                          heuristic);
+    } else if (algorithm == "uct") {
+        int rollouts = 1000;
+        int cutoff = 50;
+        if (flag_is_registered_with_value("rollouts"))
+            rollouts = stoi(flag_value("rollouts"));
+        if (flag_is_registered_with_value("cutoff"))
+            cutoff = stoi(flag_value("cutoff"));
+        solver = new UCTSolver(problem, rollouts, cutoff);
     } else if (algorithm != "greedy") {
         cerr << "Unknown algorithm: " << algorithm << endl;
-        assert(false);
+        exit(-1);
     }
 }
 

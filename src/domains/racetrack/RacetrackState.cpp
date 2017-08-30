@@ -20,7 +20,7 @@ RacetrackState::RacetrackState(int x, int y, int vx, int vy,
 
 std::ostream& RacetrackState::print(std::ostream& os) const
 {
-    RacetrackProblem* rtp = (RacetrackProblem*) problem_;
+    RacetrackProblem* rtp = static_cast<RacetrackProblem *> (problem_);
     os << "(" << x_  << ", " << y_ << ", " << vx_ << ", " << vy_ << ", w";
     if (x_ >= 0) {
         if  (rtp->track()[x_][y_] == rtrack::wall)
@@ -37,7 +37,7 @@ mlcore::State& RacetrackState::operator=(const mlcore::State& rhs)
     if (this == &rhs)
         return *this;
 
-    RacetrackState* state = (RacetrackState*)  & rhs;
+    const RacetrackState* state = static_cast<const RacetrackState *> (&rhs);
     x_ = state->x_;
     y_ = state->y_;
     vx_ = state->vx_;
@@ -48,7 +48,7 @@ mlcore::State& RacetrackState::operator=(const mlcore::State& rhs)
 
 bool RacetrackState::operator==(const mlcore::State& rhs) const
 {
-    RacetrackState* state = (RacetrackState*)  & rhs;
+    const RacetrackState* state = static_cast<const RacetrackState *> (&rhs);
     return x_ == state->x_
             && y_ == state->y_
             && vx_ == state->vx_
@@ -56,11 +56,11 @@ bool RacetrackState::operator==(const mlcore::State& rhs) const
 }
 bool RacetrackState::equals(mlcore::State* other) const
 {
-    RacetrackState* state = (RacetrackState*) other;
+    RacetrackState* state = static_cast<RacetrackState *> (other);;
     return *this ==  *state;
 }
 
 int RacetrackState::hashValue() const
 {
-    return x_ + 31*(y_ + 31*(vx_ + 31*vy_));
+    return x_ + 31 * (y_ + 31 * (vx_ + 31 * vy_));
 }

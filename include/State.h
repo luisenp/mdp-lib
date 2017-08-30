@@ -70,9 +70,13 @@ public:
     /**
      * Common constructor. Used to initialize inherited variables.
      */
-    State() : bits_(0), cost_(mdplib::dead_end_cost + 1),
-              gValue_(mdplib::dead_end_cost + 1), hValue_(mdplib::dead_end_cost + 1),
-              bestAction_(nullptr), problem_(nullptr), deadEnd_(false)
+    State() : bits_(0),
+              cost_(mdplib::dead_end_cost + 1),
+              gValue_(mdplib::dead_end_cost + 1),
+              hValue_(mdplib::dead_end_cost + 1),
+              bestAction_(nullptr),
+              problem_(nullptr),
+              deadEnd_(false)
     { }
 
     virtual ~State() {}
@@ -249,7 +253,8 @@ public:
  typedef std::pair<State*, double> Successor;
 
 /**
- * Wrapper of the hash function for state objects (used to define StateSet below).
+ * Wrapper of the hash function for state objects
+ * (used to define StateSet below).
  */
 struct StateHash {
   size_t operator()(State* s) const {
@@ -258,7 +263,8 @@ struct StateHash {
 };
 
 /**
- * Wrapper of the equality operator for state objects (used to define StateSet below).
+ * Wrapper of the equality operator for state objects
+ * (used to define StateSet below).
  */
 struct StateEqual {
   bool operator() (State* s1, State* s2) const {

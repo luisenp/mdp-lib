@@ -7,38 +7,40 @@
 
 namespace mlcore
 {
-    std::ostream& operator<<(std::ostream& os, State* s)
-    {
-        return s->print(os);
-    }
 
-    double State::cost() const
-    {
-        if (cost_ > mdplib::dead_end_cost) {
-            if (problem_ == nullptr || problem_->heuristic() == nullptr)
-                return 0.0;
-            else
-                return problem_->heuristic()->cost(this);
-        }
-        return cost_;
-    }
+std::ostream& operator<<(std::ostream& os, State* s)
+{
+    return s->print(os);
+}
 
-    double State::gValue() const
-    {
-        if (gValue_ > mdplib::dead_end_cost)
+double State::cost() const
+{
+    if (cost_ > mdplib::dead_end_cost) {
+        if (problem_ == nullptr || problem_->heuristic() == nullptr)
             return 0.0;
-        return gValue_;
+        else
+            return problem_->heuristic()->cost(this);
     }
+    return cost_;
+}
 
-    double State::hValue() const
-    {
-        if (hValue_ > mdplib::dead_end_cost) {
-            if (problem_ == nullptr || problem_->heuristic() == nullptr)
-                return 0.0;
-            else
-                return problem_->heuristic()->cost(this);
-        }
-        return hValue_;
+double State::gValue() const
+{
+    if (gValue_ > mdplib::dead_end_cost)
+        return 0.0;
+    return gValue_;
+}
+
+double State::hValue() const
+{
+    if (hValue_ > mdplib::dead_end_cost) {
+        if (problem_ == nullptr || problem_->heuristic() == nullptr)
+            return 0.0;
+        else
+            return problem_->heuristic()->cost(this);
     }
+    return hValue_;
+}
+
 }
 

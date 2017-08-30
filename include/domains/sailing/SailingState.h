@@ -9,6 +9,7 @@ class SailingNoWindHeuristic;
 
 class SailingState : public mlcore::State
 {
+
 friend SailingNoWindHeuristic;
 
 private:
