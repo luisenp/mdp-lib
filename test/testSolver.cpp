@@ -55,10 +55,13 @@ void setupRacetrack()
     string trackName = flag_value("track");
     if (verbosity > 100)
         cout << "Setting up racetrack " << trackName << endl;
+    int mds = -1;
+    if (flag_is_registered_with_value("mds"))
+        mds = stoi(flag_value("mds"));
     problem = new RacetrackProblem(trackName.c_str());
     ((RacetrackProblem*) problem)->pError(0.20);
     ((RacetrackProblem*) problem)->pSlip(0.10);
-    ((RacetrackProblem*) problem)->mds(-1);
+    ((RacetrackProblem*) problem)->mds(mds);
     if (!flag_is_registered_with_value("heuristic") ||
             flag_value("heuristic") == "domain")
         heuristic = new RTrackDetHeuristic(trackName.c_str());
@@ -242,6 +245,7 @@ void initSolver()
             cutoff = stoi(flag_value("cutoff"));
         if (flag_is_registered_with_value("delta"))
             delta = stoi(flag_value("delta"));
+                                                                                dprint2("delta", delta);
         solver = new UCTSolver(problem, rollouts, cutoff, 0.0, true, delta);
     } else if (algorithm != "greedy") {
         cerr << "Unknown algorithm: " << algorithm << endl;

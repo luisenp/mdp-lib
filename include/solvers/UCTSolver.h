@@ -155,7 +155,8 @@ public:
               bool use_qvalues_for_c = true,
               int delta = 0) :
         problem_(problem), C_(C), max_rollouts_(max_rollouts),
-        cutoff_(cutoff), use_qvalues_for_c_(use_qvalues_for_c) { }
+        cutoff_(cutoff), use_qvalues_for_c_(use_qvalues_for_c),
+        delta_(delta) { }
 
     /**
      * Returns the Q-values estimated by the UCT algorithm.

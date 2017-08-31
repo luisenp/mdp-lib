@@ -15,6 +15,8 @@ mlcore::Action* UCTSolver::pickAction(UCTNode* node, double C)
                                                                                 dprint2("  pick action", node);
     for (auto action_and_qvalue : action_qvalues_[node]) {
         mlcore::Action* a = action_and_qvalue.first;
+        if (!problem_->applicable(node->state_, a))
+            continue;
         if (counters_node_action_[node][a] == 0) {  // unexplored action
             unexplored_actions.push_back(a);
             continue;
@@ -23,7 +25,7 @@ mlcore::Action* UCTSolver::pickAction(UCTNode* node, double C)
         if (use_qvalues_for_c_)
             C = action_and_qvalue.second;
         double ucb1 = ucb1Cost(node, a, C);
-                                                                                dprint2("    ucb1cost=", ucb1);
+                                                                                dprint2("    ucb1cost =", ucb1);
         if (ucb1 < best) {
             bestAction = a;
             best = ucb1;
@@ -40,9 +42,9 @@ mlcore::Action* UCTSolver::pickAction(UCTNode* node, double C)
 
 double UCTSolver::ucb1Cost(UCTNode* node, mlcore::Action* a, double C)
 {
-                                                                                dprint2("      counters_node=", counters_node_[node]);
-                                                                                dprint2("      counters_node_action=", counters_node_action_[node][a]);
-                                                                                dprint2("      q-value=", action_qvalues_[node][a]);
+                                                                                dprint2("      counters_node =", counters_node_[node]);
+                                                                                dprint2("      counters_node_action =", counters_node_action_[node][a]);
+                                                                                dprint2("      q-value =", action_qvalues_[node][a]);
     double cost = action_qvalues_[node][a] - C
         * std::sqrt(2 * std::log(counters_node_[node])
                     / counters_node_action_[node][a]);
@@ -62,13 +64,12 @@ mlcore::Action* UCTSolver::solve(mlcore::State* s0)
             bool first_time_seen = visited_.insert(tmp_node).second;
             if (first_time_seen) {
                 counters_node_[tmp_node] = 0;
-                                                                                dprint3("nodes",
-                                                                                        counters_node_.size(),
-                                                                                        tmp_node);
                 for (mlcore::Action* a : problem_->actions()) {
+                    counters_node_action_[tmp_node] = mlcore::ActionIntMap();
                     if (!problem_->applicable(tmp_node->state_, a))
                         continue;
                     counters_node_action_[tmp_node][a] = delta_;
+                    counters_node_[tmp_node] += delta_; // not sure about this
                     action_qvalues_[tmp_node][a] =
                         qvalue(problem_, tmp_node->state_, a);
                 }
@@ -92,6 +93,9 @@ mlcore::Action* UCTSolver::solve(mlcore::State* s0)
                 * action_qvalues_[node][a]
                 + cumCost[maxSteps] - cumCost[i - 1];
             newq /= (counters_node_action_[node][a] + 1);
+                                                                                dprint5("update-qvalue", node, a,
+                                                                                        newq,
+                                                                                        cumCost[maxSteps] - cumCost[i - 1]);
             action_qvalues_[node][a] = newq;
             counters_node_[node]++;
             counters_node_action_[node][a]++;
