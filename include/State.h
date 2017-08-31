@@ -2,10 +2,10 @@
 #define MDPLIB_STATE_H
 
 #include <iostream>
-#include <string>
 #include <list>
-#include <unordered_set>
+#include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "Action.h"
 #include "MDPLib.h"

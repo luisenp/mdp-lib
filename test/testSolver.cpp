@@ -173,8 +173,8 @@ bool mustReplan(State* s, int plausTrial) {
           }
       }
   }
-  if (algorithm == "ssipp") {
-    return true;
+  if (algorithm == "ssipp" || algorithm == "uct") {
+        return true;
   }
   return false;
 }
@@ -339,8 +339,9 @@ int main(int argc, char* args[])
                 endTime = clock();
                 expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
                 numDecisions++;
+            } else {
+                a = greedyAction(problem, tmp);
             }
-            a = greedyAction(problem, tmp);
 
             if (verbosity >= 1000) {
                 cout << tmp << " " << a << " " << endl;

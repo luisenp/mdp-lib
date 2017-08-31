@@ -1,6 +1,7 @@
 #ifndef MDPLIB_UCTSOLVER_H
 #define MDPLIB_UCTSOLVER_H
 
+#include <iostream>
 #include <unordered_map>
 
 #include "../Action.h"
@@ -28,6 +29,12 @@ public:
 
     // Destructor. Nothing to do here.
     ~UCTNode() {}
+
+    friend std::ostream& operator<<(std::ostream& os, UCTNode* node)
+    {
+        os << "(" << node->state_ << ", " << node->depth_ << ")";
+        return os;
+    }
 
     bool operator==(const UCTNode& rhs) const
     {

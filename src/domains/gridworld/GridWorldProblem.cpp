@@ -35,7 +35,6 @@ GridWorldProblem::GridWorldProblem(const char* filename,
                                    double holeCost,
                                    bool allDirections)
 {
-    mdplib_debug = true;
     std::ifstream myfile (filename);
 
     goals_ = new PairDoubleMap();
@@ -142,7 +141,7 @@ GridWorldProblem::transition(mlcore::State *s, mlcore::Action *a)
     double probForward = 0.8;
     int numSuccessors = allDirections_ ? 3 : 2;
     double probSides = 0.2 / numSuccessors;
-    if (action->dir() == gridworld::UP) {
+    if (action->dir() == gridworld::DOWN) {
         addSuccessor(state, successors, height_ - 1, state->y(),
                      state->x(), state->y() + 1, probForward);
 
@@ -156,7 +155,7 @@ GridWorldProblem::transition(mlcore::State *s, mlcore::Action *a)
             addSuccessor(state, successors, state->y(), 0,
                          state->x(), state->y() - 1, probSides);
         }
-    } else if (action->dir() == gridworld::DOWN) {
+    } else if (action->dir() == gridworld::UP) {
         addSuccessor(state, successors, state->y(), 0,
                      state->x(), state->y() - 1, probForward);
 
