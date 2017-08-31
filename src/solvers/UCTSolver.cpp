@@ -65,7 +65,6 @@ mlcore::Action* UCTSolver::solve(mlcore::State* s0)
             if (first_time_seen) {
                 counters_node_[tmp_node] = 0;
                 for (mlcore::Action* a : problem_->actions()) {
-                    counters_node_action_[tmp_node] = mlcore::ActionIntMap();
                     if (!problem_->applicable(tmp_node->state_, a))
                         continue;
                     counters_node_action_[tmp_node][a] = delta_;
