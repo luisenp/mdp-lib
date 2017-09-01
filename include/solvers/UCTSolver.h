@@ -109,7 +109,9 @@ private:
     // Maximum depth for the rollouts.
     int cutoff_;
 
-    // If true, C will always be set to the current Q(s,a,d).
+    // If true, C will always be set relative to the current Q(s,a,d).
+    // The actual value will be C = Q(s,a,d) / sqrt(1 + |As|), where As
+    // is the number of applicable actions for state s.
     bool use_qvalues_for_c_;
 
     // The number of "virtual rollouts" for Q-value initialization,
