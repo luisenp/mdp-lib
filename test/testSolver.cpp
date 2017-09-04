@@ -239,14 +239,22 @@ void initSolver()
         int rollouts = 1000;
         int cutoff = 50;
         int delta = 5;
+        double C = 0.0;
+        bool use_qvalues_for_c = true;
         if (flag_is_registered_with_value("rollouts"))
             rollouts = stoi(flag_value("rollouts"));
         if (flag_is_registered_with_value("cutoff"))
             cutoff = stoi(flag_value("cutoff"));
         if (flag_is_registered_with_value("delta"))
             delta = stoi(flag_value("delta"));
-                                                                                dprint2("delta", delta);
-        solver = new UCTSolver(problem, rollouts, cutoff, 0.0, true, delta);
+        if (flag_is_registered("cexp")) {
+            C = stod(flag_value("cexp"));
+            use_qvalues_for_c = false;
+        }
+                                                                                dprint4("delta", delta, "C", C);
+        solver = new UCTSolver(problem,
+                               rollouts, cutoff, C,
+                               use_qvalues_for_c, delta);
     } else if (algorithm != "greedy") {
         cerr << "Unknown algorithm: " << algorithm << endl;
         exit(-1);
@@ -348,7 +356,7 @@ int main(int argc, char* args[])
             }
 
             if (verbosity >= 1000) {
-                cout << tmp << " " << a << " " << endl;
+                cout << "State/Action: " << tmp << " " << a << " " << endl;
             }
 
             costTrial += problem->cost(tmp, a);
