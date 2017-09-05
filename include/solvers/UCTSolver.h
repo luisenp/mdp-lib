@@ -109,6 +109,13 @@ private:
     // Maximum depth for the rollouts.
     int cutoff_;
 
+    // The depth used for the root node.
+    int start_depth_ ;
+
+    // If true, the start depth of the search and the cutoff are increased
+    // by one after each call to |solve|.
+    bool auto_adjust_depth_;
+
     // If true, C will always be set relative to the current Q(s,a,d).
     // The actual value will be C = Q(s,a,d) / sqrt(1 + |As|), where As
     // is the number of applicable actions for state s.
@@ -155,10 +162,14 @@ public:
               int cutoff,
               double C = 0.0,
               bool use_qvalues_for_c = true,
-              int delta = 0) :
+              int delta = 0,
+              bool auto_adjust_depth = false) :
         problem_(problem), max_rollouts_(max_rollouts),
         cutoff_(cutoff), C_(C), use_qvalues_for_c_(use_qvalues_for_c),
-        delta_(delta) { }
+        delta_(delta), auto_adjust_depth_(auto_adjust_depth)
+    {
+        start_depth_ = 0;
+    }
 
     /**
      * Returns the Q-values estimated by the UCT algorithm.
@@ -174,19 +185,37 @@ public:
     }
 
     /**
-    * Sets the maximum number of sample trajectories to gather.
-    *
-    * @param max_rollouts The maximum number of trajectories to sample.
-    */
+     * Sets the maximum number of sample trajectories to gather.
+     *
+     * @param max_rollouts The maximum number of trajectories to sample.
+     */
     void setmax_rollouts(int max_rollouts) { max_rollouts_ = max_rollouts; }
 
     /**
-    * Sets the cutoff for the algorithm (i.e., the maximum depth of
-    * each rollout).
-    *
-    * @param cutoff The maximum depth of the rollouts.
-    */
+     * Sets the cutoff for the algorithm (i.e., the maximum depth of
+     * each rollout).
+     *
+     * @param cutoff The maximum depth of the rollouts.
+     */
     void setCutoff(int cutoff) { cutoff_ = cutoff; }
+
+    /**
+     * Sets the start depth for the search to the given value.
+     */
+    void setStartDepth(int depth) { start_depth_ = depth; }
+
+    /**
+     * Resets counters and resets the cutoff and start depth to original value.
+     */
+    void reset()
+    {
+        counters_node_.clear();
+        counters_node_action_.clear();
+        action_qvalues_.clear();
+        visited_.clear();
+        cutoff_ -= start_depth_;
+        start_depth_ = 0;
+    }
 
     /**
      * Computes the UCB1 cost of the given node and action.

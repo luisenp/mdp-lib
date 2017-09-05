@@ -254,7 +254,8 @@ void initSolver()
                                                                                 dprint4("delta", delta, "C", C);
         solver = new UCTSolver(problem,
                                rollouts, cutoff, C,
-                               use_qvalues_for_c, delta);
+                               use_qvalues_for_c, delta,
+                               true);
     } else if (algorithm != "greedy") {
         cerr << "Unknown algorithm: " << algorithm << endl;
         exit(-1);
@@ -323,8 +324,11 @@ int main(int argc, char* args[])
             for (State* s : problem->states())
                 s->reset();
             startTime = clock();
+            if (algorithm == "uct") {
+                static_cast<UCTSolver*>(solver)->reset();
             if (algorithm != "greedy")
                 solver->solve(problem->initialState());
+            }
             endTime = clock();
             expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
             numDecisions++;

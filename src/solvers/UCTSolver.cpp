@@ -59,7 +59,7 @@ double UCTSolver::ucb1Cost(UCTNode* node, mlcore::Action* a, double C)
 
 mlcore::Action* UCTSolver::solve(mlcore::State* s0)
 {
-    UCTNode* root = new UCTNode(s0, 0);
+    UCTNode* root = new UCTNode(s0, start_depth_);
     for (int r = 0; r < max_rollouts_; r++) {
         UCTNode* tmp_node = root;
         std::vector<int> cumCost(cutoff_ + 1);
@@ -109,6 +109,11 @@ mlcore::Action* UCTSolver::solve(mlcore::State* s0)
             counters_node_action_[node][a]++;
         }
                                                                                 dprint1("**************************************");
+    }
+
+    if (auto_adjust_depth_) {
+        cutoff_++;
+        start_depth_++;
     }
     return pickAction(root, 0.0);
 }
