@@ -1,10 +1,11 @@
 #include "../../include/MDPLib.h"
 #include "../../include/State.h"
 
+#include "../../include/solvers/SSiPPSolver.h"
+
 #include "../../include/domains/WrapperProblem.h"
 
 #include "../../include/solvers/Solver.h"
-#include "../../include/solvers/SSiPPSolver.h"
 #include "../../include/solvers/VISolver.h"
 
 
