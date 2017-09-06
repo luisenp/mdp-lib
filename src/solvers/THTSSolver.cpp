@@ -42,7 +42,7 @@ DecisionNode* ChanceNode::getDecisionNodeForState(mlcore::State* state) {
 
 void ChanceNode::visit(THTSSolver* solver, mlcore::Problem* problem) {
     this->increaseSelectionCounter();
-    if (solver->continueTrial() && this->depth() < solver->maxDeptAh()) {
+    if (solver->continueTrial() && this->depth() < solver->maxDepth()) {
         mlcore::State* s = solver->selectOutcome(this);
         DecisionNode* node = getDecisionNodeForState(s);
         node->visit(solver, problem);
@@ -113,11 +113,13 @@ bool THTSSolver::continueTrial() {
 }
 
 mlcore::Action* THTSSolver::selectAction(DecisionNode* node) {
-    return problem->actions().front();  // TODO: this is a placeholder
+    return problem_->actions().front();  // TODO: this is a placeholder
 }
 
 mlcore::State* THTSSolver::selectOutcome(ChanceNode* node) {
-    return randomSuccessor(problem, action_);  // TODO: this is a placeholder
+    // TODO: this is a placeholder
+    mlcore::State* state = static_cast<DecisionNode*>(node->parent())->state();
+    return randomSuccessor(problem_, state, node->action());
 }
 
 } // namespace mlsolvers

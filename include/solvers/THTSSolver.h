@@ -86,6 +86,9 @@ private:
     // the given state.
     void updateSuccessorIndexMap(mlcore::State* s);
 
+    // Returns the decision node associated with this state.
+    DecisionNode* getDecisionNodeForState(mlcore::State* s);
+
 public:
     // Creates a chance node for the given action at the given depth.
     // The counters and action value are initialized to 0.
@@ -125,6 +128,9 @@ private:
     // the addition of the given action.
     void updateSuccessorIndexMap(mlcore::Action* s);
 
+    // Returns the chance node associated with this action.
+    ChanceNode* getChanceNodeForAction(mlcore::Action* action);
+
 public:
     // Creates a decision node for the given state at the given depth.
     // If |parent| is nullptr, then it's expected that depth = 0 (root node).
@@ -134,8 +140,7 @@ public:
 
     std::vector<ChanceNode*>& successors() { return successors_; }
 
-    // Returns the chance node corresponding to the given action.
-    ChanceNode* getChanceNodeForAction(mlcore::Action* action);
+    mlcore::State* state() const { return state_; }
 
     // Overrides method in THTSNode.
     virtual void visit(THTSSolver* solver, mlcore::Problem* problem);
