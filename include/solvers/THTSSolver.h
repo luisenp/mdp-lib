@@ -69,17 +69,24 @@ class DecisionNode : public THTSNode
 private:
     double state_value_;
 public:
+    DecisionNode(mlcore::Problem* problem, mlcore::State* state);
 };
 
 
+// A Trial-based Heuristic Tree Search solver.
+// See http://ai.cs.unibas.ch/papers/keller-dissertation.pdf.
 class THTSSolver : public Solver
 {
 private:
     mlcore::Problem* problem_;
 
+    int num_trials_;
+
 public:
-    THTSSolver();
-    virtual ~THTSSolver();
+    THTSSolver(mlcore::Problem* problem, int num_trials) :
+        problem_(problem), num_trials_(num_trials) {}
+
+    virtual ~THTSSolver() {}
 
     /**
      * Overrides method from Solver.
