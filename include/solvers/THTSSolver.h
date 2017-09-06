@@ -1,22 +1,27 @@
 #ifndef MDPLIB_THTSSOLVER_H
 #define MDPLIB_THTSSOLVER_H
 
+#include <vector>
+
+#include "../Action.h"
 #include "../Problem.h"
+#include "../State.h"
 
 #include "Solver.h"
 
-namespace
+namespace mlsolvers
 {
 
+class ChanceNode;
+class DecisionNode;
+class THTSSolver;
+
 // A node in the search tree.
-class THTSNode
-{
+class THTSNode {
+
 protected:
     // The parent node.
     THTSNode* parent_;
-
-    // The set of successor nodes.
-    std::vector<THTSNode*> successors_;
 
     // The depth at which this node is found.
     int depth_;
@@ -30,67 +35,159 @@ protected:
     // The counter of how many times this node has been visited.
     int selection_counter_;
 
+    void initialize() {
+        backup_counter_ = 0;
+        selection_counter_ = 0;
+        solved_ = false;
+    }
+
 public:
-    THTSNode* parent() { return parent_; }
+    THTSNode* parent() const { return parent_; }
 
-    std::vector<THTSNode*>& successors() { return successors_; }
+    int depth() const { return depth_; }
 
-    int depth() { return depth_; }
+    bool solved() const { return solved_; }
 
-    bool solved() { return solved_; }
+    int backupCounter() const { return backup_counter_; }
 
-    int backup_counter() { return backup_counter_; }
+    int selectionCounter() const { return selection_counter_; }
 
-    int selection_counter() { return selection_counter_; }
+    void increaseBackupCounter() { backup_counter_++; }
 
-    void increase_backup_counter() { backup_counter_++; }
+    void increaseSelectionCounter() { selection_counter_++; }
 
-    void increase_selection_counter() { selection_counter_++; }
+    // Visits this node and performs computation on it, expanding
+    // any successors if necessary.
+    // The given problem is used to access the transition and reward
+    // functions of the MDP.
+    // The given solver is used to access information about the trials.
+    virtual void visit(THTSSolver* solver, mlcore::Problem* problem) =0;
+
+    // Performs a backup of the node.
+    virtual void backup() =0;
 };
 
 // A chance node in the search tree, representing a state-action pair.
-class ChanceNode : public THTSNode
-{
+class ChanceNode : public THTSNode {
 private:
+    // The action that this node corresponds to.
+    mlcore::Action* action_;
+
+    // The value estimate of the state-action pair represented by this node.
     double action_value_;
 
+    // The set of successors that have been expanded for this node.
     std::vector<DecisionNode*> explicated_successors_;
-public:
 
-    std::vector<DecisionNode*>& explicated_successors()
-    {
+    // Maps a state to an index in the explicated successors array.
+    mlcore::StateIntMap state_successor_index_map_;
+
+    // Updates the map from states to successor indices with the addition of
+    // the given state.
+    void updateSuccessorIndexMap(mlcore::State* s);
+
+public:
+    // Creates a chance node for the given action at the given depth.
+    // The counters and action value are initialized to 0.
+    // The solved label is set to false.
+    // The parent can't be a nullptr.
+    ChanceNode(mlcore::Action* action, int depth, DecisionNode* parent);
+
+    mlcore::Action* action() const { return action_; }
+
+    std::vector<DecisionNode*>& explicatedSuccessors() {
         return explicated_successors_;
     }
+
+    // Overrides method in THTSNode.
+    virtual void visit(THTSSolver* solver, mlcore::Problem* problem);
+
+    // Overrides method in THTSNode.
+    virtual void backup();
 };
 
 // A decision node in the search tree, representing a state.
-class DecisionNode : public THTSNode
-{
+class DecisionNode : public THTSNode {
 private:
+    // The state that this node corresponds to.
+    mlcore::State* state_;
+
+    // The value estimate of the state represented by this node.
     double state_value_;
+
+    // Maps an action to an index in the chance node successors array.
+    mlcore::ActionIntMap action_chance_node_index_map_;
+
+    // The set of successor nodes.
+    std::vector<ChanceNode*> successors_;
+
+    // Updates the map from actions to successor chance node indices with
+    // the addition of the given action.
+    void updateSuccessorIndexMap(mlcore::Action* s);
+
 public:
-    DecisionNode(mlcore::Problem* problem, mlcore::State* state);
+    // Creates a decision node for the given state at the given depth.
+    // If |parent| is nullptr, then it's expected that depth = 0 (root node).
+    // The counters and action value are initialized to 0. The solved label is
+    // set to false.
+    DecisionNode(mlcore::State* state, int depth, ChanceNode* parent = nullptr);
+
+    std::vector<ChanceNode*>& successors() { return successors_; }
+
+    // Returns the chance node corresponding to the given action.
+    ChanceNode* getChanceNodeForAction(mlcore::Action* action);
+
+    // Overrides method in THTSNode.
+    virtual void visit(THTSSolver* solver, mlcore::Problem* problem);
+
+    // Overrides method in THTSNode.
+    virtual void backup();
 };
 
 
 // A Trial-based Heuristic Tree Search solver.
 // See http://ai.cs.unibas.ch/papers/keller-dissertation.pdf.
-class THTSSolver : public Solver
-{
+class THTSSolver : public Solver {
 private:
+    // The problem describing the MDP to solve.
     mlcore::Problem* problem_;
 
+    // The number of trials to perform.
     int num_trials_;
 
+    // The maximum depth for the search.
+    int max_depth_;
+
+    // The maximum number of nodes expanded per trial.
+    int max_nodes_expanded_per_trial_;
+
+    // Maintains the number of nodes expanded in the current trial.
+    int num_nodes_expanded_trial_;
+
 public:
-    THTSSolver(mlcore::Problem* problem, int num_trials) :
-        problem_(problem), num_trials_(num_trials) {}
+    THTSSolver(mlcore::Problem* problem,
+               int num_trials,
+               int max_depth,
+               int max_nodes_expanded_per_trial) :
+        problem_(problem), num_trials_(num_trials), max_depth_(max_depth),
+        max_nodes_expanded_per_trial_(max_nodes_expanded_per_trial) {
+        num_nodes_expanded_trial_ = 0;
+    }
 
     virtual ~THTSSolver() {}
 
-    /**
-     * Overrides method from Solver.
-     */
+    // Whether or not the trial must be continued.
+    bool continueTrial();
+
+    // Selects an action for the given decision node.
+    mlcore::Action* selectAction(DecisionNode* node);
+
+    // Selects an outcome for the given chance node.
+    mlcore::State* selectOutcome(ChanceNode* node);
+
+    int maxDepth() const { return max_depth_; }
+
+    // Overrides method from Solver.
     virtual mlcore::Action* solve(mlcore::State* s0);
 };
 

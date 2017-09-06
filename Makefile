@@ -77,7 +77,7 @@ ALL_H = $(I_H) $(SOLV_H) $(MOSOLV_H) $(DOM_H) $(UTIL_H)
 ALL_CPP = $(DOM_CPP) $(SOLV_CPP) $(MOSOLV_CPP) $(UTIL_CPP)
 
 # Libraries
-LIBS = lib/libmdp.a lib/libmdp_domains.a -Llib
+LIBS = lib/mdplib.a lib/mdplib_domains.a -Llib
 LIBS_GUROBI = $(LIBS) -lgurobi60 -Llib
 
 #########################################################################
@@ -85,13 +85,13 @@ LIBS_GUROBI = $(LIBS) -lgurobi60 -Llib
 #########################################################################
 
 # Compiles the core MDP-LIB library #
-libmdp: lib/libmdp.a
-lib/libmdp.a: $(OD)/core.a $(OD)/solvers.a
+mdplib: lib/mdplib.a
+lib/mdplib.a: $(OD)/core.a $(OD)/solvers.a
 	make $(OD)/core.a
 	make $(OD)/solvers.a
-	ar rvs libmdp.a $(OD)/core/*.o $(OD)/solvers/*.o
+	ar rvs mdplib.a $(OD)/core/*.o $(OD)/solvers/*.o
 	mkdir -p lib
-	mv libmdp.a lib
+	mv mdplib.a lib
 
 # Compiles the multi-objective solvers
 $(OD)/mo-solvers.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_H) $(MOSOLV_H) $(MOSOLV_CPP)
@@ -101,7 +101,7 @@ $(OD)/mo-solvers.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_H) 
 	mkdir -p $(OD_SOLV_MOBJ)
 	mv *.o $(OD_SOLV_MOBJ)
 	mkdir -p lib
-	ar rvs lib/libmdp_mosolvers.a $(OD_SOLV_MOBJ)/*.o
+	ar rvs lib/mdplib_mosolvers.a $(OD_SOLV_MOBJ)/*.o
 
 # Compiles the base (single-objective) solvers
 $(OD)/solvers.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_H) $(ID_DOMAINS)/*.h $(SD_DOMAINS)/*.cpp
@@ -126,10 +126,10 @@ mobj: $(ALL_CPP) $(ALL_H)
 	make $(OD_MOBJ_DOMAINS)/mo-racetrack.a
 	make $(OD_MOBJ_DOMAINS)/mo-gw.a
 	make $(OD_MOBJ_DOMAINS)/rawfile.a
-	$(CC) $(CFLAGS) $(INCLUDE) -o testlexirace $(TD)/testLexiRace.cpp $(OD_MOBJ_DOMAINS)/*.o lib/libmdp_mosolvers.a $(LIBS_GUROBI)
-	$(CC) $(CFLAGS) $(INCLUDE) -o testlexigw $(TD)/testLexiGW.cpp $(OD_MOBJ_DOMAINS)/*.o lib/libmdp_mosolvers.a $(LIBS_GUROBI)
-	$(CC) $(CFLAGS) $(INCLUDE) -o testlexiraw $(TD)/testLexiRaw.cpp $(OD_MOBJ_DOMAINS)/*.o lib/libmdp_mosolvers.a $(LIBS_GUROBI)
-	$(CC) $(CFLAGS) $(INCLUDE) -o testairplane $(TD)/testAirplane.cpp $(OD_MOBJ_DOMAINS)/*.o lib/libmdp_mosolvers.a $(LIBS_GUROBI)
+	$(CC) $(CFLAGS) $(INCLUDE) -o testlexirace $(TD)/testLexiRace.cpp $(OD_MOBJ_DOMAINS)/*.o lib/mdplib_mosolvers.a $(LIBS_GUROBI)
+	$(CC) $(CFLAGS) $(INCLUDE) -o testlexigw $(TD)/testLexiGW.cpp $(OD_MOBJ_DOMAINS)/*.o lib/mdplib_mosolvers.a $(LIBS_GUROBI)
+	$(CC) $(CFLAGS) $(INCLUDE) -o testlexiraw $(TD)/testLexiRaw.cpp $(OD_MOBJ_DOMAINS)/*.o lib/mdplib_mosolvers.a $(LIBS_GUROBI)
+	$(CC) $(CFLAGS) $(INCLUDE) -o testairplane $(TD)/testAirplane.cpp $(OD_MOBJ_DOMAINS)/*.o lib/mdplib_mosolvers.a $(LIBS_GUROBI)
 
 # Compiles the airplane domain #
 $(OD_MOBJ_DOMAINS)/airplane.a: $(ID_MOBJ_DOMAINS)/airplane/*.h $(SD_MOBJ_DOMAINS)/airplane/*.cpp
@@ -177,7 +177,7 @@ conc: $(ALL_CPP) $(ALL_H)
 	rm test/*.o
 
 # Compiles the Racetrack domain test program #
-race: $(I_H) $(RACE_H) $(RACE_CPP) $(S_CPP) libmdp
+race: $(I_H) $(RACE_H) $(RACE_CPP) $(S_CPP) mdplib
 	$(CC) $(CFLAGS) -I$(ID_RACE) -I$(ID) -c $(RACE_CPP)
 	mkdir -p test
 	mv *.o test/
@@ -186,7 +186,7 @@ race: $(I_H) $(RACE_H) $(RACE_CPP) $(S_CPP) libmdp
 	rm test/*.o
 
 # Compiles the Sailing domain test program #
-sail: $(I_H) $(SAIL_H) $(SAIL_CPP) $(S_CPP) libmdp
+sail: $(I_H) $(SAIL_H) $(SAIL_CPP) $(S_CPP) mdplib
 	$(CC) $(CFLAGS) -I$(ID_SAIL) -I$(ID) -c $(SAIL_CPP)
 	mkdir -p test
 	mv *.o test/
@@ -195,7 +195,7 @@ sail: $(I_H) $(SAIL_H) $(SAIL_CPP) $(S_CPP) libmdp
 	rm test/*.o
 
 # Compiles the Canadian Traveler Problem domain test program #
-ctp: $(CTP_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(CTP_H) libmdp
+ctp: $(CTP_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(CTP_H) mdplib
 	$(CC) $(CFLAGS) -I$(ID_CTP) $(INCLUDE_CORE) -c $(CTP_CPP)
 	mkdir -p test
 	mv *.o test/
@@ -204,7 +204,7 @@ ctp: $(CTP_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(CTP_H) libmdp
 	rm test/*.o
 
 # Compiles the Gridworld domain test program #
-gw: $(GW_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(GW_H) libmdp
+gw: $(GW_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(GW_H) mdplib
 	$(CC) $(CFLAGS) -I$(ID_GW) -I$(ID) -I$(ID_SOLV) -c $(GW_CPP)
 	mkdir -p test
 	mv *.o test/
@@ -213,7 +213,7 @@ gw: $(GW_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(GW_H) libmdp
 	rm test/*.o
 
 # Compiles a test program for a simple binary tree domain  #
-b2t: $(BT_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(BT_H) libmdp
+b2t: $(BT_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(BT_H) mdplib
 	$(CC) $(CFLAGS) -I$(ID_BT) $(INCLUDE_CORE) -c $(BT_CPP)
 	mkdir -p test
 	mv *.o test/
@@ -221,14 +221,14 @@ b2t: $(BT_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(BT_H) libmdp
 	  $(TD)/testB2T.cpp $(TD)/*.o $(LIBS)
 	rm test/*.o
 
-domains: lib/libmdp_domains.a
-lib/libmdp_domains.a: lib/libmdp.a $(DOM_H) $(DOM_CPP)
+domains: lib/mdplib_domains.a
+lib/mdplib_domains.a: lib/mdplib.a $(DOM_H) $(DOM_CPP)
 	$(CC) $(CFLAGS) $(INCLUDE) -c $(DOM_CPP)
 	mkdir -p $(OD_DOMAINS)
 	mv *.o $(OD_DOMAINS)
-	ar rvs lib/libmdp_domains.a $(OD_DOMAINS)/*.o
+	ar rvs lib/mdplib_domains.a $(OD_DOMAINS)/*.o
 
-testsolver.out: lib/libmdp.a domains
+testsolver.out: lib/mdplib.a domains
 	$(CC) $(CFLAGS) $(INCLUDE) -o testsolver.out $(TD)/testSolver.cpp $(LIBS)
 
 # Compiles the mini-gpt library
@@ -239,54 +239,54 @@ lib/libminigpt.a: include/ppddl/mini-gpt/*
 
 # Compiles the PPDDL library
 ppddl: planserv
-planserv: lib/libmdp.a src/ppddl/*.cpp include/ppddl/*.h \
+planserv: lib/mdplib.a src/ppddl/*.cpp include/ppddl/*.h \
 lib/libminigpt.a test/testPPDDL.cpp test/testClient.cpp test/planningServer.cpp
 	$(CC) $(CFLAGS) -Iinclude -Iinclude/ppddl -Include/ppddl/mini-gpt -I$(ID_SOLV) -c src/ppddl/*.cpp
 	mkdir -p $(TD)
-	ar rvs lib/libmdp_ppddl.a *.o
+	ar rvs lib/mdplib_ppddl.a *.o
 	mkdir -p $(OD_PPDDL)
 	mv *.o $(OD_PPDDL)
 	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) $(INCLUDE_PPDDL) \
 	  -o testppddl.out $(TD)/testPPDDL.cpp include/ppddl/mini-gpt/heuristics.cc \
-	  -Llib lib/libmdp.a lib/libminigpt.a lib/libmdp_ppddl.a
+	  -Llib lib/mdplib.a lib/libminigpt.a lib/mdplib_ppddl.a
 	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) $(INCLUDE_PPDDL) \
 	  -o testclient $(TD)/testClient.cpp include/ppddl/mini-gpt/heuristics.cc \
-	  -Llib lib/libmdp.a lib/libminigpt.a lib/libmdp_ppddl.a -lsocket -L/usr/lib/happycoders
+	  -Llib lib/mdplib.a lib/libminigpt.a lib/mdplib_ppddl.a -lsocket -L/usr/lib/happycoders
 	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) $(INCLUDE_PPDDL) \
 	  -o planserv $(TD)/planningServer.cpp include/ppddl/mini-gpt/heuristics.cc \
-	  -Llib lib/libmdp.a lib/libminigpt.a lib/libmdp_ppddl.a -lsocket -L/usr/lib/happycoders
+	  -Llib lib/mdplib.a lib/libminigpt.a lib/mdplib_ppddl.a -lsocket -L/usr/lib/happycoders
 
 # Compiles the reduced model code
-reduced: lib/libmdp_reduced.a
-lib/libmdp_reduced.a: lib/libmdp.a domains ppddl $(SD_REDUCED)/*.cpp $(ID_REDUCED)/*.h
+reduced: lib/mdplib_reduced.a
+lib/mdplib_reduced.a: lib/mdplib.a domains ppddl $(SD_REDUCED)/*.cpp $(ID_REDUCED)/*.h
 	$(CC) $(CFLAGS) -Iinclude -I$(ID_REDUCED) -c $(SD_REDUCED)/*.cpp
 	mkdir -p $(TD)
-	ar rvs lib/libmdp_reduced.a *.o
+	ar rvs lib/mdplib_reduced.a *.o
 	mkdir -p $(OD_REDUCED)
 	mv *.o $(OD_REDUCED)
 	$(CC) $(CFLAGS) -I$(ID_REDUCED) $(INCLUDE_CORE) $(INCLUDE_PPDDL) \
 	  -o testreduced.out $(TD)/reduced/testReduced.cpp $(OD_DOMAINS)/*.o \
       $(ID_PPDDL)/mini-gpt/heuristics.cc \
       $(SD)/Action.cpp \
-      $(LIBS) lib/libminigpt.a lib/libmdp_reduced.a lib/libmdp_ppddl.a
+      $(LIBS) lib/libminigpt.a lib/mdplib_reduced.a lib/mdplib_ppddl.a
 #	$(CC) $(CFLAGS) -I$(ID_REDUCED) $(INCLUDE_CORE) $(INCLUDE_PPDDL) \
 #      -o testReducedFF.out $(TD)/reduced/testReducedFF.cpp $(OD_DOMAINS)/*.o \
 #      $(SD_SOLV)/LAOStarSolver.cpp \
 #      $(SD)/Action.cpp \
 #      $(ID_PPDDL)/mini-gpt/heuristics.cc \
-#      $(LIBS) lib/libminigpt.a lib/libmdp_reduced.a lib/libmdp_ppddl.a
+#      $(LIBS) lib/libminigpt.a lib/mdplib_reduced.a lib/mdplib_ppddl.a
 	$(CC) $(CFLAGS) -I$(ID_REDUCED) $(INCLUDE_CORE) $(INCLUDE_PPDDL) \
       -o planserv_red.out $(TD)/reduced/planningServer.cpp $(OD_DOMAINS)/*.o \
       $(SD_SOLV)/LAOStarSolver.cpp \
       $(SD)/Action.cpp \
       $(ID_PPDDL)/mini-gpt/heuristics.cc \
-      $(LIBS) lib/libminigpt.a lib/libmdp_reduced.a lib/libmdp_ppddl.a
+      $(LIBS) lib/libminigpt.a lib/mdplib_reduced.a lib/mdplib_ppddl.a
 #	$(CC) $(CFLAGS) -I$(ID_REDUCED) $(INCLUDE_CORE) $(INCLUDE_PPDDL) \
 #      -o testrff.out $(TD)/testRFF.cpp $(OD_DOMAINS)/*.o \
 #      $(SD_SOLV)/LAOStarSolver.cpp \
 #      $(SD)/Action.cpp \
 #      $(ID_PPDDL)/mini-gpt/heuristics.cc \
-#      $(LIBS) lib/libminigpt.a lib/libmdp_reduced.a lib/libmdp_ppddl.a
+#      $(LIBS) lib/libminigpt.a lib/mdplib_reduced.a lib/mdplib_ppddl.a
 
 .PHONY: clean
 clean:
@@ -302,4 +302,4 @@ clean:
 	rm -f $(OD)/solvers/*.a
 	rm -f $(OD)/solvers/mobj/*
 	rm -f $(ID_PPDDL)/mini-gpt/*.o
-	rm -f lib/libmdp*.a
+	rm -f lib/mdplib*.a
