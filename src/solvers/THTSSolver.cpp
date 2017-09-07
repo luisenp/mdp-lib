@@ -117,7 +117,6 @@ mlcore::Action* THTSSolver::selectAction(DecisionNode* node) {
 }
 
 mlcore::State* THTSSolver::selectOutcome(ChanceNode* node) {
-    // TODO: this is a placeholder
     mlcore::State* state = static_cast<DecisionNode*>(node->parent())->state();
     return randomSuccessor(problem_, state, node->action());
 }
