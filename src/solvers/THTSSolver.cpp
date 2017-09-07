@@ -1,5 +1,7 @@
 #include "../../include/solvers/THTSSolver.h"
 
+#include <limits>
+
 using namespace std;
 
 namespace mlsolvers
@@ -18,8 +20,15 @@ ChanceNode::ChanceNode(mlcore::Action* action,
     action_value_ = 0.0;
 }
 
-void ChanceNode::backup() {
+void ChanceNode::backup(THTSSolver* solver) {
     this->increaseBackupCounter();
+    if (this->depth_ == solver->max_depth_) {
+        action_value_ =
+            static_cast<DecisionNode*>(this->parent_)->state_->cost();
+    } else {
+        //TODO: Complete
+
+    }
 }
 
 void ChanceNode::updateSuccessorIndexMap(mlcore::State* state) {
@@ -42,11 +51,11 @@ DecisionNode* ChanceNode::getDecisionNodeForState(mlcore::State* state) {
 
 void ChanceNode::visit(THTSSolver* solver, mlcore::Problem* problem) {
     this->increaseSelectionCounter();
-    if (solver->continueTrial() && this->depth() < solver->maxDepth()) {
+    if (solver->continueTrial() && this->depth_ < solver->max_depth_) {
         mlcore::State* s = solver->selectOutcome(this);
         DecisionNode* node = getDecisionNodeForState(s);
         node->visit(solver, problem);
-        this->backup();
+        this->backup(solver);
     }
 }
 
@@ -77,14 +86,20 @@ void DecisionNode::updateSuccessorIndexMap(mlcore::Action* action) {
     action_chance_node_index_map_[action] = successors_.size() - 1;
 }
 
-void DecisionNode::backup() {
+void DecisionNode::backup(THTSSolver* solver) {
     this->increaseBackupCounter();
+    state_value_ = std::numeric_limits<double>::max();
+    for (ChanceNode* successor : successors_) {
+        if (successor->action_value_ < state_value_) {
+            state_value_ = successor->action_value_;
+        }
+    }
 }
 
 void DecisionNode::visit(THTSSolver* solver, mlcore::Problem* problem) {
     if (successors_.empty()) {   // not expanded yet
         for (mlcore::Action* action : problem->actions()) {
-            successors_.push_back(new ChanceNode(action, this->depth(), this));
+            successors_.push_back(new ChanceNode(action, this->depth_, this));
             updateSuccessorIndexMap(action);
             // TODO: initialize the decision node
         }
@@ -93,7 +108,7 @@ void DecisionNode::visit(THTSSolver* solver, mlcore::Problem* problem) {
     mlcore::Action* a = solver->selectAction(this);
     ChanceNode* chance_node = getChanceNodeForAction(a);
     chance_node->visit(solver, problem);
-    this->backup();
+    this->backup(solver);
 }
 
 ////////////////////////////
@@ -117,8 +132,8 @@ mlcore::Action* THTSSolver::selectAction(DecisionNode* node) {
 }
 
 mlcore::State* THTSSolver::selectOutcome(ChanceNode* node) {
-    mlcore::State* state = static_cast<DecisionNode*>(node->parent())->state();
-    return randomSuccessor(problem_, state, node->action());
+    mlcore::State* state = static_cast<DecisionNode*>(node->parent_)->state_;
+    return randomSuccessor(problem_, state, node->action_);
 }
 
 } // namespace mlsolvers

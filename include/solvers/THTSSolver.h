@@ -63,12 +63,16 @@ public:
     // The given solver is used to access information about the trials.
     virtual void visit(THTSSolver* solver, mlcore::Problem* problem) =0;
 
-    // Performs a backup of the node.
-    virtual void backup() =0;
+    // Performs a backup of the node given the current state of the solver.
+    virtual void backup(THTSSolver* solver) =0;
 };
 
 // A chance node in the search tree, representing a state-action pair.
 class ChanceNode : public THTSNode {
+
+friend class DecisionNode;
+friend class THTSSolver;
+
 private:
     // The action that this node corresponds to.
     mlcore::Action* action_;
@@ -106,11 +110,15 @@ public:
     virtual void visit(THTSSolver* solver, mlcore::Problem* problem);
 
     // Overrides method in THTSNode.
-    virtual void backup();
+    virtual void backup(THTSSolver* solver);
 };
 
 // A decision node in the search tree, representing a state.
 class DecisionNode : public THTSNode {
+
+friend class ChanceNode;
+friend class THTSSolver;
+
 private:
     // The state that this node corresponds to.
     mlcore::State* state_;
@@ -146,13 +154,17 @@ public:
     virtual void visit(THTSSolver* solver, mlcore::Problem* problem);
 
     // Overrides method in THTSNode.
-    virtual void backup();
+    virtual void backup(THTSSolver* solver);
 };
 
 
 // A Trial-based Heuristic Tree Search solver.
 // See http://ai.cs.unibas.ch/papers/keller-dissertation.pdf.
 class THTSSolver : public Solver {
+
+friend class DecisionNode;
+friend class ChanceNode;
+
 private:
     // The problem describing the MDP to solve.
     mlcore::Problem* problem_;
