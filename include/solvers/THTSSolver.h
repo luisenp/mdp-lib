@@ -61,10 +61,13 @@ public:
     // The given problem is used to access the transition and reward
     // functions of the MDP.
     // The given solver is used to access information about the trials.
-    virtual void visit(THTSSolver* solver, mlcore::Problem* problem) =0;
+    // The return value is the accumulated value of all nodes visited in the
+    // trial, from this one on.
+    virtual double visit(THTSSolver* solver, mlcore::Problem* problem) =0;
 
-    // Performs a backup of the node given the current state of the solver.
-    virtual void backup(THTSSolver* solver) =0;
+    // Performs a backup of the node given the current state of the solver,
+    // and the cumulative value of the current trial starting from this node.
+    virtual void backup(THTSSolver* solver, double cumulative_value) =0;
 };
 
 // A chance node in the search tree, representing a state-action pair.
@@ -107,10 +110,10 @@ public:
     }
 
     // Overrides method in THTSNode.
-    virtual void visit(THTSSolver* solver, mlcore::Problem* problem);
+    virtual double visit(THTSSolver* solver, mlcore::Problem* problem);
 
     // Overrides method in THTSNode.
-    virtual void backup(THTSSolver* solver);
+    virtual void backup(THTSSolver* solver, double cumulative_value);
 };
 
 // A decision node in the search tree, representing a state.
@@ -151,10 +154,10 @@ public:
     mlcore::State* state() const { return state_; }
 
     // Overrides method in THTSNode.
-    virtual void visit(THTSSolver* solver, mlcore::Problem* problem);
+    virtual double visit(THTSSolver* solver, mlcore::Problem* problem);
 
     // Overrides method in THTSNode.
-    virtual void backup(THTSSolver* solver);
+    virtual void backup(THTSSolver* solver, double cumulative_value);
 };
 
 
