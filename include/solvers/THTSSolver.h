@@ -68,6 +68,14 @@ public:
     // Performs a backup of the node given the current state of the solver,
     // and the cumulative value of the current trial starting from this node.
     virtual void backup(THTSSolver* solver, double cumulative_value) =0;
+
+    // Prints a string representation of a node to the given stream.
+    virtual std::ostream& print(std::ostream& os) const =0;
+
+    friend std::ostream& operator<<(std::ostream& os, THTSNode* node) {
+        return node->print(os);
+    }
+
 };
 
 // A chance node in the search tree, representing a state-action pair.
@@ -115,8 +123,9 @@ public:
     // Overrides method in THTSNode.
     virtual void backup(THTSSolver* solver, double cumulative_value);
 
-    friend std::ostream& operator<<(std::ostream& os, ChanceNode* node) {
-        os << "chance (" << node->action_ << ", " << node->depth_ << ")";
+    // Overrides method in THTSNode.
+    virtual std::ostream& print (std::ostream& os) const {
+        os << "chance (" << action_ << ", " << depth_ << ")";
         return os;
     }
 
@@ -165,8 +174,9 @@ public:
     // Overrides method in THTSNode.
     virtual void backup(THTSSolver* solver, double cumulative_value);
 
-    friend std::ostream& operator<<(std::ostream& os, DecisionNode* node) {
-        os << "dec (" << node->state_ << ", " << node->depth_ << ")";
+    // Overrides method in THTSNode.
+    virtual std::ostream& print(std::ostream& os) const {
+        os << "dec (" << state_ << ", " << depth_ << ")";
         return os;
     }
 };
@@ -215,6 +225,9 @@ public:
 
     // Selects an outcome for the given chance node.
     mlcore::State* selectOutcome(ChanceNode* node);
+
+    // Recommend an action for execution.
+    mlcore::Action* recommend(DecisionNode* node);
 
     int maxDepth() const { return max_depth_; }
 

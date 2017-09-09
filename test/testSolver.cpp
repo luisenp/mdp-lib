@@ -320,7 +320,7 @@ int main(int argc, char* args[])
         if (verbosity >= 100)
             cout << " ********* Simulation Starts ********* " << endl;
         clock_t startTime, endTime;
-        if (i == 0 || !flag_is_registered("no-initial-plan")) {
+        if (i == 0 && !flag_is_registered("no-initial-plan")) {
             for (State* s : problem->states())
                 s->reset();
             startTime = clock();

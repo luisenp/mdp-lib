@@ -34,12 +34,9 @@ void ChanceNode::backup(THTSSolver* solver, double cumulative_value) {
 
 void ChanceNode::updateSuccessorIndexMap(mlcore::State* state) {
     state_successor_index_map_[state] = (explicated_successors_.size() - 1);
-                                                                                dprint2("      successor-added", state_successor_index_map_.count(state));
 }
 
 DecisionNode* ChanceNode::getDecisionNodeForState(mlcore::State* state) {
-
-                                                                                dprint3("      successor-seen", state_successor_index_map_.count(state), state_successor_index_map_.size());
     if (state_successor_index_map_.count(state)) {
         // Successor state has already been explicated.
         int successor_node_index = state_successor_index_map_[state];
@@ -55,20 +52,15 @@ DecisionNode* ChanceNode::getDecisionNodeForState(mlcore::State* state) {
 }
 
 double ChanceNode::visit(THTSSolver* solver, mlcore::Problem* problem) {
-                                                                                dprint3(debug_pad(this->depth_), "visit-chance", this);
+                                                                                dprint5(debug_pad(2 * this->depth_), "visit-chance", this, "from", this->parent());
     this->increaseSelectionCounter();
     mlcore::State* s = static_cast<DecisionNode*>(this->parent_)->state_;
     double cumulative_value = problem->cost(s, action_);
-                                                                                dprint3(debug_pad(this->depth_), "  c. value", cumulative_value);
     if (solver->continueTrial() && this->depth_ < solver->max_depth_) {
         mlcore::State* s = solver->selectOutcome(this);
-                                                                                dprint3(debug_pad(this->depth_), "    outcome", s);
         DecisionNode* node = getDecisionNodeForState(s);
-                                                                                dprint3(debug_pad(this->depth_), "    going-to-successor", node->state_);
         cumulative_value += node->visit(solver, problem);
-                                                                                dprint2(debug_pad(this->depth_), "    backup");
         this->backup(solver, cumulative_value);
-                                                                                dprint2(debug_pad(this->depth_), "    backup-done");
     }
     return cumulative_value;
 }
@@ -111,7 +103,8 @@ void DecisionNode::backup(THTSSolver* solver, double cumulative_value) {
 }
 
 double DecisionNode::visit(THTSSolver* solver, mlcore::Problem* problem) {
-                                                                                dprint4(debug_pad(this->depth_), "visit-dec", this, successors_.size());
+                                                                                if (this->parent_)
+                                                                                    dprint5(debug_pad(2 * this->depth_), "visit-dec", this, "from", this->parent_);
     if (successors_.empty()) {   // not expanded yet
         for (mlcore::Action* action : problem->actions()) {
             if (!problem->applicable(this->state_, action))
@@ -123,14 +116,10 @@ double DecisionNode::visit(THTSSolver* solver, mlcore::Problem* problem) {
     }
     this->increaseSelectionCounter();
     mlcore::Action* a = solver->selectAction(this);
-                                                                                dprint3(debug_pad(this->depth_), "  select-action", a);
-
     ChanceNode* chance_node = getChanceNodeForAction(a);
     double cumulative_value = chance_node->visit(solver, problem);
-                                                                                dprint3(debug_pad(this->depth_), "  value", cumulative_value);
+                                                                                dprint4(debug_pad(2 * this->depth_), "selected-action/c. value", a, cumulative_value);
     this->backup(solver, cumulative_value);
-
-                                                                                dprint2(debug_pad(this->depth_), "done-visit-dec");
     return cumulative_value;
 }
 
@@ -145,7 +134,7 @@ mlcore::Action* THTSSolver::solve(mlcore::State* s0) {
     for (int i = 0; i < num_trials_; i++) {
         root->visit(this, problem_);
     }
-    return selectAction(root);
+    return recommend(root);
                                                                                 dprint1("done");
 }
 
@@ -156,7 +145,6 @@ bool THTSSolver::continueTrial() {
 }
 
 mlcore::Action* THTSSolver::selectAction(DecisionNode* node) {
-                                                                                dprint1("  select-action");
     double q_min = std::numeric_limits<double>::max();
     double q_max = -q_min;
     for (ChanceNode* action_node : node->successors()) {
@@ -164,7 +152,7 @@ mlcore::Action* THTSSolver::selectAction(DecisionNode* node) {
         q_min = std::min(action_node->action_value_, q_min);
     }
     double q_diff = q_max - q_min;
-                                                                                dprint4("    q-values", q_max, q_min, q_diff);
+                                                                                dprint5(debug_pad(2 * node->depth_ + 1), "q-values (max, min, diff)", q_max, q_min, q_diff);
     // UCB1 selection
     std::vector<ChanceNode*> best_action_nodes;
     double best_value = std::numeric_limits<double>::max();
@@ -176,7 +164,8 @@ mlcore::Action* THTSSolver::selectAction(DecisionNode* node) {
             1 : (action_node->action_value_ - q_min) / (q_diff);
         double value_ucb1 = sqrt(2 * log(node->selection_counter_)
                                     / action_node->selection_counter_);
-                                                                                dprint4("      action, q-normalized, value_ucb1:", action_node->action_, q_normalized, value_ucb1);
+                                                                                dprint5(debug_pad(2 * node->depth_ + 1), "action, q-normalized, value_ucb1:", action_node->action_, q_normalized, value_ucb1);
+                                                                                dprint4(debug_pad(2 * node->depth_ + 1), "counters (node/action):", node->selection_counter_, action_node->selection_counter_);
         double q_ucb1 = q_normalized - value_ucb1;
         if (q_ucb1 < best_value) {
             best_value = q_ucb1;
@@ -192,6 +181,11 @@ mlcore::Action* THTSSolver::selectAction(DecisionNode* node) {
 mlcore::State* THTSSolver::selectOutcome(ChanceNode* node) {
     mlcore::State* state = static_cast<DecisionNode*>(node->parent_)->state_;
     return randomSuccessor(problem_, state, node->action_);
+}
+
+mlcore::Action* THTSSolver::recommend(DecisionNode* node) {
+                                                                                dprint1("recommend");
+    return selectAction(node);
 }
 
 } // namespace mlsolvers
