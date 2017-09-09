@@ -36,9 +36,9 @@ protected:
     int selection_counter_;
 
     void initialize() {
-        backup_counter_ = 0;
-        selection_counter_ = 0;
-        solved_ = false;
+        this->backup_counter_ = 0;
+        this->selection_counter_ = 0;
+        this->solved_ = false;
     }
 
 public:
@@ -52,9 +52,9 @@ public:
 
     int selectionCounter() const { return selection_counter_; }
 
-    void increaseBackupCounter() { backup_counter_++; }
+    void increaseBackupCounter() { this->backup_counter_++; }
 
-    void increaseSelectionCounter() { selection_counter_++; }
+    void increaseSelectionCounter() { this->selection_counter_++; }
 
     // Visits this node and performs computation on it, expanding
     // any successors if necessary.
@@ -114,6 +114,12 @@ public:
 
     // Overrides method in THTSNode.
     virtual void backup(THTSSolver* solver, double cumulative_value);
+
+    friend std::ostream& operator<<(std::ostream& os, ChanceNode* node) {
+        os << "chance (" << node->action_ << ", " << node->depth_ << ")";
+        return os;
+    }
+
 };
 
 // A decision node in the search tree, representing a state.
@@ -158,6 +164,11 @@ public:
 
     // Overrides method in THTSNode.
     virtual void backup(THTSSolver* solver, double cumulative_value);
+
+    friend std::ostream& operator<<(std::ostream& os, DecisionNode* node) {
+        os << "dec (" << node->state_ << ", " << node->depth_ << ")";
+        return os;
+    }
 };
 
 

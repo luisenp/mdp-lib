@@ -1,16 +1,13 @@
-#include <cstring>
-#include <iostream>
-#include <unordered_set>
-#include <unordered_map>
-#include <unistd.h>
-#include <chrono>
-#include <vector>
-#include <thread>
-
 #include "../../include/util/general.h"
 
 bool mdplib_debug = false;
 
+std::string debug_pad(int n)
+{
+    char buf[512];
+    sprintf(buf, "%*s", n, "");
+    return std::string(buf);
+}
 
 void dsleep(int miliseconds)
 {

@@ -1,15 +1,16 @@
 #ifndef MDPLIB_GENERAL_H
 #define MDPLIB_GENERAL_H
 
+#include <chrono>
+#include <cstdio>
 #include <cstring>
 #include <ctime>
 #include <iostream>
+#include <thread>
 #include <unordered_set>
 #include <unordered_map>
 #include <unistd.h>
-#include <chrono>
 #include <vector>
-#include <thread>
 
 extern bool mdplib_debug;
 
@@ -51,6 +52,8 @@ void dprint5(T1 x, T2 y, T3 z, T4 w, T5 xx)
         std::cerr << x << " " << y << " " << z << " " <<
             w << " " << xx << std::endl;
 }
+
+std::string debug_pad(int n);
 
 /**
  * Sleeps the current thread for the given number of milliseconds.

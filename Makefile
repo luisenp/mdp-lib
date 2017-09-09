@@ -5,7 +5,7 @@
 
 # Compilation flags and variables
 CC = g++
-CFLAGS = -std=c++11 -O3 -DATOM_STATES -pthread
+CFLAGS = -std=c++11 -g -DATOM_STATES -pthread
 
 # Variables for directories
 ID = include
@@ -230,6 +230,9 @@ lib/mdplib_domains.a: lib/mdplib.a $(DOM_H) $(DOM_CPP)
 
 testsolver.out: lib/mdplib.a domains
 	$(CC) $(CFLAGS) $(INCLUDE) -o testsolver.out $(TD)/testSolver.cpp $(LIBS)
+
+testthts.out: lib/mdplib.a domains
+	$(CC) $(CFLAGS) $(INCLUDE) -o testthts.out $(TD)/testTHTS.cpp $(LIBS) src/solvers/VISolver.cpp
 
 # Compiles the mini-gpt library
 minigpt: lib/libminigpt.a
