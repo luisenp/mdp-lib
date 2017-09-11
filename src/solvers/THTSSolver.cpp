@@ -144,17 +144,9 @@ bool THTSSolver::continueTrial() {
     return true;
 }
 
-mlcore::Action* THTSSolver::selectAction(DecisionNode* node) {
-    double q_min = std::numeric_limits<double>::max();
-    double q_max = -q_min;
-    for (ChanceNode* action_node : node->successors()) {
-        q_max = std::max(action_node->action_value_ , q_max);
-        q_min = std::min(action_node->action_value_, q_min);
-    }
-    double q_diff = q_max - q_min;
-                                                                                dprint5(debug_pad(2 * node->depth_ + 1), "q-values (max, min, diff)", q_max, q_min, q_diff);
-    // UCB1 selection
-    std::vector<ChanceNode*> best_action_nodes;
+mlcore::Action*
+THTSSolver::ucb1SelectRule(DecisionNode* node,
+                           std::vector<ChanceNode*>& best_action_nodes) {
     double best_value = std::numeric_limits<double>::max();
     for (ChanceNode* action_node : node->successors()) {
         if (action_node->selection_counter_ == 0) {
@@ -175,6 +167,20 @@ mlcore::Action* THTSSolver::selectAction(DecisionNode* node) {
             best_action_nodes.push_back(action_node);
         }
     }
+}
+
+mlcore::Action* THTSSolver::selectAction(DecisionNode* node) {
+    double q_min = std::numeric_limits<double>::max();
+    double q_max = -q_min;
+    for (ChanceNode* action_node : node->successors()) {
+        q_max = std::max(action_node->action_value_ , q_max);
+        q_min = std::min(action_node->action_value_, q_min);
+    }
+    double q_diff = q_max - q_min;
+                                                                                dprint5(debug_pad(2 * node->depth_ + 1), "q-values (max, min, diff)", q_max, q_min, q_diff);
+    // UCB1 selection
+    std::vector<ChanceNode*> best_action_nodes;
+    ucb1SelectRule(node, best_action_nodes);
     return best_action_nodes[rand() % best_action_nodes.size()]->action_;
 }
 

@@ -202,8 +202,14 @@ private:
     // The maximum number of nodes expanded per trial.
     int max_nodes_expanded_per_trial_;
 
-    // Maintains the number of nodes expanded in the current trial.
+    // The number of nodes expanded in the current trial.
     int num_nodes_expanded_trial_;
+
+    // Computes the values of the actions for the decision node using
+    // the UCB1 selection rule and stores the best ones in the given
+    // vector.
+    mlcore::Action* ucb1SelectRule(
+        DecisionNode* node, std::vector<ChanceNode*>& best_action_nodes);
 
 public:
     THTSSolver(mlcore::Problem* problem,
