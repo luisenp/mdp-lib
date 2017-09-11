@@ -209,7 +209,10 @@ private:
     // the UCB1 selection rule and stores the best ones in the given
     // vector.
     mlcore::Action* ucb1SelectRule(
-        DecisionNode* node, std::vector<ChanceNode*>& best_action_nodes);
+        DecisionNode* node,
+        double q_min,
+        double q_max,
+        std::vector<ChanceNode*>& best_action_nodes);
 
 public:
     THTSSolver(mlcore::Problem* problem,
