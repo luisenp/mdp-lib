@@ -27,25 +27,25 @@ void FLARESSolver::trial(State* s)
 {
     State* currentState = s;
     list<State*> visited;
-    int depth = 0;
+    double accumulated_cost = 0.0;
     while (!labeledSolved(currentState)) {
         if (problem_->goal(currentState))
             break;
 
         visited.push_front(currentState);
-        depth++;
                                                                                 double res = residual(problem_, currentState);
         bellmanUpdate(problem_, currentState);
                                                                                 if (res < epsilon_ && residual(problem_, currentState) > epsilon_) {
                                                                                     cerr << "ooops!" << residual(problem_, currentState) << endl;
                                                                                 }
 
-        if (currentState->deadEnd() || depth > 1000000)
+        if (currentState->deadEnd()
+            || accumulated_cost >= mdplib::dead_end_cost)
             break;
 
-        currentState = randomSuccessor(problem_,
-                                       currentState,
-                                       greedyAction(problem_, currentState));
+        mlcore::Action* greedy_action = greedyAction(problem_, currentState);
+        accumulated_cost += problem_->cost(currentState, greedy_action);
+        currentState = randomSuccessor(problem_, currentState, greedy_action);
     }
 
     while (!visited.empty()) {

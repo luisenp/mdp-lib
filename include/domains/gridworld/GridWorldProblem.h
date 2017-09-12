@@ -29,6 +29,7 @@ namespace gridworld
  *   - A '.' character represents an empty cell.
  *   - A 'x' character represents a wall (can't be traversed).
  *   - A '@' character represents a hole (can be traversed at a larger cost).
+ *   - A 'D' character represents a dead-end.
  *   - A 'S' character represents the start cell.
  *   - A 'G' character represents a goal cell (multiple goals are allowed).
  */
@@ -48,6 +49,7 @@ private:
     mlcore::State* absorbing;
     IntPairSet walls;
     IntPairSet holes;
+    IntPairSet dead_ends;
 
     void addSuccessor(GridWorldState* state,
                       std::list<mlcore::Successor>& successors,
