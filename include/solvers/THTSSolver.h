@@ -35,7 +35,7 @@ protected:
     // The counter of how many times this node has been visited.
     int selection_counter_;
 
-    void initialize() {
+    virtual void initialize_counters() {
         this->backup_counter_ = 0;
         this->selection_counter_ = 0;
         this->solved_ = false;
@@ -75,7 +75,6 @@ public:
     friend std::ostream& operator<<(std::ostream& os, THTSNode* node) {
         return node->print(os);
     }
-
 };
 
 // A chance node in the search tree, representing a state-action pair.
@@ -128,7 +127,6 @@ public:
         os << "chance (" << action_ << ", " << depth_ << ")";
         return os;
     }
-
 };
 
 // A decision node in the search tree, representing a state.
@@ -167,6 +165,9 @@ public:
     std::vector<ChanceNode*>& successors() { return successors_; }
 
     mlcore::State* state() const { return state_; }
+
+    // Initializes the DecisionNode.
+    void initialize();
 
     // Overrides method in THTSNode.
     virtual double visit(THTSSolver* solver, mlcore::Problem* problem);
@@ -208,7 +209,7 @@ private:
     // Computes the values of the actions for the decision node using
     // the UCB1 selection rule and stores the best ones in the given
     // vector.
-    mlcore::Action* ucb1SelectRule(
+    void ucb1SelectRule(
         DecisionNode* node,
         double q_min,
         double q_max,

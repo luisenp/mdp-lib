@@ -15,7 +15,7 @@ ChanceNode::ChanceNode(mlcore::Action* action,
     assert(parent != nullptr);
     this->parent_ = parent;
     this->depth_ = depth;
-    this->initialize();
+    this->initialize_counters();
     action_ = action;
     action_value_ = 0.0;
 }
@@ -75,7 +75,7 @@ DecisionNode::DecisionNode(mlcore::State* state,
         assert(depth == 0);
     this->parent_ = parent;
     this->depth_ = depth;
-    this->initialize();
+    this->initialize_counters();
     state_ = state;
     state_value_ = 0.0;
 }
@@ -123,6 +123,9 @@ double DecisionNode::visit(THTSSolver* solver, mlcore::Problem* problem) {
     return cumulative_value;
 }
 
+void DecisionNode::initialize() {
+}
+
 ////////////////////////////
 // THTSSolver
 ///////////////////////////
@@ -144,7 +147,7 @@ bool THTSSolver::continueTrial() {
     return true;
 }
 
-mlcore::Action*
+void
 THTSSolver::ucb1SelectRule(DecisionNode* node,
                            double q_min,
                            double q_max,
@@ -153,8 +156,10 @@ THTSSolver::ucb1SelectRule(DecisionNode* node,
     double q_diff = q_max - q_min;
                                                                                 dprint5(debug_pad(2 * node->depth_ + 1), "q-values (max, min, diff)", q_max, q_min, q_diff);
     for (ChanceNode* action_node : node->successors()) {
+                                                                                dprint3(debug_pad(2 * node->depth_ + 1), node->selection_counter_, action_node->selection_counter_);
         if (action_node->selection_counter_ == 0) {
-            return action_node->action_;
+            best_action_nodes.push_back(action_node);
+            return;
         }
         double q_normalized = q_diff == 0 ?
             1 : (action_node->action_value_ - q_min) / (q_diff);

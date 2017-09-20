@@ -582,6 +582,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/solvers/SSiPPFFSolver.h" />
 		<Unit filename="include/solvers/SSiPPSolver.h" />
 		<Unit filename="include/solvers/Solver.h" />
+		<Unit filename="include/solvers/THTSSolver.h" />
 		<Unit filename="include/solvers/UCTSolver.h" />
 		<Unit filename="include/solvers/VISolver.h" />
 		<Unit filename="include/solvers/mobj/CMDPLagrangeSearchSolver.h" />
@@ -643,6 +644,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="src/solvers/SSiPPFFSolver.cpp" />
 		<Unit filename="src/solvers/SSiPPSolver.cpp" />
 		<Unit filename="src/solvers/Solver.cpp" />
+		<Unit filename="src/solvers/THTSSolver.cpp" />
 		<Unit filename="src/solvers/UCTSolver.cpp" />
 		<Unit filename="src/solvers/VISolver.cpp" />
 		<Unit filename="src/solvers/mobj/CMDPLagrangeSearchSolver.cpp" />
@@ -673,6 +675,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="test/testRace.cpp" />
 		<Unit filename="test/testSail.cpp" />
 		<Unit filename="test/testSolver.cpp" />
+		<Unit filename="test/testTHTS.cpp" />
 		<Extensions>
 			<code_completion />
 			<debugger />
