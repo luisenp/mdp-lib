@@ -3,11 +3,11 @@
 
 #include <vector>
 
-#include "../Action.h"
-#include "../Problem.h"
-#include "../State.h"
+#include "../../Action.h"
+#include "../../Problem.h"
+#include "../../State.h"
 
-#include "Solver.h"
+#include "../Solver.h"
 
 namespace mlsolvers
 {

@@ -22,9 +22,11 @@ OD_PPDDL = $(OD)/ppddl
 ID_REDUCED = $(ID)/reduced
 SD_REDUCED = $(SD)/reduced
 OD_REDUCED = $(OD)/reduced
-OD_SOLV_MOBJ = $(OD)/solvers/mobj
 ID_SOLV_MOBJ = $(ID)/solvers/mobj
 SD_SOLV_MOBJ = $(SD)/solvers/mobj
+OD_SOLV_MOBJ = $(OD)/solvers/mobj
+ID_SOLV_THTS = $(ID_SOLV)/thts
+SD_SOLV_THTS = $(SD_SOLV)/thts
 
 ID_DOMAINS = $(ID)/domains
 SD_DOMAINS = $(SD)/domains
@@ -46,19 +48,21 @@ ID_RACE = $(ID_DOMAINS)/racetrack
 # Variables for include directives
 INCLUDE_DOM = -I$(ID_GW) -I$(ID_CTP) -I$(ID_SAIL) -I$(ID_DOMAINS) -I$(ID_RACE)
 INCLUDE_CORE = -I$(ID_UTIL) -I$(ID)
-INCLUDE_SOLVERS = -I$(ID_SOLV) -I$(ID_SOLV_MOBJ)
+INCLUDE_SOLVERS = -I$(ID_SOLV) -I$(ID_SOLV_MOBJ) -I$(ID_SOLV_THTS)
 INCLUDE_PPDDL = -I$(ID_PPDDL) -I$(ID_PPDDL)/mini-gpt
 INCLUDE = $(INCLUDE_DOM) $(INCLUDE_CORE) $(INCLUDE_SOLVERS)
 
 # Variables for source/header files
 I_H = $(ID)/*.h
 S_CPP = $(SD)/*.cpp
-SOLV_CPP = $(SD_SOLV)/*.cpp
 SOLV_H = $(ID_SOLV)/*.h
-MOSOLV_CPP = $(SD_SOLV_MOBJ)/*.cpp
+SOLV_CPP = $(SD_SOLV)/*.cpp
+SOLV_THTS_H = $(ID_SOLV_THTS)/*.h
+SOLV_THTS_CPP = $(SD_SOLV_THTS)/*.cpp
 MOSOLV_H = $(ID_SOLV_MOBJ)/*.h
-UTIL_CPP = $(SD_UTIL)/*.cpp
+MOSOLV_CPP = $(SD_SOLV_MOBJ)/*.cpp
 UTIL_H = $(ID_UTIL)/*.h
+UTIL_CPP = $(SD_UTIL)/*.cpp
 
 GW_CPP = $(SD_GW)/*.cpp
 GW_H = $(ID_GW)/*.h
@@ -73,8 +77,8 @@ RACE_H = $(ID_RACE)/*.h
 DOM_CPP = $(GW_CPP) $(CTP_CPP) $(SAIL_CPP) $(RACE_CPP) $(SD_DOMAINS)/*.cpp
 DOM_H = $(GW_H) $(CTP_H) $(SAIL_H) $(RACE_H)
 
-ALL_H = $(I_H) $(SOLV_H) $(MOSOLV_H) $(DOM_H) $(UTIL_H)
-ALL_CPP = $(DOM_CPP) $(SOLV_CPP) $(MOSOLV_CPP) $(UTIL_CPP)
+ALL_H = $(I_H) $(SOLV_H) $(SOLV_THTS_H) $(MOSOLV_H) $(DOM_H) $(UTIL_H)
+ALL_CPP = $(DOM_CPP) $(SOLV_CPP) $(SOLV_THTS_CPP) $(MOSOLV_CPP) $(UTIL_CPP)
 
 # Libraries
 LIBS = lib/mdplib.a lib/mdplib_domains.a -Llib
@@ -104,9 +108,9 @@ $(OD)/mo-solvers.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_H) 
 	ar rvs lib/mdplib_mosolvers.a $(OD_SOLV_MOBJ)/*.o
 
 # Compiles the base (single-objective) solvers
-$(OD)/solvers.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_H) $(ID_DOMAINS)/*.h $(SD_DOMAINS)/*.cpp
+$(OD)/solvers.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_THTS_CPP) $(SOLV_H) $(ID_DOMAINS)/*.h $(SD_DOMAINS)/*.cpp
 	make $(OD)/core.a
-	$(CC) $(CFLAGS) $(INCLUDE_CORE) $(ID_DOMAINS)/*.h -c $(SOLV_CPP) \
+	$(CC) $(CFLAGS) $(INCLUDE_CORE) $(ID_DOMAINS)/*.h -c $(SOLV_CPP) $(SOLV_THTS_CPP) \
 		$(SD_DOMAINS)/DummyState.cpp $(SD_DOMAINS)/WrapperProblem.cpp
 	mkdir -p $(OD_SOLV)
 	mv *.o $(OD_SOLV)

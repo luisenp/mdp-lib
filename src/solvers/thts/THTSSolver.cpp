@@ -1,4 +1,4 @@
-#include "../../include/solvers/THTSSolver.h"
+#include "../../../include/solvers/thts/THTSSolver.h"
 
 #include <limits>
 
@@ -124,6 +124,9 @@ double DecisionNode::visit(THTSSolver* solver, mlcore::Problem* problem) {
 }
 
 void DecisionNode::initialize() {
+    for (ChanceNode* chance_node : successors_) {
+
+    }
 }
 
 ////////////////////////////
