@@ -3,6 +3,8 @@
 
 #include <vector>
 
+#include "THTSHeuristic.h"
+
 #include "../../Action.h"
 #include "../../Problem.h"
 #include "../../State.h"
@@ -35,11 +37,8 @@ protected:
     // The counter of how many times this node has been visited.
     int selection_counter_;
 
-    virtual void initialize_counters() {
-        this->backup_counter_ = 0;
-        this->selection_counter_ = 0;
-        this->solved_ = false;
-    }
+    // Initializes the node (values and counters).
+    virtual void initialize(THTSSolver* solver) =0;
 
 public:
     THTSNode* parent() const { return parent_; }
@@ -123,6 +122,9 @@ public:
     virtual void backup(THTSSolver* solver, double cumulative_value);
 
     // Overrides method in THTSNode.
+    virtual void initialize(THTSSolver* solver);
+
+    // Overrides method in THTSNode.
     virtual std::ostream& print (std::ostream& os) const {
         os << "chance (" << action_ << ", " << depth_ << ")";
         return os;
@@ -176,6 +178,9 @@ public:
     virtual void backup(THTSSolver* solver, double cumulative_value);
 
     // Overrides method in THTSNode.
+    virtual void initialize(THTSSolver* solver);
+
+    // Overrides method in THTSNode.
     virtual std::ostream& print(std::ostream& os) const {
         os << "dec (" << state_ << ", " << depth_ << ")";
         return os;
@@ -194,6 +199,9 @@ private:
     // The problem describing the MDP to solve.
     mlcore::Problem* problem_;
 
+    // The heuristic to use for the node initialization.
+    THTSHeuristic* heuristic_;
+
     // The number of trials to perform.
     int num_trials_;
 
@@ -205,6 +213,9 @@ private:
 
     // The number of nodes expanded in the current trial.
     int num_nodes_expanded_trial_;
+
+    // The number of virtual rollouts for initialization.
+    int num_virtual_rollouts_;
 
     // Computes the values of the actions for the decision node using
     // the UCB1 selection rule and stores the best ones in the given
@@ -219,9 +230,11 @@ public:
     THTSSolver(mlcore::Problem* problem,
                int num_trials,
                int max_depth,
-               int max_nodes_expanded_per_trial) :
+               int max_nodes_expanded_per_trial,
+               int num_virtual_rollouts = 0) :
         problem_(problem), num_trials_(num_trials), max_depth_(max_depth),
-        max_nodes_expanded_per_trial_(max_nodes_expanded_per_trial) {
+        max_nodes_expanded_per_trial_(max_nodes_expanded_per_trial),
+        num_virtual_rollouts_(num_virtual_rollouts) {
         num_nodes_expanded_trial_ = 0;
     }
 

@@ -15,7 +15,6 @@ ChanceNode::ChanceNode(mlcore::Action* action,
     assert(parent != nullptr);
     this->parent_ = parent;
     this->depth_ = depth;
-    this->initialize_counters();
     action_ = action;
     action_value_ = 0.0;
 }
@@ -51,6 +50,14 @@ DecisionNode* ChanceNode::getDecisionNodeForState(mlcore::State* state) {
     }
 }
 
+void ChanceNode::initialize(THTSSolver* solver) {
+    action_value_ = solver->heuristic_->value(
+        static_cast<DecisionNode*>(this->parent_)->state_, action_);
+    selection_counter_ = solver->num_virtual_rollouts_;
+    backup_counter_ = solver->num_virtual_rollouts_;
+    solved_ = false;
+}
+
 double ChanceNode::visit(THTSSolver* solver, mlcore::Problem* problem) {
                                                                                 dprint5(debug_pad(2 * this->depth_), "visit-chance", this, "from", this->parent());
     this->increaseSelectionCounter();
@@ -75,7 +82,6 @@ DecisionNode::DecisionNode(mlcore::State* state,
         assert(depth == 0);
     this->parent_ = parent;
     this->depth_ = depth;
-    this->initialize_counters();
     state_ = state;
     state_value_ = 0.0;
 }
@@ -111,7 +117,7 @@ double DecisionNode::visit(THTSSolver* solver, mlcore::Problem* problem) {
                 continue;
             successors_.push_back(new ChanceNode(action, this->depth_, this));
             updateSuccessorIndexMap(action);
-            // TODO: initialize the decision node
+            this->initialize(solver);
         }
     }
     this->increaseSelectionCounter();
@@ -123,10 +129,15 @@ double DecisionNode::visit(THTSSolver* solver, mlcore::Problem* problem) {
     return cumulative_value;
 }
 
-void DecisionNode::initialize() {
+void DecisionNode::initialize(THTSSolver* solver) {
+    state_value_ = std::numeric_limits<double>::max();
     for (ChanceNode* chance_node : successors_) {
-
+        chance_node->initialize(solver);
+        state_value_ = std::min(state_value_, chance_node->action_value_);
     }
+    backup_counter_ = solver->num_virtual_rollouts_ * successors_.size();
+    selection_counter_ = backup_counter_;
+    solved_ = false;
 }
 
 ////////////////////////////
