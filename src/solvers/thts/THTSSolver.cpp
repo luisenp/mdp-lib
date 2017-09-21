@@ -51,8 +51,12 @@ DecisionNode* ChanceNode::getDecisionNodeForState(mlcore::State* state) {
 }
 
 void ChanceNode::initialize(THTSSolver* solver) {
-    action_value_ = solver->heuristic_->value(
-        static_cast<DecisionNode*>(this->parent_)->state_, action_);
+    if (solver->heuristic_ == nullptr) {
+        action_value_ = 0.0;
+    } else {
+        action_value_ = solver->heuristic_->value(
+            static_cast<DecisionNode*>(this->parent_)->state_, action_);
+    }
     selection_counter_ = solver->num_virtual_rollouts_;
     backup_counter_ = solver->num_virtual_rollouts_;
     solved_ = false;

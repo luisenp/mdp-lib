@@ -17,6 +17,7 @@
 #include "../include/solvers/UCTSolver.h"
 #include "../include/solvers/VISolver.h"
 #include "../include/solvers/thts/THTSSolver.h"
+#include "../include/solvers/thts/THTSWrapperHeuristic.h"
 #include "../include/util/flags.h"
 #include "../include/util/general.h"
 #include "../include/util/graph.h"
@@ -166,13 +167,15 @@ void initSolver()
     assert(flag_is_registered_with_value("backup"));
     assert(flag_is_registered_with_value("action-sel"));
 
-    int horizon = 50, trials = 1000;
+    int horizon = 5, trials = 1000;
     if (flag_is_registered_with_value("horizon"))
         horizon = stoi(flag_value("horizon"));
     if (flag_is_registered_with_value("trials"))
         trials = stoi(flag_value("trials"));
 
-    solver = new THTSSolver(problem, trials, horizon, horizon);
+    THTSHeuristic* thts_heuristic =
+        new THTSWrapperHeuristic(problem, heuristic);
+    solver = new THTSSolver(problem, thts_heuristic, trials, horizon, horizon);
 }
 
 

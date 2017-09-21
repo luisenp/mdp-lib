@@ -228,11 +228,13 @@ private:
 
 public:
     THTSSolver(mlcore::Problem* problem,
+               THTSHeuristic* heuristic,
                int num_trials,
                int max_depth,
                int max_nodes_expanded_per_trial,
                int num_virtual_rollouts = 0) :
-        problem_(problem), num_trials_(num_trials), max_depth_(max_depth),
+        problem_(problem), heuristic_(heuristic),
+        num_trials_(num_trials), max_depth_(max_depth),
         max_nodes_expanded_per_trial_(max_nodes_expanded_per_trial),
         num_virtual_rollouts_(num_virtual_rollouts) {
         num_nodes_expanded_trial_ = 0;
