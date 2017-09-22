@@ -115,6 +115,11 @@ void DecisionNode::backup(THTSSolver* solver, double cumulative_value) {
 double DecisionNode::visit(THTSSolver* solver, mlcore::Problem* problem) {
                                                                                 if (this->parent_)
                                                                                     dprint5(debug_pad(2 * this->depth_), "visit-dec", this, "from", this->parent_);
+    if (problem->goal(state_)) {
+        state_value_ = 0.0;
+        this->solved_ = true;
+        return 0.0;
+    }
     if (successors_.empty()) {   // not expanded yet
         for (mlcore::Action* action : problem->actions()) {
             if (!problem->applicable(this->state_, action))

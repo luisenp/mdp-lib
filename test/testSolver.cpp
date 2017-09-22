@@ -377,7 +377,9 @@ int main(int argc, char* args[])
                     static_cast<HDPSolver*>(solver)->kappa(prob, maxProb);
             }
             tmp = aux;
-
+        }
+        if (verbosity >= 1000) {
+            cout << "Final State: " << tmp << endl;
         }
         if (flag_is_registered("ctp")) {
             CTPState* ctps = static_cast<CTPState*>(tmp);
