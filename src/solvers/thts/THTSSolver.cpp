@@ -221,6 +221,7 @@ mlcore::State* THTSSolver::selectOutcome(ChanceNode* node) {
 
 mlcore::Action* THTSSolver::recommend(DecisionNode* node) {
                                                                                 dprint1("recommend");
+    double best_value = std::numeric_limits<double>::max();
     return selectAction(node);
 }
 

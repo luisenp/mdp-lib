@@ -22,6 +22,7 @@ tag current version and then change Rational for double in master branch]]>
 					<Add option="-g" />
 					<Add directory="include/reduced" />
 					<Add directory="include/solvers" />
+					<Add directory="include/solvers/thts" />
 				</Compiler>
 			</Target>
 			<Target title="Release">
@@ -33,6 +34,7 @@ tag current version and then change Rational for double in master branch]]>
 					<Add option="-O2" />
 					<Add directory="include/reduced" />
 					<Add directory="include/solvers" />
+					<Add directory="include/solvers/thts" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -591,7 +593,9 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/solvers/mobj/LexiVISolver.h" />
 		<Unit filename="include/solvers/mobj/MOLAOStarSolver.h" />
 		<Unit filename="include/solvers/mobj/MObjSolvers.h" />
+		<Unit filename="include/solvers/thts/THTSHeuristic.h" />
 		<Unit filename="include/solvers/thts/THTSSolver.h" />
+		<Unit filename="include/solvers/thts/THTSWrapperHeuristic.h" />
 		<Unit filename="include/util/flags.h" />
 		<Unit filename="include/util/general.h" />
 		<Unit filename="include/util/graph.h" />
