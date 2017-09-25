@@ -6,35 +6,23 @@
 #include <sstream>
 #include <unistd.h>
 
-#include "../include/solvers/DeterministicSolver.h"
-#include "../include/solvers/HDPSolver.h"
+#include "../include/domains/ctp/CTPOptimisticHeuristic.h"
+#include "../include/domains/ctp/CTPProblem.h"
+#include "../include/domains/ctp/CTPState.h"
+#include "../include/domains/gridworld/GridWorldProblem.h"
+#include "../include/domains/gridworld/GWManhattanHeuristic.h"
+#include "../include/domains/racetrack/RacetrackProblem.h"
+#include "../include/domains/racetrack/RTrackDetHeuristic.h"
+#include "../include/domains/sailing/SailingNoWindHeuristic.h"
+#include "../include/domains/sailing/SailingProblem.h"
 #include "../include/solvers/HMinHeuristic.h"
 #include "../include/solvers/LAOStarSolver.h"
-#include "../include/solvers/LRTDPSolver.h"
-#include "../include/solvers/FLARESSolver.h"
 #include "../include/solvers/Solver.h"
-#include "../include/solvers/SSiPPSolver.h"
-#include "../include/solvers/UCTSolver.h"
-#include "../include/solvers/VISolver.h"
 #include "../include/solvers/thts/THTSSolver.h"
 #include "../include/solvers/thts/THTSWrapperHeuristic.h"
 #include "../include/util/flags.h"
 #include "../include/util/general.h"
 #include "../include/util/graph.h"
-
-#include "../include/domains/ctp/CTPOptimisticHeuristic.h"
-#include "../include/domains/ctp/CTPProblem.h"
-#include "../include/domains/ctp/CTPState.h"
-
-#include "../include/domains/gridworld/GridWorldProblem.h"
-#include "../include/domains/gridworld/GWManhattanHeuristic.h"
-
-#include "../include/domains/racetrack/RacetrackProblem.h"
-#include "../include/domains/racetrack/RTrackDetHeuristic.h"
-
-#include "../include/domains/sailing/SailingNoWindHeuristic.h"
-#include "../include/domains/sailing/SailingProblem.h"
-
 
 using namespace mdplib;
 using namespace mlcore;
@@ -232,6 +220,7 @@ int main(int argc, char* args[])
 
     int cnt = 0;
     int numDecisions = 0;
+                                                                                LAOStarSolver lao_solver(problem, 1.0e-6);
     for (int i = 0; i < nsims; i++) {
         if (verbosity >= 100)
             cout << " ********* Simulation Starts ********* " << endl;
@@ -257,21 +246,19 @@ int main(int argc, char* args[])
         int plausTrial = 0;
         while (!problem->goal(tmp)) {
             statesSeen.insert(tmp);
-            Action* a;
-            if (mustReplan(tmp, plausTrial)) {
-                startTime = clock();
-                a = solver->solve(tmp);
-                endTime = clock();
-                expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
-                numDecisions++;
-            } else {
-                a = greedyAction(problem, tmp);
-            }
+            startTime = clock();
+            Action* a = solver->solve(tmp);
+                                                                                Action* lao_action = lao_solver.solve(tmp);
+                                                                                if (lao_action != a) {
+                                                                                    cout << "Wrong action: " << a << " should be " << lao_action << endl;
+                                                                                }
+            endTime = clock();
+            expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
+            numDecisions++;
 
             if (verbosity >= 1000) {
                 cout << "State/Action: " << tmp << " " << a << " " << endl;
             }
-
             costTrial += problem->cost(tmp, a);
             if (costTrial >= mdplib::dead_end_cost) {
                 break;
@@ -279,7 +266,6 @@ int main(int argc, char* args[])
             double prob = 0.0;
             State* aux = randomSuccessor(problem, tmp, a, &prob);
             tmp = aux;
-
         }
         if (verbosity >= 1000) {
             cout << "Final State: " << tmp << endl;

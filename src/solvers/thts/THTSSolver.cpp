@@ -72,6 +72,11 @@ double ChanceNode::visit(THTSSolver* solver, mlcore::Problem* problem) {
         DecisionNode* node = getDecisionNodeForState(s);
         cumulative_value += node->visit(solver, problem);
         this->backup(solver, cumulative_value);
+    } else {
+        // Assigns a value according to the successors' heuristic cost,
+        // in case the horizon was not large enough for this problem
+        for (mlcore::Successor successor : problem->transition(s, action_))
+            cumulative_value += successor.su_prob * successor.su_state->cost();
     }
     return cumulative_value;
 }
@@ -222,7 +227,18 @@ mlcore::State* THTSSolver::selectOutcome(ChanceNode* node) {
 mlcore::Action* THTSSolver::recommend(DecisionNode* node) {
                                                                                 dprint1("recommend");
     double best_value = std::numeric_limits<double>::max();
-    return selectAction(node);
+    std::vector<mlcore::Action*> best_actions;
+    for (ChanceNode* chance_node : node->successors_) {
+        double chance_node_value = -chance_node->selection_counter_;
+        if (chance_node_value < best_value ) {
+            best_value = chance_node_value;
+            best_actions.clear();
+        }
+        if (chance_node_value == best_value) {
+            best_actions.push_back(chance_node->action_);
+        }
+    }
+    return best_actions[rand() % best_actions.size()];
 }
 
 } // namespace mlsolvers
