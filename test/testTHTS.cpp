@@ -31,7 +31,7 @@ using namespace std;
 
 Problem* problem = nullptr;
 Heuristic* heuristic = nullptr;
-Solver* solver = nullptr;;
+THTSSolver* solver = nullptr;;
 
 int verbosity = 0;
 bool useOnline = false;
@@ -206,7 +206,7 @@ int main(int argc, char* args[])
     if (verbosity > 100)
         cout << problem->states().size() << " states" << endl;
 
-    initSolver();
+        initSolver();
 
     int nsims = 100;
     if (flag_is_registered_with_value("n"))
@@ -267,6 +267,8 @@ int main(int argc, char* args[])
             State* aux = randomSuccessor(problem, tmp, a, &prob);
             tmp = aux;
         }
+        if (!flag_is_registered("keep-search-tree"))
+            solver->delete_tree();
         if (verbosity >= 1000) {
             cout << "Final State: " << tmp << endl;
         }
@@ -299,10 +301,7 @@ int main(int argc, char* args[])
         cout << expectedCost << " " << sqrt(variance / (cnt - 1)) << " " <<
             expectedTime / cnt << " " << expectedTime / numDecisions << endl;
     }
-
     delete problem;
     delete heuristic;
     delete solver;
 }
-
-

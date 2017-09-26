@@ -13,12 +13,13 @@
 class RTrackDetHeuristic : public mlcore::Heuristic
 {
 private:
-    RacetrackProblem* detProblem_;
+    std::unique_ptr<RacetrackProblem> detProblem_;
 public:
     RTrackDetHeuristic(const char* filename);
     virtual ~RTrackDetHeuristic()
     {
-        delete detProblem_;
+        std::cout << "booo!!" << std::endl;
+        detProblem_.reset();
     }
 
     virtual double cost(const mlcore::State* s);

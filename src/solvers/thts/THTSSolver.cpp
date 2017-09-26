@@ -2,6 +2,8 @@
 
 #include <limits>
 
+#include "../../../include/util/general.h"
+
 using namespace std;
 
 namespace mlsolvers
@@ -17,6 +19,11 @@ ChanceNode::ChanceNode(mlcore::Action* action,
     this->depth_ = depth;
     action_ = action;
     action_value_ = 0.0;
+}
+
+ChanceNode::~ChanceNode() {
+    for (DecisionNode* successor : explicated_successors_)
+        delete successor;
 }
 
 void ChanceNode::backup(THTSSolver* solver, double cumulative_value) {
@@ -95,6 +102,11 @@ DecisionNode::DecisionNode(mlcore::State* state,
     state_value_ = 0.0;
 }
 
+DecisionNode::~DecisionNode() {
+    for (ChanceNode* successor : successors_)
+        delete successor;
+}
+
 ChanceNode* DecisionNode::getChanceNodeForAction(mlcore::Action* action) {
     // For decision nodes, all successor chance nodes must be explicated.
     assert(action_chance_node_index_map_.count(action));
@@ -161,11 +173,12 @@ void DecisionNode::initialize(THTSSolver* solver) {
 // re-planning
 mlcore::Action* THTSSolver::solve(mlcore::State* s0) {
                                                                                 dprint2("solve", num_trials_);
-    DecisionNode* root = new DecisionNode(s0, 0, nullptr);
+    root_ = make_unique<DecisionNode>(s0, 0, nullptr);
     for (int i = 0; i < num_trials_; i++) {
-        root->visit(this, problem_);
+        root_.get()->visit(this, problem_);
     }
-    return recommend(root);
+    return recommend(root_.get());
+    delete_tree();
                                                                                 dprint1("done");
 }
 

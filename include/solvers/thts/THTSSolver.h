@@ -109,6 +109,9 @@ public:
     // The parent can't be a nullptr.
     ChanceNode(mlcore::Action* action, int depth, DecisionNode* parent);
 
+    // Delete this node and all of its childrens.
+    ~ChanceNode();
+
     mlcore::Action* action() const { return action_; }
 
     std::vector<DecisionNode*>& explicatedSuccessors() {
@@ -164,6 +167,9 @@ public:
     // set to false.
     DecisionNode(mlcore::State* state, int depth, ChanceNode* parent = nullptr);
 
+    // Deletes this node and all of its children.
+    ~DecisionNode();
+
     std::vector<ChanceNode*>& successors() { return successors_; }
 
     mlcore::State* state() const { return state_; }
@@ -202,6 +208,9 @@ private:
     // The heuristic to use for the node initialization.
     THTSHeuristic* heuristic_;
 
+    // The root of the search tree.
+    std::unique_ptr<DecisionNode> root_;
+
     // The number of trials to perform.
     int num_trials_;
 
@@ -232,15 +241,21 @@ public:
                int num_trials,
                int max_depth,
                int max_nodes_expanded_per_trial,
-               int num_virtual_rollouts = 0) :
-        problem_(problem), heuristic_(heuristic),
-        num_trials_(num_trials), max_depth_(max_depth),
-        max_nodes_expanded_per_trial_(max_nodes_expanded_per_trial),
-        num_virtual_rollouts_(num_virtual_rollouts) {
+               int num_virtual_rollouts = 0)
+        : problem_(problem), heuristic_(heuristic),
+          num_trials_(num_trials), max_depth_(max_depth),
+          max_nodes_expanded_per_trial_(max_nodes_expanded_per_trial),
+          num_virtual_rollouts_(num_virtual_rollouts) {
         num_nodes_expanded_trial_ = 0;
+        root_ = nullptr;
     }
 
-    virtual ~THTSSolver() {}
+    virtual ~THTSSolver() { delete_tree();}
+
+    // Frees the memory occupied by the search tree.
+    void delete_tree() {
+        root_.reset();
+    }
 
     // Whether or not the trial must be continued.
     bool continueTrial();

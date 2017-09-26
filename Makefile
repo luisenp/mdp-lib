@@ -81,7 +81,7 @@ ALL_H = $(I_H) $(SOLV_H) $(SOLV_THTS_H) $(MOSOLV_H) $(DOM_H) $(UTIL_H)
 ALL_CPP = $(DOM_CPP) $(SOLV_CPP) $(SOLV_THTS_CPP) $(MOSOLV_CPP) $(UTIL_CPP)
 
 # Libraries
-LIBS = lib/mdplib.a lib/mdplib_domains.a -Llib
+LIBS = -Llib -lmdplib -lmdplib_domains
 LIBS_GUROBI = $(LIBS) -lgurobi60 -Llib
 
 #########################################################################
@@ -89,13 +89,13 @@ LIBS_GUROBI = $(LIBS) -lgurobi60 -Llib
 #########################################################################
 
 # Compiles the core MDP-LIB library #
-mdplib: lib/mdplib.a
-lib/mdplib.a: $(OD)/core.a $(OD)/solvers.a
+mdplib: lib/libmdplib.a
+lib/libmdplib.a: $(OD)/core.a $(OD)/solvers.a
 	make $(OD)/core.a
 	make $(OD)/solvers.a
-	ar rvs mdplib.a $(OD)/core/*.o $(OD)/solvers/*.o
+	ar rvs libmdplib.a $(OD)/core/*.o $(OD)/solvers/*.o
 	mkdir -p lib
-	mv mdplib.a lib
+	mv libmdplib.a lib
 
 # Compiles the multi-objective solvers
 $(OD)/mo-solvers.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_H) $(MOSOLV_H) $(MOSOLV_CPP)
@@ -225,17 +225,17 @@ b2t: $(BT_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(BT_H) mdplib
 	  $(TD)/testB2T.cpp $(TD)/*.o $(LIBS)
 	rm test/*.o
 
-domains: lib/mdplib_domains.a
-lib/mdplib_domains.a: lib/mdplib.a $(DOM_H) $(DOM_CPP)
+domains: lib/libmdplib_domains.a
+lib/libmdplib_domains.a: lib/libmdplib.a $(DOM_H) $(DOM_CPP)
 	$(CC) $(CFLAGS) $(INCLUDE) -c $(DOM_CPP)
 	mkdir -p $(OD_DOMAINS)
 	mv *.o $(OD_DOMAINS)
-	ar rvs lib/mdplib_domains.a $(OD_DOMAINS)/*.o
+	ar rvs lib/libmdplib_domains.a $(OD_DOMAINS)/*.o
 
-testsolver.out: lib/mdplib.a domains
+testsolver.out: lib/libmdplib.a domains
 	$(CC) $(CFLAGS) $(INCLUDE) -o testsolver.out $(TD)/testSolver.cpp $(LIBS)
 
-testthts.out: lib/mdplib.a domains
+testthts.out: lib/libmdplib.a domains
 	$(CC) $(CFLAGS) $(INCLUDE) -o testthts.out $(TD)/testTHTS.cpp $(LIBS) src/solvers/VISolver.cpp
 
 # Compiles the mini-gpt library
@@ -246,7 +246,7 @@ lib/libminigpt.a: include/ppddl/mini-gpt/*
 
 # Compiles the PPDDL library
 ppddl: planserv
-planserv: lib/mdplib.a src/ppddl/*.cpp include/ppddl/*.h \
+planserv: lib/libmdplib.a src/ppddl/*.cpp include/ppddl/*.h \
 lib/libminigpt.a test/testPPDDL.cpp test/testClient.cpp test/planningServer.cpp
 	$(CC) $(CFLAGS) -Iinclude -Iinclude/ppddl -Include/ppddl/mini-gpt -I$(ID_SOLV) -c src/ppddl/*.cpp
 	mkdir -p $(TD)
@@ -255,17 +255,17 @@ lib/libminigpt.a test/testPPDDL.cpp test/testClient.cpp test/planningServer.cpp
 	mv *.o $(OD_PPDDL)
 	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) $(INCLUDE_PPDDL) \
 	  -o testppddl.out $(TD)/testPPDDL.cpp include/ppddl/mini-gpt/heuristics.cc \
-	  -Llib lib/mdplib.a lib/libminigpt.a lib/mdplib_ppddl.a
+	  -Llib lib/libmdplib.a lib/libminigpt.a lib/mdplib_ppddl.a
 	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) $(INCLUDE_PPDDL) \
 	  -o testclient $(TD)/testClient.cpp include/ppddl/mini-gpt/heuristics.cc \
-	  -Llib lib/mdplib.a lib/libminigpt.a lib/mdplib_ppddl.a -lsocket -L/usr/lib/happycoders
+	  -Llib lib/libmdplib.a lib/libminigpt.a lib/mdplib_ppddl.a -lsocket -L/usr/lib/happycoders
 	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) $(INCLUDE_PPDDL) \
 	  -o planserv $(TD)/planningServer.cpp include/ppddl/mini-gpt/heuristics.cc \
-	  -Llib lib/mdplib.a lib/libminigpt.a lib/mdplib_ppddl.a -lsocket -L/usr/lib/happycoders
+	  -Llib lib/libmdplib.a lib/libminigpt.a lib/mdplib_ppddl.a -lsocket -L/usr/lib/happycoders
 
 # Compiles the reduced model code
 reduced: lib/mdplib_reduced.a
-lib/mdplib_reduced.a: lib/mdplib.a domains ppddl $(SD_REDUCED)/*.cpp $(ID_REDUCED)/*.h
+lib/mdplib_reduced.a: lib/libmdplib.a domains ppddl $(SD_REDUCED)/*.cpp $(ID_REDUCED)/*.h
 	$(CC) $(CFLAGS) -Iinclude -I$(ID_REDUCED) -c $(SD_REDUCED)/*.cpp
 	mkdir -p $(TD)
 	ar rvs lib/mdplib_reduced.a *.o

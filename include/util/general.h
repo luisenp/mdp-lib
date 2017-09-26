@@ -14,9 +14,16 @@
 
 extern bool mdplib_debug;
 
+// Implementation of c++14 std::make_unique as explained in
+// https://herbsutter.com/gotw/_102/
+template<typename T, typename... Args>
+std::unique_ptr<T> make_unique(Args&&... args)
+{
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
+
 // TODO: Implement this using variadic function/templates.
 // Current implementation quite ugly
-
 template <class T>
 void dprint1(T x)
 {

@@ -43,6 +43,7 @@ extern std::uniform_real_distribution<> dis;
 class Solver
 {
 public:
+    virtual ~Solver() {}
 
     /**
      * Solves the associated problem using this solver.

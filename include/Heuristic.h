@@ -12,6 +12,8 @@ namespace mlcore
 class Heuristic
 {
 public:
+    virtual ~Heuristic() {}
+
     /**
      * Returns an estimate of reaching a goal state from the given state.
      */
