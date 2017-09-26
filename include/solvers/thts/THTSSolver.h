@@ -18,6 +18,8 @@ class ChanceNode;
 class DecisionNode;
 class THTSSolver;
 
+enum THTSBackup {MONTE_CARLO = 0, MAX_MONTE_CARLO = 1, PARTIAL_BELLMAN = 2};
+
 // A node in the search tree.
 class THTSNode {
 
@@ -50,10 +52,6 @@ public:
     int backupCounter() const { return backup_counter_; }
 
     int selectionCounter() const { return selection_counter_; }
-
-    void increaseBackupCounter() { this->backup_counter_++; }
-
-    void increaseSelectionCounter() { this->selection_counter_++; }
 
     // Visits this node and performs computation on it, expanding
     // any successors if necessary.
@@ -226,6 +224,9 @@ private:
     // The number of virtual rollouts for initialization.
     int num_virtual_rollouts_;
 
+    // The type of backup function to use (default MONTE_CARLO).
+    THTSBackup backup_function_;
+
     // Computes the values of the actions for the decision node using
     // the UCB1 selection rule and stores the best ones in the given
     // vector.
@@ -248,9 +249,14 @@ public:
           num_virtual_rollouts_(num_virtual_rollouts) {
         num_nodes_expanded_trial_ = 0;
         root_ = nullptr;
+        backup_function_ = MONTE_CARLO;
     }
 
     virtual ~THTSSolver() { delete_tree();}
+
+    void backupFunction(THTSBackup value) {
+        backup_function_ = value;
+    }
 
     // Frees the memory occupied by the search tree.
     void delete_tree() {

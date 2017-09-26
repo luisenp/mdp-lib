@@ -36,6 +36,11 @@ THTSSolver* solver = nullptr;;
 int verbosity = 0;
 bool useOnline = false;
 
+unordered_map<string, THTSBackup> string_backup_function_map({
+    {"mc", MONTE_CARLO},
+    {"max-mc", MAX_MONTE_CARLO},
+    {"pb", PARTIAL_BELLMAN}
+});
 
 void setupRacetrack()
 {
@@ -152,7 +157,6 @@ bool mustReplan(State* s, int plausTrial) {
 
 void initSolver()
 {
-    assert(flag_is_registered_with_value("backup"));
     assert(flag_is_registered_with_value("action-sel"));
 
     int horizon = 5, trials = 1000;
@@ -164,6 +168,12 @@ void initSolver()
     THTSHeuristic* thts_heuristic =
         new THTSWrapperHeuristic(problem, heuristic);
     solver = new THTSSolver(problem, thts_heuristic, trials, horizon, horizon);
+
+    if (flag_is_registered_with_value("backup")) {
+        assert(string_backup_function_map.count(flag_value("backup")));
+        solver->backupFunction(
+            string_backup_function_map[flag_value("backup")]);
+    }
 }
 
 
@@ -206,7 +216,7 @@ int main(int argc, char* args[])
     if (verbosity > 100)
         cout << problem->states().size() << " states" << endl;
 
-        initSolver();
+    initSolver();
 
     int nsims = 100;
     if (flag_is_registered_with_value("n"))
