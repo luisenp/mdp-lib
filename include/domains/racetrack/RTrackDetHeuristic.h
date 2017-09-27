@@ -18,7 +18,6 @@ public:
     RTrackDetHeuristic(const char* filename);
     virtual ~RTrackDetHeuristic()
     {
-        std::cout << "booo!!" << std::endl;
         detProblem_.reset();
     }
 

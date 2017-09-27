@@ -27,6 +27,9 @@ protected:
     // The parent node.
     THTSNode* parent_;
 
+    // The solver to which this node belongs too.
+    THTSSolver* solver_;
+
     // The depth at which this node is found.
     int depth_;
 
@@ -41,6 +44,9 @@ protected:
 
     // Initializes the node (values and counters).
     virtual void initialize(THTSSolver* solver) =0;
+
+    // An unique index for the node.
+    int index_;
 
 public:
     THTSNode* parent() const { return parent_; }
@@ -87,6 +93,9 @@ private:
     // The value estimate of the state-action pair represented by this node.
     double action_value_;
 
+    // Maintains the sum of the probabilities of the solved successors.
+    double total_prob_solved_successors_;
+
     // The set of successors that have been expanded for this node.
     std::vector<DecisionNode*> explicated_successors_;
 
@@ -98,14 +107,21 @@ private:
     void updateSuccessorIndexMap(mlcore::State* s);
 
     // Returns the decision node associated with this state.
-    DecisionNode* getDecisionNodeForState(mlcore::State* s);
+    // Input |prob| represents the probability of this decision node in the
+    // successor distribution, and it's used if the decision node has to be
+    // created
+    DecisionNode*
+    createOrGetDecisionNodeForState(mlcore::State* s, double prob);
 
 public:
     // Creates a chance node for the given action at the given depth.
     // The counters and action value are initialized to 0.
     // The solved label is set to false.
     // The parent can't be a nullptr.
-    ChanceNode(mlcore::Action* action, int depth, DecisionNode* parent);
+    ChanceNode(mlcore::Action* action,
+               int depth,
+               THTSSolver* solver,
+               DecisionNode* parent);
 
     // Delete this node and all of its childrens.
     ~ChanceNode();
@@ -145,6 +161,10 @@ private:
     // The value estimate of the state represented by this node.
     double state_value_;
 
+    // The probability with which this node occurs in the parent's successors
+    // distribution.
+    double prob_;
+
     // Maps an action to an index in the chance node successors array.
     mlcore::ActionIntMap action_chance_node_index_map_;
 
@@ -158,12 +178,25 @@ private:
     // Returns the chance node associated with this action.
     ChanceNode* getChanceNodeForAction(mlcore::Action* action);
 
+    // Updates the parent data when this outcome is solved.
+    void UpdateParentWithSolvedOutcome() {
+                                                                                std::cerr << "updt " << this << " " << prob_ << std::endl;
+        static_cast<ChanceNode*>(this->parent_)->
+            total_prob_solved_successors_ += prob_;
+    }
+
 public:
     // Creates a decision node for the given state at the given depth.
     // If |parent| is nullptr, then it's expected that depth = 0 (root node).
     // The counters and action value are initialized to 0. The solved label is
     // set to false.
-    DecisionNode(mlcore::State* state, int depth, ChanceNode* parent = nullptr);
+    // It is also possible to specify the probability of reaching the node
+    // in the parent successor distribution.
+    DecisionNode(mlcore::State* state,
+                 int depth,
+                 THTSSolver* solver,
+                 ChanceNode* parent = nullptr,
+                 double prob = 0.0);
 
     // Deletes this node and all of its children.
     ~DecisionNode();
@@ -227,10 +260,17 @@ private:
     // The type of backup function to use (default MONTE_CARLO).
     THTSBackup backup_function_;
 
+    // Maintains indices for the nodes created by the algorithm.
+    int current_node_index_;
+
+    // Returns a state randomly sampled from the normalized unsolved outcomes
+    // distributions.
+    mlcore::State* randomUnsolvedOutcomeSelect(ChanceNode* node, double* prob);
+
     // Computes the values of the actions for the decision node using
     // the UCB1 selection rule and stores the best ones in the given
     // vector.
-    void ucb1SelectRule(
+    void ucb1ActionSelectRule(
         DecisionNode* node,
         double q_min,
         double q_max,
@@ -270,7 +310,9 @@ public:
     mlcore::Action* selectAction(DecisionNode* node);
 
     // Selects an outcome for the given chance node.
-    mlcore::State* selectOutcome(ChanceNode* node);
+    // If |prob| != nullptr, then the method will return the probability
+    // of the selected successor.
+    mlcore::State* selectOutcome(ChanceNode* node, double* prob = nullptr);
 
     // Recommend an action for execution.
     mlcore::Action* recommend(DecisionNode* node);
