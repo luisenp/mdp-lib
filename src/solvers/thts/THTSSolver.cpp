@@ -25,6 +25,7 @@ ChanceNode::ChanceNode(mlcore::Action* action,
     action_ = action;
     action_value_ = 0.0;
     total_prob_solved_successors_ = 0.0;
+    solver->register_node(this);
                                                                                 counter++;
 }
 
@@ -142,6 +143,7 @@ DecisionNode::DecisionNode(mlcore::State* state,
     state_value_ = 0.0;
     prob_ = prob;
     solver_ = solver;
+    solver->register_node(this);
                                                                                 counter++;
 }
 
@@ -220,6 +222,11 @@ void DecisionNode::initialize(THTSSolver* solver) {
 // ********************************************************************** //
 //                               THTSSolver                               //
 // ********************************************************************** //
+void THTSSolver::register_node(THTSNode* node) {
+    node->index(current_node_index_);
+    current_node_index_++;
+}
+
 // TODO: This needs to be adjusted so that old values can be reused during
 // re-planning
 mlcore::Action* THTSSolver::solve(mlcore::State* s0) {
@@ -293,6 +300,7 @@ THTSSolver::randomUnsolvedOutcomeSelect(ChanceNode* node, double* prob) {
     double acc = 0.0;
                                                                                 cerr << "*************************************" << endl;
     for (mlcore::Successor sccr : problem_->transition(state, node->action_)) {
+                                                                                cerr << "*** " << sccr.su_state << endl;
         DecisionNode* sccr_node = nullptr;
         if (node->state_successor_index_map_.count(sccr.su_state)) {
             sccr_node = node->explicated_successors_[
@@ -302,7 +310,6 @@ THTSSolver::randomUnsolvedOutcomeSelect(ChanceNode* node, double* prob) {
                                                                                 cerr << sccr_node << endl;
             continue;
         }
-                                                                                cerr << "*** " << sccr.su_state << endl;
         acc += sccr.su_prob / (1.0 - node->total_prob_solved_successors_);
         if (acc >= pick) {
             if (prob != nullptr)

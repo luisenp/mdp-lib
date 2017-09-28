@@ -95,16 +95,17 @@ RacetrackProblem::transition(mlcore::State* s, mlcore::Action* a)
         for (std::pair<int,int> start : starts_) {
             mlcore::State* next =
                 new RacetrackState(start.first, start.second, 0, 0, this);
-            successors.push_back(mlcore::Successor(this->addState(next),
-                                 1.0 / starts_.size()));
+            addStateToSuccessorList(this->addState(next),
+                                    1.0 / starts_.size(),
+                                    successors);
         }
         return successors;
     }
 
     if (goal(s) || s == absorbing_) {
         std::list<mlcore::Successor> successors;
-        successors.push_back(
-            mlcore::Successor(this->addState(absorbing_), 1.0));
+        addStateToSuccessorList(
+            this->addState(absorbing_), 1.0, successors);
         return successors;
     }
 
@@ -125,7 +126,7 @@ RacetrackProblem::transition(mlcore::State* s, mlcore::Action* a)
         int ax = rta->ax(), ay = rta->ay();
         mlcore::State* next =
           this->addState(new RacetrackState(x + ax, y + ay, ax, ay, this));
-        allSuccessors->at(idAction).push_back(mlcore::Successor(next, 1.0));
+        addStateToSuccessorList(next, 1.0, allSuccessors->at(idAction));
         return allSuccessors->at(idAction);
     }
 
@@ -143,13 +144,13 @@ RacetrackProblem::transition(mlcore::State* s, mlcore::Action* a)
     double acc = 0.0;
     if (p_slip != 0.0) {
         mlcore::State* next = this->addState(resultingState(rts, 0, 0));
-        allSuccessors->at(idAction).push_back(mlcore::Successor(next, pSlip_));
+        addStateToSuccessorList(next, pSlip_, allSuccessors->at(idAction));
         acc += pSlip_;
     }
     if (p_int != 0.0) {
         mlcore::State* next =
             this->addState(resultingState(rts, rta->ax(), rta->ay()));
-        allSuccessors->at(idAction).push_back(mlcore::Successor(next, p_int));
+        addStateToSuccessorList(next, p_int, allSuccessors->at(idAction));
         acc += p_int;
     }
     if (p_err != 0.0) {
@@ -169,8 +170,7 @@ RacetrackProblem::transition(mlcore::State* s, mlcore::Action* a)
                 continue;
             mlcore::State* next =
                 this->addState(resultingState(rts, rtaE->ax(), rtaE->ay()));
-            allSuccessors->at(idAction).
-                push_back(mlcore::Successor(next, p_err / cnt));
+            addStateToSuccessorList(next, p_err, allSuccessors->at(idAction));
             acc += p_err / cnt;
         }
     }
@@ -261,8 +261,7 @@ RacetrackProblem::flatTransition(mlcore::State* s, mlcore::Action* a)
         for (std::pair<int,int> start : starts_) {
             mlcore::State* next =
                 new RacetrackState(start.first, start.second, 0, 0, this);
-            successors.push_back(mlcore::Successor(this->addState(next),
-                                 1.0 / starts_.size()));
+            addStateToSuccessorList(next, 1.0 / starts_.size(), successors);
         }
         return successors;
     }
@@ -271,10 +270,11 @@ RacetrackProblem::flatTransition(mlcore::State* s, mlcore::Action* a)
 
     if (goal(s) || s == absorbing_) {
         std::list<mlcore::Successor> successors;
-        for (int i = 0; i < numSuccessors; i++)
-            successors.push_back(
-                mlcore::Successor(this->addState(absorbing_),
-                                  1.0 / numSuccessors));
+        for (int i = 0; i < numSuccessors; i++) {
+            addStateToSuccessorList(this->addState(absorbing_),
+                                    1.0 / numSuccessors,
+                                    successors);
+        }
         return successors;
     }
 
@@ -291,9 +291,11 @@ RacetrackProblem::flatTransition(mlcore::State* s, mlcore::Action* a)
         int ax = rta->ax(), ay = rta->ay();
         mlcore::State* next =
           this->addState(new RacetrackState(x + ax, y + ay, ax, ay, this));
-        for (int i = 0; i < numSuccessors; i++)
-            allSuccessors->at(idAction).
-                push_back(mlcore::Successor(next, 1.0 / numSuccessors));
+        for (int i = 0; i < numSuccessors; i++) {
+            addStateToSuccessorList(next,
+                                    1.0 / numSuccessors,
+                                    allSuccessors->at(idAction));
+        }
         return allSuccessors->at(idAction);
     }
 
@@ -310,11 +312,11 @@ RacetrackProblem::flatTransition(mlcore::State* s, mlcore::Action* a)
 
     double acc = 0.0;
     mlcore::State* next = this->addState(resultingState(rts, 0, 0));
-    allSuccessors->at(idAction).push_back(mlcore::Successor(next, p_slip));
+    addStateToSuccessorList(next, p_slip, allSuccessors->at(idAction));
     acc += p_slip;
 
     next = this->addState(resultingState(rts, rta->ax(), rta->ay()));
-    allSuccessors->at(idAction).push_back(mlcore::Successor(next, p_int));
+    addStateToSuccessorList(next, p_int, allSuccessors->at(idAction));
     acc += p_int;
 
     for (mlcore::Action* a2 : actions_) {
@@ -324,8 +326,9 @@ RacetrackProblem::flatTransition(mlcore::State* s, mlcore::Action* a)
         if (dist == 0 || dist > 1)
             continue;
         next = this->addState(resultingState(rts, rtaE->ax(), rtaE->ay()));
-        allSuccessors->at(idAction).
-            push_back(mlcore::Successor(next, p_err / (numSuccessors - 2)));
+        addStateToSuccessorList(next,
+                                p_err / (numSuccessors - 2),
+                                allSuccessors->at(idAction));
         acc += p_err / (numSuccessors - 2);
     }
     assert(fabs(acc - 1.0) < 1.0e-6);
@@ -342,6 +345,21 @@ int RacetrackProblem::numSuccessorsAction(RacetrackAction* rta)
     else if (actionMagnitude == 2)
         return 4;
     return 6;
+
+}
+
+void RacetrackProblem::addStateToSuccessorList(
+    mlcore::State* state, double prob, std::list<mlcore::Successor>& successors)
+{
+    if (keepSingleCopy_) {
+        for (mlcore::Successor& sccr : successors) {
+            if (state->equals(sccr.su_state)) {
+                sccr.su_prob += prob;
+                return;
+            }
+        }
+    }
+    successors.push_back(mlcore::Successor(this->addState(state), prob));
 
 }
 

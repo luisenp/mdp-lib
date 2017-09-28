@@ -59,6 +59,8 @@ public:
 
     int selectionCounter() const { return selection_counter_; }
 
+    void index(int value) { index_ = value; }
+
     // Visits this node and performs computation on it, expanding
     // any successors if necessary.
     // The given problem is used to access the transition and reward
@@ -143,7 +145,8 @@ public:
 
     // Overrides method in THTSNode.
     virtual std::ostream& print (std::ostream& os) const {
-        os << "chance (" << action_ << ", " << depth_ << ")";
+        os << "chance-" << this->index_
+            << " (" << action_ << ", " << depth_ << ")";
         return os;
     }
 };
@@ -180,9 +183,11 @@ private:
 
     // Updates the parent data when this outcome is solved.
     void UpdateParentWithSolvedOutcome() {
-                                                                                std::cerr << "updt " << this << " " << prob_ << std::endl;
         static_cast<ChanceNode*>(this->parent_)->
             total_prob_solved_successors_ += prob_;
+                                                                                std::cerr << "updt " << this << " " << prob_
+                                                                                    << " " << static_cast<ChanceNode*>(this->parent_)->
+                                                                                        total_prob_solved_successors_ << std::endl;
     }
 
 public:
@@ -219,7 +224,7 @@ public:
 
     // Overrides method in THTSNode.
     virtual std::ostream& print(std::ostream& os) const {
-        os << "dec (" << state_ << ", " << depth_ << ")";
+        os << "dec-" << this->index_ << " (" << state_ << ", " << depth_ << ")";
         return os;
     }
 };
@@ -263,6 +268,9 @@ private:
     // Maintains indices for the nodes created by the algorithm.
     int current_node_index_;
 
+    // Assigns an index to the given node and updates the index counter.
+    void register_node(THTSNode* node);
+
     // Returns a state randomly sampled from the normalized unsolved outcomes
     // distributions.
     mlcore::State* randomUnsolvedOutcomeSelect(ChanceNode* node, double* prob);
@@ -290,6 +298,7 @@ public:
         num_nodes_expanded_trial_ = 0;
         root_ = nullptr;
         backup_function_ = MONTE_CARLO;
+        current_node_index_ = 0;
     }
 
     virtual ~THTSSolver() { delete_tree();}
@@ -300,6 +309,7 @@ public:
 
     // Frees the memory occupied by the search tree.
     void delete_tree() {
+        current_node_index_ = 0;
         root_.reset();
     }
 

@@ -51,9 +51,11 @@ void setupRacetrack()
     if (flag_is_registered_with_value("mds"))
         mds = stoi(flag_value("mds"));
     problem = new RacetrackProblem(trackName.c_str());
-    ((RacetrackProblem*) problem)->pError(0.20);
-    ((RacetrackProblem*) problem)->pSlip(0.10);
-    ((RacetrackProblem*) problem)->mds(mds);
+    RacetrackProblem* rtp = static_cast<RacetrackProblem*>(problem);
+    rtp->pError(0.20);
+    rtp->pSlip(0.10);
+    rtp->mds(mds);
+    rtp->keepSingleCopy(true);
     if (!flag_is_registered_with_value("heuristic") ||
             flag_value("heuristic") == "domain")
         heuristic = new RTrackDetHeuristic(trackName.c_str());

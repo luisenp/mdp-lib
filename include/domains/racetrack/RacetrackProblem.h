@@ -71,6 +71,9 @@ private:
     /* If true, the flat transition function will be used */
     bool useFlatTransition_ = false;
 
+    /* If true, a single copy of the states will be kept in successor lists. */
+    bool keepSingleCopy_ = false;
+
     /* Stores the track to be used in this problem */
     std::vector<std::vector <char> > track_;
 
@@ -93,6 +96,17 @@ private:
     virtual std::list<mlcore::Successor> flatTransition(mlcore::State* s,
                                                         mlcore::Action* a);
 
+    /*
+     * Adds the state to the given successor list with the given probability.
+     * If keep_single_copy_ = true,
+     * it will keep a single copy of each successor state and associate this
+     * copy with the total probability (which might come from different
+     * outcomes).
+     */
+    void addStateToSuccessorList(mlcore::State* state,
+                                 double prob,
+                                 std::list<mlcore::Successor>& successors);
+
 public:
 
     /**
@@ -101,6 +115,8 @@ public:
     RacetrackProblem(const char* filename);
 
     virtual ~RacetrackProblem() {}
+
+    void keepSingleCopy(bool value) { keepSingleCopy_ = value; }
 
     std::vector<std::vector <char> > & track() { return track_; }
 
