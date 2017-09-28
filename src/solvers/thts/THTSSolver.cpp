@@ -85,6 +85,7 @@ ChanceNode::createOrGetDecisionNodeForState(mlcore::State* state, double prob) {
         return explicated_successors_[successor_node_index];
     } else {
         // Successor state has never been explicated, add a new node.
+                                                                                cerr << "create-new." << endl;
         explicated_successors_.push_back(new DecisionNode(state,
                                                           this->depth_ + 1,
                                                           this->solver_,
@@ -116,6 +117,7 @@ double ChanceNode::visit(THTSSolver* solver, mlcore::Problem* problem) {
         double prob_successor = 0.0;
         mlcore::State* s = solver->selectOutcome(this, &prob_successor);
         DecisionNode* node = createOrGetDecisionNodeForState(s, prob_successor);
+                                                                                cerr << "outcome: " << node << " solved " << node->solved_ << endl;
         cumulative_value += node->visit(solver, problem);
     } else {
         // Assigns a value according to the successors' heuristic cost,
@@ -167,7 +169,10 @@ void DecisionNode::updateSuccessorIndexMap(mlcore::Action* action) {
 void DecisionNode::backup(THTSSolver* solver, double cumulative_value) {
     this->backup_counter_++;
     state_value_ = std::numeric_limits<double>::max();
+    this->solved_ = true;
     for (ChanceNode* successor : successors_) {
+        if (!successor->solved_)
+            this->solved_ = false;
         if (successor->action_value_ < state_value_) {
             state_value_ = successor->action_value_;
         }
@@ -183,6 +188,8 @@ double DecisionNode::visit(THTSSolver* solver, mlcore::Problem* problem) {
         this->backup_counter_++;
         state_value_ = 0.0;
         if (solver->backup_function_ == PARTIAL_BELLMAN) {
+                                                                                if (this->solved_)
+                                                                                    cerr << "solved " << this << endl;
             assert(!this->solved_);
             UpdateParentWithSolvedOutcome();
             this->solved_ = true;
@@ -259,6 +266,8 @@ THTSSolver::ucb1ActionSelectRule(DecisionNode* node,
                                                                                 dprint5(debug_pad(2 * node->depth_ + 1), "q-values (max, min, diff)", q_max, q_min, q_diff);
     for (ChanceNode* action_node : node->successors()) {
                                                                                 dprint3(debug_pad(2 * node->depth_ + 1), node->selection_counter_, action_node->selection_counter_);
+        if (action_node->solved_)   // Select only unsolved nodes
+            continue;
         if (action_node->selection_counter_ == 0) {
             best_action_nodes.push_back(action_node);
             return;
@@ -300,7 +309,6 @@ THTSSolver::randomUnsolvedOutcomeSelect(ChanceNode* node, double* prob) {
     double acc = 0.0;
                                                                                 cerr << "*************************************" << endl;
     for (mlcore::Successor sccr : problem_->transition(state, node->action_)) {
-                                                                                cerr << "*** " << sccr.su_state << endl;
         DecisionNode* sccr_node = nullptr;
         if (node->state_successor_index_map_.count(sccr.su_state)) {
             sccr_node = node->explicated_successors_[
