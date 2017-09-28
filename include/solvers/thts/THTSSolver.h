@@ -185,9 +185,9 @@ private:
     void UpdateParentWithSolvedOutcome() {
         static_cast<ChanceNode*>(this->parent_)->
             total_prob_solved_successors_ += prob_;
-                                                                                std::cerr << "updt " << this << " " << prob_
-                                                                                    << " " << static_cast<ChanceNode*>(this->parent_)->
-                                                                                        total_prob_solved_successors_ << std::endl;
+//                                                                                std::cerr << "updt " << this << " " << prob_
+//                                                                                    << " " << static_cast<ChanceNode*>(this->parent_)->
+//                                                                                        total_prob_solved_successors_ << std::endl;
     }
 
 public:
