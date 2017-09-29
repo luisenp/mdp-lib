@@ -50,7 +50,9 @@ void ChanceNode::backup(THTSSolver* solver, double cumulative_value) {
             } case MAX_MONTE_CARLO: {
                 double total_value_successors = 0.0;
                 int total_backup_successors = 0;
-                action_value_ = 0;
+                action_value_ = solver->problem_->cost(
+                    static_cast<DecisionNode*>(this->parent_)->state_,
+                    action_);
                 for (DecisionNode* successor : explicated_successors_) {
                     total_value_successors +=
                         successor->backup_counter_ * successor->state_value_;
@@ -62,7 +64,9 @@ void ChanceNode::backup(THTSSolver* solver, double cumulative_value) {
             } case PARTIAL_BELLMAN: {
                 double total_value_successors = 0.0;
                 double total_prob_successors = 0;
-                action_value_ = 0;
+                action_value_ = solver->problem_->cost(
+                    static_cast<DecisionNode*>(this->parent_)->state_,
+                    action_);
                 for (DecisionNode* successor : explicated_successors_) {
                     total_value_successors +=
                         successor->prob_ * successor->state_value_;
@@ -191,6 +195,10 @@ void DecisionNode::backup(THTSSolver* solver, double cumulative_value) {
             state_value_ = successor->action_value_;
         }
     }
+                                                                                dprint(debug_pad(2 * this->depth_),
+                                                                                        "backup",
+                                                                                        this,
+                                                                                        state_value_);
     if (this->solved_) {
         UpdateParentWithSolvedOutcome();
     }
@@ -311,7 +319,7 @@ mlcore::Action* THTSSolver::selectAction(DecisionNode* node) {
     double q_min = std::numeric_limits<double>::max();
     double q_max = -q_min;
     for (ChanceNode* action_node : node->successors()) {
-                                                                                dprint(debug_pad(2 * node->depth_ + 1), "action-select-minmax:", action_node->action_value_);
+                                                                                dprint(debug_pad(2 * node->depth_ + 1), action_node, "action-select-minmax:", action_node->action_value_);
         q_max = std::max(action_node->action_value_ , q_max);
         q_min = std::min(action_node->action_value_, q_min);
     }

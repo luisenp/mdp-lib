@@ -25,7 +25,8 @@ std::unique_ptr<T> make_unique(Args&&... args)
 template <typename T>
 void dprint(T t)
 {
-    std::cerr << t << std::endl ;
+    if (mdplib_debug)
+        std::cerr << t << std::endl ;
 }
 
 /**
@@ -34,8 +35,10 @@ void dprint(T t)
 template<typename T, typename... Args>
 void dprint(T t, Args... args) // recursive variadic function
 {
-    std::cerr << t << " ";
-    dprint(args...);
+    if (mdplib_debug) {
+        std::cerr << t << " ";
+        dprint(args...);
+    }
 }
 
 std::string debug_pad(int n);
