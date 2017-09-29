@@ -144,8 +144,8 @@ RacetrackProblem::transition(mlcore::State* s, mlcore::Action* a)
     double acc = 0.0;
     if (p_slip != 0.0) {
         mlcore::State* next = this->addState(resultingState(rts, 0, 0));
-        addStateToSuccessorList(next, pSlip_, allSuccessors->at(idAction));
-        acc += pSlip_;
+        addStateToSuccessorList(next, p_slip, allSuccessors->at(idAction));
+        acc += p_slip;
     }
     if (p_int != 0.0) {
         mlcore::State* next =
@@ -170,7 +170,7 @@ RacetrackProblem::transition(mlcore::State* s, mlcore::Action* a)
                 continue;
             mlcore::State* next =
                 this->addState(resultingState(rts, rtaE->ax(), rtaE->ay()));
-            addStateToSuccessorList(next, p_err, allSuccessors->at(idAction));
+            addStateToSuccessorList(next, p_err / cnt, allSuccessors->at(idAction));
             acc += p_err / cnt;
         }
     }
@@ -360,6 +360,5 @@ void RacetrackProblem::addStateToSuccessorList(
         }
     }
     successors.push_back(mlcore::Successor(this->addState(state), prob));
-
 }
 
