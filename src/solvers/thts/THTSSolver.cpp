@@ -37,36 +37,49 @@ void ChanceNode::backup(THTSSolver* solver, double cumulative_value) {
     if (this->depth_ == solver->max_depth_) {
         // This is set to C(s,a) + sum_s' T(s'|s,a)H(s') by ChanceNode::visit()
         action_value_ = cumulative_value;
+                                                                                dprint(debug_pad(2 * this->depth_),
+                                                                                        "backup-leaf",
+                                                                                        this,
+                                                                                        action_value_);
     } else {
-        if (solver->backup_function_ == MONTE_CARLO) {
-            // Monte-Carlo backup
-            action_value_ +=
-                (cumulative_value - action_value_) / backup_counter_;
-        } else if (solver->backup_function_ == MAX_MONTE_CARLO) {
-            // Max-Monte-Carlo backup
-            double total_value_successors = 0.0;
-            int total_backup_successors = 0;
-            for (DecisionNode* successor : explicated_successors_) {
-                total_value_successors +=
-                    successor->backup_counter_ * successor->state_value_;
-                    total_backup_successors += successor->backup_counter_;
-            }
-            action_value_ += (total_value_successors / total_backup_successors);
-        } else if (solver->backup_function_ == PARTIAL_BELLMAN) {
-            // Partial Bellman backup
-            double total_value_successors = 0.0;
-            double total_prob_successors = 0;
-            for (DecisionNode* successor : explicated_successors_) {
-                total_value_successors +=
-                    successor->prob_ * successor->state_value_;
-                total_prob_successors += successor->prob_;
-            }
-            action_value_ += (total_value_successors / total_prob_successors);
-            if (total_prob_solved_successors_ > 1.0 - mdplib::epsilon) {
-                this->solved_ = true;
+        switch(solver->backup_function_) {
+            case MONTE_CARLO: {
+                action_value_ +=
+                    (cumulative_value - action_value_) / backup_counter_;
+                break;
+            } case MAX_MONTE_CARLO: {
+                double total_value_successors = 0.0;
+                int total_backup_successors = 0;
+                action_value_ = 0;
+                for (DecisionNode* successor : explicated_successors_) {
+                    total_value_successors +=
+                        successor->backup_counter_ * successor->state_value_;
+                        total_backup_successors += successor->backup_counter_;
+                }
+                action_value_ +=
+                    (total_value_successors / total_backup_successors);
+                break;
+            } case PARTIAL_BELLMAN: {
+                double total_value_successors = 0.0;
+                double total_prob_successors = 0;
+                action_value_ = 0;
+                for (DecisionNode* successor : explicated_successors_) {
+                    total_value_successors +=
+                        successor->prob_ * successor->state_value_;
+                    total_prob_successors += successor->prob_;
+                }
+                action_value_ +=
+                    (total_value_successors / total_prob_successors);
+                                                                                dprint(debug_pad(2 * this->depth_),
+                                                                                        "backup",
+                                                                                        this,
+                                                                                        total_value_successors,
+                                                                                        total_prob_successors);
+                if (total_prob_solved_successors_ > 1.0 - mdplib::epsilon) {
+                    this->solved_ = true;
+                }
             }
         }
-
     }
 }
 
@@ -107,7 +120,7 @@ void ChanceNode::initialize(THTSSolver* solver) {
 }
 
 double ChanceNode::visit(THTSSolver* solver, mlcore::Problem* problem) {
-                                                                                dprint5(debug_pad(2 * this->depth_), "visit-chance", this, "from", this->parent());
+                                                                                dprint(debug_pad(2 * this->depth_), "visit-chance", this, "from", this->parent());
     this->selection_counter_++;
     mlcore::State* s = static_cast<DecisionNode*>(this->parent_)->state_;
     double cumulative_value = problem->cost(s, action_);
@@ -120,8 +133,12 @@ double ChanceNode::visit(THTSSolver* solver, mlcore::Problem* problem) {
     } else {
         // Assigns a value according to the successors' heuristic cost,
         // in case the horizon was not large enough for this problem
-        for (mlcore::Successor successor : problem->transition(s, action_))
+        for (mlcore::Successor successor : problem->transition(s, action_)) {
+                                                                                dprint(debug_pad(2 * this->depth_ + 1), "actioncost/su.prob/su.cost",
+                                                                                        problem->cost(s, action_),
+                                                                                        successor.su_prob, successor.su_state->cost());
             cumulative_value += successor.su_prob * successor.su_state->cost();
+        }
     }
     this->backup(solver, cumulative_value);
     return cumulative_value;
@@ -181,7 +198,9 @@ void DecisionNode::backup(THTSSolver* solver, double cumulative_value) {
 
 double DecisionNode::visit(THTSSolver* solver, mlcore::Problem* problem) {
                                                                                 if (this->parent_)
-                                                                                    dprint5(debug_pad(2 * this->depth_), "visit-dec", this, "from", this->parent_);
+                                                                                    dprint(debug_pad(2 * this->depth_), "visit-dec", this, "from", this->parent_);
+                                                                                else
+                                                                                    dprint(debug_pad(2 * this->depth_), "visit-dec", this, "ROOT");
     this->selection_counter_++;
     if (problem->goal(state_)) {
         // Just do the "backup" here to avoid modifying the backup() method
@@ -207,7 +226,7 @@ double DecisionNode::visit(THTSSolver* solver, mlcore::Problem* problem) {
     mlcore::Action* a = solver->selectAction(this);
     ChanceNode* chance_node = getChanceNodeForAction(a);
     double cumulative_value = chance_node->visit(solver, problem);
-                                                                                dprint4(debug_pad(2 * this->depth_), "selected-action/c. value", a, cumulative_value);
+                                                                                dprint(debug_pad(2 * this->depth_), "selected-action/c. value", a, cumulative_value);
     this->backup(solver, cumulative_value);
     return cumulative_value;
 }
@@ -235,7 +254,7 @@ void THTSSolver::register_node(THTSNode* node) {
 // TODO: This needs to be adjusted so that old values can be reused during
 // re-planning
 mlcore::Action* THTSSolver::solve(mlcore::State* s0) {
-                                                                                dprint2("solve", num_trials_);
+                                                                                dprint("solve", num_trials_);
     root_ = make_unique<DecisionNode>(s0, 0, this, nullptr);
     for (int i = 0; i < num_trials_; i++) {
         root_.get()->visit(this, problem_);
@@ -258,13 +277,9 @@ THTSSolver::ucb1ActionSelectRule(DecisionNode* node,
                                  std::vector<ChanceNode*>& best_action_nodes) {
     double best_value = std::numeric_limits<double>::max();
     double q_diff = q_max - q_min;
-                                                                                dprint5(debug_pad(2 * node->depth_ + 1), "q-values (max, min, diff)", q_max, q_min, q_diff);
+                                                                                dprint(debug_pad(2 * node->depth_ + 1), "q-values (max, min, diff)", q_max, q_min, q_diff);
     for (ChanceNode* action_node : node->successors()) {
-                                                                                dprint3(debug_pad(2 * node->depth_ + 1), node->selection_counter_, action_node->selection_counter_);
-        if (action_node->solved_) {  // Select only unsolved nodes
-//                                                                                cerr << "tried-to-select-solved: " << action_node << endl;
-            continue;
-        }
+                                                                                dprint(debug_pad(2 * node->depth_ + 1), "counters (node/action):", node->selection_counter_, action_node->selection_counter_);
         if (action_node->selection_counter_ == 0) {
             best_action_nodes.push_back(action_node);
             return;
@@ -273,9 +288,15 @@ THTSSolver::ucb1ActionSelectRule(DecisionNode* node,
             1 : (action_node->action_value_ - q_min) / (q_diff);
         double value_ucb1 = sqrt(2 * log(node->selection_counter_)
                                     / action_node->selection_counter_);
-                                                                                dprint5(debug_pad(2 * node->depth_ + 1), "action, q-normalized, value_ucb1:", action_node->action_, q_normalized, value_ucb1);
-                                                                                dprint4(debug_pad(2 * node->depth_ + 1), "counters (node/action):", node->selection_counter_, action_node->selection_counter_);
+                                                                                dprint(debug_pad(2 * node->depth_ + 1), "action, q-normalized, value_ucb1:", action_node->action_, q_normalized, value_ucb1);
         double q_ucb1 = q_normalized - value_ucb1;
+
+        if (action_node->solved_) {  // Select only unsolved nodes
+                                                                                dprint(debug_pad(2 * node->depth_ + 1), "tried-to-select-solved:", action_node);
+                                                                                dprint(debug_pad(2 * node->depth_ + 1), "action, q-normalized, value_ucb1:", action_node->action_, q_normalized, value_ucb1);
+            continue;
+        }
+
         if (q_ucb1 < best_value) {
             best_value = q_ucb1;
             best_action_nodes.clear();
@@ -290,6 +311,7 @@ mlcore::Action* THTSSolver::selectAction(DecisionNode* node) {
     double q_min = std::numeric_limits<double>::max();
     double q_max = -q_min;
     for (ChanceNode* action_node : node->successors()) {
+                                                                                dprint(debug_pad(2 * node->depth_ + 1), "action-select-minmax:", action_node->action_value_);
         q_max = std::max(action_node->action_value_ , q_max);
         q_min = std::min(action_node->action_value_, q_min);
     }
@@ -334,12 +356,22 @@ mlcore::State* THTSSolver::selectOutcome(ChanceNode* node, double* prob) {
 }
 
 mlcore::Action* THTSSolver::recommend(DecisionNode* node) {
-                                                                                dprint1("recommend");
+                                                                                dprint("recommend");
     double best_value = std::numeric_limits<double>::max();
     std::vector<mlcore::Action*> best_actions;
     for (ChanceNode* chance_node : node->successors_) {
-        double chance_node_value = -chance_node->selection_counter_;
+        double chance_node_value = std::numeric_limits<double>::max();
+        switch(recommendation_function_) {
+            case MOST_PLAYED: {
+                chance_node_value = -chance_node->selection_counter_;
+                break;
+            } case BEST_VALUE: {
+                chance_node_value = chance_node->action_value_;
+                break;
+            }
+        }
         if (chance_node_value < best_value ) {
+                                                                                dprint("best-so-far", chance_node, chance_node_value);
             best_value = chance_node_value;
             best_actions.clear();
         }

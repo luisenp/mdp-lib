@@ -99,7 +99,7 @@ double HMinHeuristic::cost(const State* s)
                 break;
             // Getting the successor of the best action.
                                                                                 if (hminSuccessor(currentState, bestActions_.at(currentState)) == nullptr) {
-                                                                                    dprint2("successsor is null", currentState);
+                                                                                    dprint("successsor is null", currentState);
                                                                                 }
             currentState = hminSuccessor(currentState,
                                          bestActions_.at(currentState));

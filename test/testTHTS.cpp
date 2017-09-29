@@ -161,7 +161,7 @@ void initSolver()
 {
     assert(flag_is_registered_with_value("action-sel"));
 
-    int horizon = 5, trials = 1000;
+    int horizon = 5, trials = 1000, virtual_rollouts = 5;
     if (flag_is_registered_with_value("horizon"))
         horizon = stoi(flag_value("horizon"));
     if (flag_is_registered_with_value("trials"))
@@ -169,7 +169,8 @@ void initSolver()
 
     THTSHeuristic* thts_heuristic =
         new THTSWrapperHeuristic(problem, heuristic);
-    solver = new THTSSolver(problem, thts_heuristic, trials, horizon, horizon);
+    solver = new THTSSolver(
+        problem, thts_heuristic, trials, horizon, horizon, virtual_rollouts);
 
     if (flag_is_registered_with_value("backup")) {
         assert(string_backup_function_map.count(flag_value("backup")));
@@ -190,6 +191,10 @@ void updateStatistics(double cost, int n, double& mean, double& M2)
 int main(int argc, char* args[])
 {
     register_flags(argc, args);
+
+                                                                                long seed = time(nullptr);
+                                                                                cout << seed << endl;
+                                                                                gen.seed(1506677840);
 
     verbosity = 0;
     if (flag_is_registered_with_value("v"))

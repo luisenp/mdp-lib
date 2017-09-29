@@ -22,42 +22,20 @@ std::unique_ptr<T> make_unique(Args&&... args)
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
-// TODO: Implement this using variadic function/templates.
-// Current implementation quite ugly
-template <class T>
-void dprint1(T x)
+template <typename T>
+void dprint(T t)
 {
-    if (mdplib_debug)
-        std::cerr << x << std::endl;
+    std::cerr << t << std::endl ;
 }
 
-template <class T1, class T2>
-void dprint2(T1 x, T2 y)
+/**
+ * Prints all arguments passed separated by spaces.
+ */
+template<typename T, typename... Args>
+void dprint(T t, Args... args) // recursive variadic function
 {
-    if (mdplib_debug)
-        std::cerr << x << " " << y << std::endl;
-}
-
-template <class T1, class T2, class T3>
-void dprint3(T1 x, T2 y, T3 z)
-{
-    if (mdplib_debug)
-        std::cerr << x << " " << y << " " << z << std::endl;
-}
-
-template <class T1, class T2, class T3, class T4>
-void dprint4(T1 x, T2 y, T3 z, T4 w)
-{
-    if (mdplib_debug)
-        std::cerr << x << " " << y << " " << z << " " << w << std::endl;
-}
-
-template <class T1, class T2, class T3, class T4, class T5>
-void dprint5(T1 x, T2 y, T3 z, T4 w, T5 xx)
-{
-    if (mdplib_debug)
-        std::cerr << x << " " << y << " " << z << " " <<
-            w << " " << xx << std::endl;
+    std::cerr << t << " ";
+    dprint(args...);
 }
 
 std::string debug_pad(int n);

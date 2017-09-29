@@ -20,6 +20,8 @@ class THTSSolver;
 
 enum THTSBackup {MONTE_CARLO = 0, MAX_MONTE_CARLO = 1, PARTIAL_BELLMAN = 2};
 
+enum THTSRecommendations {BEST_VALUE = 0, MOST_PLAYED = 1};
+
 // A node in the search tree.
 class THTSNode {
 
@@ -249,6 +251,12 @@ private:
     // The root of the search tree.
     std::unique_ptr<DecisionNode> root_;
 
+    // The backup function to use (default=MONTE_CARLO).
+    THTSBackup backup_function_;
+
+    // The recommendation function to use (default=BEST_VALUE).
+    THTSRecommendations recommendation_function_;
+
     // The number of trials to perform.
     int num_trials_;
 
@@ -263,9 +271,6 @@ private:
 
     // The number of virtual rollouts for initialization.
     int num_virtual_rollouts_;
-
-    // The type of backup function to use (default MONTE_CARLO).
-    THTSBackup backup_function_;
 
     // Maintains indices for the nodes created by the algorithm.
     int current_node_index_;
@@ -300,6 +305,7 @@ public:
         num_nodes_expanded_trial_ = 0;
         root_ = nullptr;
         backup_function_ = MONTE_CARLO;
+        recommendation_function_ = BEST_VALUE;
         current_node_index_ = 0;
     }
 
@@ -307,6 +313,10 @@ public:
 
     void backupFunction(THTSBackup value) {
         backup_function_ = value;
+    }
+
+    void recommendationFunction(THTSRecommendations value) {
+        recommendation_function_= value;
     }
 
     // Frees the memory occupied by the search tree.

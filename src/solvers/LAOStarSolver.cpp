@@ -18,7 +18,6 @@ mlcore::Action* LAOStarSolver::solve(mlcore::State* s0)
         do {
             visited.clear();
             countExpanded = expand(s0);
-                                                                                dprint1(s0->cost());
             totalExpanded += countExpanded;
             if ((0.001 * (clock() - startTime)) /
                     CLOCKS_PER_SEC > timeLimit_)
