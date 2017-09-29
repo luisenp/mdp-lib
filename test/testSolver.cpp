@@ -251,7 +251,7 @@ void initSolver()
             C = stod(flag_value("cexp"));
             use_qvalues_for_c = false;
         }
-                                                                                dprint4("delta", delta, "C", C);
+                                                                                dprint("delta", delta, "C", C);
         solver = new UCTSolver(problem,
                                rollouts, cutoff, C,
                                use_qvalues_for_c, delta,

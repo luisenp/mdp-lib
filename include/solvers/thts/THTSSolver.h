@@ -18,8 +18,12 @@ class ChanceNode;
 class DecisionNode;
 class THTSSolver;
 
+// The possible backup functions to use.
 enum THTSBackup {MONTE_CARLO = 0, MAX_MONTE_CARLO = 1, PARTIAL_BELLMAN = 2};
 
+enum THTSOutcomeSel {TRAN_F = 0, MIN_VARIANCE = 1, DELTA_EXP = 2, VPI = 3};
+
+// The possible recommendation functions to use.
 enum THTSRecommendations {BEST_VALUE = 0, MOST_PLAYED = 1};
 
 // A node in the search tree.
@@ -188,9 +192,6 @@ private:
         if (this->parent_ != nullptr) {
             static_cast<ChanceNode*>(this->parent_)->
                 total_prob_solved_successors_ += prob_;
-//                                                                                std::cerr << "updt " << this << " " << prob_
-//                                                                                    << " " << static_cast<ChanceNode*>(this->parent_)->
-//                                                                                        total_prob_solved_successors_ << " " << this->parent_ << std::endl;
         }
     }
 
@@ -278,10 +279,18 @@ private:
     // Assigns an index to the given node and updates the index counter.
     void register_node(THTSNode* node);
 
+    / *********************************************************************** /
+    /                        Outcome Selection Rules                          /
+    / *********************************************************************** /
     // Returns a state randomly sampled from the normalized unsolved outcomes
     // distributions.
     mlcore::State* randomUnsolvedOutcomeSelect(ChanceNode* node, double* prob);
 
+    mlcore::State* minimumVarianceOutcomeSelect(ChanceNode* node, double* prob);
+
+    / *********************************************************************** /
+    /                         Action Selection Rules                          /
+    / *********************************************************************** /
     // Computes the values of the actions for the decision node using
     // the UCB1 selection rule and stores the best ones in the given
     // vector.

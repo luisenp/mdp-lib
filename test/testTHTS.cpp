@@ -191,14 +191,11 @@ void updateStatistics(double cost, int n, double& mean, double& M2)
 int main(int argc, char* args[])
 {
     register_flags(argc, args);
-
-                                                                                long seed = time(nullptr);
-                                                                                cout << seed << endl;
-                                                                                gen.seed(1506677840);
-
-    verbosity = 0;
     if (flag_is_registered_with_value("v"))
         verbosity = stoi(flag_value("v"));
+    long seed = time(nullptr);
+    if (verbosity >= 1000)
+        cout << "Seed: " << seed << endl;
     if (flag_is_registered("debug"))
         mdplib_debug = true;
     setupProblem();

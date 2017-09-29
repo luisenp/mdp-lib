@@ -105,7 +105,6 @@ ChanceNode::createOrGetDecisionNodeForState(mlcore::State* state, double prob) {
                                                           this->solver_,
                                                           this,
                                                           prob));
-//                                                                                cerr << "create-new." << " " << explicated_successors_.back()->solved_ << endl;
         updateSuccessorIndexMap(state);
         return explicated_successors_.back();
     }
@@ -132,7 +131,6 @@ double ChanceNode::visit(THTSSolver* solver, mlcore::Problem* problem) {
         double prob_successor = 0.0;
         mlcore::State* s = solver->selectOutcome(this, &prob_successor);
         DecisionNode* node = createOrGetDecisionNodeForState(s, prob_successor);
-//                                                                                cerr << "outcome: " << node << " solved " << node->solved_ << endl;
         cumulative_value += node->visit(solver, problem);
     } else {
         // Assigns a value according to the successors' heuristic cost,
@@ -330,33 +328,45 @@ mlcore::Action* THTSSolver::selectAction(DecisionNode* node) {
 }
 
 mlcore::State*
-THTSSolver::randomUnsolvedOutcomeSelect(ChanceNode* node, double* prob) {
-    mlcore::State* state = static_cast<DecisionNode*>(node->parent_)->state_;
+THTSSolver::randomUnsolvedOutcomeSelect(ChanceNode* chance_node, double* prob) {
+    mlcore::State* state =
+        static_cast<DecisionNode*>(chance_node->parent_)->state_;
     double pick = mlsolvers::dis(mlsolvers::gen);
     double acc = 0.0;
-//                                                                                cerr << "*************************************" << endl;
-    for (mlcore::Successor sccr : problem_->transition(state, node->action_)) {
-        DecisionNode* sccr_node = nullptr;
-        if (node->state_successor_index_map_.count(sccr.su_state)) {
-            sccr_node = node->explicated_successors_[
-                node->state_successor_index_map_[sccr.su_state]];
+    for (mlcore::Successor sccr :
+            problem_->transition(state, chance_node->action_)) {
+        DecisionNode* outcome_node = nullptr;
+        if (chance_node->state_successor_index_map_.count(sccr.su_state)) {
+            outcome_node = chance_node->explicated_successors_[
+                chance_node->state_successor_index_map_[sccr.su_state]];
         }
-        if (sccr_node != nullptr && sccr_node->solved_) {
-//                                                                                cerr << sccr_node << " " << sccr.su_prob << endl;
+        if (outcome_node != nullptr && outcome_node->solved_) {
             continue;
         }
-        acc += sccr.su_prob / (1.0 - node->total_prob_solved_successors_);
+        acc += sccr.su_prob / (1.0 - chance_node->total_prob_solved_successors_);
         if (acc >= pick) {
             if (prob != nullptr)
                 *prob = sccr.su_prob;
             return sccr.su_state;
         }
     }
-//                                                                                cerr << node << " pick " << pick << " acc " << acc
-//                                                                                    << " totalP " << node->total_prob_solved_successors_
-//                                                                                    << " solved " << node->solved_ << endl;
-                                                                                assert(false);
+    assert(false);
     return nullptr;
+}
+
+mlcore::State* THTSSolver::
+minimumVarianceOutcomeSelect(ChanceNode* chance_node, double* prob) {
+    mlcore::State* state =
+        static_cast<DecisionNode*>(chance_node->parent_)->state_;
+    double pick = mlsolvers::dis(mlsolvers::gen);
+    for (mlcore::Successor sccr : problem_->transition(state, node->action_)) {
+        DecisionNode* outcome_node = nullptr;
+        if (chance_node->state_successor_index_map_.count(sccr.su_state)) {
+            outcome_node = chance_node->explicated_successors_[
+                chance_node->state_successor_index_map_[sccr.su_state]];
+        }
+    }
+
 }
 
 mlcore::State* THTSSolver::selectOutcome(ChanceNode* node, double* prob) {
