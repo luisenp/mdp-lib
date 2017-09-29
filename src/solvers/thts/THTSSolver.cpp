@@ -6,8 +6,6 @@
 
 using namespace std;
 
-                                                                                int counter = 0;
-
 namespace mlsolvers
 {
 
@@ -27,7 +25,6 @@ ChanceNode::ChanceNode(mlcore::Action* action,
     action_value_ = 0.0;
     total_prob_solved_successors_ = 0.0;
     solver->register_node(this);
-                                                                                counter++;
 }
 
 ChanceNode::~ChanceNode() {
@@ -65,7 +62,7 @@ void ChanceNode::backup(THTSSolver* solver, double cumulative_value) {
                 total_prob_successors += successor->prob_;
             }
             action_value_ += (total_value_successors / total_prob_successors);
-            if (total_prob_solved_successors_ == 1.0) {
+            if (total_prob_solved_successors_ > 1.0 - mdplib::epsilon) {
                 this->solved_ = true;
             }
         }
@@ -148,7 +145,6 @@ DecisionNode::DecisionNode(mlcore::State* state,
     prob_ = prob;
     solver_ = solver;
     solver->register_node(this);
-                                                                                counter++;
 }
 
 DecisionNode::~DecisionNode() {
@@ -173,11 +169,13 @@ void DecisionNode::backup(THTSSolver* solver, double cumulative_value) {
     state_value_ = std::numeric_limits<double>::max();
     this->solved_ = true;
     for (ChanceNode* successor : successors_) {
-        if (!successor->solved_)
-            this->solved_ = false;
+        this->solved_ &= successor->solved_;
         if (successor->action_value_ < state_value_) {
             state_value_ = successor->action_value_;
         }
+    }
+    if (this->solved_) {
+        UpdateParentWithSolvedOutcome();
     }
 }
 
@@ -190,8 +188,6 @@ double DecisionNode::visit(THTSSolver* solver, mlcore::Problem* problem) {
         this->backup_counter_++;
         state_value_ = 0.0;
         if (solver->backup_function_ == PARTIAL_BELLMAN) {
-//                                                                                if (this->solved_)
-//                                                                                    cerr << "solved " << this << endl;
             assert(!this->solved_);
             UpdateParentWithSolvedOutcome();
             this->solved_ = true;
@@ -244,9 +240,6 @@ mlcore::Action* THTSSolver::solve(mlcore::State* s0) {
     for (int i = 0; i < num_trials_; i++) {
         root_.get()->visit(this, problem_);
     }
-                                                                                dprint2("done", counter);
-//                                                                                cerr << "done " << counter << endl;
-                                                                                counter = 0;
     mlcore::Action* action = recommend(root_.get());
     delete_tree();
     return action;
@@ -268,8 +261,10 @@ THTSSolver::ucb1ActionSelectRule(DecisionNode* node,
                                                                                 dprint5(debug_pad(2 * node->depth_ + 1), "q-values (max, min, diff)", q_max, q_min, q_diff);
     for (ChanceNode* action_node : node->successors()) {
                                                                                 dprint3(debug_pad(2 * node->depth_ + 1), node->selection_counter_, action_node->selection_counter_);
-        if (action_node->solved_)   // Select only unsolved nodes
+        if (action_node->solved_) {  // Select only unsolved nodes
+//                                                                                cerr << "tried-to-select-solved: " << action_node << endl;
             continue;
+        }
         if (action_node->selection_counter_ == 0) {
             best_action_nodes.push_back(action_node);
             return;
@@ -317,7 +312,7 @@ THTSSolver::randomUnsolvedOutcomeSelect(ChanceNode* node, double* prob) {
                 node->state_successor_index_map_[sccr.su_state]];
         }
         if (sccr_node != nullptr && sccr_node->solved_) {
-//                                                                                cerr << sccr_node << endl;
+//                                                                                cerr << sccr_node << " " << sccr.su_prob << endl;
             continue;
         }
         acc += sccr.su_prob / (1.0 - node->total_prob_solved_successors_);

@@ -326,7 +326,8 @@ int main(int argc, char* args[])
             startTime = clock();
             if (algorithm == "uct") {
                 static_cast<UCTSolver*>(solver)->reset();
-            if (algorithm != "greedy")
+            }
+            if (algorithm != "greedy") {
                 solver->solve(problem->initialState());
             }
             endTime = clock();

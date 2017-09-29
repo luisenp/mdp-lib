@@ -260,10 +260,10 @@ int main(int argc, char* args[])
             statesSeen.insert(tmp);
             startTime = clock();
             Action* a = solver->solve(tmp);
-                                                                                Action* lao_action = lao_solver.solve(tmp);
-                                                                                if (lao_action != a) {
-                                                                                    cout << "Wrong action: " << a << " should be " << lao_action << endl;
-                                                                                }
+                                                                                //Action* lao_action = lao_solver.solve(tmp);
+                                                                                //if (lao_action != a) {
+                                                                                //    cout << "Wrong action: " << a << " should be " << lao_action << endl;
+                                                                                //}
             endTime = clock();
             expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
             numDecisions++;
