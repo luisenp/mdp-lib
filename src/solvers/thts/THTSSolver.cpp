@@ -122,22 +122,23 @@ void ChanceNode::initialize(THTSSolver* solver) {
     solved_ = false;
 }
 
-double ChanceNode::visit(THTSSolver* solver, mlcore::Problem* problem) {
+double ChanceNode::visit(THTSSolver* solver) {
                                                                                 dprint(debug_pad(2 * this->depth_), "visit-chance", this, "from", this->parent());
     this->selection_counter_++;
     mlcore::State* s = static_cast<DecisionNode*>(this->parent_)->state_;
-    double cumulative_value = problem->cost(s, action_);
+    double cumulative_value = solver->problem_->cost(s, action_);
     if (solver->continueTrial() && this->depth_ < solver->max_depth_) {
         double prob_successor = 0.0;
         mlcore::State* s = solver->selectOutcome(this, &prob_successor);
         DecisionNode* node = createOrGetDecisionNodeForState(s, prob_successor);
-        cumulative_value += node->visit(solver, problem);
+        cumulative_value += node->visit(solver);
     } else {
         // Assigns a value according to the successors' heuristic cost,
         // in case the horizon was not large enough for this problem
-        for (mlcore::Successor successor : problem->transition(s, action_)) {
+        for (mlcore::Successor successor
+                : solver->problem_->transition(s, action_)) {
                                                                                 dprint(debug_pad(2 * this->depth_ + 1), "actioncost/su.prob/su.cost",
-                                                                                        problem->cost(s, action_),
+                                                                                        solver->problem_->cost(s, action_),
                                                                                         successor.su_prob, successor.su_state->cost());
             cumulative_value += successor.su_prob * successor.su_state->cost();
         }
@@ -193,22 +194,22 @@ void DecisionNode::backup(THTSSolver* solver, double cumulative_value) {
             state_value_ = successor->action_value_;
         }
     }
+    if (this->solved_) {
+        UpdateParentWithSolvedOutcome();
+    }
                                                                                 dprint(debug_pad(2 * this->depth_),
                                                                                         "backup",
                                                                                         this,
                                                                                         state_value_);
-    if (this->solved_) {
-        UpdateParentWithSolvedOutcome();
-    }
 }
 
-double DecisionNode::visit(THTSSolver* solver, mlcore::Problem* problem) {
+double DecisionNode::visit(THTSSolver* solver) {
                                                                                 if (this->parent_)
                                                                                     dprint(debug_pad(2 * this->depth_), "visit-dec", this, "from", this->parent_);
                                                                                 else
                                                                                     dprint(debug_pad(2 * this->depth_), "visit-dec", this, "ROOT");
     this->selection_counter_++;
-    if (problem->goal(state_)) {
+    if (solver->problem_->goal(state_)) {
         // Just do the "backup" here to avoid modifying the backup() method
         this->backup_counter_++;
         state_value_ = 0.0;
@@ -220,8 +221,8 @@ double DecisionNode::visit(THTSSolver* solver, mlcore::Problem* problem) {
         return 0.0 ;
     }
     if (successors_.empty()) {   // not expanded yet
-        for (mlcore::Action* action : problem->actions()) {
-            if (!problem->applicable(this->state_, action))
+        for (mlcore::Action* action : solver->problem_->actions()) {
+            if (!solver->problem_->applicable(this->state_, action))
                 continue;
             successors_.push_back(
                 new ChanceNode(action, this->depth_, this->solver_, this));
@@ -231,7 +232,7 @@ double DecisionNode::visit(THTSSolver* solver, mlcore::Problem* problem) {
     }
     mlcore::Action* a = solver->selectAction(this);
     ChanceNode* chance_node = getChanceNodeForAction(a);
-    double cumulative_value = chance_node->visit(solver, problem);
+    double cumulative_value = chance_node->visit(solver);
                                                                                 dprint(debug_pad(2 * this->depth_), "selected-action/c. value", a, cumulative_value);
     this->backup(solver, cumulative_value);
     return cumulative_value;
@@ -263,7 +264,7 @@ mlcore::Action* THTSSolver::solve(mlcore::State* s0) {
                                                                                 dprint("solve", num_trials_);
     root_ = make_unique<DecisionNode>(s0, 0, this, nullptr);
     for (int i = 0; i < num_trials_; i++) {
-        root_.get()->visit(this, problem_);
+        root_.get()->visit(this);
     }
     mlcore::Action* action = recommend(root_.get());
     delete_tree();
@@ -359,7 +360,8 @@ minimumVarianceOutcomeSelect(ChanceNode* chance_node, double* prob) {
     mlcore::State* state =
         static_cast<DecisionNode*>(chance_node->parent_)->state_;
     double pick = mlsolvers::dis(mlsolvers::gen);
-    for (mlcore::Successor sccr : problem_->transition(state, node->action_)) {
+    for (mlcore::Successor sccr :
+            problem_->transition(state, chance_node->action_)) {
         DecisionNode* outcome_node = nullptr;
         if (chance_node->state_successor_index_map_.count(sccr.su_state)) {
             outcome_node = chance_node->explicated_successors_[

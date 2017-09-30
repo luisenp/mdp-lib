@@ -69,12 +69,11 @@ public:
 
     // Visits this node and performs computation on it, expanding
     // any successors if necessary.
-    // The given problem is used to access the transition and reward
-    // functions of the MDP.
-    // The given solver is used to access information about the trials.
+    // The given solver is used to access information about the trials and
+    // the MDP being solved.
     // The return value is the accumulated value of all nodes visited in the
     // trial, from this one on.
-    virtual double visit(THTSSolver* solver, mlcore::Problem* problem) =0;
+    virtual double visit(THTSSolver* solver) =0;
 
     // Performs a backup of the node given the current state of the solver,
     // and the cumulative value of the current trial starting from this node.
@@ -141,7 +140,7 @@ public:
     }
 
     // Overrides method in THTSNode.
-    virtual double visit(THTSSolver* solver, mlcore::Problem* problem);
+    virtual double visit(THTSSolver* solver);
 
     // Overrides method in THTSNode.
     virtual void backup(THTSSolver* solver, double cumulative_value);
@@ -219,7 +218,7 @@ public:
     void initialize();
 
     // Overrides method in THTSNode.
-    virtual double visit(THTSSolver* solver, mlcore::Problem* problem);
+    virtual double visit(THTSSolver* solver);
 
     // Overrides method in THTSNode.
     virtual void backup(THTSSolver* solver, double cumulative_value);
@@ -279,18 +278,18 @@ private:
     // Assigns an index to the given node and updates the index counter.
     void register_node(THTSNode* node);
 
-    / *********************************************************************** /
-    /                        Outcome Selection Rules                          /
-    / *********************************************************************** /
+    // ********************************************************************** /
+    //                       Outcome Selection Rules                          /
+    // ********************************************************************** /
     // Returns a state randomly sampled from the normalized unsolved outcomes
     // distributions.
     mlcore::State* randomUnsolvedOutcomeSelect(ChanceNode* node, double* prob);
 
     mlcore::State* minimumVarianceOutcomeSelect(ChanceNode* node, double* prob);
 
-    / *********************************************************************** /
-    /                         Action Selection Rules                          /
-    / *********************************************************************** /
+    // ********************************************************************** /
+    //                        Action Selection Rules                          /
+    // ********************************************************************** /
     // Computes the values of the actions for the decision node using
     // the UCB1 selection rule and stores the best ones in the given
     // vector.
