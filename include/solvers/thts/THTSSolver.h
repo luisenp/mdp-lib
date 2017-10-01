@@ -21,7 +21,7 @@ class THTSSolver;
 // The possible backup functions to use.
 enum THTSBackup {MONTE_CARLO = 0, MAX_MONTE_CARLO = 1, PARTIAL_BELLMAN = 2};
 
-enum THTSOutcomeSel {TRAN_F = 0, MIN_VARIANCE = 1, DELTA_EXP = 2, VPI = 3};
+enum THTSOutcomeSel {TRAN_F = 0, MIN_VARIANCE = 1, DELTA_MEAN = 2, VPI = 3};
 
 // The possible recommendation functions to use.
 enum THTSRecommendations {BEST_VALUE = 0, MOST_PLAYED = 1};
@@ -120,6 +120,10 @@ private:
     DecisionNode*
     createOrGetDecisionNodeForState(mlcore::State* s, double prob);
 
+    // Returns the decision node associated with this state only if it has
+    // been stored before. Otherwise it returns a nullptr.
+    DecisionNode* getDecisionNodeForStateIfPresent(mlcore::State* state);
+
 public:
     // Creates a chance node for the given action at the given depth.
     // The counters and action value are initialized to 0.
@@ -173,6 +177,18 @@ private:
     // distribution.
     double prob_;
 
+    // The square of the probability.
+    double prob_2_;
+
+    // The sample mean state value, computed in Monte-Carlo fashion from
+    // the rollouts. This is different to state_value_, since that one is
+    // computed as the max over action estimates.
+    double mean_state_value_;
+
+    // The sample variance of the state value, computed in Monte-Carlo fashion
+    // from the rollouts.
+    double var_state_value_;
+
     // Maps an action to an index in the chance node successors array.
     mlcore::ActionIntMap action_chance_node_index_map_;
 
@@ -187,11 +203,19 @@ private:
     ChanceNode* getChanceNodeForAction(mlcore::Action* action);
 
     // Updates the parent data when this outcome is solved.
-    void UpdateParentWithSolvedOutcome() {
+    void updateParentWithSolvedOutcome() {
         if (this->parent_ != nullptr) {
             static_cast<ChanceNode*>(this->parent_)->
                 total_prob_solved_successors_ += prob_;
         }
+    }
+
+    // Updates the sample mean and standard deviation of the state's value.
+    void updateStatistics(double cumulative_value) {
+        double delta = cumulative_value - mean_state_value_;
+        mean_state_value_ += delta / selection_counter_;
+        double delta2 = cumulative_value - mean_state_value_;
+        var_state_value_ = (delta * delta2) / (selection_counter_ - 1);
     }
 
 public:
@@ -257,6 +281,9 @@ private:
     // The recommendation function to use (default=BEST_VALUE).
     THTSRecommendations recommendation_function_;
 
+    // The outcome selection rule to use.
+    THTSOutcomeSel outcome_selection_;
+
     // The number of trials to perform.
     int num_trials_;
 
@@ -271,6 +298,9 @@ private:
 
     // The number of virtual rollouts for initialization.
     int num_virtual_rollouts_;
+
+    // A prior for the variance of outcomes (used for outcome selection).
+    double prior_variance_outcomes_;
 
     // Maintains indices for the nodes created by the algorithm.
     int current_node_index_;
@@ -314,6 +344,8 @@ public:
         root_ = nullptr;
         backup_function_ = MONTE_CARLO;
         recommendation_function_ = BEST_VALUE;
+        outcome_selection_ = MIN_VARIANCE;
+        prior_variance_outcomes_ = 0.0;
         current_node_index_ = 0;
     }
 
@@ -323,8 +355,16 @@ public:
         backup_function_ = value;
     }
 
+    void outcomeSelection(THTSOutcomeSel value) {
+        outcome_selection_ = value;
+    }
+
     void recommendationFunction(THTSRecommendations value) {
         recommendation_function_= value;
+    }
+
+    void priorVarianceOutcomes(double value) {
+        prior_variance_outcomes_ = value;
     }
 
     // Frees the memory occupied by the search tree.

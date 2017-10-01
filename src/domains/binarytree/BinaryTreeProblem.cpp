@@ -30,7 +30,7 @@ BinaryTreeProblem::transition(mlcore::State* s, mlcore::Action* a)
     BinaryTreeAction* bta = static_cast<BinaryTreeAction*> (a);
     mlcore::State* next =
         new BinaryTreeState(bts->level() + 1,
-                            2*bts->index() + ( 1 - bta->left()));
+                            2 * bts->index() + ( 1 - bta->left()));
     next = this->addState(next);
     successors.push_front(mlcore::Successor(next, 1.0));
     return successors;

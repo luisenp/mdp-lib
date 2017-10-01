@@ -110,6 +110,14 @@ ChanceNode::createOrGetDecisionNodeForState(mlcore::State* state, double prob) {
     }
 }
 
+DecisionNode*
+ChanceNode::getDecisionNodeForStateIfPresent(mlcore::State* state) {
+    if (state_successor_index_map_.count(state)) {
+        return explicated_successors_[state_successor_index_map_[state]];
+    }
+    return nullptr;
+}
+
 void ChanceNode::initialize(THTSSolver* solver) {
     if (solver->heuristic_ == nullptr) {
         action_value_ = 0.0;
@@ -162,7 +170,10 @@ DecisionNode::DecisionNode(mlcore::State* state,
     this->solved_ = false;
     state_ = state;
     state_value_ = 0.0;
+    mean_state_value_ = 0.0;
+    var_state_value_ = 0.0;
     prob_ = prob;
+    prob_2_ = prob * prob;
     solver_ = solver;
     solver->register_node(this);
 }
@@ -190,17 +201,22 @@ void DecisionNode::backup(THTSSolver* solver, double cumulative_value) {
     this->solved_ = true;
     for (ChanceNode* successor : successors_) {
         this->solved_ &= successor->solved_;
+                                                                                if (parent_ == nullptr) {
+                                                                                    dprint("BACKUP-ROOT, successor->solved", successor, successor->solved_);
+                                                                                }
         if (successor->action_value_ < state_value_) {
             state_value_ = successor->action_value_;
         }
     }
     if (this->solved_) {
-        UpdateParentWithSolvedOutcome();
+        updateParentWithSolvedOutcome();
     }
+    updateStatistics(cumulative_value);
                                                                                 dprint(debug_pad(2 * this->depth_),
-                                                                                        "backup",
-                                                                                        this,
-                                                                                        state_value_);
+                                                                                       "backup",
+                                                                                       this,
+                                                                                       state_value_,
+                                                                                       this->solved_);
 }
 
 double DecisionNode::visit(THTSSolver* solver) {
@@ -215,7 +231,7 @@ double DecisionNode::visit(THTSSolver* solver) {
         state_value_ = 0.0;
         if (solver->backup_function_ == PARTIAL_BELLMAN) {
             assert(!this->solved_);
-            UpdateParentWithSolvedOutcome();
+            updateParentWithSolvedOutcome();
             this->solved_ = true;
         }
         return 0.0 ;
@@ -264,6 +280,8 @@ mlcore::Action* THTSSolver::solve(mlcore::State* s0) {
                                                                                 dprint("solve", num_trials_);
     root_ = make_unique<DecisionNode>(s0, 0, this, nullptr);
     for (int i = 0; i < num_trials_; i++) {
+        if (root_.get()->solved_)
+            break;
         root_.get()->visit(this);
     }
     mlcore::Action* action = recommend(root_.get());
@@ -336,15 +354,13 @@ THTSSolver::randomUnsolvedOutcomeSelect(ChanceNode* chance_node, double* prob) {
     double acc = 0.0;
     for (mlcore::Successor sccr :
             problem_->transition(state, chance_node->action_)) {
-        DecisionNode* outcome_node = nullptr;
-        if (chance_node->state_successor_index_map_.count(sccr.su_state)) {
-            outcome_node = chance_node->explicated_successors_[
-                chance_node->state_successor_index_map_[sccr.su_state]];
-        }
+        DecisionNode* outcome_node =
+            chance_node->getDecisionNodeForStateIfPresent(sccr.su_state);
         if (outcome_node != nullptr && outcome_node->solved_) {
             continue;
         }
-        acc += sccr.su_prob / (1.0 - chance_node->total_prob_solved_successors_);
+        acc += sccr.su_prob
+            / (1.0 - chance_node->total_prob_solved_successors_);
         if (acc >= pick) {
             if (prob != nullptr)
                 *prob = sccr.su_prob;
@@ -359,16 +375,32 @@ mlcore::State* THTSSolver::
 minimumVarianceOutcomeSelect(ChanceNode* chance_node, double* prob) {
     mlcore::State* state =
         static_cast<DecisionNode*>(chance_node->parent_)->state_;
-    double pick = mlsolvers::dis(mlsolvers::gen);
+//    double pick = mlsolvers::dis(mlsolvers::gen);
+    double best_score = std::numeric_limits<double>::max();
+    std::vector<mlcore::State*> best_outcomes;
     for (mlcore::Successor sccr :
             problem_->transition(state, chance_node->action_)) {
-        DecisionNode* outcome_node = nullptr;
-        if (chance_node->state_successor_index_map_.count(sccr.su_state)) {
-            outcome_node = chance_node->explicated_successors_[
-                chance_node->state_successor_index_map_[sccr.su_state]];
+        DecisionNode* outcome_node =
+            chance_node->getDecisionNodeForStateIfPresent(sccr.su_state);
+        double outcome_score = 0.0;
+        if (outcome_node == nullptr) {
+            outcome_score =
+                prior_variance_outcomes_ * sccr.su_prob * sccr.su_prob;
+            outcome_score /= (num_virtual_rollouts_ + 1);
+        } else {
+            outcome_score = outcome_node->prob_2_
+                * outcome_node->var_state_value_;
+            outcome_score /= (outcome_node->selection_counter_ + 1);
+        }
+        if (outcome_score < best_score) {
+            best_outcomes.clear();
+            best_score = outcome_score;
+        }
+        if (fabs(outcome_score - best_score) < mdplib::epsilon) {
+            best_outcomes.push_back(sccr.su_state);
         }
     }
-
+    return best_outcomes[rand() % best_outcomes.size()];
 }
 
 mlcore::State* THTSSolver::selectOutcome(ChanceNode* node, double* prob) {

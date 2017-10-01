@@ -42,6 +42,12 @@ unordered_map<string, THTSBackup> string_backup_function_map({
     {"pb", PARTIAL_BELLMAN}
 });
 
+unordered_map<string, THTSOutcomeSel> string_outcome_sel_map({
+    {"tran", TRAN_F},
+    {"min-var", MIN_VARIANCE},
+    {"delta", DELTA_MEAN}
+});
+
 void setupRacetrack()
 {
     string trackName = flag_value("track");
@@ -162,10 +168,13 @@ void initSolver()
     assert(flag_is_registered_with_value("action-sel"));
 
     int horizon = 5, trials = 1000, virtual_rollouts = 5;
+    double prior_variance_outcomes = 0.1;
     if (flag_is_registered_with_value("horizon"))
         horizon = stoi(flag_value("horizon"));
     if (flag_is_registered_with_value("trials"))
         trials = stoi(flag_value("trials"));
+    if (flag_is_registered_with_value("prior_var"))
+        prior_variance_outcomes = stof(flag_value("prior_var"));
 
     THTSHeuristic* thts_heuristic =
         new THTSWrapperHeuristic(problem, heuristic);
@@ -176,6 +185,11 @@ void initSolver()
         assert(string_backup_function_map.count(flag_value("backup")));
         solver->backupFunction(
             string_backup_function_map[flag_value("backup")]);
+    }
+    if (flag_is_registered_with_value("out-sel")) {
+        assert(string_outcome_sel_map.count(flag_value("out-sel")));
+        solver->outcomeSelection(
+            string_outcome_sel_map[flag_value("out-sel")]);
     }
 }
 
@@ -194,6 +208,7 @@ int main(int argc, char* args[])
     if (flag_is_registered_with_value("v"))
         verbosity = stoi(flag_value("v"));
     long seed = time(nullptr);
+    //long seed = 1506777194;
     if (verbosity >= 1000)
         cout << "Seed: " << seed << endl;
     if (flag_is_registered("debug"))
