@@ -135,6 +135,7 @@ public:
         queue.push_front(s0);
         while (!queue.empty()) {
             State* cur = queue.front();
+                                                                                dprint("current state", cur);
             queue.pop_front();
             if (cur->checkBits(mdplib::VISITED))
                 continue;
@@ -142,6 +143,7 @@ public:
             for (Action* a : actions_) {
                 if (!applicable(cur, a))
                     continue;
+                                                                                dprint("  appl. action / cost", a, this->cost(cur, a));
                 std::list<Successor> successors = transition(cur, a);
                 for (Successor sccr : successors) {
                     queue.push_front(sccr.su_state);

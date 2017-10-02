@@ -57,7 +57,7 @@ bool RacetrackState::operator==(const mlcore::State& rhs) const
 bool RacetrackState::equals(mlcore::State* other) const
 {
     RacetrackState* state = static_cast<RacetrackState *> (other);;
-    return *this ==  *state;
+    return *this == *state;
 }
 
 int RacetrackState::hashValue() const

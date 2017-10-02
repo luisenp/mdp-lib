@@ -25,6 +25,8 @@ public:
 
     // Overrides method in THTSHeuristic.
     virtual double value(mlcore::State* state, mlcore::Action* action) {
+        if (heuristic_ == nullptr)
+            return 0.0;
         double return_value = 0.0;
         for (auto & successor : problem_->transition(state, action)) {
             return_value += successor.su_prob

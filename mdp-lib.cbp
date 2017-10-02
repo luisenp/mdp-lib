@@ -475,6 +475,9 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/domains/racetrack/RacetrackAction.h" />
 		<Unit filename="include/domains/racetrack/RacetrackProblem.h" />
 		<Unit filename="include/domains/racetrack/RacetrackState.h" />
+		<Unit filename="include/domains/randomtree/RandomTreeAction.h" />
+		<Unit filename="include/domains/randomtree/RandomTreeProblem.h" />
+		<Unit filename="include/domains/randomtree/RandomTreeState.h" />
 		<Unit filename="include/domains/sailing/SailingAction.h" />
 		<Unit filename="include/domains/sailing/SailingNoWindHeuristic.h" />
 		<Unit filename="include/domains/sailing/SailingProblem.h" />
@@ -617,6 +620,9 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="src/domains/racetrack/RTrackLowResHeuristic.cpp" />
 		<Unit filename="src/domains/racetrack/RacetrackProblem.cpp" />
 		<Unit filename="src/domains/racetrack/RacetrackState.cpp" />
+		<Unit filename="src/domains/randomtree/RandomTreeAction.cpp" />
+		<Unit filename="src/domains/randomtree/RandomTreeProblem.cpp" />
+		<Unit filename="src/domains/randomtree/RandomTreeState.cpp" />
 		<Unit filename="src/domains/sailing/SailingNoWindHeuristic.cpp" />
 		<Unit filename="src/domains/sailing/SailingProblem.cpp" />
 		<Unit filename="src/mobj/domains/MOGridWorldProblem.cpp" />

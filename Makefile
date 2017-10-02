@@ -5,7 +5,7 @@
 
 # Compilation flags and variables
 CC = g++
-CFLAGS = -std=c++11 -O3 -DATOM_STATES -pthread
+CFLAGS = -std=c++11 -g -DATOM_STATES -pthread
 
 # Variables for directories
 ID = include
@@ -40,13 +40,15 @@ SD_CTP = $(SD_DOMAINS)/ctp
 ID_CTP = $(ID_DOMAINS)/ctp
 SD_SAIL = $(SD_DOMAINS)/sailing
 ID_SAIL = $(ID_DOMAINS)/sailing
-SD_BT = $(SD_DOMAINS)/binarytree
-ID_BT = $(ID_DOMAINS)/binarytree
+SD_BINTREE = $(SD_DOMAINS)/binarytree
+ID_BINTREE = $(ID_DOMAINS)/binarytree
+SD_RNDTREE = $(SD_DOMAINS)/randomtree
+ID_RNDTREE = $(ID_DOMAINS)/randomtree
 SD_RACE = $(SD_DOMAINS)/racetrack
 ID_RACE = $(ID_DOMAINS)/racetrack
 
 # Variables for include directives
-INCLUDE_DOM = -I$(ID_GW) -I$(ID_CTP) -I$(ID_SAIL) -I$(ID_DOMAINS) -I$(ID_RACE)
+INCLUDE_DOM = -I$(ID_GW) -I$(ID_CTP) -I$(ID_SAIL) -I$(ID_DOMAINS) -I$(ID_RACE) -I$(ID_RNDTREE)
 INCLUDE_CORE = -I$(ID_UTIL) -I$(ID)
 INCLUDE_SOLVERS = -I$(ID_SOLV) -I$(ID_SOLV_MOBJ) -I$(ID_SOLV_THTS)
 INCLUDE_PPDDL = -I$(ID_PPDDL) -I$(ID_PPDDL)/mini-gpt
@@ -70,12 +72,14 @@ CTP_CPP = $(SD_CTP)/*.cpp
 CTP_H = $(ID_CTP)/*.h
 SAIL_CPP = $(SD_SAIL)/*.cpp
 SAIL_H = $(ID_SAIL)/*.h
-BT_CPP = $(SD_BT)/*.cpp
-BT_H = $(ID_BT)/*.h
+BINTREE_CPP = $(SD_BINTREE)/*.cpp
+BINTREE_H = $(ID_BINTREE)/*.h
+RNDTREE_CPP = $(SD_RNDTREE)/*.cpp
+RNDTREE_H = $(ID_RNDTREE)/*.h
 RACE_CPP = $(SD_RACE)/*.cpp
 RACE_H = $(ID_RACE)/*.h
-DOM_CPP = $(GW_CPP) $(CTP_CPP) $(SAIL_CPP) $(RACE_CPP) $(SD_DOMAINS)/*.cpp
-DOM_H = $(GW_H) $(CTP_H) $(SAIL_H) $(RACE_H)
+DOM_CPP = $(GW_CPP) $(CTP_CPP) $(SAIL_CPP) $(RACE_CPP) $(BINTREE_CPP) $(RNDTREE_CPP) $(SD_DOMAINS)/*.cpp
+DOM_H = $(GW_H) $(CTP_H) $(SAIL_H) $(RACE_H) $(BINTREE_H) $(RNDTREE_H)
 
 ALL_H = $(I_H) $(SOLV_H) $(SOLV_THTS_H) $(MOSOLV_H) $(DOM_H) $(UTIL_H)
 ALL_CPP = $(DOM_CPP) $(SOLV_CPP) $(SOLV_THTS_CPP) $(MOSOLV_CPP) $(UTIL_CPP)
@@ -217,11 +221,11 @@ gw: $(GW_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(GW_H) mdplib
 	rm test/*.o
 
 # Compiles a test program for a simple binary tree domain  #
-b2t: $(BT_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(BT_H) mdplib
-	$(CC) $(CFLAGS) -I$(ID_BT) $(INCLUDE_CORE) -c $(BT_CPP)
+b2t: $(BINTREE_CPP) $(SOLV_CPP) $(UTIL_CPP) $(I_H) $(SOLV_H) $(BINTREE_H) mdplib
+	$(CC) $(CFLAGS) -I$(ID_BINTREE) $(INCLUDE_CORE) -c $(BINTREE_CPP)
 	mkdir -p test
 	mv *.o test/
-	$(CC) $(CFLAGS) -I$(ID_BT) $(INCLUDE_CORE) -o testb2t.out \
+	$(CC) $(CFLAGS) -I$(ID_BINTREE) $(INCLUDE_CORE) -o testb2t.out \
 	  $(TD)/testB2T.cpp $(TD)/*.o $(LIBS)
 	rm test/*.o
 

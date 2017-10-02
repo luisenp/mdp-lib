@@ -13,6 +13,7 @@
 #include "../include/domains/gridworld/GWManhattanHeuristic.h"
 #include "../include/domains/racetrack/RacetrackProblem.h"
 #include "../include/domains/racetrack/RTrackDetHeuristic.h"
+#include "../include/domains/randomtree/RandomTreeProblem.h"
 #include "../include/domains/sailing/SailingNoWindHeuristic.h"
 #include "../include/domains/sailing/SailingProblem.h"
 #include "../include/solvers/HMinHeuristic.h"
@@ -48,8 +49,11 @@ unordered_map<string, THTSOutcomeSel> string_outcome_sel_map({
     {"delta", DELTA_MEAN}
 });
 
-void setupRacetrack()
-{
+void setupRandomTree() {
+    problem = new RandomTreeProblem(2, 2, 2, 5., 10.0);
+}
+
+void setupRacetrack() {
     string trackName = flag_value("track");
     if (verbosity > 100)
         cout << "Setting up racetrack " << trackName << endl;
@@ -67,9 +71,7 @@ void setupRacetrack()
         heuristic = new RTrackDetHeuristic(trackName.c_str());
 }
 
-
-void setupGridWorld()
-{
+void setupGridWorld() {
     string grid = flag_value("grid");
     if (verbosity > 100)
         cout << "Setting up grid world " << grid << endl;
@@ -79,9 +81,7 @@ void setupGridWorld()
         heuristic = new GWManhattanHeuristic((GridWorldProblem*) problem);
 }
 
-
-void setupSailingDomain()
-{
+void setupSailingDomain() {
     static vector<double> costs;
     costs.push_back(1);
     costs.push_back(2);
@@ -124,9 +124,7 @@ void setupSailingDomain()
             new SailingNoWindHeuristic(static_cast<SailingProblem*>(problem));
 }
 
-
-void setupCTP()
-{
+void setupCTP() {
     if (verbosity > 100) {
         cout << "Setting up Canadian Traveler Problem " <<
             flag_value("ctp") << endl;
@@ -139,8 +137,7 @@ void setupCTP()
 }
 
 
-void setupProblem()
-{
+void setupProblem() {
     if (verbosity > 100)
         cout << "Setting up problem" << endl;
     if (flag_is_registered_with_value("track")) {
@@ -151,20 +148,19 @@ void setupProblem()
         setupSailingDomain();
     } else if (flag_is_registered_with_value("ctp")) {
         setupCTP();
+    } else if (flag_is_registered_with_value("randtree")) {
+        setupRandomTree();
     } else {
         cerr << "Invalid problem." << endl;
         exit(-1);
     }
 }
 
-
 bool mustReplan(State* s, int plausTrial) {
     return true;
 }
 
-
-void initSolver()
-{
+void initSolver() {
     assert(flag_is_registered_with_value("action-sel"));
 
     int horizon = 5, trials = 1000, virtual_rollouts = 5;
@@ -193,22 +189,19 @@ void initSolver()
     }
 }
 
-
-void updateStatistics(double cost, int n, double& mean, double& M2)
-{
+void updateStatistics(double cost, int n, double& mean, double& M2) {
     double delta = cost - mean;
     mean += delta / n;
     M2 += delta * (cost - mean);
 }
-
 
 int main(int argc, char* args[])
 {
     register_flags(argc, args);
     if (flag_is_registered_with_value("v"))
         verbosity = stoi(flag_value("v"));
-    long seed = time(nullptr);
-    //long seed = 1506777194;
+    //long seed = time(nullptr);
+    long seed = 1506777194;
     if (verbosity >= 1000)
         cout << "Seed: " << seed << endl;
     if (flag_is_registered("debug"))
@@ -235,6 +228,7 @@ int main(int argc, char* args[])
     if (verbosity > 100)
         cout << problem->states().size() << " states" << endl;
 
+                                                                                return 0;
     initSolver();
 
     int nsims = 100;
