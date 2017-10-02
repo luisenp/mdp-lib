@@ -146,6 +146,7 @@ public:
                                                                                 dprint("  appl. action / cost", a, this->cost(cur, a));
                 std::list<Successor> successors = transition(cur, a);
                 for (Successor sccr : successors) {
+                                                                                dprint("    sccr", sccr.su_state, sccr.su_prob);
                     queue.push_front(sccr.su_state);
                 }
             }

@@ -10,24 +10,24 @@
 class RandomTreeAction : public mlcore::Action {
 private:
     // An unique identifier for the action.
-    int index_;
+    int id_;
 
     // The cost of the action.
     double cost_;
 
     virtual std::ostream& print(std::ostream& os) const {
-        os << "A" << index_;
+        os << "A" << id_;
         return os;
     }
 
 public:
     // Creates an action for the random tree problem with the given id and
     // cost.
-    RandomTreeAction(int index, double cost) : index_(index), cost_(cost) {}
+    RandomTreeAction(int id, double cost) : id_(id), cost_(cost) {}
 
     virtual ~RandomTreeAction() {}
 
-    int index() const { return index_; }
+    int id() const { return id_; }
 
     double cost() const { return cost_; }
 

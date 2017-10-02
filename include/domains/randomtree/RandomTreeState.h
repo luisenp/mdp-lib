@@ -15,7 +15,7 @@ class RandomTreeState : public mlcore::State {
 
 private:
     // The unique identifier for this state.
-    int index_;
+    int id_;
 
     // True only for goal states.
     bool is_goal_;
@@ -29,23 +29,40 @@ private:
     // The successors of this state for each of the applicable actions.
     ActionSuccessorsListMap action_successors_;
 
+    // A term that affects the MDP cost function
+    // s.t. problem->cost(s,a) = cost_term_ + action_cost
+    int cost_term_;
+
+    // The upper bound for the successors cost terms.
+    int upper_bound_successor_cost_term_;
+
     virtual std::ostream& print(std::ostream& os) const {
-        os << "S" << index_;
+        os << "S" << id_;
         return os;
     }
 
 public:
-    // Creates a state for the random tree with the given index, and depth.
-    // The constructor also specifies if this state is a goal or not.
-    RandomTreeState(int index, int depth, bool is_goal);
+    // Creates a state for the random tree with the given id, and depth.
+    // The constructor also specifies if this state is a goal or not, the
+    // cost term and the upper bound for the successors cost terms.
+    RandomTreeState(int id,
+                    int depth,
+                    bool is_goal,
+                    int cost_term,
+                    int upper_bound_successor_cost_term = -1);
 
     virtual ~RandomTreeState() {}
 
-    bool index() const { return index_; }
+    bool id() const { return id_; }
 
     bool isGoal() const { return is_goal_; }
 
     int depth() const { return depth_; }
+
+    int costTerm() const { return cost_term_; }
+
+    int upperBoundSuccessorCostTerm() const
+        { return upper_bound_successor_cost_term_; }
 
     ActionSuccessorsListMap& actionSuccessors()
         { return action_successors_; }

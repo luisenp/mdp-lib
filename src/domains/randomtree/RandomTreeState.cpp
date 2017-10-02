@@ -2,8 +2,16 @@
 
 #include <cassert>
 
-RandomTreeState::RandomTreeState(int index, int depth, bool is_goal) :
-    index_(index), depth_(depth), is_goal_(is_goal) {
+RandomTreeState::RandomTreeState(int id,
+                                 int depth,
+                                 bool is_goal,
+                                 int cost_term,
+                                 int upper_bound_successor_cost_term)
+    : id_(id),
+      depth_(depth),
+      is_goal_(is_goal),
+      cost_term_(cost_term),
+      upper_bound_successor_cost_term_(upper_bound_successor_cost_term) {
 }
 
 void RandomTreeState::addAction(mlcore::Action* action) {
@@ -22,7 +30,7 @@ mlcore::State& RandomTreeState::operator=(const mlcore::State& rhs) {
     if (this == &rhs)
         return *this;
     const RandomTreeState* rts = static_cast<const  RandomTreeState*>(&rhs);
-    index_ =  rts->index_;
+    id_ =  rts->id_;
     is_goal_ = rts->is_goal_;
     depth_ = rts->depth_;
     for (auto rts_action_successors : rts->action_successors_) {
@@ -37,7 +45,7 @@ mlcore::State& RandomTreeState::operator=(const mlcore::State& rhs) {
 
 bool RandomTreeState::operator==(const mlcore::State& rhs) const {
     const RandomTreeState* rts = static_cast<const RandomTreeState*>(&rhs);
-    return index_ == rts->index_;
+    return id_ == rts->id_;
 }
 
 bool RandomTreeState::equals(mlcore::State* other) const {
@@ -46,5 +54,5 @@ bool RandomTreeState::equals(mlcore::State* other) const {
 }
 
 int RandomTreeState::hashValue() const {
-    return index_;
+    return id_;
 }

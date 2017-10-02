@@ -8,6 +8,8 @@
 #include "../../Problem.h"
 #include "../../State.h"
 
+enum RandomTreeType { RANDOM = 0, SKEWED_VAR = 1};
+
 // Implements an MDP structured as a balanced tree of some depth where the goal
 // is at one of the leaves.
 class RandomTreeProblem : public mlcore::Problem {
@@ -32,11 +34,14 @@ private:
     // The maximum cost of the actions.
     double max_cost_;
 
+    // The method by which the tree is created (default RANDOM).
+    RandomTreeType type_;
+
     // A copy of the actions list, used for shuffling in place.
     std::vector<mlcore::Action*> actions_copy_;
 
     // Used to generate random costs.
-    std::uniform_real_distribution<double> unif_costs_;
+    std::uniform_int_distribution<int> unif_costs_;
 
     // Used to generate random number of actions.
     std::uniform_int_distribution<int> unif_actions_;
@@ -50,8 +55,14 @@ private:
         int num_elements, std::vector<double>& distribution);
 
     // Creates a state with a random number of actions. The method receives
-    // the depth of the state and whether it should be a goal or not.
-    RandomTreeState* createRandomTreeState(int depth, bool is_goal);
+    // the depth of the state and whether it should be a goal or not. It also
+    // receives the index of this state in the successor array where it
+    // appears.
+    RandomTreeState* createRandomTreeState(
+        int depth,
+        bool is_goal,
+        int cost_term = 0,
+        int upper_bound_successor_cost_term = 0);
 
     // Creates max_num_actions_ each with a cost drawn from an
     // uniform distribution in [min_cost_, max_cost_].
@@ -69,10 +80,11 @@ private:
 
 public:
     RandomTreeProblem(int depth,
-                      int max_num_actions,
-                      int max_num_successors,
-                      int min_cost,
-                      int max_cost);
+                      RandomTreeType type = RANDOM,
+                      int max_num_actions = 2,
+                      int max_num_successors = 2,
+                      int min_cost = 1,
+                      int max_cost = 1);
 
     virtual ~RandomTreeProblem() { }
 

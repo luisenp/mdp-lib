@@ -50,7 +50,10 @@ unordered_map<string, THTSOutcomeSel> string_outcome_sel_map({
 });
 
 void setupRandomTree() {
-    problem = new RandomTreeProblem(2, 2, 2, 5., 10.0);
+    int depth = 3;
+    depth = min(stoi(flag_value("randtree")), 10);
+    problem = new RandomTreeProblem(depth, SKEWED_VAR);
+    // problem = new RandomTreeProblem(2, RANDOM, 2, 2, 5., 10.0);
 }
 
 void setupRacetrack() {
@@ -202,6 +205,7 @@ int main(int argc, char* args[])
         verbosity = stoi(flag_value("v"));
     //long seed = time(nullptr);
     long seed = 1506777194;
+    mlsolvers::gen.seed(seed);
     if (verbosity >= 1000)
         cout << "Seed: " << seed << endl;
     if (flag_is_registered("debug"))
@@ -228,7 +232,6 @@ int main(int argc, char* args[])
     if (verbosity > 100)
         cout << problem->states().size() << " states" << endl;
 
-                                                                                return 0;
     initSolver();
 
     int nsims = 100;
