@@ -345,7 +345,7 @@ public:
         backup_function_ = MONTE_CARLO;
         recommendation_function_ = BEST_VALUE;
         outcome_selection_ = MIN_VARIANCE;
-        prior_variance_outcomes_ = 0.0;
+        prior_variance_outcomes_ = 0.10;
         current_node_index_ = 0;
     }
 

@@ -75,10 +75,8 @@ void ChanceNode::backup(THTSSolver* solver, double cumulative_value) {
                 action_value_ +=
                     (total_value_successors / total_prob_successors);
                                                                                 dprint(debug_pad(2 * this->depth_),
-                                                                                        "backup",
-                                                                                        this,
-                                                                                        total_value_successors,
-                                                                                        total_prob_successors);
+                                                                                       "backup", this, action_value_,
+                                                                                       total_value_successors, total_prob_successors);
                 if (total_prob_solved_successors_ > 1.0 - mdplib::epsilon) {
                     this->solved_ = true;
                 }
@@ -94,11 +92,15 @@ void ChanceNode::updateSuccessorIndexMap(mlcore::State* state) {
 DecisionNode*
 ChanceNode::createOrGetDecisionNodeForState(mlcore::State* state, double prob) {
     if (state_successor_index_map_.count(state)) {
+                                                                                dprint(debug_pad(2 * this->depth_ + 1),
+                                                                                       "exists-dec", state, prob);
         // Successor state has already been explicated.
         int successor_node_index = state_successor_index_map_[state];
         assert(successor_node_index < explicated_successors_.size());
         return explicated_successors_[successor_node_index];
     } else {
+                                                                                dprint(debug_pad(2 * this->depth_ + 1),
+                                                                                       "create-dec", state, prob);
         // Successor state has never been explicated, add a new node.
         explicated_successors_.push_back(new DecisionNode(state,
                                                           this->depth_ + 1,
@@ -234,6 +236,7 @@ double DecisionNode::visit(THTSSolver* solver) {
             updateParentWithSolvedOutcome();
             this->solved_ = true;
         }
+                                                                                dprint(debug_pad(2 * this->depth_), "goal");
         return 0.0 ;
     }
     if (successors_.empty()) {   // not expanded yet
@@ -317,8 +320,11 @@ THTSSolver::ucb1ActionSelectRule(DecisionNode* node,
         double q_ucb1 = q_normalized - value_ucb1;
 
         if (action_node->solved_) {  // Select only unsolved nodes
-                                                                                dprint(debug_pad(2 * node->depth_ + 1), "tried-to-select-solved:", action_node);
-                                                                                dprint(debug_pad(2 * node->depth_ + 1), "action, q-normalized, value_ucb1:", action_node->action_, q_normalized, value_ucb1);
+                                                                                dprint(debug_pad(2 * node->depth_ + 1),
+                                                                                       "tried-to-select-solved:", action_node);
+                                                                                dprint(debug_pad(2 * node->depth_ + 1),
+                                                                                       "action, q-normalized, value_ucb1:",
+                                                                                       action_node->action_, q_normalized, value_ucb1);
             continue;
         }
 
@@ -336,7 +342,9 @@ mlcore::Action* THTSSolver::selectAction(DecisionNode* node) {
     double q_min = std::numeric_limits<double>::max();
     double q_max = -q_min;
     for (ChanceNode* action_node : node->successors()) {
-                                                                                dprint(debug_pad(2 * node->depth_ + 1), action_node, "action-select-minmax:", action_node->action_value_);
+                                                                                dprint(debug_pad(2 * node->depth_ + 1),
+                                                                                       action_node,
+                                                                                       "action-select-minmax:", action_node->action_value_);
         q_max = std::max(action_node->action_value_ , q_max);
         q_min = std::min(action_node->action_value_, q_min);
     }
@@ -375,9 +383,8 @@ mlcore::State* THTSSolver::
 minimumVarianceOutcomeSelect(ChanceNode* chance_node, double* prob) {
     mlcore::State* state =
         static_cast<DecisionNode*>(chance_node->parent_)->state_;
-//    double pick = mlsolvers::dis(mlsolvers::gen);
     double best_score = std::numeric_limits<double>::max();
-    std::vector<mlcore::State*> best_outcomes;
+    std::vector<mlcore::Successor> best_outcomes;
     for (mlcore::Successor sccr :
             problem_->transition(state, chance_node->action_)) {
         DecisionNode* outcome_node =
@@ -388,23 +395,35 @@ minimumVarianceOutcomeSelect(ChanceNode* chance_node, double* prob) {
                 prior_variance_outcomes_ * sccr.su_prob * sccr.su_prob;
             outcome_score /= (num_virtual_rollouts_ + 1);
         } else {
+            if (outcome_node->solved_)
+                continue;
             outcome_score = outcome_node->prob_2_
                 * outcome_node->var_state_value_;
             outcome_score /= (outcome_node->selection_counter_ + 1);
         }
+                                                                                dprint(debug_pad(2 * chance_node->depth_ + 1), "outcome-select",
+                                                                                       sccr.su_state, sccr.su_prob, outcome_score);
         if (outcome_score < best_score) {
             best_outcomes.clear();
             best_score = outcome_score;
         }
         if (fabs(outcome_score - best_score) < mdplib::epsilon) {
-            best_outcomes.push_back(sccr.su_state);
+            best_outcomes.push_back(sccr);
         }
     }
-    return best_outcomes[rand() % best_outcomes.size()];
+    int pick = rand() % best_outcomes.size();
+    *prob = best_outcomes[pick].su_prob;
+    return best_outcomes[pick].su_state;
 }
 
 mlcore::State* THTSSolver::selectOutcome(ChanceNode* node, double* prob) {
-    return randomUnsolvedOutcomeSelect(node, prob);
+    switch (outcome_selection_) {
+        case TRAN_F: {
+            return randomUnsolvedOutcomeSelect(node, prob);
+        } case MIN_VARIANCE : {
+            return minimumVarianceOutcomeSelect(node, prob);
+        }
+    }
 }
 
 mlcore::Action* THTSSolver::recommend(DecisionNode* node) {
