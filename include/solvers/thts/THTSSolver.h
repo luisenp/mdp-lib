@@ -185,6 +185,9 @@ private:
     // computed as the max over action estimates.
     double mean_state_value_;
 
+    // Intermediate value to calculate the variance online.
+    double sum_squared_diff_samples_;
+
     // The sample variance of the state value, computed in Monte-Carlo fashion
     // from the rollouts.
     double var_state_value_;
@@ -215,7 +218,13 @@ private:
         double delta = cumulative_value - mean_state_value_;
         mean_state_value_ += delta / selection_counter_;
         double delta2 = cumulative_value - mean_state_value_;
-        var_state_value_ = (delta * delta2) / (selection_counter_ - 1);
+        sum_squared_diff_samples_ += delta * delta2;
+        if (selection_counter_ < 2) {
+            var_state_value_ = 0.0;
+        } else {
+            var_state_value_ =
+                sum_squared_diff_samples_ / (selection_counter_ - 1);
+        }
     }
 
 public:
@@ -345,7 +354,7 @@ public:
         backup_function_ = MONTE_CARLO;
         recommendation_function_ = BEST_VALUE;
         outcome_selection_ = MIN_VARIANCE;
-        prior_variance_outcomes_ = 0.10;
+        prior_variance_outcomes_ = 100000.0;
         current_node_index_ = 0;
     }
 

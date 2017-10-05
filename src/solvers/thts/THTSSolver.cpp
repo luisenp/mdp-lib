@@ -173,6 +173,7 @@ DecisionNode::DecisionNode(mlcore::State* state,
     state_ = state;
     state_value_ = 0.0;
     mean_state_value_ = 0.0;
+    sum_squared_diff_samples_ = 0.0;
     var_state_value_ = 0.0;
     prob_ = prob;
     prob_2_ = prob * prob;
@@ -383,27 +384,35 @@ mlcore::State* THTSSolver::
 minimumVarianceOutcomeSelect(ChanceNode* chance_node, double* prob) {
     mlcore::State* state =
         static_cast<DecisionNode*>(chance_node->parent_)->state_;
-    double best_score = std::numeric_limits<double>::max();
+    double best_score = std::numeric_limits<double>::min();
     std::vector<mlcore::Successor> best_outcomes;
     for (mlcore::Successor sccr :
             problem_->transition(state, chance_node->action_)) {
         DecisionNode* outcome_node =
             chance_node->getDecisionNodeForStateIfPresent(sccr.su_state);
-        double outcome_score = 0.0;
-        if (outcome_node == nullptr) {
-            outcome_score =
-                prior_variance_outcomes_ * sccr.su_prob * sccr.su_prob;
-            outcome_score /= (num_virtual_rollouts_ + 1);
-        } else {
+        double outcome_score =
+            prior_variance_outcomes_ * sccr.su_prob * sccr.su_prob;
+                                                                                int counter_sel = 0;
+                                                                                double var_outcome = prior_variance_outcomes_;
+        if (outcome_node != nullptr) {
             if (outcome_node->solved_)
                 continue;
-            outcome_score = outcome_node->prob_2_
-                * outcome_node->var_state_value_;
-            outcome_score /= (outcome_node->selection_counter_ + 1);
+            if (outcome_node->selection_counter_ >= 2) {
+                int new_counter = outcome_node->selection_counter_ + 1;
+                outcome_score = outcome_node->prob_2_
+                    * outcome_node->var_state_value_;
+                outcome_score /= (new_counter * new_counter);
+                                                                                counter_sel = new_counter;
+                                                                                var_outcome = outcome_node->var_state_value_;
+            }
         }
-                                                                                dprint(debug_pad(2 * chance_node->depth_ + 1), "outcome-select",
-                                                                                       sccr.su_state, sccr.su_prob, outcome_score);
-        if (outcome_score < best_score) {
+                                                                                dprint(debug_pad(2 * chance_node->depth_ + 1),
+                                                                                       "outcome-select",
+                                                                                       sccr.su_state, sccr.su_prob,
+                                                                                       outcome_score,
+                                                                                       counter_sel,
+                                                                                       var_outcome);
+        if (outcome_score > best_score) {
             best_outcomes.clear();
             best_score = outcome_score;
         }

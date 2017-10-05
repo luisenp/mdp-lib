@@ -105,8 +105,8 @@ void RandomTreeProblem::generateRandomTransition(
             }
             break;
         } case SKEWED_VAR: {
-            distribution.push_back(0.9);
-            distribution.push_back(0.1);
+            distribution.push_back(0.75);
+            distribution.push_back(0.25);
             break;
         }
     }
@@ -141,15 +141,15 @@ void RandomTreeProblem::createSuccessorsStateAction(RandomTreeState* rts,
             } case SKEWED_VAR: {
                 int num_successors = 2;
                 vector<double> probabilities;
+                RandomTreeAction* rta = static_cast<RandomTreeAction*>(action);
                 generateRandomTransition(num_successors, probabilities);
                 for (int i = 0; i < num_successors; i++) {
                     int new_upper = (i == 0) ?
-                        max(rts->upperBoundSuccessorCostTerm() / 2, 1)
+                        max(rts->upperBoundSuccessorCostTerm() / 4, 1)
                         : rts->upperBoundSuccessorCostTerm();
                     int new_cost_term = (i == 0) ? 1
-                        : rts->upperBoundSuccessorCostTerm() / 2
-                            * (1 << static_cast<RandomTreeAction*>(
-                                action)->id());
+                        : (max(rts->upperBoundSuccessorCostTerm() / 2, 1)
+                            * (1 << rta->id()));
                     RandomTreeState* su_state = createRandomTreeState(
                         rts->depth() + 1, is_goal, new_cost_term, new_upper);
                     rts->addSuccessorForAction(
