@@ -203,8 +203,8 @@ int main(int argc, char* args[])
     register_flags(argc, args);
     if (flag_is_registered_with_value("v"))
         verbosity = stoi(flag_value("v"));
-    //long seed = time(nullptr);
-    long seed = 1506777194;
+    long seed = time(nullptr);
+    //long seed = 1506777194;
     mlsolvers::gen.seed(seed);
     if (verbosity >= 1000)
         cout << "Seed: " << seed << endl;
