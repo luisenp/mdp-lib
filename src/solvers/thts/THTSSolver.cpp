@@ -317,15 +317,17 @@ THTSSolver::ucb1ActionSelectRule(DecisionNode* node,
             1 : (action_node->action_value_ - q_min) / (q_diff);
         double value_ucb1 = sqrt(2 * log(node->selection_counter_)
                                     / action_node->selection_counter_);
-                                                                                dprint(debug_pad(2 * node->depth_ + 1), "action, q-normalized, value_ucb1:", action_node->action_, q_normalized, value_ucb1);
         double q_ucb1 = q_normalized - value_ucb1;
+                                                                                dprint(debug_pad(2 * node->depth_ + 1),
+                                                                                       "action, q-normalized, ucb1_term, q_ucb1:",
+                                                                                       action_node->action_, q_normalized, value_ucb1, q_ucb1);
 
         if (action_node->solved_) {  // Select only unsolved nodes
                                                                                 dprint(debug_pad(2 * node->depth_ + 1),
                                                                                        "tried-to-select-solved:", action_node);
                                                                                 dprint(debug_pad(2 * node->depth_ + 1),
-                                                                                       "action, q-normalized, value_ucb1:",
-                                                                                       action_node->action_, q_normalized, value_ucb1);
+                                                                                       "action, q-normalized, ucb1_term, q_ucb1:",
+                                                                                       action_node->action_, q_normalized, value_ucb1, q_ucb1);
             continue;
         }
 

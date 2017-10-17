@@ -120,5 +120,9 @@ double SailingProblem::cost(mlcore::State* s, mlcore::Action* a) const
 
 bool SailingProblem::applicable(mlcore::State* s, mlcore::Action* a) const
 {
+    if (tack(static_cast<SailingState*> (s),static_cast<SailingAction*> (a))
+            == 4) {
+        return false;   // action in opposite direction
+    }
     return true;
 }

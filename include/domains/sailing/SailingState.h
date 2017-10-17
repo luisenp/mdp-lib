@@ -19,7 +19,7 @@ private:
 
     virtual std::ostream& print(std::ostream& os) const
     {
-        os << "Sailing State: " << x_ << " " << y_ << " " << wind_;
+        os << "(Sailing State: " << x_ << " " << y_ << " " << wind_ << ")";
         return os;
     }
 

@@ -11,7 +11,7 @@ private:
 
     virtual std::ostream& print(std::ostream& os) const
     {
-        os << "Sailing Action: " << dir_;
+        os << "(Sailing Action: " << dir_ << ")";
         return os;
     }
 

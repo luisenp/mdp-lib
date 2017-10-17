@@ -283,7 +283,8 @@ int main(int argc, char* args[])
             numDecisions++;
 
             if (verbosity >= 1000) {
-                cout << "State/Action: " << tmp << " " << a << " " << endl;
+                cout << "State/Action: " << tmp << " " << a
+                    << " " << problem->cost(tmp,a) << endl;
             }
             costTrial += problem->cost(tmp, a);
             if (costTrial >= mdplib::dead_end_cost) {
