@@ -75,8 +75,9 @@ void ChanceNode::backup(THTSSolver* solver, double cumulative_value) {
                 action_value_ +=
                     (total_value_successors / total_prob_successors);
                                                                                 dprint(debug_pad(2 * this->depth_),
-                                                                                       "backup", this, action_value_,
-                                                                                       total_value_successors, total_prob_successors);
+                                                                                       "backup", this, "q_value", action_value_,
+                                                                                       "total_v_sccr", total_value_successors,
+                                                                                       "total_p_sccr", total_prob_successors);
                 if (total_prob_solved_successors_ > 1.0 - mdplib::epsilon) {
                     this->solved_ = true;
                 }
@@ -315,8 +316,9 @@ THTSSolver::ucb1ActionSelectRule(DecisionNode* node,
         }
         double q_normalized = q_diff == 0 ?
             1 : (action_node->action_value_ - q_min) / (q_diff);
-        double value_ucb1 = sqrt(2 * log(node->selection_counter_)
-                                    / action_node->selection_counter_);
+        double parent_visit_term = log(node->selection_counter_);
+        double value_ucb1 =
+            sqrt(parent_visit_term / action_node->selection_counter_);
         double q_ucb1 = q_normalized - value_ucb1;
                                                                                 dprint(debug_pad(2 * node->depth_ + 1),
                                                                                        "action, q-normalized, ucb1_term, q_ucb1:",
