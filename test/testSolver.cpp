@@ -73,7 +73,8 @@ void setupGridWorld()
     string grid = flag_value("grid");
     if (verbosity > 100)
         cout << "Setting up grid world " << grid << endl;
-    problem = new GridWorldProblem(grid.c_str(), 1.0, 50.0, true);
+    bool all_directions = flag_is_registered("gw-all-dir");
+    problem = new GridWorldProblem(grid.c_str(), 1.0, 50.0, all_directions);
     if (!flag_is_registered_with_value("heuristic") ||
             flag_value("heuristic") == "domain")
         heuristic = new GWManhattanHeuristic((GridWorldProblem*) problem);
@@ -280,6 +281,8 @@ int main(int argc, char* args[])
         verbosity = stoi(flag_value("v"));
     if (flag_is_registered("debug"))
         mdplib_debug = true;
+    if (flag_is_registered_with_value("dead-end-cost"))
+        mdplib::dead_end_cost = stof(flag_value("dead-end-cost"));
     setupProblem();
     if (!flag_is_registered("dont-generate"))
         problem->generateAll();

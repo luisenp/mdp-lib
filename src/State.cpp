@@ -15,6 +15,9 @@ std::ostream& operator<<(std::ostream& os, State* s)
 
 double State::cost() const
 {
+    if (deadEnd())
+        return mdplib::dead_end_cost;
+
     if (cost_ > mdplib::dead_end_cost) {
         if (problem_ == nullptr || problem_->heuristic() == nullptr)
             return 0.0;

@@ -53,6 +53,8 @@ GridWorldProblem::GridWorldProblem(const char* filename,
                     goals_->insert(
                         std::make_pair(
                             std::pair<int,int> (width_, height_), 0.0));
+                } else if (line.at(width_) == 'D') {
+                    dead_ends.insert(std::pair<int, int> (width_, height_));
                 } else if (line.at(width_) == 'S') {
                     x0_ = width_;
                     y0_ = height_;
@@ -138,10 +140,16 @@ GridWorldProblem::transition(mlcore::State *s, mlcore::Action *a)
         return successors;
     }
 
+    if (dead_ends.count(std::pair<int, int>(state->x(), state->y()))) {
+        s->markDeadEnd();
+        successors.push_front(mlcore::Successor(s, 1.0));
+        return successors;
+    }
+
     double probForward = 0.8;
     int numSuccessors = allDirections_ ? 3 : 2;
     double probSides = 0.2 / numSuccessors;
-    if (action->dir() == gridworld::DOWN) {
+    if (action->dir() == gridworld::UP) {
         addSuccessor(state, successors, height_ - 1, state->y(),
                      state->x(), state->y() + 1, probForward);
 
@@ -155,7 +163,7 @@ GridWorldProblem::transition(mlcore::State *s, mlcore::Action *a)
             addSuccessor(state, successors, state->y(), 0,
                          state->x(), state->y() - 1, probSides);
         }
-    } else if (action->dir() == gridworld::UP) {
+    } else if (action->dir() == gridworld::DOWN) {
         addSuccessor(state, successors, state->y(), 0,
                      state->x(), state->y() - 1, probForward);
 

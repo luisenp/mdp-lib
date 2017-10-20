@@ -13,7 +13,7 @@ heur=hmin
 #   echo "${track}|lrtdp"
 #   ../testsolver.out --track=../data/tracks/$track.track \
 #   --algorithm=lrtdp --v=$verbosity --n=1 \
-#   --no-initial-plan --heuristic=$heur
+#   --heuristic=$heur
 #  
 #   # FLARES
 #   for horizon in `seq 0 1`; do
@@ -59,7 +59,7 @@ for size in ${sizes[@]}; do
   # LRTDP
   echo "${size}-$goal|lrtdp"
   ../testsolver.out --sailing-size=$size --sailing-goal=$goal \
-  --algorithm=lrtdp --n=1 --v=$verbosity --heuristic=$heur --no-initial-plan \
+  --algorithm=lrtdp --n=1 --v=$verbosity --heuristic=$heur \
   --heuristic=$heur
   
   # FLARES
