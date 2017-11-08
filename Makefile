@@ -112,7 +112,7 @@ $(OD)/mo-solvers.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_H) 
 	ar rvs lib/mdplib_mosolvers.a $(OD_SOLV_MOBJ)/*.o
 
 # Compiles the base (single-objective) solvers
-$(OD)/solvers.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_THTS_CPP) $(SOLV_H) $(ID_DOMAINS)/*.h $(SD_DOMAINS)/*.cpp
+$(OD)/solvers.a: $(S_CPP) $(UTIL_CPP) $(I_H) $(UTIL_H) $(SOLV_CPP) $(SOLV_THTS_CPP) $(SOLV_H) $(SOLV_THTS_H) $(ID_DOMAINS)/*.h $(SD_DOMAINS)/*.cpp
 	make $(OD)/core.a
 	$(CC) $(CFLAGS) $(INCLUDE_CORE) $(ID_DOMAINS)/*.h -c $(SOLV_CPP) $(SOLV_THTS_CPP) \
 		$(SD_DOMAINS)/DummyState.cpp $(SD_DOMAINS)/WrapperProblem.cpp

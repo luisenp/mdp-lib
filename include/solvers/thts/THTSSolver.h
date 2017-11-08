@@ -413,7 +413,7 @@ public:
     double minCostNode(THTSNode* node) const { return 0.0; }
 
     // Returns the maximum possible cost that can be obtained in this node.
-    double maxCostNode(THTSNode* node) const { return mdplib::dead_end_cost; }
+    double maxCostNode(THTSNode* node) const { return 100; }
 
     // Overrides method from Solver.
     virtual mlcore::Action* solve(mlcore::State* s0);

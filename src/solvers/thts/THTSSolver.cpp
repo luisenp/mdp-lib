@@ -424,7 +424,7 @@ THTSSolver::randomUnsolvedOutcomeSelect(ChanceNode* chance_node, double* prob) {
 mlcore::State* THTSSolver::VIUnifBoundsOutcomeSelect(
         ChanceNode* chance_node, double* prob) {
     double pick = mlsolvers::dis(mlsolvers::gen);
-    if (pick < 0.25) {
+    if (pick < 0.05) {
         return randomUnsolvedOutcomeSelect(chance_node, prob);
     }
     // First find if this is the current best action or not.
@@ -471,6 +471,7 @@ mlcore::State* THTSSolver::VIUnifBoundsOutcomeSelect(
     double best_outcome_score = -std::numeric_limits<double>::max();
     double total_score = 0.0;
     std::vector<double> scores;
+    std::vector<mlcore::State*> best_states;
     for (mlcore::Successor sccr :
             problem_->transition(state, chance_node->action_)) {
         DecisionNode* outcome_node =
@@ -544,17 +545,17 @@ mlcore::State* THTSSolver::VIUnifBoundsOutcomeSelect(
         total_score += outcome_score;
         scores.push_back(outcome_score);
         assert(outcome_score > -mdplib::epsilon);
-        /*if (outcome_score > best_outcome_score) {
+        if (outcome_score > best_outcome_score) {
             best_outcome_score = outcome_score;
             best_states.clear();
         }
         if (fabs(outcome_score - best_outcome_score) < mdplib::epsilon) {
             best_states.push_back(sccr.su_state);
-        }*/
+        }
     }
 
 
-    double pick = mlsolvers::dis(mlsolvers::gen);
+    /*double pick = mlsolvers::dis(mlsolvers::gen);
     double acc = 0.0;
     int index = 0;
     for (mlcore::Successor sccr :
@@ -576,26 +577,27 @@ mlcore::State* THTSSolver::VIUnifBoundsOutcomeSelect(
                                                                                 for (int i = 0; i < scores.size(); i++) {
                                                                                     dprint("score", scores[i]);
                                                                                 }
-    assert(false);
-//    return best_states[rand() % best_states.size()];
+    assert(false);*/
+    return best_states[rand() % best_states.size()];
 }
 
 mlcore::State* THTSSolver::VPIUnifOutcomeSelect(
         ChanceNode* chance_node, double* prob) {
-    /*double pick = mlsolvers::dis(mlsolvers::gen);
-    if (pick < 0.25) {
+    double pick = mlsolvers::dis(mlsolvers::gen);
+    if (pick < 0.05) {
         return randomUnsolvedOutcomeSelect(chance_node, prob);
-    }*/
+    }
     // First find if this is the current best action or not.
     DecisionNode* parent = static_cast<DecisionNode*>(chance_node->parent_);
+    double q_alpha = std::numeric_limits<double>::max();
     double best_qvalue_other_action = std::numeric_limits<double>::max();
     for (ChanceNode* other_chance_node : parent->successors_) {
         if (other_chance_node != chance_node) {
-            double qvalue_estimate_other_action =
-                (other_chance_node->upper_bound_
-                    + other_chance_node->lower_bound_) / 2;
-            best_qvalue_other_action = std::min(qvalue_estimate_other_action,
-                                                best_qvalue_other_action);
+            if (other_chance_node->action_value_ < best_qvalue_other_action) {
+                best_qvalue_other_action = other_chance_node->action_value_;
+                q_alpha = (other_chance_node->upper_bound_
+                            + other_chance_node->lower_bound_) / 2;
+            }
         }
     }
     if (best_qvalue_other_action == std::numeric_limits<double>::max()) {
@@ -629,6 +631,7 @@ mlcore::State* THTSSolver::VPIUnifOutcomeSelect(
     double best_outcome_score = -std::numeric_limits<double>::max();
     double total_score = 0.0;
     std::vector<double> scores;
+    std:;vector<mlcore::State*> best_states;
     for (mlcore::Successor sccr :
             problem_->transition(state, chance_node->action_)) {
         DecisionNode* outcome_node =
@@ -638,16 +641,16 @@ mlcore::State* THTSSolver::VPIUnifOutcomeSelect(
             continue;
         double tau = qvalue_estimate
             - (outcome_node->upper_bound_ + outcome_node->lower_bound_) / 2;
-        double z = (best_qvalue_other_action - tau) / outcome_node->prob_;
+        double z = (q_alpha - tau) / outcome_node->prob_;
 
         double outcome_score = -1.0;
-        if (qvalue_estimate > best_qvalue_other_action) {
+        if (qvalue_estimate > q_alpha) {
             // Current action is not the best, so an outcome only improves
             // policy if the cost of this action becomes lower than the cost
             // of the current best action.
             // Integrate from lower_bound to z.
             outcome_score = (z - outcome_node->lower_bound_)
-                * (best_qvalue_other_action - tau
+                * (q_alpha - tau
                    - outcome_node->prob_
                     * (z + outcome_node->lower_bound_) / 2);
             outcome_score /=
@@ -656,7 +659,7 @@ mlcore::State* THTSSolver::VPIUnifOutcomeSelect(
         } else {
             // Current action is the best. Integrate from z to upper_bound.
             outcome_score = (outcome_node->upper_bound_ - z)
-                * (tau - best_qvalue_other_action
+                * (tau - q_alpha
                    + outcome_node->prob_
                     * (outcome_node->upper_bound_ + z) / 2);
             outcome_score /=
@@ -665,17 +668,17 @@ mlcore::State* THTSSolver::VPIUnifOutcomeSelect(
         total_score += outcome_score;
         scores.push_back(outcome_score);
         assert(outcome_score > -mdplib::epsilon);
-        /*if (outcome_score > best_outcome_score) {
+        if (outcome_score > best_outcome_score) {
             best_outcome_score = outcome_score;
             best_states.clear();
         }
         if (fabs(outcome_score - best_outcome_score) < mdplib::epsilon) {
             best_states.push_back(sccr.su_state);
-        }*/
+        }
     }
 
 
-    double pick = mlsolvers::dis(mlsolvers::gen);
+    /*double pick = mlsolvers::dis(mlsolvers::gen);
     double acc = 0.0;
     int index = 0;
     for (mlcore::Successor sccr :
@@ -697,8 +700,8 @@ mlcore::State* THTSSolver::VPIUnifOutcomeSelect(
                                                                                 for (int i = 0; i < scores.size(); i++) {
                                                                                     dprint("score", scores[i]);
                                                                                 }
-    assert(false);
-//    return best_states[rand() % best_states.size()];
+    assert(false);*/
+    return best_states[rand() % best_states.size()];
 }
 
 mlcore::State* THTSSolver::selectOutcome(ChanceNode* node, double* prob) {
