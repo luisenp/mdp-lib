@@ -21,7 +21,9 @@ class THTSSolver;
 // The possible backup functions to use.
 enum THTSBackup {MONTE_CARLO = 0, MAX_MONTE_CARLO = 1, PARTIAL_BELLMAN = 2};
 
-enum THTSOutcomeSel {TRAN_F = 0, MIN_VARIANCE = 1, DELTA_MEAN = 2, VPI = 3};
+enum THTSOutcomeSel {TRAN_F = 0, VPI_UNIF = 1, VI_UNIF_BOUNDS = 2};
+
+enum THTSActionSel {GREEDY = 0, UCB1 = 2};
 
 // The possible recommendation functions to use.
 enum THTSRecommendations {BEST_VALUE = 0, MOST_PLAYED = 1};
@@ -53,6 +55,25 @@ protected:
 
     // An unique index for the node.
     int index_;
+
+    // A lower bound on the cost of the node.
+    double lower_bound_;
+
+    // An upper bound on the cost of the node.
+    double upper_bound_;
+
+    // The minimum (relative) change observed in the lower bound.
+    double min_lower_bound_update_;
+
+    // The maximum (relative) change observed in the lower bound.
+    double max_lower_bound_update_;
+
+    // The minimum (relative) change observed in the upper bound.
+    double min_upper_bound_update_;
+
+    // The maximum (relative) change observed in the lower bound.
+    double max_upper_bound_update_;
+
 
 public:
     THTSNode* parent() const { return parent_; }
@@ -170,27 +191,12 @@ private:
     // The state that this node corresponds to.
     mlcore::State* state_;
 
-    // The value estimate of the state represented by this node.
-    double state_value_;
+    // The cost estimate of the state represented by this node.
+    double state_cost_;
 
     // The probability with which this node occurs in the parent's successors
     // distribution.
     double prob_;
-
-    // The square of the probability.
-    double prob_2_;
-
-    // The sample mean state value, computed in Monte-Carlo fashion from
-    // the rollouts. This is different to state_value_, since that one is
-    // computed as the max over action estimates.
-    double mean_state_value_;
-
-    // Intermediate value to calculate the variance online.
-    double sum_squared_diff_samples_;
-
-    // The sample variance of the state value, computed in Monte-Carlo fashion
-    // from the rollouts.
-    double var_state_value_;
 
     // Maps an action to an index in the chance node successors array.
     mlcore::ActionIntMap action_chance_node_index_map_;
@@ -210,20 +216,6 @@ private:
         if (this->parent_ != nullptr) {
             static_cast<ChanceNode*>(this->parent_)->
                 total_prob_solved_successors_ += prob_;
-        }
-    }
-
-    // Updates the sample mean and standard deviation of the state's value.
-    void updateStatistics(double cumulative_value) {
-        double delta = cumulative_value - mean_state_value_;
-        mean_state_value_ += delta / selection_counter_;
-        double delta2 = cumulative_value - mean_state_value_;
-        sum_squared_diff_samples_ += delta * delta2;
-        if (selection_counter_ < 2) {
-            var_state_value_ = 0.0;
-        } else {
-            var_state_value_ =
-                sum_squared_diff_samples_ / (selection_counter_ - 1);
         }
     }
 
@@ -290,6 +282,9 @@ private:
     // The recommendation function to use (default=BEST_VALUE).
     THTSRecommendations recommendation_function_;
 
+    // The action selection rule to use.
+    THTSActionSel action_selection_;
+
     // The outcome selection rule to use.
     THTSOutcomeSel outcome_selection_;
 
@@ -324,7 +319,15 @@ private:
     // distributions.
     mlcore::State* randomUnsolvedOutcomeSelect(ChanceNode* node, double* prob);
 
-    mlcore::State* minimumVarianceOutcomeSelect(ChanceNode* node, double* prob);
+    // Returns a state using a value of information analysis using a uniform
+    // model for the state values and the bounds updates.
+    mlcore::State*
+    VIUnifBoundsOutcomeSelect(ChanceNode* chance_node, double* prob);
+
+    // Returns a state using a value of perfect information analysis,
+    // using a uniform model for the state values.
+
+    mlcore::State* VPIUnifOutcomeSelect(ChanceNode* chance_node, double* prob);
 
     // ********************************************************************** /
     //                        Action Selection Rules                          /
@@ -337,6 +340,10 @@ private:
         double q_min,
         double q_max,
         std::vector<ChanceNode*>& best_action_nodes);
+
+    // Stores the actions with the best Q-Value in the given vector.
+    void greedyActionSelectionRule(
+        DecisionNode* node, std::vector<ChanceNode*>& best_action_nodes);
 
 public:
     THTSSolver(mlcore::Problem* problem,
@@ -353,7 +360,7 @@ public:
         root_ = nullptr;
         backup_function_ = MONTE_CARLO;
         recommendation_function_ = BEST_VALUE;
-        outcome_selection_ = MIN_VARIANCE;
+        outcome_selection_ = TRAN_F;
         prior_variance_outcomes_ = 100000.0;
         current_node_index_ = 0;
     }
@@ -362,6 +369,10 @@ public:
 
     void backupFunction(THTSBackup value) {
         backup_function_ = value;
+    }
+
+    void actionSelection(THTSActionSel value) {
+        action_selection_ = value;
     }
 
     void outcomeSelection(THTSOutcomeSel value) {
@@ -397,6 +408,12 @@ public:
     mlcore::Action* recommend(DecisionNode* node);
 
     int maxDepth() const { return max_depth_; }
+
+    // Returns the minimum possible cost that can be obtained in this node.
+    double minCostNode(THTSNode* node) const { return 0.0; }
+
+    // Returns the maximum possible cost that can be obtained in this node.
+    double maxCostNode(THTSNode* node) const { return mdplib::dead_end_cost; }
 
     // Overrides method from Solver.
     virtual mlcore::Action* solve(mlcore::State* s0);

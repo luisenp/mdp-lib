@@ -44,9 +44,11 @@ unordered_map<string, THTSBackup> string_backup_function_map({
 });
 
 unordered_map<string, THTSOutcomeSel> string_outcome_sel_map({
-    {"tran", TRAN_F},
-    {"min-var", MIN_VARIANCE},
-    {"delta", DELTA_MEAN}
+    {"tran", TRAN_F}, {"viub", VI_UNIF_BOUNDS}, {"vpiu", VPI_UNIF},
+});
+
+unordered_map<string, THTSActionSel> string_action_sel_map({
+    {"greedy", GREEDY}, {"ucb1", UCB1},
 });
 
 void setupRandomTree() {
@@ -164,7 +166,8 @@ bool mustReplan(State* s, int plausTrial) {
 }
 
 void initSolver() {
-    assert(flag_is_registered_with_value("action-sel"));
+    assert(flag_is_registered_with_value("act-sel"));
+    assert(flag_is_registered_with_value("out-sel"));
 
     int horizon = 5, trials = 1000, virtual_rollouts = 5;
     double prior_variance_outcomes = 0.1;
@@ -189,6 +192,11 @@ void initSolver() {
         assert(string_outcome_sel_map.count(flag_value("out-sel")));
         solver->outcomeSelection(
             string_outcome_sel_map[flag_value("out-sel")]);
+    }
+    if (flag_is_registered_with_value("act-sel")) {
+        assert(string_action_sel_map.count(flag_value("act-sel")));
+        solver->actionSelection(
+            string_action_sel_map[flag_value("act-sel")]);
     }
 }
 
@@ -325,8 +333,9 @@ int main(int argc, char* args[])
             expectedTime / numDecisions << endl;
     } else {
         cout << problem->initialState()->cost() << " ";
-        cout << expectedCost << " " << sqrt(variance / (cnt - 1)) << " " <<
-            expectedTime / cnt << " " << expectedTime / numDecisions << endl;
+        cout << expectedCost << " " << sqrt(variance / (cnt - 1)) << " "
+            << sqrt(variance / (cnt - 1)) / sqrt(cnt) << " "
+            << expectedTime / cnt << " " << expectedTime / numDecisions << endl;
     }
     delete problem;
     delete heuristic;
