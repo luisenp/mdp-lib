@@ -6,6 +6,7 @@
 #include <sstream>
 #include <unistd.h>
 
+#include "../include/solvers/BoundedRTDPSolver.h"
 #include "../include/solvers/DeterministicSolver.h"
 #include "../include/solvers/HDPSolver.h"
 #include "../include/solvers/HMinHeuristic.h"
@@ -207,6 +208,8 @@ void initSolver()
         solver = new LAOStarSolver(problem, tol, 1000000);
     } else if (algorithm == "lrtdp") {
         solver = new LRTDPSolver(problem, trials, tol);
+    } else if (algorithm == "brtdp") {
+        solver = new BoundedRTDPSolver(problem, trials, tol);
     } else if (algorithm == "flares") {
         bool optimal = flag_is_registered("optimal");
         bool useProbsDepth = flag_is_registered("use-prob-depth");
