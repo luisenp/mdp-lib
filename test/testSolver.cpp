@@ -198,6 +198,8 @@ void initSolver()
         expansions = stoi(flag_value("expansions"));
     if (flag_is_registered_with_value("trials"))
         trials = stoi(flag_value("trials"));
+    if (flag_is_registered_with_value("tol"))
+        tol = stof(flag_value("tol"));
 
     if (algorithm == "wlao") {
         double weight = 1.0;
@@ -209,7 +211,7 @@ void initSolver()
     } else if (algorithm == "lrtdp") {
         solver = new LRTDPSolver(problem, trials, tol);
     } else if (algorithm == "brtdp") {
-        solver = new BoundedRTDPSolver(problem, trials, tol);
+        solver = new BoundedRTDPSolver(problem, tol);
     } else if (algorithm == "flares") {
         bool optimal = flag_is_registered("optimal");
         bool useProbsDepth = flag_is_registered("use-prob-depth");
@@ -362,7 +364,13 @@ int main(int argc, char* args[])
                 expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
                 numDecisions++;
             } else {
-                a = greedyAction(problem, tmp);
+                if (algorithm == "brtdp") {
+                    // Stores an action greedy with respect to the upper bound.
+                    a = tmp->bestAction();
+                }
+                else {
+                    a = greedyAction(problem, tmp);
+                }
             }
 
             if (verbosity >= 1000) {

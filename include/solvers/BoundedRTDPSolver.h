@@ -16,10 +16,18 @@ private:
 
     mlcore::Problem* problem_;
     int maxTrials_;
+
+    /* Criterion for stopping the algorithm
+      (the difference between the bounds). */
     double epsilon_;
+
+    /* Criterion for considering a state as well-known. */
+    double tau_;
 
     /* Upper bounds on the state costs. */
     mlcore::StateDoubleMap upperBounds_;
+
+    mlcore::StateActionMap lowerBoundGreedyPolicy_;
 
     /* Performs a single BRTDP trial. */
     void trial(mlcore::State* s);
@@ -31,6 +39,12 @@ private:
     /* Initializes the upper bound for the given state. */
     void initializeUpperBound(mlcore::State* s);
 
+    /*
+     * Samples a state biased according to the difference of its bounds.
+     * Returns a nullptr if all successor states have "well-known" value.
+     */
+    mlcore::State* sampleBiased(mlcore::State* s, mlcore::Action* a);
+
 public:
     /**
      * Creates a BRTDP solver for the given problem.
@@ -39,7 +53,9 @@ public:
      * @param maxTrials The maximum number of trials to perform.
      * @param epsilon The error tolerance.
      */
-    BoundedRTDPSolver(mlcore::Problem* problem, int maxTrials, double epsilon);
+    BoundedRTDPSolver(mlcore::Problem* problem,
+                      double epsilon,
+                      int maxTrials = 1000000);
 
     /**
      * Solves the associated problem using the Labeled RTDP algorithm.
