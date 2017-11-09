@@ -284,7 +284,7 @@ void DecisionNode::initialize(THTSSolver* solver) {
     selection_counter_ = backup_counter_;
     solved_ = false;
 
-    lower_bound_ = solver->minCostNode(this);
+    lower_bound_ = state_->cost();  // Assuming admissible heuristic.
     upper_bound_ = solver->maxCostNode(this);
     min_lower_bound_update_ = 1.0;
     max_lower_bound_update_ = 0.0;

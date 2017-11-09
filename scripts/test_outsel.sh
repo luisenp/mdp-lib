@@ -8,7 +8,7 @@
 
 heur=domain
 tracks=(known/square-4-error known/ring-5-error)
-nsims=1000
+nsims=4000
 horizon=25
 actsel=greedy
 for track in ${tracks[@]}; do
