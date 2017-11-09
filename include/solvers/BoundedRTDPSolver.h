@@ -9,6 +9,7 @@ namespace mlsolvers {
 
 /**
  * An SSP solver using the Bounded RTDP algorithm.
+ * http://machinelearning.wustl.edu/mlpapers/paper_files/icml2005_McMahanLG05.pdf
  */
 class BoundedRTDPSolver : public Solver
 {
