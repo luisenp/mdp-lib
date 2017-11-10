@@ -1,4 +1,5 @@
 #include "../../include/solvers/VPIRTDPSolver.h"
+#include "../../include/util/math_utils.h"
 
 namespace mlsolvers
 {
@@ -6,7 +7,12 @@ namespace mlsolvers
 VPIRTDPSolver::VPIRTDPSolver(mlcore::Problem* problem,
                                      double epsilon,
                                      int maxTrials)
-    : problem_(problem), epsilon_(epsilon), maxTrials_(maxTrials), tau_(100.0)
+    : problem_(problem),
+      epsilon_(epsilon),
+      maxTrials_(maxTrials),
+      alpha_(0.01),
+      beta_(25),
+      tau_(100.0)
 { }
 
 
@@ -22,7 +28,7 @@ void VPIRTDPSolver::trial(mlcore::State* s) {
         mlcore::Action* a = lowerBoundGreedyPolicy_[tmp];
         if (tmp->deadEnd())
             break;
-        tmp = sampleBiased(tmp, a);
+        tmp = sampleVPI(tmp, a);
         if (tmp == nullptr)
             break;
     }
@@ -39,8 +45,10 @@ void VPIRTDPSolver::initializeUpperBound(mlcore::State* s) {
 }
 
 mlcore::State*
-VPIRTDPSolver::sampleBiased(mlcore::State* s, mlcore::Action* a) {
-    double B = 0.0;
+VPIRTDPSolver::sampleBiasedBounds(mlcore::State* s,
+                                  mlcore::Action* a,
+                                  double& B) {
+    B = 0.0;
     std::vector< std::pair<mlcore::State*, double> > statesAndScores;
     for (const mlcore::Successor& su : problem_->transition(s, a)) {
         double score =
@@ -57,6 +65,116 @@ VPIRTDPSolver::sampleBiased(mlcore::State* s, mlcore::Action* a) {
         acc += stateAndScore.second / B;
         if (acc >= pick) {
             return stateAndScore.first;
+        }
+    }
+    assert(false);
+    return nullptr;
+}
+
+mlcore::State*
+VPIRTDPSolver::sampleVPI(mlcore::State* s, mlcore::Action* sampledAction) {
+    double B;
+    mlcore::State* outcomeBRTD = sampleBiasedBounds(s, sampledAction, B);
+    if (B > beta_) {
+        return outcomeBRTD;
+    }
+    // An action chosen according to the upper bound.
+    mlcore::Action* bestAction = s->bestAction();
+
+    // Pre-computing E[Qa | bounds] for all actions.
+    // We also cache P(s'|s,action) and (s'|s,action) * (UB(s') - LB(s')) / 2.
+    std::vector<double> expectedQValuesGivenBounds;
+    std::vector<mlcore::StateDoubleMap> statesContribQValues;
+    std::vector<mlcore::StateDoubleMap> statesProbs;
+    int actionIndex = -1;
+    int indexBestAction = -1;
+    for (mlcore::Action* action : problem_->actions()) {
+        if (!problem_->applicable(s, action))
+            continue;
+        actionIndex++;
+        if (action == bestAction)
+            indexBestAction = actionIndex;
+        double qValue = 0.0;
+        expectedQValuesGivenBounds.push_back(0.0);
+        statesContribQValues.push_back(mlcore::StateDoubleMap ());
+        statesProbs.push_back(mlcore::StateDoubleMap ());
+        for (const mlcore::Successor& su : problem_->transition(s, action)) {
+            double stateContrib =
+                su.su_prob * (upperBounds_[su.su_state] - su.su_state->cost());
+            qValue += stateContrib;
+            statesContribQValues.back()[su.su_state] = stateContrib / 2;
+            statesProbs.back()[su.su_state] = su.su_prob;
+        }
+        qValue *= (problem_->gamma() / 2);
+        qValue += problem_->cost(s, action);
+        expectedQValuesGivenBounds[actionIndex] = qValue;
+    }
+
+    // Computing the myopic VPI for each outcome.
+    mlcore::StateDoubleMap outcomeScores;
+    double totalOutcomeScores = 0.0;
+    for (const mlcore::Successor& su : problem_->transition(s, sampledAction)) {
+        outcomeScores[su.su_state] = -std::numeric_limits<double>::max();
+        int actionIndex = -1;
+        double PrSuGivenBestAction = statesProbs[indexBestAction][su.su_state];
+        double contribSuBestAction =
+            statesContribQValues[indexBestAction][su.su_state];
+        double qValueRemAlpha =
+            expectedQValuesGivenBounds[indexBestAction] - contribSuBestAction;
+        double& outcomeScoreRef = outcomeScores[su.su_state];
+        for (mlcore::Action* action : problem_->actions()) {
+            if (!problem_->applicable(s, action))
+                continue;
+            actionIndex++;
+            double PrSuGivenAction = statesProbs[actionIndex][su.su_state];
+            double contribSuAction =
+                statesContribQValues[actionIndex][su.su_state];
+            double qValueRemA =
+                expectedQValuesGivenBounds[actionIndex] - contribSuAction;
+            double ub = upperBounds_[su.su_state];
+            double lb = su.su_state->cost();
+            double outcomeScoreAction = -1;
+            if (mdplib_math::equal(PrSuGivenAction, PrSuGivenBestAction)) {
+                outcomeScoreAction =
+                    std::max(0.0, (qValueRemA - qValueRemAlpha) * (ub - lb));
+            } else if (mdplib_math::greaterThan(PrSuGivenAction,
+                                                PrSuGivenBestAction)) {
+                double deltaProb = PrSuGivenAction - PrSuGivenBestAction;
+                double z =
+                    std::min((qValueRemAlpha - qValueRemA) / deltaProb, ub);
+                outcomeScoreAction =
+                    (ub - z) * (qValueRemA - qValueRemAlpha
+                                + deltaProb * (z + ub) / 2);
+            } else {
+                double deltaProb = PrSuGivenAction - PrSuGivenBestAction;
+                double z =
+                    std::max((qValueRemAlpha - qValueRemA) / deltaProb, lb);
+                outcomeScoreAction =
+                    (z - lb) * (qValueRemA - qValueRemAlpha
+                                + deltaProb * (lb + z) / 2);
+            }
+                                                                                if (outcomeScoreAction < 0) {
+                                                                                    dprint4("best", PrSuGivenBestAction,  contribSuBestAction, qValueRemAlpha);
+                                                                                    dprint4("action", PrSuGivenAction,  contribSuAction, qValueRemA);
+                                                                                    dprint1(outcomeScoreAction);
+                                                                                }
+            assert(outcomeScoreAction >= 0);
+            outcomeScoreRef = std::max(outcomeScoreRef, outcomeScoreAction);
+        }
+        totalOutcomeScores += outcomeScoreRef;
+    }
+    if (totalOutcomeScores < mdplib::epsilon) {
+        double pick = dis(gen);
+        if (pick < alpha_)
+            return sampleBiasedBounds(s, sampledAction, B);
+        return nullptr;
+    }
+    double pick = dis(gen);
+    double acc = 0.0;
+    for (const mlcore::Successor& su : problem_->transition(s, sampledAction)) {
+        acc += outcomeScores[su.su_state] / totalOutcomeScores;
+        if (acc >= pick) {
+            return su.su_state;
         }
     }
     assert(false);

@@ -17,6 +17,7 @@
 #include "../include/solvers/SSiPPSolver.h"
 #include "../include/solvers/UCTSolver.h"
 #include "../include/solvers/VISolver.h"
+#include "../include/solvers/VPIRTDPSolver.h"
 
 #include "../include/util/flags.h"
 #include "../include/util/general.h"
@@ -212,6 +213,8 @@ void initSolver()
         solver = new LRTDPSolver(problem, trials, tol);
     } else if (algorithm == "brtdp") {
         solver = new BoundedRTDPSolver(problem, tol);
+    } else if (algorithm == "vpi-rtdp") {
+        solver = new VPIRTDPSolver(problem, tol);
     } else if (algorithm == "flares") {
         bool optimal = flag_is_registered("optimal");
         bool useProbsDepth = flag_is_registered("use-prob-depth");

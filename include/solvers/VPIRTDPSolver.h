@@ -16,6 +16,8 @@ class VPIRTDPSolver : public Solver
 private:
 
     mlcore::Problem* problem_;
+
+    /* The maximum number of trials to perform. */
     int maxTrials_;
 
     /* Criterion for stopping the algorithm
@@ -24,6 +26,14 @@ private:
 
     /* Criterion for considering a state as well-known. */
     double tau_;
+
+    /* If the average successor bound gap is larger than |beta_|, then
+     * VPI will not be used (not enough information). */
+    double beta_;
+
+    /* The probability that we return a successor based solely on the bounds
+     * when VPI of all outcomes is 0. */
+    double alpha_;
 
     /* Upper bounds on the state costs. */
     mlcore::StateDoubleMap upperBounds_;
@@ -43,8 +53,17 @@ private:
     /*
      * Samples a state biased according to the difference of its bounds.
      * Returns a nullptr if all successor states have "well-known" value.
+     * The output parameter |B| stores the average bound gap over the
+     * set of successors.
      */
-    mlcore::State* sampleBiased(mlcore::State* s, mlcore::Action* a);
+    mlcore::State* sampleBiasedBounds(mlcore::State* s,
+                                      mlcore::Action* sampledAction,
+                                      double& B);
+
+    /*
+     * Samples a state according to a myopic VPI analysis.
+     */
+    mlcore::State* sampleVPI(mlcore::State* s, mlcore::Action* sampledAction);
 
 public:
     /**
