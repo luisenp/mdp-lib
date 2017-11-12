@@ -27,24 +27,24 @@ mlcore::Action* RFFSolver::solve(mlcore::State* s0)
             // Solving using FF
             vector<string> fullPlan;
             vector<mlcore::State*> subgoals;
-//                                                                                dprint1("here0");
+//                                                                                dprint("here0");
             if (!statesPolicyGraph.empty())
                 pickRandomStates(statesPolicyGraph, 100, subgoals);
-//                                                                                dprint2("calling FF ", subgoals.size());
+//                                                                                dprint("calling FF ", subgoals.size());
             callFF(s, subgoals, fullPlan);
-//                                                                                dprint2("done with plan of size ", fullPlan.size());
+//                                                                                dprint("done with plan of size ", fullPlan.size());
 
             // Extract policy
             mlcore::State* sPrime = s;
             for (string actionName : fullPlan) {
                 // Don't expand goal states or states that have been expanded
                 // before
-//                                                                                dprint3("trying", sPrime, (void *) sPrime->bestAction());
+//                                                                                dprint("trying", sPrime, (void *) sPrime->bestAction());
                 if (problem_->goal(sPrime) ||
                         statesPolicyGraph.count(sPrime) > 0)
                     continue;
                 expandedStates.insert(sPrime);
-//                                                                                dprint3("expanding", sPrime, actionName);
+//                                                                                dprint("expanding", sPrime, actionName);
                 mlcore::Action* action =
                     problem_->getActionFromName(actionName);
                 if (action == nullptr) {
@@ -56,28 +56,28 @@ mlcore::Action* RFFSolver::solve(mlcore::State* s0)
                 for (auto const succ : problem_->transition(sPrime, action)) {
                     if (succ.su_state->bestAction() == nullptr &&
                         !problem_->goal(succ.su_state)) {
-//                                                                                dprint2("adding terminal", succ.su_state);
+//                                                                                dprint("adding terminal", succ.su_state);
                         newTerminalStates.insert(succ.su_state);
                     }
                 }
                 sPrime = mostLikelyOutcome(problem_, sPrime, action, true);
             }
         }
-                                                                                dprint2("new terminals", newTerminalStates.size());
-                                                                                dprint2("allexpanded", expandedStates.size());
+                                                                                dprint("new terminals", newTerminalStates.size());
+                                                                                dprint("allexpanded", expandedStates.size());
         terminalStates_.insert(newTerminalStates.begin(),
                                newTerminalStates.end());
         for (mlcore::State* sExpanded : expandedStates) {
-//                                                                                dprint2("expanded", sExpanded);
+//                                                                                dprint("expanded", sExpanded);
             terminalStates_.erase(terminalStates_.find(sExpanded));
             statesPolicyGraph.insert(sExpanded);
         }
-                                                                                dprint2("size terminals ", terminalStates_.size());
+                                                                                dprint("size terminals ", terminalStates_.size());
                                                                                 for (auto const & term : terminalStates_)
-                                                                                    dprint2("++ terminal", term);
-                                                                                dprint1("computing totalProb");
+                                                                                    dprint("++ terminal", term);
+                                                                                dprint("computing totalProb");
         double totalProb = failProb(s0, 50);
-                                                                                dprint3("totalProb", totalProb, rho_);
+                                                                                dprint("totalProb", totalProb, rho_);
         if (totalProb < rho_)
             break;
     }
@@ -116,7 +116,7 @@ double RFFSolver::failProb(mlcore::State* s, int N)
     double totalProbabilityTerminals = 0.0;
     double delta = 1.0 / N;
     for (int i = 0; i < N; i++) {
-                                                                                dprint2("  ",  i);
+                                                                                dprint("  ",  i);
         mlcore::State* currentState = s;
         while (!problem_->goal(currentState) &&
                terminalStates_.count(currentState) == 0) {
@@ -125,12 +125,12 @@ double RFFSolver::failProb(mlcore::State* s, int N)
                 // might loop endlessly when there are unavoidable dead-ends
                 break;
             }
-                                                                                dprint2("  ** ",  currentState);
+                                                                                dprint("  ** ",  currentState);
                                                                                 if (currentState->bestAction() != nullptr)
-                                                                                    dprint2("      ", currentState->bestAction());
+                                                                                    dprint("      ", currentState->bestAction());
                                                                                 else {
-                                                                                    dprint1("      null action");
-                                                                                    dprint1(currentState->deadEnd());
+                                                                                    dprint("      null action");
+                                                                                    dprint(currentState->deadEnd());
                                                                                     dsleep(1000);
                                                                                     exit(0);
                                                                                 }

@@ -192,6 +192,10 @@ void initSolver()
     assert(flag_is_registered_with_value("algorithm"));
     algorithm = flag_value("algorithm");
 
+    if (flag_is_registered("dead-end-cost")) {
+        mdplib::dead_end_cost = stof(flag_value("dead-end-cost"));
+    }
+
     int horizon = 0, expansions = 1, trials = 1000;
     if (flag_is_registered_with_value("horizon"))
         horizon = stoi(flag_value("horizon"));
@@ -212,9 +216,27 @@ void initSolver()
     } else if (algorithm == "lrtdp") {
         solver = new LRTDPSolver(problem, trials, tol);
     } else if (algorithm == "brtdp") {
-        solver = new BoundedRTDPSolver(problem, tol);
+        // BRTDP is just VPI-RTDP with beta = 0
+//        double tau = 100;
+//        solver = new VPIRTDPSolver(problem, tol, trials,
+//                                   -1.0, 0.0, tau, mdplib::dead_end_cost);
+    } else if (algorithm == "rtdp") {
+        // RTDP is just VPI-RTDP with vanillaSample set to true
+//        solver = new VPIRTDPSolver(problem, tol, trials,
+//                                   0.0, 0.0, 0.0, mdplib::dead_end_cost,
+//                                   true);
     } else if (algorithm == "vpi-rtdp") {
-        solver = new VPIRTDPSolver(problem, tol);
+        double alpha = 1.0;
+        double beta = 0.95 * mdplib::dead_end_cost;
+        double tau = 100;
+        if (flag_is_registered_with_value("beta"))
+            beta = stof(flag_value("beta"));
+        if (flag_is_registered_with_value("alpha"))
+            alpha = stof(flag_value("alpha"));
+        solver = new VPIRTDPSolver(problem,
+                                   tol, trials,
+                                   alpha, beta, tau,
+                                   mdplib::dead_end_cost);
     } else if (algorithm == "flares") {
         bool optimal = flag_is_registered("optimal");
         bool useProbsDepth = flag_is_registered("use-prob-depth");
@@ -260,7 +282,7 @@ void initSolver()
             C = stod(flag_value("cexp"));
             use_qvalues_for_c = false;
         }
-                                                                                dprint4("delta", delta, "C", C);
+                                                                                dprint("delta", delta, "C", C);
         solver = new UCTSolver(problem,
                                rollouts, cutoff, C,
                                use_qvalues_for_c, delta,
@@ -367,7 +389,7 @@ int main(int argc, char* args[])
                 expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
                 numDecisions++;
             } else {
-                if (algorithm == "brtdp") {
+                if (algorithm == "vpi-rtdp") {
                     // Stores an action greedy with respect to the upper bound.
                     a = tmp->bestAction();
                 }

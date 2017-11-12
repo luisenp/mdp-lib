@@ -35,6 +35,9 @@ private:
      * when VPI of all outcomes is 0. */
     double alpha_;
 
+    /* A value for initializing the upper bounds of states. */
+    double initialUpperBound_;
+
     /* Upper bounds on the state costs. */
     mlcore::StateDoubleMap upperBounds_;
 
@@ -75,7 +78,11 @@ public:
      */
     VPIRTDPSolver(mlcore::Problem* problem,
                       double epsilon,
-                      int maxTrials = 1000000);
+                      int maxTrials = 1000000,
+                      double alpha = 1.0,
+                      double beta = 45,
+                      double tau = 100,
+                      double initialUpperBound = 50);
 
     /**
      * Solves the associated problem using the Labeled RTDP algorithm.

@@ -13,44 +13,34 @@
 
 extern bool mdplib_debug;
 
-// TODO: Implement this using variadic function/templates.
-// Current implementation quite ugly
-
-template <class T>
-void dprint1(T x)
+// Implementation of c++14 std::make_unique as explained in
+// https://herbsutter.com/gotw/_102/
+template<typename T, typename... Args>
+std::unique_ptr<T> make_unique(Args&&... args)
 {
-    if (mdplib_debug)
-        std::cerr << x << std::endl;
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
-template <class T1, class T2>
-void dprint2(T1 x, T2 y)
+template <typename T>
+void dprint(T t)
 {
     if (mdplib_debug)
-        std::cerr << x << " " << y << std::endl;
+        std::cerr << t << std::endl ;
 }
 
-template <class T1, class T2, class T3>
-void dprint3(T1 x, T2 y, T3 z)
+/**
+ * Prints all arguments passed separated by spaces.
+ */
+template<typename T, typename... Args>
+void dprint(T t, Args... args) // recursive variadic function
 {
-    if (mdplib_debug)
-        std::cerr << x << " " << y << " " << z << std::endl;
+    if (mdplib_debug) {
+        std::cerr << t << " ";
+        dprint(args...);
+    }
 }
 
-template <class T1, class T2, class T3, class T4>
-void dprint4(T1 x, T2 y, T3 z, T4 w)
-{
-    if (mdplib_debug)
-        std::cerr << x << " " << y << " " << z << " " << w << std::endl;
-}
-
-template <class T1, class T2, class T3, class T4, class T5>
-void dprint5(T1 x, T2 y, T3 z, T4 w, T5 xx)
-{
-    if (mdplib_debug)
-        std::cerr << x << " " << y << " " << z << " " <<
-            w << " " << xx << std::endl;
-}
+std::string debug_pad(int n);
 
 /**
  * Sleeps the current thread for the given number of milliseconds.
