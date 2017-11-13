@@ -212,9 +212,6 @@ void initSolver()
     } else if (algorithm == "lrtdp") {
         solver = new LRTDPSolver(problem, trials, tol);
     } else if (algorithm == "brtdp") {
-<<<<<<< Updated upstream
-        solver = new BoundedRTDPSolver(problem, tol);
-=======
         // BRTDP is just VPI-RTDP with beta = 0
         double tau = 100;
         solver = new VPIRTDPSolver(problem, tol, trials,
@@ -241,8 +238,9 @@ void initSolver()
                                    tol, trials,
                                    alpha, beta, tau,
                                    mdplib::dead_end_cost + 10.0);
+        if (flag_is_registered("vpi-old"))
+            static_cast<VPIRTDPSolver*>(solver)->sampleVPIOld();
         useUpperBound = true;
->>>>>>> Stashed changes
     } else if (algorithm == "flares") {
         bool optimal = flag_is_registered("optimal");
         bool useProbsDepth = flag_is_registered("use-prob-depth");
@@ -395,15 +393,10 @@ int main(int argc, char* args[])
                 expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
                 numDecisions++;
             } else {
-<<<<<<< Updated upstream
-                if (algorithm == "brtdp") {
-                    // Stores an action greedy with respect to the upper bound.
-=======
                 if (useUpperBound) {
                     // The algorithms that use upper bounds store the
                     // greedy action with respect to the upper bound
                     // in State::bestAction_
->>>>>>> Stashed changes
                     a = tmp->bestAction();
                 }
                 else {

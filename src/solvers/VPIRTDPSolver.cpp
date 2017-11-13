@@ -115,6 +115,11 @@ VPIRTDPSolver::sampleVPI(mlcore::State* s, mlcore::Action* sampledAction) {
             if (upperBounds_.count(su.su_state) == 0) {
                 initializeUpperBound(su.su_state);
             }
+            // Skip VPI computation early on when bounds gap is large
+            if (actionIndex == indexBestAction
+                && (upperBounds_[su.su_state] - su.su_state->cost()) > beta_ ) {
+                return sampleBiasedBounds(s, sampledAction);
+            }
             double stateContrib = su.su_prob * upperBounds_[su.su_state];
             qValue += stateContrib;
             // The convention of this library is that a state can appear in

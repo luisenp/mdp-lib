@@ -50,6 +50,9 @@ private:
      */
     bool vanillaSample_;
 
+                                                                                bool sampleVPIOld_;
+
+
     /* Performs a single BRTDP trial. */
     void trial(mlcore::State* s);
 
@@ -107,6 +110,7 @@ public:
      * @param s0 The state to start the search at.
      */
     virtual mlcore::Action* solve(mlcore::State* s0);
+                                                                                void sampleVPIOld() { sampleVPIOld_ = true; }
 };
 
 }
