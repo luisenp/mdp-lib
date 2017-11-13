@@ -13,11 +13,19 @@ bool equal(const double a, const double b) {
 }
 
 bool greaterThan(const double a, const double b) {
+<<<<<<< HEAD
     return a > b - mdplib::epsilon;
 }
 
 bool lessThan(const double a, const double b) {
     return a < b + mdplib::epsilon;
+=======
+    return a > b + mdplib::epsilon;
+}
+
+bool lessThan(const double a, const double b) {
+    return a < b - mdplib::epsilon;
+>>>>>>> master
 }
 
 bool lessThanOrEqual(const double a, const double b) {

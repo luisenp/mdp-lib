@@ -11,13 +11,18 @@
 
 bool mdplib_debug = false;
 
+std::string debug_pad(int n)
+{
+    char buf[512];
+    sprintf(buf, "%*s", n, "");
+    return std::string(buf);
+}
 
 void dsleep(int miliseconds)
 {
     if (mdplib_debug)
         std::this_thread::sleep_for(std::chrono::milliseconds(miliseconds));
 }
-
 
 bool nextComb(std::vector<int>& comb, int n, int k)
 {
