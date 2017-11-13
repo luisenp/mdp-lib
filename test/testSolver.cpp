@@ -46,6 +46,7 @@ Problem* problem = nullptr;
 Heuristic* heuristic = nullptr;
 Solver* solver = nullptr;
 string algorithm = "greedy";
+bool useUpperBound = false;
 
 int verbosity = 0;
 bool useOnline = false;
@@ -211,7 +212,37 @@ void initSolver()
     } else if (algorithm == "lrtdp") {
         solver = new LRTDPSolver(problem, trials, tol);
     } else if (algorithm == "brtdp") {
+<<<<<<< Updated upstream
         solver = new BoundedRTDPSolver(problem, tol);
+=======
+        // BRTDP is just VPI-RTDP with beta = 0
+        double tau = 100;
+        solver = new VPIRTDPSolver(problem, tol, trials,
+                                   -1.0, 0.0, tau,
+                                   mdplib::dead_end_cost + 10.0);
+        useUpperBound = true;
+    } else if (algorithm == "rtdp-ub") {
+        // RTDP with upper bound action selection
+        // is just VPI-RTDP with vanillaSample set to true
+        solver = new VPIRTDPSolver(problem, tol, trials,
+                                   0.0, 0.0, 0.0,
+                                   mdplib::dead_end_cost + 10.0,
+                                   true);
+        useUpperBound = true;
+    } else if (algorithm == "vpi-rtdp") {
+        double alpha = 1.0;
+        double beta = 0.95 * mdplib::dead_end_cost;
+        double tau = 100;
+        if (flag_is_registered_with_value("beta"))
+            beta = stof(flag_value("beta"));
+        if (flag_is_registered_with_value("alpha"))
+            alpha = stof(flag_value("alpha"));
+        solver = new VPIRTDPSolver(problem,
+                                   tol, trials,
+                                   alpha, beta, tau,
+                                   mdplib::dead_end_cost + 10.0);
+        useUpperBound = true;
+>>>>>>> Stashed changes
     } else if (algorithm == "flares") {
         bool optimal = flag_is_registered("optimal");
         bool useProbsDepth = flag_is_registered("use-prob-depth");
@@ -364,8 +395,15 @@ int main(int argc, char* args[])
                 expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
                 numDecisions++;
             } else {
+<<<<<<< Updated upstream
                 if (algorithm == "brtdp") {
                     // Stores an action greedy with respect to the upper bound.
+=======
+                if (useUpperBound) {
+                    // The algorithms that use upper bounds store the
+                    // greedy action with respect to the upper bound
+                    // in State::bestAction_
+>>>>>>> Stashed changes
                     a = tmp->bestAction();
                 }
                 else {

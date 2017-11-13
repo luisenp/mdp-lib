@@ -202,8 +202,10 @@ bool RacetrackProblem::applicable(mlcore::State* s, mlcore::Action* a) const
     RacetrackState* rts = static_cast<RacetrackState*>(s);
     RacetrackAction* rta = static_cast<RacetrackAction*>(a);
 
-    if (s == s0 || s == absorbing_)
-        return true;
+    if (s == s0 || s == absorbing_) {
+        // All actions do the same, so just allow one of them
+        return a == actions_.front();
+    }
 
     int x = rts->x() + rta->ax(), y = rts->y() + rta->ay();
 

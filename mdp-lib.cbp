@@ -567,6 +567,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/reduced/ReducedModel.h" />
 		<Unit filename="include/reduced/ReducedState.h" />
 		<Unit filename="include/reduced/ReducedTransition.h" />
+		<Unit filename="include/solvers/BoundedRTDPSolver.h" />
 		<Unit filename="include/solvers/ConcurrentSolver.h" />
 		<Unit filename="include/solvers/DeterministicSolver.h" />
 		<Unit filename="include/solvers/FFReducedModelSolver.h" />
@@ -584,6 +585,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/solvers/Solver.h" />
 		<Unit filename="include/solvers/UCTSolver.h" />
 		<Unit filename="include/solvers/VISolver.h" />
+		<Unit filename="include/solvers/VPIRTDPSolver.h" />
 		<Unit filename="include/solvers/mobj/CMDPLagrangeSearchSolver.h" />
 		<Unit filename="include/solvers/mobj/CMDPSlackSolver.h" />
 		<Unit filename="include/solvers/mobj/CMDPSolver.h" />
@@ -594,6 +596,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/util/flags.h" />
 		<Unit filename="include/util/general.h" />
 		<Unit filename="include/util/graph.h" />
+		<Unit filename="include/util/math_utils.h" />
 		<Unit filename="include/util/rational.h" />
 		<Unit filename="src/Action.cpp" />
 		<Unit filename="src/MDPLib.cpp" />
@@ -629,6 +632,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="src/ppddl/PPDDLProblem.cpp" />
 		<Unit filename="src/ppddl/PPDDLState.cpp" />
 		<Unit filename="src/reduced/ReducedModel.cpp" />
+		<Unit filename="src/solvers/BoundedRTDPSolver.cpp" />
 		<Unit filename="src/solvers/ConcurrentSolver.cpp" />
 		<Unit filename="src/solvers/DeterministicSolver.cpp" />
 		<Unit filename="src/solvers/FFReducedModelSolver.cpp" />
@@ -645,6 +649,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="src/solvers/Solver.cpp" />
 		<Unit filename="src/solvers/UCTSolver.cpp" />
 		<Unit filename="src/solvers/VISolver.cpp" />
+		<Unit filename="src/solvers/VPIRTDPSolver.cpp" />
 		<Unit filename="src/solvers/mobj/CMDPLagrangeSearchSolver.cpp" />
 		<Unit filename="src/solvers/mobj/CMDPSlackSolver.cpp" />
 		<Unit filename="src/solvers/mobj/CMDPSolver.cpp" />
