@@ -10,25 +10,19 @@ VPIRTDPSolver::VPIRTDPSolver(mlcore::Problem* problem,
                                      double alpha,
                                      double beta,
                                      double tau,
-<<<<<<< HEAD
                                      double initialUpperBound,
                                      bool vanillaSample)
-=======
-                                     double initialUpperBound)
->>>>>>> master
     : problem_(problem),
       epsilon_(epsilon),
       maxTrials_(maxTrials),
       alpha_(alpha),
       beta_(beta),
       tau_(tau),
-<<<<<<< HEAD
       initialUpperBound_(initialUpperBound),
       vanillaSample_(vanillaSample)
-=======
-      initialUpperBound_(initialUpperBound)
->>>>>>> master
-{ }
+{
+                                                                                sampleVPIOld_ = false;
+}
 
 
 void VPIRTDPSolver::trial(mlcore::State* s) {
@@ -39,10 +33,7 @@ void VPIRTDPSolver::trial(mlcore::State* s) {
         if (problem_->goal(tmp))
             break;
         visited.push_front(tmp);
-<<<<<<< HEAD
                                                                                 tmp->setBits(mdplib::VISITED);
-=======
->>>>>>> master
         this->bellmanUpdate(tmp);
                                                                                 dprint(tmp, tmp->cost(), upperBounds_[tmp]);
         // Explore using the lower bound.
@@ -50,35 +41,21 @@ void VPIRTDPSolver::trial(mlcore::State* s) {
         accumulated_cost += problem_->cost(tmp, a);
         if (tmp->deadEnd())
             break;
-<<<<<<< HEAD
         if (accumulated_cost >= mdplib::dead_end_cost)
             break;
         tmp = vanillaSample_ ?
-            randomSuccessor(problem_, tmp, a) : sampleVPIOld(tmp, a);
+            randomSuccessor(problem_, tmp, a) : sampleVPI(tmp, a);
         if (tmp == nullptr)
             break;
-=======
-        if (accumulated_cost > mdplib::dead_end_cost)
-            break;
-        tmp = sampleVPI(tmp, a);
-        if (tmp == nullptr)
-            break;
-
-
->>>>>>> master
     }
                                                                                 dprint("***************");
 
     while (!visited.empty()) {
         tmp = visited.front();
         visited.pop_front();
-<<<<<<< HEAD
         tmp->clearBits(mdplib::VISITED);
         this->bellmanUpdate(tmp);
                                                                                 dprint("  ", tmp, tmp->cost(), upperBounds_[tmp]);
-=======
-        this->bellmanUpdate(tmp);
->>>>>>> master
     }
 }
 
@@ -88,20 +65,13 @@ void VPIRTDPSolver::initializeUpperBound(mlcore::State* s) {
 
 mlcore::State*
 VPIRTDPSolver::sampleBiasedBounds(mlcore::State* s,
-<<<<<<< HEAD
                                   mlcore::Action* a) {
     double B = 0.0;
     std::vector< std::pair<mlcore::State*, double> > statesAndScores;
     for (const mlcore::Successor& su : problem_->transition(s, a)) {
                                                                                 if (su.su_state->checkBits(mdplib::VISITED))
                                                                                     continue;
-=======
-                                  mlcore::Action* a,
-                                  double& B) {
-    B = 0.0;
-    std::vector< std::pair<mlcore::State*, double> > statesAndScores;
-    for (const mlcore::Successor& su : problem_->transition(s, a)) {
->>>>>>> master
+        assert(upperBounds_.count(su.su_state) == 1);
         double score =
             su.su_prob * (upperBounds_[su.su_state] - su.su_state->cost());
         statesAndScores.push_back(std::make_pair(su.su_state, score));
@@ -124,7 +94,9 @@ VPIRTDPSolver::sampleBiasedBounds(mlcore::State* s,
 
 mlcore::State*
 VPIRTDPSolver::sampleVPI(mlcore::State* s, mlcore::Action* sampledAction) {
-<<<<<<< HEAD
+                                                                                if (sampleVPIOld_)
+                                                                                    return sampleVPIOld(s, sampledAction);
+                                                                                dprint("here");
     // The current policy can achieve at worst this value. This method finds
     // the outcome that can improve this upper bound the most, assuming we
     // had perfect information about the outcome
@@ -146,11 +118,9 @@ VPIRTDPSolver::sampleVPI(mlcore::State* s, mlcore::Action* sampledAction) {
         statesContribQValues.push_back(mlcore::StateDoubleMap ());
         statesProbs.push_back(mlcore::StateDoubleMap ());
         for (const mlcore::Successor& su : problem_->transition(s, action)) {
-            if (upperBounds_.count(su.su_state) == 0) {
-                initializeUpperBound(su.su_state);
-            }
+            assert(upperBounds_.count(su.su_state) == 1);
             // Skip VPI computation early on when bounds gap is large
-            if (actionIndex == indexBestAction
+            if (action == sampledAction
                 && (upperBounds_[su.su_state] - su.su_state->cost()) > beta_ ) {
                 return sampleBiasedBounds(s, sampledAction);
             }
@@ -170,7 +140,7 @@ VPIRTDPSolver::sampleVPI(mlcore::State* s, mlcore::Action* sampledAction) {
         qValue += problem_->cost(s, action);
         QhActions.push_back(qValue);
     }
-                                                                                /*{
+                                                                                {
                                                                                     actionIndex = -1;
                                                                                     dprint("vpi computation for", s, "bestAction", sampledAction, "bounds", s->cost(), upperBounds_[s]);
                                                                                     for (mlcore::Action* action : problem_->actions()) {
@@ -190,7 +160,7 @@ VPIRTDPSolver::sampleVPI(mlcore::State* s, mlcore::Action* sampledAction) {
                                                                                         assert(mdplib_math::equal(totalP, 1.0));
                                                                                         assert(mdplib_math::equal(EQcalc, QhActions[actionIndex]));
                                                                                     }
-                                                                                }*/
+                                                                                }
     // Computing the myopic VPI for each successor state
     mlcore::StateDoubleMap successorVPIs;
     double totalVPI = 0.0;
@@ -272,21 +242,6 @@ VPIRTDPSolver::sampleVPIOld(mlcore::State* s, mlcore::Action* sampledAction) {
     // These are stored in statesProbs and statesContribQValues, respectively
                                                                                 bool show = (dis(gen) < 0.0000001);
                                                                                 if (show) mdplib_debug = true;
-=======
-    double B;
-    mlcore::State* outcomeBRTDP = sampleBiasedBounds(s, sampledAction, B);
-                                                                                dprint("sampling successor for ", s, sampledAction, "bounds", s->cost(), upperBounds_[s]);
-                                                                                if (outcomeBRTDP)
-                                                                                    dprint("brtdp", outcomeBRTDP, B, beta_);
-    if (B > beta_) {
-        return outcomeBRTDP;
-    }
-    // An action chosen according to the upper bound.
-    mlcore::Action* bestAction = s->bestAction();
-
-    // Pre-computing E[Qa | bounds] for all actions.
-    // We also cache P(s'|s,action) and (s'|s,action) * (UB(s') - LB(s')) / 2.
->>>>>>> master
     std::vector<double> expectedQValuesGivenBounds;
     std::vector<mlcore::StateDoubleMap> statesContribQValues;
     std::vector<mlcore::StateDoubleMap> statesProbs;
@@ -303,10 +258,7 @@ VPIRTDPSolver::sampleVPIOld(mlcore::State* s, mlcore::Action* sampledAction) {
         statesContribQValues.push_back(mlcore::StateDoubleMap ());
         statesProbs.push_back(mlcore::StateDoubleMap ());
         for (const mlcore::Successor& su : problem_->transition(s, action)) {
-            if (upperBounds_.count(su.su_state) == 0) {
-                initializeUpperBound(su.su_state);
-            }
-<<<<<<< HEAD
+            assert(upperBounds_.count(su.su_state) == 1);
             // Skip VPI computation early on when bounds gap is large
             if (actionIndex == indexBestAction
                 && (upperBounds_[su.su_state] - su.su_state->cost()) > beta_ ) {
@@ -325,19 +277,8 @@ VPIRTDPSolver::sampleVPIOld(mlcore::State* s, mlcore::Action* sampledAction) {
             }
             statesContribQValues.back()[su.su_state] += stateContrib;
             statesProbs.back()[su.su_state] += su.su_prob;
-=======
-            double stateContrib = su.su_prob
-                * (upperBounds_[su.su_state] + su.su_state->cost()) / 2;
-             qValue += stateContrib;
-            statesContribQValues.back()[su.su_state] = stateContrib;
-            statesProbs.back()[su.su_state] = su.su_prob;
->>>>>>> master
         }
-        qValue *= (problem_->gamma());
-        qValue += problem_->cost(s, action);
-        expectedQValuesGivenBounds[actionIndex] = qValue;
     }
-<<<<<<< HEAD
                                                                                 if (show) {
                                                                                     actionIndex = -1;
                                                                                     dprint("vpi computation for", s, "bestAction", sampledAction, "bounds", s->cost(), upperBounds_[s]);
@@ -443,88 +384,12 @@ VPIRTDPSolver::sampleVPIOld(mlcore::State* s, mlcore::Action* sampledAction) {
         double pick = dis(gen);
         if (pick < alpha_)
             return sampleBiasedBounds(s, sampledAction);
-=======
-
-    // Computing the myopic VPI for each outcome.
-    mlcore::StateDoubleMap outcomeScores;
-    double totalOutcomeScores = 0.0;
-    for (const mlcore::Successor& su : problem_->transition(s, sampledAction)) {
-        outcomeScores[su.su_state] = -std::numeric_limits<double>::max();
-        assert(upperBounds_.count(su.su_state));
-        double ub = upperBounds_[su.su_state];
-        double lb = su.su_state->cost();
-                                                                                dprint("  checking su", su.su_state, "lb", lb, "ub", ub);
-        int actionIndex = -1;
-        double PrSuGivenBestAction = statesProbs[indexBestAction][su.su_state];
-        double contribSuBestAction =
-            statesContribQValues[indexBestAction][su.su_state];
-        double qValueRemAlpha =
-            expectedQValuesGivenBounds[indexBestAction] - contribSuBestAction;
-                                                                                dprint("  best: pr(o|alpha)", PrSuGivenBestAction, "tau(alpha,o)", qValueRemAlpha, "T(o|alpha)*E[Vo]", contribSuBestAction);
-        double& outcomeScoreRef = outcomeScores[su.su_state];
-        for (mlcore::Action* action : problem_->actions()) {
-                                                                                dprint("    checking action", action);
-            if (!problem_->applicable(s, action))
-                continue;
-            actionIndex++;
-            double PrSuGivenAction = statesProbs[actionIndex][su.su_state];
-            double contribSuAction =
-                statesContribQValues[actionIndex][su.su_state];
-            double qValueRemA =
-                expectedQValuesGivenBounds[actionIndex] - contribSuAction;
-            double outcomeScoreAction = -1;
-                                                                                dprint("      action: pr(o|a)", PrSuGivenAction, "tau(a,o)", qValueRemA,  "T(o|a)*E[Vo]", contribSuAction);
-
-            double normConst = ub == lb ? 1 : (ub - lb);
-            if (mdplib_math::equal(PrSuGivenBestAction, PrSuGivenAction)) {
-                outcomeScoreAction = std::max(0.0, qValueRemAlpha - qValueRemA);
-                                                                                dprint("      case I ");
-            } else if (mdplib_math::greaterThan(PrSuGivenBestAction,
-                                                PrSuGivenAction)) {
-                double deltaProb = PrSuGivenBestAction - PrSuGivenAction;
-                double deltaRemQVal = qValueRemAlpha - qValueRemA;
-                double z =
-                    std::min( -deltaRemQVal / deltaProb, ub);
-                z = std::max(z, lb);
-                outcomeScoreAction =
-                    (ub - z) * (deltaRemQVal + deltaProb * (z + ub) / 2);
-                                                                                dprint("        pre-score", outcomeScoreAction, (ub-z), (deltaRemQVal + deltaProb * (z + ub) / 2));
-                outcomeScoreAction /= normConst;
-                                                                                dprint("      case II z ", z);
-            } else {
-                double deltaProb = PrSuGivenBestAction - PrSuGivenAction;
-                double deltaRemQVal = qValueRemAlpha - qValueRemA;
-                double z =
-                    std::max( -deltaRemQVal / deltaProb, lb);
-                z = std::min(ub, z);
-                outcomeScoreAction =
-                    (z - lb) * (deltaRemQVal + deltaProb * (lb + z) / 2);
-                outcomeScoreAction /= normConst;
-                                                                                dprint("      case III z ", z);
-            }
-                                                                                dprint("        score for successor and action ", su.su_state, action, outcomeScoreAction);
-            assert(outcomeScoreAction >= 0);
-            outcomeScoreRef = std::max(outcomeScoreRef, outcomeScoreAction);
-        }
-                                                                                dprint("    score: ", outcomeScoreRef);
-        totalOutcomeScores += outcomeScoreRef;
-    }
-                                                                                dprint("  TOTAL_SCORE: ", totalOutcomeScores);
-    if (totalOutcomeScores < mdplib::epsilon) {
-        double pick = dis(gen);
-        if (pick < alpha_)
-            return outcomeBRTDP;
->>>>>>> master
         return nullptr;
     }
     double pick = dis(gen);
     double acc = 0.0;
     for (const mlcore::Successor& su : problem_->transition(s, sampledAction)) {
-<<<<<<< HEAD
         acc += successorVPIs[su.su_state] / totalVPI;
-=======
-        acc += outcomeScores[su.su_state] / totalOutcomeScores;
->>>>>>> master
         if (acc >= pick) {
             return su.su_state;
         }
@@ -533,7 +398,6 @@ VPIRTDPSolver::sampleVPIOld(mlcore::State* s, mlcore::Action* sampledAction) {
     return nullptr;
 }
 
-<<<<<<< HEAD
 double VPIRTDPSolver::computeVPI(double PrSuGivenAlpha, double qValueRemAlpha,
                                  double PrSuGivenAction, double qValueRemAction,
                                  double lowBound, double upBound) {
@@ -581,8 +445,6 @@ double VPIRTDPSolver::computeVPI(double PrSuGivenAlpha, double qValueRemAlpha,
     return vpi;
 }
 
-=======
->>>>>>> master
 double VPIRTDPSolver::bellmanUpdate(mlcore::State* s) {
     double bestLowerBound = problem_->goal(s) ? 0.0 : mdplib::dead_end_cost;
     double bestUpperBound = problem_->goal(s) ? 0.0 : mdplib::dead_end_cost;

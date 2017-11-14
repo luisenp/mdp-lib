@@ -41,7 +41,6 @@ private:
     /* Upper bounds on the state costs. */
     mlcore::StateDoubleMap upperBounds_;
 
-<<<<<<< HEAD
     /* Stores a greedy policy on the lower bound. */
     mlcore::StateActionMap lowerBoundGreedyPolicy_;
 
@@ -53,11 +52,6 @@ private:
 
                                                                                 bool sampleVPIOld_;
 
-
-=======
-    mlcore::StateActionMap lowerBoundGreedyPolicy_;
-
->>>>>>> master
     /* Performs a single BRTDP trial. */
     void trial(mlcore::State* s);
 
@@ -71,25 +65,15 @@ private:
     /*
      * Samples a state biased according to the difference of its bounds.
      * Returns a nullptr if all successor states have "well-known" value.
-<<<<<<< HEAD
      */
     mlcore::State* sampleBiasedBounds(mlcore::State* s,
                                       mlcore::Action* sampledAction);
-=======
-     * The output parameter |B| stores the average bound gap over the
-     * set of successors.
-     */
-    mlcore::State* sampleBiasedBounds(mlcore::State* s,
-                                      mlcore::Action* sampledAction,
-                                      double& B);
->>>>>>> master
 
     /*
      * Samples a state according to a myopic VPI analysis.
      */
     mlcore::State* sampleVPI(mlcore::State* s, mlcore::Action* sampledAction);
 
-<<<<<<< HEAD
     /*
      * Samples a state according to a myopic VPI analysis.
      */
@@ -101,9 +85,6 @@ private:
     double computeVPI(double PrSuGivenAlpha, double qValueRemAlpha,
                       double PrSuGivenAction, double qValueRemAction,
                       double lowerBound, double upperBound);
-
-=======
->>>>>>> master
 public:
     /**
      * Creates a BRTDP solver for the given problem.
@@ -118,12 +99,8 @@ public:
                       double alpha = 1.0,
                       double beta = 45,
                       double tau = 100,
-<<<<<<< HEAD
                       double initialUpperBound = 50,
                       bool vanillaSample = false);
-=======
-                      double initialUpperBound = 50);
->>>>>>> master
 
     /**
      * Solves the associated problem using the Labeled RTDP algorithm.
@@ -131,10 +108,7 @@ public:
      * @param s0 The state to start the search at.
      */
     virtual mlcore::Action* solve(mlcore::State* s0);
-<<<<<<< HEAD
                                                                                 void sampleVPIOld() { sampleVPIOld_ = true; }
-=======
->>>>>>> master
 };
 
 }

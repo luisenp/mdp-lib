@@ -62,7 +62,7 @@ void setupRacetrack()
     if (flag_is_registered_with_value("mds"))
         mds = stoi(flag_value("mds"));
     problem = new RacetrackProblem(trackName.c_str());
-    ((RacetrackProblem*) problem)->pError(0.20);
+    ((RacetrackProblem*) problem)->pError(0.05);
     ((RacetrackProblem*) problem)->pSlip(0.10);
     ((RacetrackProblem*) problem)->mds(mds);
     if (!flag_is_registered_with_value("heuristic") ||
@@ -218,7 +218,6 @@ void initSolver()
         solver = new LRTDPSolver(problem, trials, tol);
     } else if (algorithm == "brtdp") {
         // BRTDP is just VPI-RTDP with beta = 0
-<<<<<<< HEAD
         double tau = 100;
         solver = new VPIRTDPSolver(problem, tol, trials,
                                    -1.0, 0.0, tau,
@@ -232,16 +231,6 @@ void initSolver()
                                    mdplib::dead_end_cost + 10.0,
                                    true);
         useUpperBound = true;
-=======
-//        double tau = 100;
-//        solver = new VPIRTDPSolver(problem, tol, trials,
-//                                   -1.0, 0.0, tau, mdplib::dead_end_cost);
-    } else if (algorithm == "rtdp") {
-        // RTDP is just VPI-RTDP with vanillaSample set to true
-//        solver = new VPIRTDPSolver(problem, tol, trials,
-//                                   0.0, 0.0, 0.0, mdplib::dead_end_cost,
-//                                   true);
->>>>>>> master
     } else if (algorithm == "vpi-rtdp") {
         double alpha = 1.0;
         double beta = 0.95 * mdplib::dead_end_cost;
@@ -253,14 +242,10 @@ void initSolver()
         solver = new VPIRTDPSolver(problem,
                                    tol, trials,
                                    alpha, beta, tau,
-<<<<<<< HEAD
-                                   mdplib::dead_end_cost + 10.0);
+                                   mdplib::dead_end_cost);
         if (flag_is_registered("vpi-old"))
             static_cast<VPIRTDPSolver*>(solver)->sampleVPIOld();
         useUpperBound = true;
-=======
-                                   mdplib::dead_end_cost);
->>>>>>> master
     } else if (algorithm == "flares") {
         bool optimal = flag_is_registered("optimal");
         bool useProbsDepth = flag_is_registered("use-prob-depth");
@@ -413,15 +398,10 @@ int main(int argc, char* args[])
                 expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
                 numDecisions++;
             } else {
-<<<<<<< HEAD
                 if (useUpperBound) {
                     // The algorithms that use upper bounds store the
                     // greedy action with respect to the upper bound
                     // in State::bestAction_
-=======
-                if (algorithm == "vpi-rtdp") {
-                    // Stores an action greedy with respect to the upper bound.
->>>>>>> master
                     a = tmp->bestAction();
                 }
                 else {
@@ -434,6 +414,7 @@ int main(int argc, char* args[])
             }
 
             costTrial += problem->cost(tmp, a);
+            costTrial = std::min(costTrial, mdplib::dead_end_cost);
             if (costTrial >= mdplib::dead_end_cost) {
                 break;
             }
