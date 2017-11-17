@@ -19,7 +19,8 @@ VPIRTDPSolver::VPIRTDPSolver(mlcore::Problem* problem,
       beta_(beta),
       tau_(tau),
       initialUpperBound_(initialUpperBound),
-      vanillaSample_(vanillaSample)
+      vanillaSample_(vanillaSample),
+      sampleVPIDelta_(false)
 {
                                                                                 sampleVPIOld_ = false;
 }
@@ -61,6 +62,8 @@ void VPIRTDPSolver::trial(mlcore::State* s) {
 
 void VPIRTDPSolver::initializeUpperBound(mlcore::State* s) {
     upperBounds_[s] = problem_->goal(s) ? 0.0 : initialUpperBound_;
+    maxDeltaUpperBounds_[s] = 0.0;
+    minDeltaUpperBounds_[s] = 1.0;
 }
 
 mlcore::State*
@@ -203,7 +206,7 @@ VPIRTDPSolver::sampleVPI(mlcore::State* s, mlcore::Action* sampledAction) {
             } else {
                 double vpiSuAction = VhState -
                     (QhRemaining + PrSuGivenAction * (z + lowBound) / 2);
-                vpiSuAction /= normConst;
+                vpiSuAction *= ((z - lowBound) / normConst);
                                                                                     dprint("    z", z, "vpiSuAction", vpiSuAction);
                 vpiSuccessor = std::max(vpiSuccessor, vpiSuAction);
             }
@@ -225,6 +228,140 @@ VPIRTDPSolver::sampleVPI(mlcore::State* s, mlcore::Action* sampledAction) {
         if (acc >= pick) {
                                                                                 dprint("sampled", su.su_state);
                                                                                 dprint("*******************");
+            return su.su_state;
+        }
+    }
+    assert(false);
+    return nullptr;
+}
+
+bool
+VPIRTDPSolver::computeSuccesorsValues(
+        mlcore::State* s,
+        mlcore::Action* sampledAction,
+        std::vector<double>& QhActions,
+        std::vector<mlcore::StateDoubleMap>& statesContribQValues,
+        std::vector<mlcore::StateDoubleMap>& statesProbs) {
+    int actionIndex = -1;
+    bool enoughInfo = true;
+    for (mlcore::Action* action : problem_->actions()) {
+        if (!problem_->applicable(s, action))
+            continue;
+        actionIndex++;
+        double qValue = 0.0;
+        statesContribQValues.push_back(mlcore::StateDoubleMap ());
+        statesProbs.push_back(mlcore::StateDoubleMap ());
+        for (const mlcore::Successor& su : problem_->transition(s, action)) {
+            assert(upperBounds_.count(su.su_state) == 1);
+            // Skip VPI computation early on when bounds gap is large
+            if (action == sampledAction
+                && (upperBounds_[su.su_state] - su.su_state->cost()) > beta_ ) {
+                enoughInfo = false;
+            }
+            double stateContrib = su.su_prob * upperBounds_[su.su_state];
+            qValue += stateContrib;
+            // The convention of this library is that a state can appear in
+            // multiple outcomes. Thus we need to sum over the total
+            // contribution of a state across multiple outcomes.
+            if (statesProbs.back().count(su.su_state) == 0) {
+                statesContribQValues.back()[su.su_state] = 0.0;
+                statesProbs.back()[su.su_state] = 0.0;
+            }
+            statesContribQValues.back()[su.su_state] += stateContrib;
+            statesProbs.back()[su.su_state] += su.su_prob;
+        }
+        qValue *= (problem_->gamma());
+        qValue += problem_->cost(s, action);
+        QhActions.push_back(qValue);
+    }
+    return enoughInfo;
+}
+
+
+
+mlcore::State*
+VPIRTDPSolver::sampleVPIDelta(mlcore::State* s, mlcore::Action* sampledAction) {
+    // The current policy can achieve at worst this value. This method finds
+    // the outcome that can improve this upper bound the most, assuming an
+    // uniform distribution on the change of the outcome's value upper bound.
+    double VhState = upperBounds_[s];
+
+    // Pre-computing Qh(s,a) for all actions (i.e., the upper bound on their
+    // Q-values). Also cache P(s'|s,action) * Vh(s) and P(s'|s,action) for all
+    // of their outcomes.
+    // These are stored in statesContribQValues and statesProbs, respectively
+    std::vector<double> QhActions;
+    std::vector<mlcore::StateDoubleMap> statesContribQValues;
+    std::vector<mlcore::StateDoubleMap> statesProbs;
+    if (!computeSuccesorsValues(
+            s, sampledAction, QhActions, statesContribQValues, statesProbs)) {
+        // If here, then there is not enough info (bound gap too large).
+        return sampleBiasedBounds(s, sampledAction);
+    }
+
+    // Computing the myopic VPI for each successor state
+    mlcore::StateDoubleMap successorVPIs;
+    double totalVPI = 0.0;
+    for (const mlcore::Successor& su : problem_->transition(s, sampledAction)) {
+        if (successorVPIs.count(su.su_state) != 0) {
+            // This successor appeared associated to another outcome, so
+            // VPI was already computed for it
+            continue;
+        }
+        successorVPIs[su.su_state] = -std::numeric_limits<double>::max();
+        assert(upperBounds_.count(su.su_state));
+        double upBound = upperBounds_[su.su_state];
+        double lowBound = su.su_state->cost();
+        double boundGap = upBound - lowBound;
+        double upBoundLow =
+            upBound - boundGap * maxDeltaUpperBounds_[su.su_state];
+        double upBoundHigh =
+            upBound - boundGap * minDeltaUpperBounds_[su.su_state];
+        double normConst = mdplib_math::equal(upBoundHigh, upBoundLow) ?
+            1.0 : (upBoundHigh - upBoundLow);
+        double & vpiSuccessor = successorVPIs[su.su_state];
+        int actionIndex = -1;
+        // Computing what the maximum cost of the policy would be
+        // if we have perfect information about the successor's value
+        for (mlcore::Action* action : problem_->actions()) {
+            if (!problem_->applicable(s, action))
+                continue;
+            actionIndex++;
+            double QhRemaining = QhActions[actionIndex]
+                - statesContribQValues[actionIndex][su.su_state];
+            double PrSuGivenAction = statesProbs[actionIndex][su.su_state];
+            if (mdplib_math::equal(PrSuGivenAction, 0.0)) {
+                // Not a successor of this action, can't improve its bounds.
+                continue;
+            }
+            // V*(su) = z is the point below which the policy is guaranteed
+            // to be better than the current policy
+            double z = std::min((VhState - QhRemaining) / PrSuGivenAction,
+                                upBoundHigh);
+            if (mdplib_math::lessThan(z, upBoundLow)) {
+                // No value of V*(su) that can improve the current policy
+                vpiSuccessor = 0.0;
+            } else {
+                double vpiSuAction = VhState -
+                    (QhRemaining + PrSuGivenAction * (z + upBoundLow) / 2);
+                vpiSuAction *= ((z - upBoundLow) / normConst);
+                vpiSuccessor = std::max(vpiSuccessor, vpiSuAction);
+            }
+        }
+        assert(vpiSuccessor >= 0.0);
+        totalVPI += vpiSuccessor;
+    }
+    if (totalVPI < mdplib::epsilon) {
+        double pick = dis(gen);
+        if (pick < alpha_)
+            return sampleBiasedBounds(s, sampledAction);
+        return nullptr;
+    }
+    double pick = dis(gen);
+    double acc = 0.0;
+    for (const mlcore::Successor& su : problem_->transition(s, sampledAction)) {
+        acc += successorVPIs[su.su_state] / totalVPI;
+        if (acc >= pick) {
             return su.su_state;
         }
     }
@@ -446,14 +583,19 @@ double VPIRTDPSolver::computeVPI(double PrSuGivenAlpha, double qValueRemAlpha,
 }
 
 double VPIRTDPSolver::bellmanUpdate(mlcore::State* s) {
-    double bestLowerBound = problem_->goal(s) ? 0.0 : mdplib::dead_end_cost;
-    double bestUpperBound = problem_->goal(s) ? 0.0 : mdplib::dead_end_cost;
+    if (upperBounds_.count(s) == 0) {
+        initializeUpperBound(s);
+    }
+    double bestLowerBound = problem_->goal(s) ? 0.0 : upperBounds_[s];
+    double bestUpperBound = problem_->goal(s) ? 0.0 : upperBounds_[s];
     bool hasAction = false;
     mlcore::Action* bestActionLowerBound = nullptr;
     mlcore::Action* bestActionUpperBound = nullptr;
+                                                                                std::cout << s << ":";
     for (mlcore::Action* a : problem_->actions()) {
         if (!problem_->applicable(s, a))
             continue;
+                                                                                std::cout << a->hashValue();
         hasAction = true;
         double lowerBoundAction = 0.0;
         double upperBoundAction = 0.0;
@@ -463,7 +605,9 @@ double VPIRTDPSolver::bellmanUpdate(mlcore::State* s) {
             if (upperBounds_.count(su.su_state) == 0)
                 initializeUpperBound(su.su_state);
             upperBoundAction += su.su_prob * upperBounds_[su.su_state];
+                                                                                std::cout << "~" << su.su_state << "~" << (upperBounds_[su.su_state] - su.su_state->cost());
         }
+                                                                                std::cout << ";";
         lowerBoundAction =
             (lowerBoundAction * problem_->gamma()) + problem_->cost(s, a);
         lowerBoundAction = std::min(mdplib::dead_end_cost, lowerBoundAction);
@@ -479,13 +623,18 @@ double VPIRTDPSolver::bellmanUpdate(mlcore::State* s) {
             bestActionLowerBound = a;
         }
     }
+                                                                                std::cout << std::endl;
     if (!hasAction && bestLowerBound >= mdplib::dead_end_cost)
         s->markDeadEnd();
+    double boundGap = bestUpperBound - bestLowerBound;
+    double deltaUpper = (bestUpperBound - upperBounds_[s]) / boundGap;
+    maxDeltaUpperBounds_[s] = std::max(maxDeltaUpperBounds_[s], deltaUpper);
+    minDeltaUpperBounds_[s] = std::min(minDeltaUpperBounds_[s], deltaUpper);
     s->setCost(bestLowerBound);
     upperBounds_[s] = bestUpperBound;
     lowerBoundGreedyPolicy_[s] = bestActionLowerBound;
     s->setBestAction(bestActionUpperBound);
-    return bestUpperBound - bestLowerBound;
+    return boundGap;
 }
 
 mlcore::Action* VPIRTDPSolver::solve(mlcore::State* s0) {

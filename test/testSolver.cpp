@@ -243,7 +243,9 @@ void initSolver()
                                    tol, trials,
                                    alpha, beta, tau,
                                    mdplib::dead_end_cost);
-        if (flag_is_registered("vpi-old"))
+        if (flag_is_registered("vpi-delta"))
+            static_cast<VPIRTDPSolver*>(solver)->sampleVPIDelta();
+        else if (flag_is_registered("vpi-old"))
             static_cast<VPIRTDPSolver*>(solver)->sampleVPIOld();
         useUpperBound = true;
     } else if (algorithm == "flares") {

@@ -231,6 +231,10 @@ lib/libmdp_domains.a: lib/libmdp.a $(DOM_H) $(DOM_CPP)
 testsolver.out: lib/libmdp.a domains
 	$(CC) $(CFLAGS) $(INCLUDE) -o testsolver.out $(TD)/testSolver.cpp $(LIBS)
 
+testvpi.out: lib/libmdp.a domains
+	$(CC) $(CFLAGS) $(INCLUDE) -o testvpi.out $(TD)/testVPISolver.cpp $(LIBS) \
+		src/solvers/VISolver.cpp
+
 # Compiles the mini-gpt library
 minigpt: lib/libminigpt.a
 lib/libminigpt.a: include/ppddl/mini-gpt/*

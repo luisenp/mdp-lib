@@ -41,6 +41,12 @@ private:
     /* Upper bounds on the state costs. */
     mlcore::StateDoubleMap upperBounds_;
 
+    /* Stores the max change in the upper bounds (relative to the bound gap). */
+    mlcore::StateDoubleMap maxDeltaUpperBounds_;
+
+    /* Stores the min change in the upper bounds (relative to the bound gap). */
+    mlcore::StateDoubleMap minDeltaUpperBounds_;
+
     /* Stores a greedy policy on the lower bound. */
     mlcore::StateActionMap lowerBoundGreedyPolicy_;
 
@@ -49,6 +55,9 @@ private:
      * This makes it equivalent to RTDP.
      */
     bool vanillaSample_;
+
+    /* If true, sampling is done using sampleVPIDelta. */
+    bool sampleVPIDelta_;
 
                                                                                 bool sampleVPIOld_;
 
@@ -75,9 +84,31 @@ private:
     mlcore::State* sampleVPI(mlcore::State* s, mlcore::Action* sampledAction);
 
     /*
+     * Samples a state according to a value of perfect information analysis
+     * on the rate of change of the successors upper bounds.
+     */
+    mlcore::State*
+    sampleVPIDelta(mlcore::State* s, mlcore::Action* sampledAction);
+
+    /*
      * Samples a state according to a myopic VPI analysis.
      */
-    mlcore::State* sampleVPIOld(mlcore::State* s, mlcore::Action* sampledAction);
+    mlcore::State*
+    sampleVPIOld(mlcore::State* s, mlcore::Action* sampledAction);
+
+    /*
+     * Computes the upper bounds on the Q-values all actions and stores the
+     * contribution of each of their outcomes to this Q-value.
+     * Returns false if the bound gap of some successor's values is too large.
+     * Otherwise it returns true.
+     */
+    bool
+    computeSuccesorsValues(
+        mlcore::State* s,
+        mlcore::Action* sampledAction,
+        std::vector<double>& QhActions,
+        std::vector<mlcore::StateDoubleMap>& statesContribQValues,
+        std::vector<mlcore::StateDoubleMap>& statesProbs);
 
     /*
      * Computes the VPI given the expected Q-value parameters.
@@ -102,12 +133,25 @@ public:
                       double initialUpperBound = 50,
                       bool vanillaSample = false);
 
+    /** Resets all information stored by the algorithm. */
+    void reset() {
+        upperBounds_.clear();
+        maxDeltaUpperBounds_.clear();
+        minDeltaUpperBounds_.clear();
+        lowerBoundGreedyPolicy_.clear();
+    }
+
+    /** Sets the maximum number of trials to perform. */
+    void maxTrials(int value) { maxTrials_ = value; }
+
     /**
      * Solves the associated problem using the Labeled RTDP algorithm.
      *
      * @param s0 The state to start the search at.
      */
     virtual mlcore::Action* solve(mlcore::State* s0);
+
+    void sampleVPIDelta() { sampleVPIDelta_ = true; }
                                                                                 void sampleVPIOld() { sampleVPIOld_ = true; }
 };
 
