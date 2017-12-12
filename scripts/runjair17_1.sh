@@ -1,6 +1,6 @@
 #!/bin/bash
 
-verbosity=100
+verbosity=0
 nsims=100
 mdsval=-1
 kappaval=1

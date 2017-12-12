@@ -13,6 +13,7 @@
 #include "../include/solvers/LAOStarSolver.h"
 #include "../include/solvers/LRTDPSolver.h"
 #include "../include/solvers/FLARESSolver.h"
+#include "../include/solvers/SoftFLARESSolver.h"
 #include "../include/solvers/Solver.h"
 #include "../include/solvers/SSiPPSolver.h"
 #include "../include/solvers/UCTSolver.h"
@@ -168,6 +169,13 @@ bool mustReplan(State* s, int plausTrial) {
   if (algorithm == "flares") {
       return !s->checkBits(mdplib::SOLVED_FLARES);
   }
+  if (algorithm == "soft-flares") {
+      if (s->checkBits(mdplib::SOLVED))
+          return false;
+      SoftFLARESSolver* flares = static_cast<SoftFLARESSolver*>(solver);
+      return flares->lowResidualDistance(s) == -1;
+//      return flares->lowResidualDistance(s) < flares->horizon();
+  }
   if (algorithm == "hdp") {
       if (flag_is_registered("i")) {
           int j = INT_MAX;
@@ -261,6 +269,22 @@ void initSolver()
                                   depth,
                                   optimal,
                                   useProbsDepth);
+    } else if (algorithm == "soft-flares") {
+        double depth = horizon;
+        double alpha = 0.01;
+        bool optimal = flag_is_registered("optimal");
+        if (flag_is_registered_with_value("alpha"))
+            alpha = stof(flag_value("alpha"));
+        TransitionModifierFunction mod_func = kLogistic;
+        if (flag_is_registered("step-func"))
+            mod_func = kStep;
+        solver = new SoftFLARESSolver(problem,
+                                      trials,
+                                      tol,
+                                      depth,
+                                      mod_func,
+                                      alpha,
+                                      optimal);
     } else if (algorithm == "hdp") {
         int plaus;
         if (flag_is_registered_with_value("i"))
@@ -391,11 +415,14 @@ int main(int argc, char* args[])
             statesSeen.insert(tmp);
             Action* a;
             if (mustReplan(tmp, plausTrial)) {
+//                                                                                if (algorithm == "soft-flares") {
+//                                                                                    cout << "Must replan " << tmp << " dist "
+//                                                                                        << static_cast<SoftFLARESSolver*>(solver)->lowResidualDistance(tmp) << endl;
+//                                                                                }
                 startTime = clock();
                 if (algorithm != "greedy")
-                    a = solver->solve(tmp);
-                else
-                    a = greedyAction(problem, tmp);
+                    solver->solve(tmp);
+                a = greedyAction(problem, tmp);
                 endTime = clock();
                 expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
                 numDecisions++;

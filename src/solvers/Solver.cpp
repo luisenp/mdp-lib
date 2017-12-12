@@ -9,9 +9,9 @@ std::mutex bellman_mutex;
 
 std::random_device rand_dev;
 
-std::mt19937 gen(rand_dev());
+std::mt19937 kRNG(rand_dev());
 
-std::uniform_real_distribution<> dis(0, 1);
+std::uniform_real_distribution<> kUnif_0_1(0, 1);
 
 
 double qvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
@@ -119,7 +119,7 @@ mlcore::State* randomSuccessor(mlcore::Problem* problem,
                                mlcore::Action* a,
                                double* prob)
 {
-    double pick = dis(gen);
+    double pick = kUnif_0_1(kRNG);
 
     if (a == nullptr)
         return s;

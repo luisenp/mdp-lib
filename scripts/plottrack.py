@@ -27,7 +27,7 @@ def main(argv):
     line = ftrack.readline()
     numWalls += line.count('X')
     numSlips += line.count('o')
-    numStarts += line.count('S')
+    numStarts += line.count('E')
     numGoals += line.count('G')
     numSquares += line.count(' ')
     track_strings.append(line)
@@ -44,10 +44,10 @@ def main(argv):
           if line[i] == 'X':
               Walls[cnt[0],:] = [i,Y-j-1]
               cnt[0] = cnt[0] + 1
-          if line[i] == '.':
+          if line[i] == 'o':
               Slips[cnt[1],:] = [i,Y-j-1]
               cnt[1] = cnt[1] + 1
-          if line[i] == 'S':
+          if line[i] == 'E':
               Starts[cnt[2],:] = [i,Y-j-1]
               cnt[2] = cnt[2] + 1
           if line[i] == 'G':
@@ -60,12 +60,12 @@ def main(argv):
   print X, Y
   square_size=8
   fig = plt.figure(figsize=(X / 6, Y / 6), dpi=100)
-  # plt.plot(Walls[:,0],Walls[:,1],'s', color = '0.55', ms=square_size, mec='0.25')
-  plt.plot(Slips[:,0],Slips[:,1],'.', color='0.65', ms=9, mec='0.25')
+  plt.plot(Walls[:,0],Walls[:,1],'s', color = '0.55', ms=square_size) #, mec='0.25')
+  plt.plot(Slips[:,0],Slips[:,1],'ws', color='1.00', ms=square_size, mec='0.25')
   plt.plot(Starts[:,0],Starts[:,1],'gs', ms=square_size)
   plt.plot(Goals[:,0],Goals[:,1],'rs', ms=square_size)
-  plt.plot(Squares[:,0],Squares[:,1],'ws', ms=square_size)
-  ax = plt.axis([0, X, 0, Y])
+  # plt.plot(Squares[:,0],Squares[:,1],'ws', ms=square_size, mec='0.00')
+  ax = plt.axis([-1, X, -1, Y])
   plt.axis("off")
   plt.show()
 

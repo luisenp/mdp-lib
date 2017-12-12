@@ -83,7 +83,7 @@ VPIRTDPSolver::sampleBiasedBounds(mlcore::State* s,
     if (mdplib_math::equal(upperBounds_[s], s->cost())
             || B < (upperBounds_[s] - s->cost()) / tau_)
         return nullptr;
-    double pick = dis(gen);
+    double pick = kUnif_0_1(kRNG);
     double acc = 0;
     for (auto stateAndScore : statesAndScores) {
         acc += stateAndScore.second / B;
@@ -216,12 +216,12 @@ VPIRTDPSolver::sampleVPI(mlcore::State* s, mlcore::Action* sampledAction) {
     }
 
     if (totalVPI < mdplib::epsilon) {
-        double pick = dis(gen);
+        double pick = kUnif_0_1(kRNG);
         if (pick < alpha_)
             return sampleBiasedBounds(s, sampledAction);
         return nullptr;
     }
-    double pick = dis(gen);
+    double pick = kUnif_0_1(kRNG);
     double acc = 0.0;
     for (const mlcore::Successor& su : problem_->transition(s, sampledAction)) {
         acc += successorVPIs[su.su_state] / totalVPI;
@@ -352,12 +352,12 @@ VPIRTDPSolver::sampleVPIDelta(mlcore::State* s, mlcore::Action* sampledAction) {
         totalVPI += vpiSuccessor;
     }
     if (totalVPI < mdplib::epsilon) {
-        double pick = dis(gen);
+        double pick = kUnif_0_1(kRNG);
         if (pick < alpha_)
             return sampleBiasedBounds(s, sampledAction);
         return nullptr;
     }
-    double pick = dis(gen);
+    double pick = kUnif_0_1(kRNG);
     double acc = 0.0;
     for (const mlcore::Successor& su : problem_->transition(s, sampledAction)) {
         acc += successorVPIs[su.su_state] / totalVPI;
@@ -377,7 +377,7 @@ VPIRTDPSolver::sampleVPIOld(mlcore::State* s, mlcore::Action* sampledAction) {
     // Pre-computing E[Qa | bounds] for all actions.
     // Also cache P(s'|s,action) and (s'|s,action) * P(UB(s') - LB(s')) / 2.
     // These are stored in statesProbs and statesContribQValues, respectively
-                                                                                bool show = (dis(gen) < 0.0000001);
+                                                                                bool show = (kUnif_0_1(kRNG) < 0.0000001);
                                                                                 if (show) mdplib_debug = true;
     std::vector<double> expectedQValuesGivenBounds;
     std::vector<mlcore::StateDoubleMap> statesContribQValues;
@@ -518,12 +518,12 @@ VPIRTDPSolver::sampleVPIOld(mlcore::State* s, mlcore::Action* sampledAction) {
 //                                                                                    mdplib_debug = show;
 //                                                                                }
                                                                                 if (show) mdplib_debug = false;
-        double pick = dis(gen);
+        double pick = kUnif_0_1(kRNG);
         if (pick < alpha_)
             return sampleBiasedBounds(s, sampledAction);
         return nullptr;
     }
-    double pick = dis(gen);
+    double pick = kUnif_0_1(kRNG);
     double acc = 0.0;
     for (const mlcore::Successor& su : problem_->transition(s, sampledAction)) {
         acc += successorVPIs[su.su_state] / totalVPI;

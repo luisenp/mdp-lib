@@ -30,12 +30,12 @@ extern std::random_device rand_dev;
 /**
  * Mersenne Twister 19937 generator.
  */
-extern std::mt19937 gen;
+extern std::mt19937 kRNG;
 
 /**
  * Uniform distribution [0,1] generator.
  */
-extern std::uniform_real_distribution<> dis;
+extern std::uniform_real_distribution<> kUnif_0_1;
 
 /**
  * An interface describing planning algorithms.

@@ -51,7 +51,7 @@ BoundedRTDPSolver::sampleBiased(mlcore::State* s, mlcore::Action* a) {
     if ((upperBounds_[s] - s->cost()) == 0
             || B < (upperBounds_[s] - s->cost()) / tau_)
         return nullptr;
-    double pick = dis(gen);
+    double pick = kUnif_0_1(kRNG);
     double acc = 0;
     for (auto stateAndScore : statesAndScores) {
         acc += stateAndScore.second / B;

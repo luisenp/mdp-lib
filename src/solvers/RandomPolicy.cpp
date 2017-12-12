@@ -33,7 +33,7 @@ mlcore::Action* RandomPolicy::getRandomAction(mlcore::State* s)
     int idxState = stateIndex_[s];
     std::vector<double>& actions = policy_[idxState];
 
-    double pick = dis(gen);
+    double pick = kUnif_0_1(kRNG);
     double acc = 0.0;
     int i = 0;
     for (mlcore::Action* a : problem_->actions()) {
