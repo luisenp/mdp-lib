@@ -109,6 +109,7 @@ mlcore::Action* LRTDPSolver::solve(mlcore::State* s0)
     }
                                                                                 dprint(cnt_samples_, double(total_time_samples_) / cnt_samples_);
                                                                                 dprint(cnt_check_, double(total_time_check_) / cnt_check_);
+                                                                                dprint(trials);
     return s0->bestAction();
 }
 

@@ -81,16 +81,19 @@ void SoftFLARESSolver::trial(State* s) {
                                                                                 auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end-begin).count();
                                                                                 cnt_check_++;
                                                                                 total_time_check_ += duration;
-        if (kUnif_0_1(kRNG) > computeProbModfier(currentState)) {
+        if (kUnif_0_1(kRNG) < computeProbModfier(currentState)) {
             break;
         }
     }
 }
 
 double SoftFLARESSolver::computeProbModfier(mlcore::State* s) {
-    if (lowResidualDistance_.count(s) == 0)
+    if (s->residualDistance() == mdplib::no_distance)
         return 1.0;
-    double distance = lowResidualDistance_[s];
+    double distance = s->residualDistance();
+//    if (lowResidualDistance_.count(s) == 0)
+//        return 1.0;
+//    double distance = lowResidualDistance_[s];
     if (!useProbsForDepth_) {
         distance = modifierCache_[int(distance)];
     } else {
@@ -217,8 +220,11 @@ void SoftFLARESSolver::computeResidualDistances(State* s) {
                 // Set the distance to the difference between the
                 // depth at which a high residual was seen and the depth at
                 // which this state was seen for the first time
-                lowResidualDistance_[stateAndDepth.first] =
-                    lowestDepthHighResidual - stateAndDepth.second;
+
+                stateAndDepth.first->residualDistance(
+                    lowestDepthHighResidual - stateAndDepth.second);
+//                lowResidualDistance_[stateAndDepth.first] =
+//                    lowestDepthHighResidual - stateAndDepth.second;
             }
                                                                                 double res = residual(problem_, stateAndDepth.first);
             bellmanUpdate(problem_, stateAndDepth.first);
@@ -240,7 +246,7 @@ Action* SoftFLARESSolver::solve(State* s0) {
                                                                                 dprint("check", cnt_check_, double(total_time_check_) / cnt_check_);
                                                                                 auto end = std::chrono::high_resolution_clock::now();
                                                                                 auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end-begin).count();
-                                                                                dprint("total", duration);
+                                                                                dprint("trials", trials, "total", duration);
     return s0->bestAction();
 }
 

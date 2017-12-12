@@ -54,6 +54,12 @@ protected:
     Action* bestAction_;
 
     /**
+     * An estimate of the number of steps needed to find a state with high
+     * residual error.
+     */
+    double residualDistance_;
+
+    /**
      * The problem to which this state belongs.
      */
     Problem* problem_;
@@ -76,7 +82,8 @@ public:
               hValue_(mdplib::dead_end_cost + 1),
               bestAction_(nullptr),
               problem_(nullptr),
-              deadEnd_(false)
+              deadEnd_(false),
+              residualDistance_(mdplib::no_distance)
     { }
 
     virtual ~State() {}
@@ -233,6 +240,27 @@ public:
     void setBestAction(Action* a)
     {
         bestAction_ = a;
+    }
+
+
+    /**
+     * Estimated distance to high residual errors.
+     *
+     * @return The estimated distance.
+     */
+    double residualDistance() const
+    {
+        return residualDistance_;
+    }
+
+    /**
+     * Updates the estimate to the distance to high residual errors.
+     *
+     * @param value The value to use for the update.
+     */
+    void residualDistance(double value)
+    {
+        residualDistance_ = value;
     }
 
     /**
