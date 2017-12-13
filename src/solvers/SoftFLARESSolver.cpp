@@ -28,10 +28,12 @@ SoftFLARESSolver::SoftFLARESSolver(Problem* problem,
         alpha_(alpha),
         optimal_(optimal) {
                                                                                 //    tau_ = log((1 - alpha_) / alpha_) / (1 + horizon_);
-    tau_ = -2 * log(alpha_) / horizon_;
+//    tau_ = -2 * log(alpha_) / horizon_;
+    tau_ = -2 * log((1-alpha_) / alpha_) / horizon_;
     modifierCache_.resize(horizon_ + 1);
     for (int i = 0; i <= horizon_; i++) {
         modifierCache_[i] = computeProbModfier(i);
+                                                                                dprint("mod", i, modifierCache_[i]);
     }
 }
 
@@ -91,9 +93,6 @@ double SoftFLARESSolver::computeProbModfier(mlcore::State* s) {
     if (s->residualDistance() == mdplib::no_distance)
         return 1.0;
     double distance = s->residualDistance();
-//    if (lowResidualDistance_.count(s) == 0)
-//        return 1.0;
-//    double distance = lowResidualDistance_[s];
     if (!useProbsForDepth_) {
         distance = modifierCache_[int(distance)];
     } else {
@@ -111,7 +110,7 @@ double SoftFLARESSolver::computeProbModfier(double distance) {
         return 1.0;
     }
     if (modifierFunction_ == kLogistic) {
-        return 1.0 / (1 + exp(tau_ * (distance - horizon_ / 2.0)));
+        return 1.0 / (1 + exp(tau_ * (distance + 0.05 - horizon_ / 2.0)));
     }
     assert(false);
 }
@@ -160,21 +159,21 @@ double SoftFLARESSolver::computeNewDepth(Successor& su, double depth) {
 
 
 void SoftFLARESSolver::computeResidualDistances(State* s) {
-    list< pair<State*,double > > open, closed;
+    list<State*> open, closed;
 
     State* currentState = s;
     if (!currentState->checkBits(mdplib::SOLVED)) {
-        open.push_front(make_pair(currentState, 0.0));
+        open.push_front(currentState);
+        currentState->depth(0.0);
     }
 
     bool rv = true;
     double lowestDepthHighResidual = horizon_;
     bool subgraphWithinSearchHorizon = true;
     while (!open.empty()) {
-        pair<State*, double> pp = open.front();
+        State* currentState = open.front();
         open.pop_front();
-        currentState = pp.first;
-        double depth = pp.second;
+        double depth = currentState->depth();
         if (depth > horizon_) {
             subgraphWithinSearchHorizon = false;
             continue;
@@ -183,7 +182,7 @@ void SoftFLARESSolver::computeResidualDistances(State* s) {
         if (problem_->goal(currentState))
             continue;
 
-        closed.push_front(pp);
+        closed.push_front(currentState);
         currentState->setBits(mdplib::CLOSED);
 
         Action* a = greedyAction(problem_, currentState);
@@ -200,36 +199,34 @@ void SoftFLARESSolver::computeResidualDistances(State* s) {
             State* next = su.su_state;
             if (!next->checkBits(mdplib::SOLVED)
                     && !next->checkBits(mdplib::CLOSED)) {
-                open.push_front(make_pair(next, computeNewDepth(su, depth)));
+                open.push_front(next);
+                next->depth(computeNewDepth(su, depth));
             }
         }
     }
 
     if (rv && subgraphWithinSearchHorizon) {
-        for (auto const & pp : closed) {
-            pp.first->clearBits(mdplib::CLOSED);
-            pp.first->setBits(mdplib::SOLVED);
+        for (mlcore::State* sc : closed) {
+            sc->clearBits(mdplib::CLOSED);
+            sc->setBits(mdplib::SOLVED);
+            sc->depth(mdplib::no_distance);
         }
     } else {
         while (!closed.empty()) {
-            pair<State*, double> stateAndDepth;
-            stateAndDepth = closed.front();
+            State* state = closed.front();
             closed.pop_front();
-            stateAndDepth.first->clearBits(mdplib::CLOSED);
-            if (stateAndDepth.second <= lowestDepthHighResidual) {
+            double depth = state->depth();
+            state->clearBits(mdplib::CLOSED);
+            if (depth <= lowestDepthHighResidual) {
                 // Set the distance to the difference between the
                 // depth at which a high residual was seen and the depth at
                 // which this state was seen for the first time
-
-                stateAndDepth.first->residualDistance(
-                    lowestDepthHighResidual - stateAndDepth.second);
-//                lowResidualDistance_[stateAndDepth.first] =
-//                    lowestDepthHighResidual - stateAndDepth.second;
+                state->residualDistance(lowestDepthHighResidual - depth);
             }
-                                                                                double res = residual(problem_, stateAndDepth.first);
-            bellmanUpdate(problem_, stateAndDepth.first);
-                                                                                if (res < epsilon_ && residual(problem_, stateAndDepth.first) > epsilon_) {
-                                                                                    cerr << "ooops!" << residual(problem_, stateAndDepth.first) << endl;
+                                                                                double res = residual(problem_, state);
+            bellmanUpdate(problem_, state);
+                                                                                if (res < epsilon_ && residual(problem_, state) > epsilon_) {
+                                                                                    cerr << "ooops!" << residual(problem_, state) << endl;
                                                                                 }
         }
     }

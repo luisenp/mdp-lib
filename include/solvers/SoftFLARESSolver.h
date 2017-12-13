@@ -66,12 +66,6 @@ private:
      */
     TransitionModifierFunction modifierFunction_;
 
-    /*
-     * Stores an upper bound of how many steps in the greedy policy a state
-     * is from a state with low residual error.
-     */
-    mlcore::StateDoubleMap lowResidualDistance_;
-
     /* Stores the result of modifier function for depths from 0 to horizon_*/
     std::vector<double> modifierCache_;
 
@@ -102,7 +96,7 @@ private:
     /*
      * Computes the modifier from which the new sampling distribution is
      * generated. The sampling probability will be
-     *   T'(s,a,s') prop. T(s,a,s') * modifier(|lowResidualDistance_|(s')).
+     *   T'(s,a,s') prop. T(s,a,s') * modifier((s'->residualDistance())).
      * The type of modification is controlled using |modifierFunction_|.
      */
     double computeProbModfier(mlcore::State* s);
@@ -154,19 +148,14 @@ public:
                      bool optimal = false);
 
     /**
-     * Solves the associated problem using the Labeled RTDP algorithm.
+     * Solves the associated problem using the Soft-FLARES algorithm.
      *
      * @param s0 The state to start the search at.
      */
     virtual mlcore::Action* solve(mlcore::State* s0);
 
     double lowResidualDistance( mlcore::State* s) const {
-        if (lowResidualDistance_.count(s) > 0)
-            return lowResidualDistance_.at(s);
-        // A distance of -1 indicates high residual error for this state
-        // (note that distance means that the state value has low residual error
-        // but its successor don't)
-        return -1;
+        return s->residualDistance();
     }
 
     double horizon() const { return horizon_; }

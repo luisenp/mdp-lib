@@ -53,7 +53,9 @@ bool useUpperBound = false;
 int verbosity = 0;
 bool useOnline = false;
 
-
+///////////////////////////////////////////////////////////////////////////////
+//                              PROBLEM SETUP                                //
+///////////////////////////////////////////////////////////////////////////////
 void setupRacetrack()
 {
     string trackName = flag_value("track");
@@ -163,6 +165,9 @@ void setupProblem()
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+//                           SOLVER SETUP AND MISC.                          //
+///////////////////////////////////////////////////////////////////////////////
 bool mustReplan(State* s, int plausTrial) {
   if (flag_is_registered("online"))
       return true;
@@ -173,8 +178,7 @@ bool mustReplan(State* s, int plausTrial) {
       if (s->checkBits(mdplib::SOLVED))
           return false;
       SoftFLARESSolver* flares = static_cast<SoftFLARESSolver*>(solver);
-      return flares->lowResidualDistance(s) == -1;
-//      return flares->lowResidualDistance(s) < flares->horizon();
+      return flares->lowResidualDistance(s) == mdplib::no_distance;
   }
   if (algorithm == "hdp") {
       if (flag_is_registered("i")) {
@@ -337,6 +341,9 @@ void updateStatistics(double cost, int n, double& mean, double& M2)
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+//                                     MAIN                                  //
+///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* args[])
 {
     register_flags(argc, args);
@@ -415,10 +422,6 @@ int main(int argc, char* args[])
             statesSeen.insert(tmp);
             Action* a;
             if (mustReplan(tmp, plausTrial)) {
-//                                                                                if (algorithm == "soft-flares") {
-//                                                                                    cout << "Must replan " << tmp << " dist "
-//                                                                                        << static_cast<SoftFLARESSolver*>(solver)->lowResidualDistance(tmp) << endl;
-//                                                                                }
                 startTime = clock();
                 if (algorithm != "greedy")
                     solver->solve(tmp);

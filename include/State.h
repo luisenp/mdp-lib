@@ -60,6 +60,11 @@ protected:
     double residualDistance_;
 
     /**
+     * The current depth of the state during search (useful for some methods).
+     */
+    double depth_;
+
+    /**
      * The problem to which this state belongs.
      */
     Problem* problem_;
@@ -83,7 +88,8 @@ public:
               bestAction_(nullptr),
               problem_(nullptr),
               deadEnd_(false),
-              residualDistance_(mdplib::no_distance)
+              residualDistance_(mdplib::no_distance),
+              depth_(mdplib::no_distance)
     { }
 
     virtual ~State() {}
@@ -261,6 +267,27 @@ public:
     void residualDistance(double value)
     {
         residualDistance_ = value;
+    }
+
+
+    /**
+     * The depth of the state on a search tree.
+     *
+     * @return The depth.
+     */
+    double depth() const
+    {
+        return depth_;
+    }
+
+    /**
+     * Updates the depth of the state.
+     *
+     * @param value The value to use for the depth.
+     */
+    void depth(double value)
+    {
+        depth_ = value;
     }
 
     /**
