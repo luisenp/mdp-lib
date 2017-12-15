@@ -27,13 +27,11 @@ SoftFLARESSolver::SoftFLARESSolver(Problem* problem,
         modifierFunction_(modifierFunction),
         alpha_(alpha),
         optimal_(optimal) {
-                                                                                //    tau_ = log((1 - alpha_) / alpha_) / (1 + horizon_);
 //    tau_ = -2 * log(alpha_) / horizon_;
     tau_ = -2 * log((1-alpha_) / alpha_) / horizon_;
     modifierCache_.resize(horizon_ + 1);
     for (int i = 0; i <= horizon_; i++) {
         modifierCache_[i] = computeProbModfier(i);
-                                                                                dprint("mod", i, modifierCache_[i]);
     }
 }
 
@@ -193,6 +191,7 @@ void SoftFLARESSolver::computeResidualDistances(State* s) {
         if (residual(problem_, currentState) > epsilon_) {
             rv = false;
             lowestDepthHighResidual = std::min(lowestDepthHighResidual, depth);
+            continue;
         }
 
         for (Successor su : problem_->transition(currentState, a)) {
@@ -236,8 +235,10 @@ void SoftFLARESSolver::computeResidualDistances(State* s) {
 Action* SoftFLARESSolver::solve(State* s0) {
     int trials = 0;
                                                                                 auto begin = std::chrono::high_resolution_clock::now();
-    while (!labeledSolved(s0) && trials++ < maxTrials_) {
+    while (!labeledSolved(s0) && trials < maxTrials_) {
         trial(s0);
+        if (!optimal_)
+            trials++;
     }
                                                                                 dprint("samples", cnt_samples_, double(total_time_samples_) / cnt_samples_);
                                                                                 dprint("check", cnt_check_, double(total_time_check_) / cnt_check_);

@@ -108,8 +108,10 @@ bool FLARESSolver::checkSolved(State* s)
         if (currentState->deadEnd())
             continue;
 
-        if (residual(problem_, currentState) > epsilon_)
+        if (residual(problem_, currentState) > epsilon_) {
             rv = false;
+            continue;
+        }
 
         for (Successor su : problem_->transition(currentState, a)) {
             State* next = su.su_state;

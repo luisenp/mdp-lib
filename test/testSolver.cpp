@@ -3,6 +3,7 @@
 #include <ctime>
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <unistd.h>
 
@@ -46,8 +47,6 @@ using namespace std;
 
 Problem* problem = nullptr;
 Heuristic* heuristic = nullptr;
-Solver* solver = nullptr;
-string algorithm = "greedy";
 bool useUpperBound = false;
 
 int verbosity = 0;
@@ -166,44 +165,14 @@ void setupProblem()
 
 
 ///////////////////////////////////////////////////////////////////////////////
-//                           SOLVER SETUP AND MISC.                          //
+//                                  SOLVER SETUP                             //
 ///////////////////////////////////////////////////////////////////////////////
-bool mustReplan(State* s, int plausTrial) {
-  if (flag_is_registered("online"))
-      return true;
-  if (algorithm == "flares") {
-      return !s->checkBits(mdplib::SOLVED_FLARES);
-  }
-  if (algorithm == "soft-flares") {
-      if (s->checkBits(mdplib::SOLVED))
-          return false;
-      SoftFLARESSolver* flares = static_cast<SoftFLARESSolver*>(solver);
-      return flares->lowResidualDistance(s) == mdplib::no_distance;
-  }
-  if (algorithm == "hdp") {
-      if (flag_is_registered("i")) {
-          int j = INT_MAX;
-          if (flag_is_registered_with_value("j")) {
-              j = stoi(flag_value("j"));
-          }
-          if (plausTrial >= j) {
-              static_cast<HDPSolver*>(solver)->clearLabels();
-              return true;
-          }
-      }
-  }
-  if (algorithm == "ssipp" || algorithm == "uct") {
-        return true;
-  }
-  return false;
-}
 
-
-void initSolver()
+// Initializes the given solver according to the given algorithm.
+void initSolver(string algorithm, Solver*& solver)
 {
     double tol = 1.0e-3;
     assert(flag_is_registered_with_value("algorithm"));
-    algorithm = flag_value("algorithm");
 
     if (flag_is_registered("dead-end-cost")) {
         mdplib::dead_end_cost = stof(flag_value("dead-end-cost"));
@@ -267,28 +236,21 @@ void initSolver()
         if (flag_is_registered("prob")) {
             depth = stof(flag_value("prob"));
         }
-        solver = new FLARESSolver(problem,
-                                  trials,
-                                  tol,
-                                  depth,
-                                  optimal,
-                                  useProbsDepth);
+        solver = new FLARESSolver(
+            problem, trials, tol, depth, optimal, useProbsDepth);
     } else if (algorithm == "soft-flares") {
         double depth = horizon;
         double alpha = 0.01;
         bool optimal = flag_is_registered("optimal");
         if (flag_is_registered_with_value("alpha"))
             alpha = stof(flag_value("alpha"));
+        if (flag_is_registered("horizon-sf"))
+            depth = stof(flag_value("horizon-sf"));
         TransitionModifierFunction mod_func = kLogistic;
         if (flag_is_registered("step-func"))
             mod_func = kStep;
-        solver = new SoftFLARESSolver(problem,
-                                      trials,
-                                      tol,
-                                      depth,
-                                      mod_func,
-                                      alpha,
-                                      optimal);
+        solver = new SoftFLARESSolver(
+            problem, trials, tol, depth, mod_func, alpha, false, optimal);
     } else if (algorithm == "hdp") {
         int plaus;
         if (flag_is_registered_with_value("i"))
@@ -321,7 +283,6 @@ void initSolver()
             C = stod(flag_value("cexp"));
             use_qvalues_for_c = false;
         }
-                                                                                dprint("delta", delta, "C", C);
         solver = new UCTSolver(problem,
                                rollouts, cutoff, C,
                                use_qvalues_for_c, delta,
@@ -333,11 +294,167 @@ void initSolver()
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+//                              SIMULATION CODE                              //
+///////////////////////////////////////////////////////////////////////////////
 void updateStatistics(double cost, int n, double& mean, double& M2)
 {
     double delta = cost - mean;
     mean += delta / n;
     M2 += delta * (cost - mean);
+}
+
+bool mustReplan(Solver* solver, string algorithm, State* s, int plausTrial) {
+  if (flag_is_registered("online"))
+      return true;
+  if (algorithm == "flares") {
+      return !s->checkBits(mdplib::SOLVED_FLARES);
+  }
+  if (algorithm == "lrtdp") {
+    return !s->checkBits(mdplib::SOLVED);
+  }
+  if (algorithm == "soft-flares") {
+      if (s->checkBits(mdplib::SOLVED))
+          return false;
+      SoftFLARESSolver* flares = static_cast<SoftFLARESSolver*>(solver);
+//      return flares->lowResidualDistance(s) == mdplib::no_distance;
+      return flares->lowResidualDistance(s) < flares->horizon();
+  }
+  if (algorithm == "hdp") {
+      if (flag_is_registered("i")) {
+          int j = INT_MAX;
+          if (flag_is_registered_with_value("j")) {
+              j = stoi(flag_value("j"));
+          }
+          if (plausTrial >= j) {
+              static_cast<HDPSolver*>(solver)->clearLabels();
+              return true;
+          }
+      }
+  }
+  if (algorithm == "ssipp" || algorithm == "uct") {
+        return true;
+  }
+  return false;
+}
+
+// Runs |numSims| of the given solver and and returns the results
+// (i.e., expectedCost, variance, expectedTime, statesSeen).
+// Argument |algorithm| is the name of the algorithm implemented by |solver|.
+vector<double> simulate(Solver* solver, string algorithm, int numSims)
+{
+    double expectedCost = 0.0;
+    double variance = 0.0;
+    double expectedTime = 0.0;
+    StateSet statesSeen;
+
+    int cnt = 0;
+    int numDecisions = 0;
+    for (int i = 0; i < numSims; i++) {
+        if (verbosity >= 100)
+            cout << " ********* Simulation Starts ********* " << endl;
+        clock_t startTime, endTime;
+        if (i == 0 && !flag_is_registered("no-initial-plan")) {
+            for (State* s : problem->states())
+                s->reset();
+            startTime = clock();
+            if (algorithm == "uct") {
+                static_cast<UCTSolver*>(solver)->reset();
+            } else if (algorithm != "greedy") {
+                solver->solve(problem->initialState());
+            }
+            endTime = clock();
+            expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
+            numDecisions++;
+        }
+        if (verbosity >= 10) {
+            cout << "Starting simulation " << i << endl;
+        }
+        State* tmp = problem->initialState();
+        if (verbosity >= 100) {
+            cout << "Estimated cost " <<
+                problem->initialState()->cost() << endl << tmp << " ";
+        }
+        double costTrial = 0.0;
+        int plausTrial = 0;
+        while (!problem->goal(tmp)) {
+            statesSeen.insert(tmp);
+            Action* a;
+            if (mustReplan(solver, algorithm, tmp, plausTrial)) {
+                startTime = clock();
+                if (algorithm != "greedy")
+                    solver->solve(tmp);
+                a = greedyAction(problem, tmp);
+                endTime = clock();
+                expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
+                numDecisions++;
+            } else {
+                if (useUpperBound) {
+                    // The algorithms that use upper bounds store the
+                    // greedy action with respect to the upper bound
+                    // in State::bestAction_
+                    a = tmp->bestAction();
+                }
+                else {
+                    a = greedyAction(problem, tmp);
+                }
+            }
+
+            if (verbosity >= 1000) {
+                cout << "State/Action: " << tmp << " " << a << " " << endl;
+            }
+
+            costTrial += problem->cost(tmp, a);
+            costTrial = std::min(costTrial, mdplib::dead_end_cost);
+            if (costTrial >= mdplib::dead_end_cost) {
+                break;
+            }
+            double prob = 0.0;
+            State* aux = randomSuccessor(problem, tmp, a, &prob);
+            if (algorithm == "hdp") {
+                double maxProb = 0.0;
+                for (auto const & sccr : problem->transition(tmp, a))
+                    maxProb = std::max(maxProb, sccr.su_prob);
+                plausTrial +=
+                    static_cast<HDPSolver*>(solver)->kappa(prob, maxProb);
+            }
+            tmp = aux;
+        }
+        if (flag_is_registered("ctp")) {
+            CTPState* ctps = static_cast<CTPState*>(tmp);
+            if (!ctps->badWeather()) {
+                cnt++;
+                updateStatistics(costTrial, cnt, expectedCost, variance);
+            }
+        } else {
+            cnt++;
+            updateStatistics(costTrial, cnt, expectedCost, variance);
+            if (verbosity >= 1)
+                cout << costTrial << endl;
+        }
+        if (verbosity >= 100)
+            cout << endl;
+    }
+
+    if (verbosity >= 1) {
+        cout << "Estimated cost " << problem->initialState()->cost() << " ";
+        cout << "Avg. Exec cost " << expectedCost << " ";
+        cout << "Std. Dev. " << sqrt(variance / (cnt - 1)) << " ";
+        cout << "Total time " << expectedTime / cnt << " " << endl;
+        cout << "States seen " << statesSeen.size() << endl;
+        cout << "Avg. time per decision " <<
+            expectedTime / numDecisions << endl;
+    } else if (verbosity >= 0) {
+        cout << problem->initialState()->cost() << " ";
+        cout << expectedCost << " " << sqrt(variance / (cnt - 1)) << " " <<
+            expectedTime / cnt << " " << expectedTime / numDecisions << endl;
+    }
+
+    double results[] = {expectedCost,
+                        variance / (cnt - 1),
+                        expectedTime / cnt,
+                        double(statesSeen.size())};
+    return vector<double>(results, results + sizeof(results) / sizeof(double));
 }
 
 
@@ -377,122 +494,33 @@ int main(int argc, char* args[])
     if (verbosity > 100)
         cout << problem->states().size() << " states" << endl;
 
-    initSolver();
-
-    int nsims = 100;
+    int numSims = 100;
     if (flag_is_registered_with_value("n"))
-        nsims = stoi(flag_value("n"));
+        numSims = stoi(flag_value("n"));
+    int numReps = 1;
+    if (flag_is_registered_with_value("reps"))
+        numReps = stoi(flag_value("reps"));
 
-    // Running simulations to evaluate the solver's performance.
-    double expectedCost = 0.0;
-    double variance = 0.0;
-    double expectedTime = 0.0;
-    StateSet statesSeen;
-
-    int cnt = 0;
-    int numDecisions = 0;
-    for (int i = 0; i < nsims; i++) {
-        if (verbosity >= 100)
-            cout << " ********* Simulation Starts ********* " << endl;
-        clock_t startTime, endTime;
-        if (i == 0 && !flag_is_registered("no-initial-plan")) {
-            for (State* s : problem->states())
-                s->reset();
-            startTime = clock();
-            if (algorithm == "uct") {
-                static_cast<UCTSolver*>(solver)->reset();
-            } else if (algorithm != "greedy") {
-                solver->solve(problem->initialState());
-            }
-            endTime = clock();
-            expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
-            numDecisions++;
+    // Running simulations to evaluate each algorithm's performance
+    string algorithm = flag_value("algorithm");
+    stringstream ss(algorithm);
+    string alg_item;
+    while (getline(ss, alg_item, ',')) {
+        cout << alg_item << ": ";
+        Solver* solver = nullptr;
+        initSolver(alg_item, solver);
+        double avgCost = 0.0, avgTime = 0.0;
+        for (int i = 0; i < numReps; i++) {
+            std::vector<double> results = simulate(solver, alg_item, numSims);
+            avgCost += results[0];
+            avgTime += results[2];
         }
-        if (verbosity >= 10) {
-            cout << "Starting simulation " << i << endl;
-        }
-        State* tmp = problem->initialState();
-        if (verbosity >= 100) {
-            cout << "Estimated cost " <<
-                problem->initialState()->cost() << endl << tmp << " ";
-        }
-        double costTrial = 0.0;
-        int plausTrial = 0;
-        while (!problem->goal(tmp)) {
-            statesSeen.insert(tmp);
-            Action* a;
-            if (mustReplan(tmp, plausTrial)) {
-                startTime = clock();
-                if (algorithm != "greedy")
-                    solver->solve(tmp);
-                a = greedyAction(problem, tmp);
-                endTime = clock();
-                expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
-                numDecisions++;
-            } else {
-                if (useUpperBound) {
-                    // The algorithms that use upper bounds store the
-                    // greedy action with respect to the upper bound
-                    // in State::bestAction_
-                    a = tmp->bestAction();
-                }
-                else {
-                    a = greedyAction(problem, tmp);
-                }
-            }
-
-            if (verbosity >= 1000) {
-                cout << "State/Action: " << tmp << " " << a << " " << endl;
-            }
-
-            costTrial += problem->cost(tmp, a);
-            costTrial = std::min(costTrial, mdplib::dead_end_cost);
-            if (costTrial >= mdplib::dead_end_cost) {
-                break;
-            }
-            double prob = 0.0;
-            State* aux = randomSuccessor(problem, tmp, a, &prob);
-            if (flag_value("algorithm") == "hdp") {
-                double maxProb = 0.0;
-                for (auto const & sccr : problem->transition(tmp, a))
-                    maxProb = std::max(maxProb, sccr.su_prob);
-                plausTrial +=
-                    static_cast<HDPSolver*>(solver)->kappa(prob, maxProb);
-            }
-            tmp = aux;
-        }
-        if (flag_is_registered("ctp")) {
-            CTPState* ctps = static_cast<CTPState*>(tmp);
-            if (!ctps->badWeather()) {
-                cnt++;
-                updateStatistics(costTrial, cnt, expectedCost, variance);
-            }
-        } else {
-            cnt++;
-            updateStatistics(costTrial, cnt, expectedCost, variance);
-            if (verbosity >= 1)
-                cout << costTrial << endl;
-        }
-        if (verbosity >= 100)
-            cout << endl;
-    }
-
-    if (verbosity >= 1) {
-        cout << "Estimated cost " << problem->initialState()->cost() << " ";
-        cout << "Avg. Exec cost " << expectedCost << " ";
-        cout << "Std. Dev. " << sqrt(variance / (cnt - 1)) << " ";
-        cout << "Total time " << expectedTime / cnt << " " << endl;
-        cout << "States seen " << statesSeen.size() << endl;
-        cout << "Avg. time per decision " <<
-            expectedTime / numDecisions << endl;
-    } else {
-        cout << problem->initialState()->cost() << " ";
-        cout << expectedCost << " " << sqrt(variance / (cnt - 1)) << " " <<
-            expectedTime / cnt << " " << expectedTime / numDecisions << endl;
+        cout << "AVG COST: " << avgCost / numReps << " "
+            << "AVG TIME: " << avgTime / numReps << endl;
+        delete solver;
     }
 
     delete problem;
     delete heuristic;
-    delete solver;
 }
 

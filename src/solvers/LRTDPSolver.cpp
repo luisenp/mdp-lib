@@ -71,8 +71,10 @@ bool LRTDPSolver::checkSolved(mlcore::State* s)
         closed.push_front(tmp);
         tmp->setBits(mdplib::CLOSED);
 
-        if (residual(problem_, tmp) > epsilon_)
+        if (residual(problem_, tmp) > epsilon_) {
             rv = false;
+            continue;
+        }
 
         for (mlcore::Successor su : problem_->transition(tmp, a)) {
             mlcore::State* next = su.su_state;
