@@ -73,7 +73,9 @@ bool LRTDPSolver::checkSolved(mlcore::State* s)
 
         if (residual(problem_, tmp) > epsilon_) {
             rv = false;
-            continue;
+            // The original paper includes this line, but the algorithm
+            // seems to work significantly faster without this
+            //  continue;
         }
 
         for (mlcore::Successor su : problem_->transition(tmp, a)) {

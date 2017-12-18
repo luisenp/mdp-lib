@@ -233,24 +233,32 @@ void initSolver(string algorithm, Solver*& solver)
         bool optimal = flag_is_registered("optimal");
         bool useProbsDepth = flag_is_registered("use-prob-depth");
         double depth = horizon;
-        if (flag_is_registered("prob")) {
+        int timeLimit = 10000000;
+        if (flag_is_registered("prob"))
             depth = stof(flag_value("prob"));
+        if (flag_is_registered("time-limit")) {
+            timeLimit = stoi(flag_value("time-limit"));
+            trials = 10000000;
         }
         solver = new FLARESSolver(
-            problem, trials, tol, depth, optimal, useProbsDepth);
+            problem, trials, tol, depth, optimal, useProbsDepth, timeLimit);
     } else if (algorithm == "soft-flares") {
         double depth = horizon;
         double alpha = 0.01;
         bool optimal = flag_is_registered("optimal");
+        int timeLimit = 10000000;
+        TransitionModifierFunction mod_func = kLogistic;
         if (flag_is_registered_with_value("alpha"))
             alpha = stof(flag_value("alpha"));
-        if (flag_is_registered("horizon-sf"))
-            depth = stof(flag_value("horizon-sf"));
-        TransitionModifierFunction mod_func = kLogistic;
         if (flag_is_registered("step-func"))
             mod_func = kStep;
+        if (flag_is_registered("time-limit")) {
+            timeLimit = stoi(flag_value("time-limit"));
+            trials = 10000000;
+        }
         solver = new SoftFLARESSolver(
-            problem, trials, tol, depth, mod_func, alpha, false, optimal);
+            problem, trials, tol, depth, mod_func,
+            alpha, false, optimal, timeLimit);
     } else if (algorithm == "hdp") {
         int plaus;
         if (flag_is_registered_with_value("i"))
@@ -317,8 +325,8 @@ bool mustReplan(Solver* solver, string algorithm, State* s, int plausTrial) {
       if (s->checkBits(mdplib::SOLVED))
           return false;
       SoftFLARESSolver* flares = static_cast<SoftFLARESSolver*>(solver);
-//      return flares->lowResidualDistance(s) == mdplib::no_distance;
-      return flares->lowResidualDistance(s) < flares->horizon();
+//      return flares->lowResidualDistance(s) < flares->horizon();
+      return !flares->labeledSolved(s);
   }
   if (algorithm == "hdp") {
       if (flag_is_registered("i")) {
@@ -506,7 +514,7 @@ int main(int argc, char* args[])
     stringstream ss(algorithm);
     string alg_item;
     while (getline(ss, alg_item, ',')) {
-        cout << alg_item << ": ";
+        cout << setw(10) << alg_item << ": ";
         Solver* solver = nullptr;
         initSolver(alg_item, solver);
         double avgCost = 0.0, avgTime = 0.0;

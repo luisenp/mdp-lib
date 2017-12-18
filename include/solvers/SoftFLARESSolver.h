@@ -41,6 +41,9 @@ private:
     /* The max depth for the checkSolved procedure */
     double horizon_;
 
+    /* Maximum planning time in milliseconds. */
+    int maxTime_;
+
     /*
      * Represents the desired reduction in the transition function at the
      * horizon. For example, if |alpha| = 0.01, then a state s' that has
@@ -84,9 +87,6 @@ private:
     /* Performs a single trial */
     void trial(mlcore::State* s);
 
-    /* Checks if the state has already been labeled as solved. */
-    bool labeledSolved(mlcore::State* s);
-
     /*
      * Computes the depth of the given successor state for the given depth of
      * its parent state.
@@ -126,7 +126,7 @@ private:
 
 public:
     /**
-     * Creates a FLARES solver for the given problem.
+     * Creates a Soft-FLARES solver for the given problem.
      *
      * @param problem The problem to be solved.
      * @param maxTrials The maximum number of trials to perform.
@@ -137,6 +137,7 @@ public:
      * @param useProbsForDepth If true, uses trajectory probabilities as
      *        the depth (instead of the number of steps).
      * @param optimal If true, runs until optimality.
+     * @param maxTime The maximum time allowed for planning.
      */
     SoftFLARESSolver(mlcore::Problem* problem,
                      int maxTrials,
@@ -145,7 +146,8 @@ public:
                      TransitionModifierFunction modifierFunction,
                      double alpha = 0.01,
                      bool useProbsForDepth = false,
-                     bool optimal = false);
+                     bool optimal = false,
+                     int maxTime = -1);
 
     /**
      * Solves the associated problem using the Soft-FLARES algorithm.
@@ -159,6 +161,10 @@ public:
     }
 
     double horizon() const { return horizon_; }
+
+    /* Checks if the state has already been labeled as solved. */
+    bool labeledSolved(mlcore::State* s);
+
 };
 
 }

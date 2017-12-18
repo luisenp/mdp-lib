@@ -299,6 +299,8 @@ public:
         bits_ = 0;
         cost_ = mdplib::dead_end_cost + 1;
         bestAction_ = nullptr;
+        depth_ = mdplib::no_distance;
+        residualDistance_ = mdplib::no_distance;
     }
 };
 

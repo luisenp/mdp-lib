@@ -13,13 +13,15 @@ FLARESSolver::FLARESSolver(Problem* problem,
                          double epsilon,
                          double horizon,
                          bool optimal,
-                         bool useProbsForDepth) :
+                         bool useProbsForDepth,
+                         int maxTime) :
     problem_(problem),
     maxTrials_(maxTrials),
     epsilon_(epsilon),
     horizon_(horizon),
     optimal_(optimal),
-    useProbsForDepth_(useProbsForDepth)
+    useProbsForDepth_(useProbsForDepth),
+    maxTime_(maxTime)
 { }
 
 
@@ -110,7 +112,7 @@ bool FLARESSolver::checkSolved(State* s)
 
         if (residual(problem_, currentState) > epsilon_) {
             rv = false;
-            continue;
+//            continue;
         }
 
         for (Successor su : problem_->transition(currentState, a)) {
@@ -138,6 +140,7 @@ bool FLARESSolver::checkSolved(State* s)
                      (!useProbsForDepth_ && pp.second <= horizon_) ) {
                         pp.first->setBits(mdplib::SOLVED_FLARES);
                         depthSolved_.insert(pp.first);
+//                                                                                dprint("flares", pp.first, pp.second);
                 }
             }
         }
@@ -170,8 +173,14 @@ Action* FLARESSolver::solve(State* s0)
 Action* FLARESSolver::solveApproximate(State* s0)
 {
     int trials = 0;
+    auto begin = std::chrono::high_resolution_clock::now();
     while (!labeledSolved(s0) && trials++ < maxTrials_) {
         trial(s0);
+        auto end = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::
+            duration_cast<std::chrono::milliseconds>(end-begin).count();
+        if (maxTime_ > -1 && duration > maxTime_)
+            break;
     }
     return s0->bestAction();
 }

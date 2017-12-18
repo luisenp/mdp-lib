@@ -18,7 +18,8 @@ SoftFLARESSolver::SoftFLARESSolver(Problem* problem,
                                    TransitionModifierFunction modifierFunction,
                                    double alpha,
                                    bool useProbsForDepth,
-                                   bool optimal) :
+                                   bool optimal,
+                                   int maxTime) :
         problem_(problem),
         maxTrials_(maxTrials),
         epsilon_(epsilon),
@@ -26,11 +27,12 @@ SoftFLARESSolver::SoftFLARESSolver(Problem* problem,
         useProbsForDepth_(useProbsForDepth),
         modifierFunction_(modifierFunction),
         alpha_(alpha),
-        optimal_(optimal) {
+        optimal_(optimal),
+        maxTime_(maxTime) {
 //    tau_ = -2 * log(alpha_) / horizon_;
-    tau_ = -2 * log((1-alpha_) / alpha_) / horizon_;
-    modifierCache_.resize(horizon_ + 1);
-    for (int i = 0; i <= horizon_; i++) {
+    tau_ = -log((1-alpha_) / alpha_) / horizon_;
+    modifierCache_.resize(2 * horizon_ + 1);
+    for (int i = 0; i <= 2 * horizon_; i++) {
         modifierCache_[i] = computeProbModfier(i);
     }
 }
@@ -71,9 +73,6 @@ void SoftFLARESSolver::trial(State* s) {
     while (!visited.empty()) {
         currentState = visited.front();
         visited.pop_front();
-//        if (pick < computeProbModfier(currentState)) {
-//            computeResidualDistances(currentState);
-//        }
 
                                                                                 auto begin = std::chrono::high_resolution_clock::now();
         computeResidualDistances(currentState);
@@ -81,9 +80,8 @@ void SoftFLARESSolver::trial(State* s) {
                                                                                 auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end-begin).count();
                                                                                 cnt_check_++;
                                                                                 total_time_check_ += duration;
-        if (kUnif_0_1(kRNG) < computeProbModfier(currentState)) {
+        if (!labeledSolved(currentState))
             break;
-        }
     }
 }
 
@@ -99,32 +97,21 @@ double SoftFLARESSolver::computeProbModfier(mlcore::State* s) {
 }
 
 double SoftFLARESSolver::computeProbModfier(double distance) {
+    if (distance < 0)
+        return 1.0;
     if (modifierFunction_ == kExponentialDecay) {
         return 1.0 / (1 + tau_ * exp(distance + 1)); // TODO: CHECK THIS EXPR.
     }
     if (modifierFunction_ == kStep) {
-        if (2 * distance >= horizon_)
+        if (distance >= horizon_)
             return 0.0;
         return 1.0;
     }
     if (modifierFunction_ == kLogistic) {
-        return 1.0 / (1 + exp(tau_ * (distance + 0.05 - horizon_ / 2.0)));
+        return 1.0 / (1 + exp(tau_ * (distance + 0.05 - horizon_)));
     }
     assert(false);
 }
-
-mlcore::State* SoftFLARESSolver::computeScores(
-        mlcore::State* s, mlcore::Action* a,
-        std::vector<double>& scores, double& totalScore) {
-    totalScore = 0.0;
-    scores.clear();
-    for (mlcore::Successor sccr : problem_->transition(s, a)) {
-        double score = sccr.su_prob * computeProbModfier(sccr.su_state);
-        totalScore += score;
-        scores.push_back(score);
-    }
-}
-
 
 mlcore::State* SoftFLARESSolver::sampleSuccessor(mlcore::State* s,
                                                  mlcore::Action* a) {
@@ -143,7 +130,9 @@ mlcore::State* SoftFLARESSolver::sampleSuccessor(mlcore::State* s,
 }
 
 bool SoftFLARESSolver::labeledSolved(State* s) {
-    return s->checkBits(mdplib::SOLVED);
+    if (s->checkBits(mdplib::SOLVED))
+        return true;
+    return (computeProbModfier(s->residualDistance()) < kUnif_0_1(kRNG));
 }
 
 
@@ -166,13 +155,13 @@ void SoftFLARESSolver::computeResidualDistances(State* s) {
     }
 
     bool rv = true;
-    double lowestDepthHighResidual = horizon_;
+    double lowestDepthHighResidual = 2 * horizon_;
     bool subgraphWithinSearchHorizon = true;
     while (!open.empty()) {
         State* currentState = open.front();
         open.pop_front();
         double depth = currentState->depth();
-        if (depth > horizon_) {
+        if (depth > 2 * horizon_) {
             subgraphWithinSearchHorizon = false;
             continue;
         }
@@ -196,19 +185,20 @@ void SoftFLARESSolver::computeResidualDistances(State* s) {
 
         for (Successor su : problem_->transition(currentState, a)) {
             State* next = su.su_state;
-            if (!next->checkBits(mdplib::SOLVED)
+            if (!labeledSolved(next)
+                    && !next->checkBits(mdplib::SOLVED)
                     && !next->checkBits(mdplib::CLOSED)) {
                 open.push_front(next);
                 next->depth(computeNewDepth(su, depth));
             }
         }
     }
-
+                                                                                assert(lowestDepthHighResidual <= 2 * horizon_ || rv);
     if (rv && subgraphWithinSearchHorizon) {
         for (mlcore::State* sc : closed) {
             sc->clearBits(mdplib::CLOSED);
             sc->setBits(mdplib::SOLVED);
-            sc->depth(mdplib::no_distance);
+//            sc->depth(mdplib::no_distance);
         }
     } else {
         while (!closed.empty()) {
@@ -216,11 +206,18 @@ void SoftFLARESSolver::computeResidualDistances(State* s) {
             closed.pop_front();
             double depth = state->depth();
             state->clearBits(mdplib::CLOSED);
-            if (depth <= lowestDepthHighResidual) {
+            if (rv && depth <= lowestDepthHighResidual) {
                 // Set the distance to the difference between the
                 // depth at which a high residual was seen and the depth at
                 // which this state was seen for the first time
                 state->residualDistance(lowestDepthHighResidual - depth);
+                                                                                if (lowestDepthHighResidual - depth >= horizon_) {
+                                                                                    dprint(state, "depth", depth,
+                                                                                           "lowDepthHighRes", lowestDepthHighResidual,
+                                                                                           "horizon", horizon_,
+                                                                                           "resDis", state->residualDistance(),
+                                                                                           "mod", computeProbModfier(state));
+                                                                                }
             }
                                                                                 double res = residual(problem_, state);
             bellmanUpdate(problem_, state);
@@ -234,17 +231,22 @@ void SoftFLARESSolver::computeResidualDistances(State* s) {
 
 Action* SoftFLARESSolver::solve(State* s0) {
     int trials = 0;
-                                                                                auto begin = std::chrono::high_resolution_clock::now();
+    auto begin = std::chrono::high_resolution_clock::now();
+//    while (!s0->checkBits(mdplib::SOLVED) && trials < maxTrials_) {
     while (!labeledSolved(s0) && trials < maxTrials_) {
         trial(s0);
+        auto end = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::
+            duration_cast<std::chrono::milliseconds>(end-begin).count();
+        if (maxTime_ > -1 && duration > maxTime_)
+            break;
         if (!optimal_)
             trials++;
     }
-                                                                                dprint("samples", cnt_samples_, double(total_time_samples_) / cnt_samples_);
-                                                                                dprint("check", cnt_check_, double(total_time_check_) / cnt_check_);
                                                                                 auto end = std::chrono::high_resolution_clock::now();
-                                                                                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end-begin).count();
-                                                                                dprint("trials", trials, "total", duration);
+                                                                                auto duration = std::chrono::
+                                                                                    duration_cast<std::chrono::milliseconds>(end-begin).count();
+                                                                                dprint("duration", duration, "trials", trials);
     return s0->bestAction();
 }
 
