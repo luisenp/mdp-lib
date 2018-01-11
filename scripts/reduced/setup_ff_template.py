@@ -62,10 +62,12 @@ def main(argv):
   parser = argparse.ArgumentParser(
     description="Create all possible determinizations of this domain.")
   parser.add_argument("-p", "--problem_file", required=True)
-  parser.add_argument("-o", "--output", required=True)    
+  parser.add_argument("-o", "--output", required=True)
+  parser.add_argument("-n", "--problem_name", required=False)
   args = parser.parse_args()
   problem_file_name = args.problem_file
   output_file_name = args.output
+  problem_name = args.problem_name
   
   # Reading problem file.
   ppddl_str = ""
@@ -80,12 +82,17 @@ def main(argv):
     sys.exit(-1)  
   
   # Parsing the problem tree.
-  problem_tree = parse_sexp(ppddl_str)
+  ppddl_tree = parse_sexp(ppddl_str)
   
-  for sub_tree in problem_tree:
+  problem_str = None
+  for sub_tree in ppddl_tree:
     if sub_tree[0] == "define" and sub_tree[1][0] == "problem":
-      problem_str = make_str(sub_tree)
-        
+      if problem_name is None or sub_tree[1][1] == problem_name:
+        problem_str = make_str(sub_tree)
+  if problem_str is None:
+    print "Error: Problem name not found in the given file."
+    sys.exit(0)
+      
   cleaned_up_str = clean_up_problem_str(problem_str)
   
   f = open(output_file_name, 'w')

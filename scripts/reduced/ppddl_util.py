@@ -51,6 +51,8 @@ def make_str(ppddl_tree, level=0):
       ppddlstr += element
       if i != len(ppddl_tree) - 1:
         ppddlstr += ' '
+        if element == ':parameters' and ppddl_tree[i + 1] == []:
+          ppddlstr += '()'
   ppddlstr += ') '
   return ppddlstr
 
