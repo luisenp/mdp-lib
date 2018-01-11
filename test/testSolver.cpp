@@ -25,6 +25,8 @@
 #include "../include/util/general.h"
 #include "../include/util/graph.h"
 
+#include "../include/domains/borderexit/BorderExitProblem.h"
+
 #include "../include/domains/ctp/CTPOptimisticHeuristic.h"
 #include "../include/domains/ctp/CTPProblem.h"
 #include "../include/domains/ctp/CTPState.h"
@@ -63,13 +65,24 @@ void setupRacetrack()
     int mds = -1;
     if (flag_is_registered_with_value("mds"))
         mds = stoi(flag_value("mds"));
+    double perror = 0.05;
+    if (flag_is_registered_with_value("perror"))
+        perror = stod(flag_value("perror"));
+    double pslip = 0.10;
+    if (flag_is_registered_with_value("pslip"))
+        pslip = stod(flag_value("pslip"));
     problem = new RacetrackProblem(trackName.c_str());
-    ((RacetrackProblem*) problem)->pError(0.05);
-    ((RacetrackProblem*) problem)->pSlip(0.10);
+    ((RacetrackProblem*) problem)->pError(perror);
+    ((RacetrackProblem*) problem)->pSlip(pslip);
     ((RacetrackProblem*) problem)->mds(mds);
     if (!flag_is_registered_with_value("heuristic") ||
             flag_value("heuristic") == "domain")
         heuristic = new RTrackDetHeuristic(trackName.c_str());
+}
+
+void setupBorderExitProblem()
+{
+    problem = new BorderExitProblem();
 }
 
 
@@ -157,6 +170,8 @@ void setupProblem()
         setupSailingDomain();
     } else if (flag_is_registered_with_value("ctp")) {
         setupCTP();
+    } else if (flag_is_registered("border-problem")) {
+        setupBorderExitProblem();
     } else {
         cerr << "Invalid problem." << endl;
         exit(-1);
@@ -248,6 +263,7 @@ void initSolver(string algorithm, Solver*& solver)
         bool optimal = flag_is_registered("optimal");
         int timeLimit = 10000000;
         TransitionModifierFunction mod_func = kLogistic;
+        DistanceFunction dist_func = kStepDist;
         if (flag_is_registered_with_value("alpha"))
             alpha = stof(flag_value("alpha"));
         if (flag_is_registered("step-func"))
@@ -256,8 +272,38 @@ void initSolver(string algorithm, Solver*& solver)
             timeLimit = stoi(flag_value("time-limit"));
             trials = 10000000;
         }
+        // Distance functions
+        if (flag_is_registered("dist")) {
+            string dist_str = flag_value("dist");
+            if (dist_str == "traj") {
+                dist_func = kTrajProb;
+            } else if (dist_str == "plaus") {
+                dist_func = kPlaus;
+            } else if (dist_str == "depth") {
+                dist_func = kStepDist;
+            } else {
+                cerr << "Error: unknown distance function." << endl;
+                exit(0);
+            }
+        }
+        // Labeling functions
+        if (flag_is_registered("labelf")) {
+            string labelf_str = flag_value("labelf");
+            if (labelf_str == "exp") {
+                mod_func = kExponential;
+            } else if (labelf_str == "step") {
+                mod_func = kStep;
+            } else if (labelf_str == "linear") {
+                mod_func = kLinear;
+            } else if (labelf_str == "logistic") {
+                mod_func = kLogistic;
+            } else {
+                cerr << "Error: unknown labeling function." << endl;
+                exit(0);
+            }
+        }
         solver = new SoftFLARESSolver(
-            problem, trials, tol, depth, mod_func,
+            problem, trials, tol, depth, mod_func, dist_func,
             alpha, false, optimal, timeLimit);
     } else if (algorithm == "hdp") {
         int plaus;
@@ -325,7 +371,6 @@ bool mustReplan(Solver* solver, string algorithm, State* s, int plausTrial) {
       if (s->checkBits(mdplib::SOLVED))
           return false;
       SoftFLARESSolver* flares = static_cast<SoftFLARESSolver*>(solver);
-//      return flares->lowResidualDistance(s) < flares->horizon();
       return !flares->labeledSolved(s);
   }
   if (algorithm == "hdp") {
@@ -381,7 +426,7 @@ vector<double> simulate(Solver* solver, string algorithm, int numSims)
         State* tmp = problem->initialState();
         if (verbosity >= 100) {
             cout << "Estimated cost " <<
-                problem->initialState()->cost() << endl << tmp << " ";
+                problem->initialState()->cost() << endl;
         }
         double costTrial = 0.0;
         int plausTrial = 0;
@@ -440,8 +485,6 @@ vector<double> simulate(Solver* solver, string algorithm, int numSims)
             if (verbosity >= 1)
                 cout << costTrial << endl;
         }
-        if (verbosity >= 100)
-            cout << endl;
     }
 
     if (verbosity >= 1) {

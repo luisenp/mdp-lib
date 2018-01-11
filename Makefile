@@ -5,7 +5,7 @@
 
 # Compilation flags and variables
 CC = g++
-CFLAGS = -std=c++11 -g -DATOM_STATES -pthread
+CFLAGS = -std=c++11 -O3 -DATOM_STATES -pthread
 
 # Variables for directories
 ID = include
@@ -42,6 +42,8 @@ SD_BT = $(SD_DOMAINS)/binarytree
 ID_BT = $(ID_DOMAINS)/binarytree
 SD_RACE = $(SD_DOMAINS)/racetrack
 ID_RACE = $(ID_DOMAINS)/racetrack
+SD_BORDER = $(SD_DOMAINS)/borderexit
+ID_BORDER = $(ID_DOMAINS)/borderexit
 
 # Variables for include directives
 INCLUDE_DOM = -I$(ID_GW) -I$(ID_CTP) -I$(ID_SAIL) -I$(ID_DOMAINS) -I$(ID_RACE)
@@ -70,8 +72,10 @@ BT_CPP = $(SD_BT)/*.cpp
 BT_H = $(ID_BT)/*.h
 RACE_CPP = $(SD_RACE)/*.cpp
 RACE_H = $(ID_RACE)/*.h
-DOM_CPP = $(GW_CPP) $(CTP_CPP) $(SAIL_CPP) $(RACE_CPP) $(SD_DOMAINS)/*.cpp
-DOM_H = $(GW_H) $(CTP_H) $(SAIL_H) $(RACE_H)
+BORDER_CPP = $(SD_BORDER)/*.cpp
+BORDER_H = $(ID_BORDER)/*.h
+DOM_CPP = $(GW_CPP) $(CTP_CPP) $(SAIL_CPP) $(RACE_CPP) $(BORDER_CPP) $(SD_DOMAINS)/*.cpp
+DOM_H = $(GW_H) $(CTP_H) $(SAIL_H) $(RACE_H) $(BORDER_H)
 
 ALL_H = $(I_H) $(SOLV_H) $(MOSOLV_H) $(DOM_H) $(UTIL_H)
 ALL_CPP = $(DOM_CPP) $(SOLV_CPP) $(MOSOLV_CPP) $(UTIL_CPP)

@@ -8,13 +8,19 @@
 #include "../State.h"
 
 
-namespace mlsolvers
-{
+namespace mlsolvers {
 
 enum TransitionModifierFunction {
-    kExponentialDecay,
+    kExponential,
     kLogistic,
-    kStep,
+    kLinear,
+    kStep
+};
+
+enum DistanceFunction {
+    kStepDist,
+    kTrajProb,
+    kPlaus
 };
 
 /**
@@ -22,96 +28,114 @@ enum TransitionModifierFunction {
  */
 class SoftFLARESSolver : public Solver {
 private:
-    /* ********************************************************************* *
+    /** ********************************************************************* *
                                     Variables
-    /* ********************************************************************* */
-    /* The problem to solve. */
+    /** ********************************************************************* */
+    /** The problem to solve. */
     mlcore::Problem* problem_;
 
-    /* The maximum number of trials. */
+    /** The maximum number of trials. */
     int maxTrials_;
 
-    /* If optimal is true, the algorithm will be run until the initial state
+    /** If optimal is true, the algorithm will be run until the initial state
      * is marked as solved. */
     bool optimal_;
 
-    /* The error tolerance */
+    /** The error tolerance */
     double epsilon_;
 
-    /* The max depth for the checkSolved procedure */
+    /** The max depth for the checkSolved procedure */
     double horizon_;
 
-    /* Maximum planning time in milliseconds. */
+    /** Maximum planning time in milliseconds. */
     int maxTime_;
 
-    /*
-     * Represents the desired reduction in the transition function at the
-     * horizon. For example, if |alpha| = 0.01, then a state s' that has
-     * |horizon_| steps of successors with residual < |epsilon_| will
-     * have a score of 0.01 * T(s,a,s').
+    /**
+     * Represents the desired reduction in the transition function at
+     * distance 0. For example, if [alpha_] = 0.99, then a state s' that has
+     * 0 steps of successors (i.e., only itself) with residual < [epsilon_] will
+     * have a probability of being sampled equal to 0.99 * T(s,a,s').
      */
     double alpha_;
 
-    /*
-     * Modifies the scoring function to achieve the desired |alpha_|.
+    /**
+     * Represents the desired reduction in the transition function at the
+     * horizon. For example, if [beta_] = 0.01, then a state s' that has
+     * [horizon_] steps of successors with residual < [epsilon_] will
+     * have a probability of being sampled equal to 0.01 * T(s,a,s').
+     */
+    double beta_;
+
+    /**
+     * Modifies the scoring function to achieve the desired [alpha_].
      */
     double tau_;
 
-    /*
+    /**
      * If true, the depth of states will be the log probability of reaching
      * the state. Otherwise, it is the number of steps.
      */
     bool useProbsForDepth_;
 
-    /*
+    /**
      * The function used to modify the transition function from the residual
      * distance estimates.
      */
     TransitionModifierFunction modifierFunction_;
 
-    /* Stores the result of modifier function for depths from 0 to horizon_*/
+    /**
+     * The distance function to use for labeling.
+     */
+    DistanceFunction distanceFunction_;
+
+    /** Stores the result of modifier function for depths from 0-[horizon_].*/
     std::vector<double> modifierCache_;
+
+    /** If true, distances will be obtained from the [modifierCache_].*/
+    bool useCache_;
 
     /* ********************************************************************* *
                                     Methods
     /* ********************************************************************* */
-    /*
+    /**
      * Samples a successor biased towards state closer to higher residual
      * error.
      */
     mlcore::State* sampleSuccessor(mlcore::State* s, mlcore::Action* a);
 
-    /* Computes the distances to states with high residuals. */
+    /** Computes the distances to states with high residuals. */
     void computeResidualDistances(mlcore::State* s);
 
-    /* Performs a single trial */
+    /** Performs a single trial */
     void trial(mlcore::State* s);
 
-    /*
+    /**
      * Computes the depth of the given successor state for the given depth of
      * its parent state.
      */
     double computeNewDepth(mlcore::Successor& su, double depth);
 
-    /*
-     * Computes the modifier from which the new sampling distribution is
-     * generated. The sampling probability will be
-     *   T'(s,a,s') prop. T(s,a,s') * modifier((s'->residualDistance())).
-     * The type of modification is controlled using |modifierFunction_|.
+    /**
+     * Computes the "probability" that the state is not labeled.
+     * Thus, The sampling probability will be
+     *   T'(s,a,s') =
+     *      T(s,a,s') * [computeProbUnlabeled](s'->residualDistance()).
      */
-    double computeProbModfier(mlcore::State* s);
-/*
-     * Computes the modifier from which the new sampling distribution is
-     * generated, given a distance. The sampling probability will be
-     *   T'(s,a,s') prop. T(s,a,s') * modifier(distance).
-     * The type of modification is controlled using |modifierFunction_|.
-     */
-    double computeProbModfier(double distance);
+    double computeProbUnlabeled(mlcore::State* s);
 
-    /*
+    /**
+     * Computes the probability that the state is not labeled, given a distance.
+     * The sampling probability will be
+     *   T'(s,a,s') = T(s,a,s') * [computeProbUnlabeled](distance)
+     * The function to be used to compute this probability is
+     * controlled using [modifierFunction_].
+     */
+    double computeProbUnlabeled(double distance);
+
+    /**
      * Computes the unnormalized transition function using an exponential
-     * decaying modifier and stores the result in the |scores| vector.
-     * |totalScore| is the sum of all the scores, needed to normalize the new
+     * decaying modifier and stores the result in the [scores] vector.
+     * [totalScore] is the sum of all the scores, needed to normalize the new
      * distribution.
      */
     mlcore::State* computeScores(mlcore::State* s,
@@ -133,6 +157,7 @@ public:
      * @param epsilon The error tolerance.
      * @param horizon_ The maximum depth for checkSolved.
      * @param modifierFunction The function to use to modify the transition.
+     * @param distanceFunction The distance function to use for labeling.
      * @param alpha Desired vanishing level.
      * @param useProbsForDepth If true, uses trajectory probabilities as
      *        the depth (instead of the number of steps).
@@ -144,6 +169,7 @@ public:
                      double epsilon,
                      double horizon_,
                      TransitionModifierFunction modifierFunction,
+                     DistanceFunction distanceFunction,
                      double alpha = 0.01,
                      bool useProbsForDepth = false,
                      bool optimal = false,
@@ -162,7 +188,7 @@ public:
 
     double horizon() const { return horizon_; }
 
-    /* Checks if the state has already been labeled as solved. */
+    /** Checks if the state has already been labeled as solved. */
     bool labeledSolved(mlcore::State* s);
 
 };

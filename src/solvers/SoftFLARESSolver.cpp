@@ -16,6 +16,7 @@ SoftFLARESSolver::SoftFLARESSolver(Problem* problem,
                                    double epsilon,
                                    double horizon,
                                    TransitionModifierFunction modifierFunction,
+                                   DistanceFunction distanceFunction,
                                    double alpha,
                                    bool useProbsForDepth,
                                    bool optimal,
@@ -26,14 +27,27 @@ SoftFLARESSolver::SoftFLARESSolver(Problem* problem,
         horizon_(horizon),
         useProbsForDepth_(useProbsForDepth),
         modifierFunction_(modifierFunction),
+        distanceFunction_(distanceFunction),
         alpha_(alpha),
         optimal_(optimal),
-        maxTime_(maxTime) {
-//    tau_ = -2 * log(alpha_) / horizon_;
-    tau_ = -log((1-alpha_) / alpha_) / horizon_;
-    modifierCache_.resize(2 * horizon_ + 1);
-    for (int i = 0; i <= 2 * horizon_; i++) {
-        modifierCache_[i] = computeProbModfier(i);
+        maxTime_(maxTime),
+        useCache_(true) {
+                                                                                dprint("SOFT-FLARES",
+                                                                                       "horizon", horizon_,
+                                                                                       "alpha", alpha_);
+    beta_ = 1 - alpha_;
+    if (modifierFunction_ == kLogistic) {
+        tau_ = -log((beta_ * beta_) / (alpha_ * alpha_)) / horizon_;
+    } else if (modifierFunction_ == kExponential) {
+        tau_ = log(beta_ / alpha_) / horizon_;
+    } else if (modifierFunction_ == kLinear) {
+        tau_ = (beta_ - alpha_) / horizon_;
+    }
+
+    modifierCache_.resize(horizon_ + 1);
+    for (int i = 0; i <= horizon_; i++) {
+        modifierCache_[i] = computeProbUnlabeled(i);
+                                                                                dprint(i, modifierCache_[i]);
     }
 }
 
@@ -42,6 +56,8 @@ void SoftFLARESSolver::trial(State* s) {
     State* currentState = s;
     list<State*> visited;
     double accumulated_cost = 0.0;
+//                                                                                dprint("****************");
+
     while (!labeledSolved(currentState)) {
         if (problem_->goal(currentState))
             break;
@@ -58,6 +74,9 @@ void SoftFLARESSolver::trial(State* s) {
             break;
 
         mlcore::Action* greedy_action = greedyAction(problem_, currentState);
+//                                                                                dprint(currentState,
+//                                                                                       currentState->residualDistance(),
+//                                                                                       greedy_action);
         accumulated_cost += problem_->cost(currentState, greedy_action);
                                                                                 auto begin = std::chrono::high_resolution_clock::now();
         currentState = sampleSuccessor(currentState, greedy_action);
@@ -66,9 +85,8 @@ void SoftFLARESSolver::trial(State* s) {
                                                                                 cnt_samples_++;
                                                                                 total_time_samples_ += duration;
 
-        if (currentState == nullptr)
-            break;
     }
+//                                                                                dprint("********");
 
     while (!visited.empty()) {
         currentState = visited.front();
@@ -85,65 +103,78 @@ void SoftFLARESSolver::trial(State* s) {
     }
 }
 
-double SoftFLARESSolver::computeProbModfier(mlcore::State* s) {
-    if (s->residualDistance() == mdplib::no_distance)
-        return 1.0;
+double SoftFLARESSolver::computeProbUnlabeled(mlcore::State* s) {
     double distance = s->residualDistance();
-    if (!useProbsForDepth_) {
-        distance = modifierCache_[int(distance)];
+    if (distance < 0)
+        return 1.0;
+    if (useCache_) {
+        return modifierCache_[int(distance)];
     } else {
-        return computeProbModfier(distance);
+        return computeProbUnlabeled(distance);
     }
 }
 
-double SoftFLARESSolver::computeProbModfier(double distance) {
-    if (distance < 0)
-        return 1.0;
-    if (modifierFunction_ == kExponentialDecay) {
-        return 1.0 / (1 + tau_ * exp(distance + 1)); // TODO: CHECK THIS EXPR.
+double SoftFLARESSolver::computeProbUnlabeled(double distance) {
+    assert(distance >= 0);
+    if (horizon_ == 0) {
+        return beta_;
     }
     if (modifierFunction_ == kStep) {
-        if (distance >= horizon_)
-            return 0.0;
-        return 1.0;
+        return alpha_;
     }
     if (modifierFunction_ == kLogistic) {
-        return 1.0 / (1 + exp(tau_ * (distance + 0.05 - horizon_)));
+        double C = beta_ / alpha_;
+        return 1.0 / (1 + C * exp(tau_ * distance));
+    }
+    if (modifierFunction_ == kExponential) {
+        return alpha_ * exp(tau_ * distance);
+    }
+    if (modifierFunction_ == kLinear) {
+        return tau_ *  distance + alpha_;
     }
     assert(false);
+}
+
+double SoftFLARESSolver::computeNewDepth(Successor& su, double depth) {
+    if (distanceFunction_ == kTrajProb) {
+        return depth - log2(su.su_prob);
+    } else if (distanceFunction_ == kStepDist) {
+        return depth + 1;
+    }
 }
 
 mlcore::State* SoftFLARESSolver::sampleSuccessor(mlcore::State* s,
                                                  mlcore::Action* a) {
     if (a == nullptr)
         return s;
+
+    double totalScore = 0.0;
+    vector<double> modTransitionF;
+    for (mlcore::Successor sccr : problem_->transition(s, a)) {
+        double p = computeProbUnlabeled(sccr.su_state) * sccr.su_prob;
+        modTransitionF.push_back(p);
+        totalScore += p;
+    }
+
     double pick = kUnif_0_1(kRNG);
     double acc = 0.0;
+    int index = 0;
     for (mlcore::Successor sccr : problem_->transition(s, a)) {
-        double score = sccr.su_prob * computeProbModfier(sccr.su_state);
-        acc += score; // / totalScore;
+        double p = modTransitionF[index++] / totalScore;
+        acc += p;
         if (acc >= pick) {
             return sccr.su_state;
         }
     }
-    return nullptr;
+    assert(false);
 }
 
 bool SoftFLARESSolver::labeledSolved(State* s) {
     if (s->checkBits(mdplib::SOLVED))
         return true;
-    return (computeProbModfier(s->residualDistance()) < kUnif_0_1(kRNG));
+    bool labeled = (kUnif_0_1(kRNG) > computeProbUnlabeled(s));
+    return labeled;
 }
-
-
-double SoftFLARESSolver::computeNewDepth(Successor& su, double depth) {
-    if (useProbsForDepth_) {
-        return depth + log(su.su_prob);
-    } else {
-        return depth + 1;
-    }
-}
-
 
 void SoftFLARESSolver::computeResidualDistances(State* s) {
     list<State*> open, closed;
@@ -155,7 +186,6 @@ void SoftFLARESSolver::computeResidualDistances(State* s) {
     }
 
     bool rv = true;
-    double lowestDepthHighResidual = 2 * horizon_;
     bool subgraphWithinSearchHorizon = true;
     while (!open.empty()) {
         State* currentState = open.front();
@@ -179,51 +209,48 @@ void SoftFLARESSolver::computeResidualDistances(State* s) {
 
         if (residual(problem_, currentState) > epsilon_) {
             rv = false;
-            lowestDepthHighResidual = std::min(lowestDepthHighResidual, depth);
-            continue;
         }
 
         for (Successor su : problem_->transition(currentState, a)) {
             State* next = su.su_state;
-            if (!labeledSolved(next)
-                    && !next->checkBits(mdplib::SOLVED)
-                    && !next->checkBits(mdplib::CLOSED)) {
+            if (!labeledSolved(next) && !next->checkBits(mdplib::CLOSED)) {
                 open.push_front(next);
                 next->depth(computeNewDepth(su, depth));
+            } else if (!(next->checkBits(mdplib::SOLVED)
+                            || next->checkBits(mdplib::CLOSED))) {
+                // If this happens, the state was skipped only due to
+                // soft-labeling. Thus, there must be parts of the subgraph
+                // that are outside of the horizon
+                subgraphWithinSearchHorizon = false;
             }
         }
     }
-                                                                                assert(lowestDepthHighResidual <= 2 * horizon_ || rv);
-    if (rv && subgraphWithinSearchHorizon) {
-        for (mlcore::State* sc : closed) {
-            sc->clearBits(mdplib::CLOSED);
-            sc->setBits(mdplib::SOLVED);
-//            sc->depth(mdplib::no_distance);
+//                                                                                dprint("  closed", closed.size());
+
+    if (rv) {
+        for (mlcore::State* state : closed) {
+            state->clearBits(mdplib::CLOSED);
+            if (subgraphWithinSearchHorizon) {
+//                                                                                dprint("  --soft-flares SOLVED", state);
+                state->setBits(mdplib::SOLVED);
+            } else {
+                double depth = state->depth();
+                if (depth <= horizon_) {
+                    state->residualDistance(horizon_ - depth);
+//                                                                                dprint("  --soft-flares resdis",
+//                                                                                       state,
+//                                                                                       state->residualDistance(),
+//                                                                                       "solved",
+//                                                                                       labeledSolved(state));
+                }
+            }
         }
     } else {
         while (!closed.empty()) {
             State* state = closed.front();
             closed.pop_front();
-            double depth = state->depth();
             state->clearBits(mdplib::CLOSED);
-            if (rv && depth <= lowestDepthHighResidual) {
-                // Set the distance to the difference between the
-                // depth at which a high residual was seen and the depth at
-                // which this state was seen for the first time
-                state->residualDistance(lowestDepthHighResidual - depth);
-                                                                                if (lowestDepthHighResidual - depth >= horizon_) {
-                                                                                    dprint(state, "depth", depth,
-                                                                                           "lowDepthHighRes", lowestDepthHighResidual,
-                                                                                           "horizon", horizon_,
-                                                                                           "resDis", state->residualDistance(),
-                                                                                           "mod", computeProbModfier(state));
-                                                                                }
-            }
-                                                                                double res = residual(problem_, state);
             bellmanUpdate(problem_, state);
-                                                                                if (res < epsilon_ && residual(problem_, state) > epsilon_) {
-                                                                                    cerr << "ooops!" << residual(problem_, state) << endl;
-                                                                                }
         }
     }
 }
@@ -232,7 +259,6 @@ void SoftFLARESSolver::computeResidualDistances(State* s) {
 Action* SoftFLARESSolver::solve(State* s0) {
     int trials = 0;
     auto begin = std::chrono::high_resolution_clock::now();
-//    while (!s0->checkBits(mdplib::SOLVED) && trials < maxTrials_) {
     while (!labeledSolved(s0) && trials < maxTrials_) {
         trial(s0);
         auto end = std::chrono::high_resolution_clock::now();
@@ -246,7 +272,7 @@ Action* SoftFLARESSolver::solve(State* s0) {
                                                                                 auto end = std::chrono::high_resolution_clock::now();
                                                                                 auto duration = std::chrono::
                                                                                     duration_cast<std::chrono::milliseconds>(end-begin).count();
-                                                                                dprint("duration", duration, "trials", trials);
+//                                                                                dprint("duration", duration, "trials", trials);
     return s0->bestAction();
 }
 

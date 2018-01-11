@@ -30,6 +30,7 @@ void FLARESSolver::trial(State* s)
     State* currentState = s;
     list<State*> visited;
     double accumulated_cost = 0.0;
+//                                                                                dprint("****************");
     while (!labeledSolved(currentState)) {
         if (problem_->goal(currentState))
             break;
@@ -46,9 +47,11 @@ void FLARESSolver::trial(State* s)
             break;
 
         mlcore::Action* greedy_action = greedyAction(problem_, currentState);
+//                                                                                dprint(currentState, currentState->residualDistance(), greedy_action);
         accumulated_cost += problem_->cost(currentState, greedy_action);
         currentState = randomSuccessor(problem_, currentState, greedy_action);
     }
+//                                                                                dprint("********");
 
     while (!visited.empty()) {
         currentState = visited.front();
@@ -112,7 +115,6 @@ bool FLARESSolver::checkSolved(State* s)
 
         if (residual(problem_, currentState) > epsilon_) {
             rv = false;
-//            continue;
         }
 
         for (Successor su : problem_->transition(currentState, a)) {
@@ -127,11 +129,13 @@ bool FLARESSolver::checkSolved(State* s)
             }
         }
     }
+//                                                                                dprint("  closed", closed.size());
 
     if (rv) {
         for (auto const & pp : closed) {
             pp.first->clearBits(mdplib::CLOSED);
             if (subgraphWithinSearchHorizon) {
+//                                                                                dprint("  --flares SOLVED", pp.first);
                 pp.first->setBits(mdplib::SOLVED_FLARES);
                 pp.first->setBits(mdplib::SOLVED);
                 depthSolved_.insert(pp.first);
@@ -140,7 +144,7 @@ bool FLARESSolver::checkSolved(State* s)
                      (!useProbsForDepth_ && pp.second <= horizon_) ) {
                         pp.first->setBits(mdplib::SOLVED_FLARES);
                         depthSolved_.insert(pp.first);
-//                                                                                dprint("flares", pp.first, pp.second);
+//                                                                                dprint("  --flares depth-solved", pp.first);
                 }
             }
         }
