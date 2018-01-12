@@ -5,7 +5,7 @@
 
 # Compilation flags and variables
 CC = g++
-CFLAGS = -std=c++11 -O3 -DATOM_STATES -pthread
+CFLAGS = -std=c++11 -O3 -DATOM_STATES -DNDEBUG -pthread
 
 # Variables for directories
 ID = include

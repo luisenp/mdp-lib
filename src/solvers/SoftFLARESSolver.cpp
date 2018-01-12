@@ -37,7 +37,9 @@ SoftFLARESSolver::SoftFLARESSolver(Problem* problem,
                                                                                        "alpha", alpha_);
     beta_ = 1 - alpha_;
     if (modifierFunction_ == kLogistic) {
-        tau_ = -log((beta_ * beta_) / (alpha_ * alpha_)) / horizon_;
+        double num = (1- alpha_) * beta_;
+        double den = (1 - beta_) * alpha_;
+        tau_ = -log(num / den) / horizon_;
     } else if (modifierFunction_ == kExponential) {
         tau_ = log(beta_ / alpha_) / horizon_;
     } else if (modifierFunction_ == kLinear) {
@@ -47,7 +49,7 @@ SoftFLARESSolver::SoftFLARESSolver(Problem* problem,
     modifierCache_.resize(horizon_ + 1);
     for (int i = 0; i <= horizon_; i++) {
         modifierCache_[i] = computeProbUnlabeled(i);
-                                                                                dprint(i, modifierCache_[i]);
+                                                                                dprint("plabel", i, 1.0 - modifierCache_[i]);
     }
 }
 
@@ -80,6 +82,10 @@ void SoftFLARESSolver::trial(State* s) {
         accumulated_cost += problem_->cost(currentState, greedy_action);
                                                                                 auto begin = std::chrono::high_resolution_clock::now();
         currentState = sampleSuccessor(currentState, greedy_action);
+        if (currentState == nullptr) {
+            assert(alpha_ == 0.0);
+            break;
+        }
                                                                                 auto end = std::chrono::high_resolution_clock::now();
                                                                                 auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end-begin).count();
                                                                                 cnt_samples_++;
@@ -117,20 +123,22 @@ double SoftFLARESSolver::computeProbUnlabeled(mlcore::State* s) {
 double SoftFLARESSolver::computeProbUnlabeled(double distance) {
     assert(distance >= 0);
     if (horizon_ == 0) {
-        return beta_;
+        return 1.0 - beta_;
     }
     if (modifierFunction_ == kStep) {
-        return alpha_;
+        if (distance >= horizon_)
+            return 1.0 - beta_;
+        return 1.0 - alpha_;
     }
     if (modifierFunction_ == kLogistic) {
-        double C = beta_ / alpha_;
-        return 1.0 / (1 + C * exp(tau_ * distance));
+        double C = (1 - alpha_) / alpha_;
+        return 1.0 - 1.0 / (1 + C * exp(tau_ * distance));
     }
     if (modifierFunction_ == kExponential) {
-        return alpha_ * exp(tau_ * distance);
+        return 1.0 - alpha_ * exp(tau_ * distance);
     }
     if (modifierFunction_ == kLinear) {
-        return tau_ *  distance + alpha_;
+        return 1.0 - tau_ *  distance + alpha_;
     }
     assert(false);
 }
@@ -166,7 +174,8 @@ mlcore::State* SoftFLARESSolver::sampleSuccessor(mlcore::State* s,
             return sccr.su_state;
         }
     }
-    assert(false);
+    assert(alpha_ == 0);
+    return nullptr;
 }
 
 bool SoftFLARESSolver::labeledSolved(State* s) {

@@ -259,15 +259,13 @@ void initSolver(string algorithm, Solver*& solver)
             problem, trials, tol, depth, optimal, useProbsDepth, timeLimit);
     } else if (algorithm == "soft-flares") {
         double depth = horizon;
-        double alpha = 0.01;
+        double alpha = 0.10;
         bool optimal = flag_is_registered("optimal");
         int timeLimit = 10000000;
         TransitionModifierFunction mod_func = kLogistic;
         DistanceFunction dist_func = kStepDist;
         if (flag_is_registered_with_value("alpha"))
             alpha = stof(flag_value("alpha"));
-        if (flag_is_registered("step-func"))
-            mod_func = kStep;
         if (flag_is_registered("time-limit")) {
             timeLimit = stoi(flag_value("time-limit"));
             trials = 10000000;
@@ -561,13 +559,16 @@ int main(int argc, char* args[])
         Solver* solver = nullptr;
         initSolver(alg_item, solver);
         double avgCost = 0.0, avgTime = 0.0;
-        for (int i = 0; i < numReps; i++) {
+        double M2Cost = 0.0, M2Time = 0.0;
+        for (int i = 1; i <= numReps; i++) {
             std::vector<double> results = simulate(solver, alg_item, numSims);
-            avgCost += results[0];
-            avgTime += results[2];
+            updateStatistics(results[0], numReps, avgCost, M2Cost);
+            updateStatistics(results[2], numReps, avgTime, M2Time);
         }
         cout << "AVG COST: " << avgCost / numReps << " "
-            << "AVG TIME: " << avgTime / numReps << endl;
+            << "AVG TIME: " << avgTime / numReps << " "
+            << "SE. COST: " << sqrt(M2Cost / (numReps * (numReps - 1))) << " "
+            << "SE. TIME: " << sqrt(M2Time / (numReps * (numReps - 1))) << endl;
         delete solver;
     }
 
