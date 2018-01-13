@@ -30,6 +30,9 @@ private:
     /* The error tolerance. */
     double epsilon_;
 
+    /* The maximum number of trials allowed to the optimal solver. */
+    int maxTrials_;
+
     /* The horizon for the Short-sighted SSP. */
     int t_;
 
@@ -64,7 +67,11 @@ public:
                 double epsilon = 1.0e-6,
                 int t = 3,
                 SSiPPAlgo algorithm = SSiPPAlgo::Original) :
-        problem_(problem), epsilon_(epsilon), t_(t), algorithm_(algorithm) { }
+        problem_(problem),
+        epsilon_(epsilon),
+        t_(t),
+        algorithm_(algorithm),
+        maxTrials_(10000000) { }
 
     virtual ~SSiPPSolver() { }
 
@@ -74,6 +81,11 @@ public:
      * @param s0 The state to start the search at.
      */
     virtual mlcore::Action* solve(mlcore::State* s0);
+
+    /**
+     * Sets the maximum number of trials allowed to the algorithm.
+     */
+    virtual void maxTrials(time_t theTrials) { maxTrials_  = theTrials; }
 };
 
 }  // namespace mlsolvers

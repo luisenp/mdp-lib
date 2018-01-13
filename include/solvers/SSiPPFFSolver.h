@@ -73,6 +73,7 @@ public:
     /** Necessary to avoid using FF at the beginning of a round. */
     void flagNewRound() { justUsedSSiPP_ = false; }
 
+    /** Sets the maximum planning time allowed to the algorithm (in seconds). */
     virtual void maxPlanningTime(time_t theTime) {
         ffreplan_->maxPlanningTime(theTime);
         ssipp_->maxPlanningTime(theTime);

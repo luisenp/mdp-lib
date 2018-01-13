@@ -56,11 +56,17 @@ private:
     /* Stores the states that were solved. */
     mlcore::StateSet solvedStates_;
 
+    /* The maximum number of trials. */
+    int maxTrials_;
+
 public:
     HDPSolver(mlcore::Problem* problem,
               double epsilon = 1.0e-6,
               int minPlaus = INT_MAX) :
-        problem_(problem), epsilon_(epsilon), minPlaus_(minPlaus)
+        problem_(problem),
+        epsilon_(epsilon),
+        minPlaus_(minPlaus),
+        maxTrials_(1000000)
     {
         kappaList_ = std::vector<int>(2048, 0);
     }
@@ -94,6 +100,11 @@ public:
      * @param s0 The state to start the search at.
      */
     virtual mlcore::Action* solve(mlcore::State* s0);
+
+    /**
+     * Sets the maximum number of trials allowed to the algorithm.
+     */
+    virtual void maxTrials(time_t theTrials) { maxTrials_  = theTrials; }
 };
 
 } // namespace mlsolvers

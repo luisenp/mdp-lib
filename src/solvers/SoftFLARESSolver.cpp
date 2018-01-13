@@ -58,7 +58,6 @@ void SoftFLARESSolver::trial(State* s) {
     State* currentState = s;
     list<State*> visited;
     double accumulated_cost = 0.0;
-//                                                                                dprint("****************");
 
     while (!labeledSolved(currentState)) {
         if (problem_->goal(currentState))
@@ -76,9 +75,6 @@ void SoftFLARESSolver::trial(State* s) {
             break;
 
         mlcore::Action* greedy_action = greedyAction(problem_, currentState);
-//                                                                                dprint(currentState,
-//                                                                                       currentState->residualDistance(),
-//                                                                                       greedy_action);
         accumulated_cost += problem_->cost(currentState, greedy_action);
                                                                                 auto begin = std::chrono::high_resolution_clock::now();
         currentState = sampleSuccessor(currentState, greedy_action);
@@ -92,7 +88,6 @@ void SoftFLARESSolver::trial(State* s) {
                                                                                 total_time_samples_ += duration;
 
     }
-//                                                                                dprint("********");
 
     while (!visited.empty()) {
         currentState = visited.front();
@@ -234,23 +229,16 @@ void SoftFLARESSolver::computeResidualDistances(State* s) {
             }
         }
     }
-//                                                                                dprint("  closed", closed.size());
 
     if (rv) {
         for (mlcore::State* state : closed) {
             state->clearBits(mdplib::CLOSED);
             if (subgraphWithinSearchHorizon) {
-//                                                                                dprint("  --soft-flares SOLVED", state);
                 state->setBits(mdplib::SOLVED);
             } else {
                 double depth = state->depth();
                 if (depth <= horizon_) {
                     state->residualDistance(horizon_ - depth);
-//                                                                                dprint("  --soft-flares resdis",
-//                                                                                       state,
-//                                                                                       state->residualDistance(),
-//                                                                                       "solved",
-//                                                                                       labeledSolved(state));
                 }
             }
         }

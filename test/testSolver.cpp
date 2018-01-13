@@ -480,7 +480,7 @@ vector<double> simulate(Solver* solver, string algorithm, int numSims)
         } else {
             cnt++;
             updateStatistics(costTrial, cnt, expectedCost, variance);
-            if (verbosity >= 1)
+            if (verbosity >= 10)
                 cout << costTrial << endl;
         }
     }
@@ -493,6 +493,7 @@ vector<double> simulate(Solver* solver, string algorithm, int numSims)
         cout << "States seen " << statesSeen.size() << endl;
         cout << "Avg. time per decision " <<
             expectedTime / numDecisions << endl;
+        cout << "Num. decisions " << numDecisions << endl;
     } else if (verbosity >= 0) {
         cout << problem->initialState()->cost() << " ";
         cout << expectedCost << " " << sqrt(variance / (cnt - 1)) << " " <<
@@ -501,7 +502,7 @@ vector<double> simulate(Solver* solver, string algorithm, int numSims)
 
     double results[] = {expectedCost,
                         variance / (cnt - 1),
-                        expectedTime / cnt,
+                        expectedTime / numDecisions,
                         double(statesSeen.size())};
     return vector<double>(results, results + sizeof(results) / sizeof(double));
 }
@@ -554,22 +555,36 @@ int main(int argc, char* args[])
     string algorithm = flag_value("algorithm");
     stringstream ss(algorithm);
     string alg_item;
+    int trials = 1000;
+    if (flag_is_registered_with_value("trials")) {
+        trials = stoi(flag_value("trials"));
+    }
     while (getline(ss, alg_item, ',')) {
         cout << setw(10) << alg_item << ": ";
-        Solver* solver = nullptr;
-        initSolver(alg_item, solver);
-        double avgCost = 0.0, avgTime = 0.0;
-        double M2Cost = 0.0, M2Time = 0.0;
-        for (int i = 1; i <= numReps; i++) {
-            std::vector<double> results = simulate(solver, alg_item, numSims);
-            updateStatistics(results[0], numReps, avgCost, M2Cost);
-            updateStatistics(results[2], numReps, avgTime, M2Time);
+        int minTrials = trials;
+        int maxTrials = trials;
+        if (flag_is_registered_with_value("delta_trials")) {
+            minTrials = stoi(flag_value("delta_trials"));
         }
-        cout << "AVG COST: " << avgCost / numReps << " "
-            << "AVG TIME: " << avgTime / numReps << " "
-            << "SE. COST: " << sqrt(M2Cost / (numReps * (numReps - 1))) << " "
-            << "SE. TIME: " << sqrt(M2Time / (numReps * (numReps - 1))) << endl;
-        delete solver;
+        for (int trials = minTrials; trials <= maxTrials; trials+=minTrials) {
+            Solver* solver = nullptr;
+            initSolver(alg_item, solver);
+            solver->maxTrials(trials);
+            double avgCost = 0.0, avgTime = 0.0;
+            double M2Cost = 0.0, M2Time = 0.0;
+            for (int i = 1; i <= numReps; i++) {
+                std::vector<double> results =
+                    simulate(solver, alg_item, numSims);
+                updateStatistics(results[0], numReps, avgCost, M2Cost);
+                updateStatistics(results[2], numReps, avgTime, M2Time);
+            }
+            cout << trials << " "
+                << avgCost / numReps << " "
+                << sqrt(M2Cost / (numReps * (numReps - 1))) << " "
+                << avgTime / numReps << " "
+                << sqrt(M2Time / (numReps * (numReps - 1))) << endl;
+            delete solver;
+        }
     }
 
     delete problem;

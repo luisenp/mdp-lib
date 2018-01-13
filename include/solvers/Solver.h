@@ -52,7 +52,23 @@ public:
      */
     virtual mlcore::Action* solve(mlcore::State* s0) =0;
 
+    /**
+     * Sets the maximum planning time allowed to the algorithm.
+     * Not all solvers support this method.
+     *
+     * @param theTime The maximum time allowed.
+     *                The units are algorithm-dependent.
+     */
     virtual void maxPlanningTime(time_t theTime) { }
+
+
+    /**
+     * Sets the maximum number of trials allowed to the algorithm.
+     * Not all solvers support this method.
+     *
+     * @param theTrials The maximum number of trials allowed.
+     */
+    virtual void maxTrials(time_t theTrials) { }
 };
 
 /**

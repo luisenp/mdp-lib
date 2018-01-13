@@ -104,7 +104,7 @@ bool HDPSolver::dfs(mlcore::State* s, double plaus)
 Action* HDPSolver::solve(State* s0)
 {
     int cnt = 0;
-    while (!s0->checkBits(mdplib::SOLVED)) {
+    while (!s0->checkBits(mdplib::SOLVED) && cnt++ < maxTrials_) {
         index_ = 0;
         dfs(s0, 0);
         inStack_.clear();

@@ -23,7 +23,7 @@ Action* SSiPPSolver::solveOriginal(State* s0)
     wrapper->setNewInitialState(s0);
     wrapper->overrideStates(&reachableStates);
     wrapper->overrideGoals(&tipStates);
-    VISolver vi(wrapper);
+    VISolver vi(wrapper, maxTrials_);
     vi.solve();
     for (State* tipState : tipStates)   {
         // VI performs Bellman updates of goals.
