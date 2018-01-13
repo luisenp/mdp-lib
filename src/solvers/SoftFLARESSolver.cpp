@@ -45,7 +45,6 @@ SoftFLARESSolver::SoftFLARESSolver(Problem* problem,
     } else if (modifierFunction_ == kLinear) {
         tau_ = (beta_ - alpha_) / horizon_;
     }
-
     modifierCache_.resize(horizon_ + 1);
     for (int i = 0; i <= horizon_; i++) {
         modifierCache_[i] = computeProbUnlabeled(i);
@@ -133,7 +132,7 @@ double SoftFLARESSolver::computeProbUnlabeled(double distance) {
         return 1.0 - alpha_ * exp(tau_ * distance);
     }
     if (modifierFunction_ == kLinear) {
-        return 1.0 - tau_ *  distance + alpha_;
+        return 1.0 - (tau_ * distance + alpha_);
     }
     assert(false);
 }
