@@ -59,6 +59,12 @@ private:
     /* The maximum number of trials. */
     int maxTrials_;
 
+    /* Maximum planning time in milliseconds. */
+    int maxTime_;
+
+    /* The time at which planning began. */
+    std::chrono::time_point<std::chrono::high_resolution_clock> beginTime_;
+
 public:
     HDPSolver(mlcore::Problem* problem,
               double epsilon = 1.0e-6,
@@ -66,7 +72,8 @@ public:
         problem_(problem),
         epsilon_(epsilon),
         minPlaus_(minPlaus),
-        maxTrials_(1000000)
+        maxTrials_(1000000),
+        maxTime_(-1)
     {
         kappaList_ = std::vector<int>(2048, 0);
     }
@@ -105,6 +112,11 @@ public:
      * Sets the maximum number of trials allowed to the algorithm.
      */
     virtual void maxTrials(time_t theTrials) { maxTrials_  = theTrials; }
+
+    /**
+     * Sets the maximum planning time allowed to the algorithm (milliseconds).
+     */
+    virtual void maxPlanningTime(time_t theTime) { maxTime_ = theTime; }
 };
 
 } // namespace mlsolvers

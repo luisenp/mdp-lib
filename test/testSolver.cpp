@@ -390,18 +390,18 @@ bool mustReplan(Solver* solver, string algorithm, State* s, int plausTrial) {
 }
 
 // Runs [numSims] of the given solver and and returns the results
-// (i.e., expectedCost, variance, expectedTime, statesSeen).
+// (i.e., expectedCost, variance, totalTime, statesSeen).
 // Argument [algorithm] is the name of the algorithm implemented by [solver].
 // Argument [maxTime], if set to > 0, specifies the maximum time allowed to
-// the algorithm to complete all simulations.
+// the algorithm to complete all simulations (in milliseconds).
 vector<double> simulate(Solver* solver,
                         string algorithm,
                         int numSims,
-                        double maxTime = -1.0)
+                        int maxTime = -1)
 {
     double expectedCost = 0.0;
     double variance = 0.0;
-    double expectedTime = 0.0;
+    double totalTime = 0.0;
     StateSet statesSeen;
 
     int cnt = 0;
@@ -414,6 +414,9 @@ vector<double> simulate(Solver* solver,
         if (i == 0 && !flag_is_registered("no-initial-plan")) {
             for (State* s : problem->states())
                 s->reset();
+            if (maxTime > 0) {
+                solver->maxPlanningTime(maxTime);
+            }
             startTime = clock();
             if (algorithm == "uct") {
                 static_cast<UCTSolver*>(solver)->reset();
@@ -421,7 +424,7 @@ vector<double> simulate(Solver* solver,
                 solver->solve(problem->initialState());
             }
             endTime = clock();
-            expectedTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
+            totalTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
             numDecisions++;
         }
         if (verbosity >= 10) {
@@ -439,17 +442,20 @@ vector<double> simulate(Solver* solver,
             Action* a;
             if (mustReplan(solver, algorithm, tmp, plausTrial)) {
                 startTime = clock();
-                double simulationsElapsedTime =
-                    startTime - simulationsStartTime;
-                simulationsElapsedTime /= CLOCKS_PER_SEC;
-                if (maxTime < 0.0 || simulationsElapsedTime < maxTime) {
-                    if (algorithm != "greedy")
-                        solver->solve(tmp);
-                    endTime = clock();
-                    expectedTime +=
-                        (double(endTime - startTime) / CLOCKS_PER_SEC);
-                    numDecisions++;
+                int simulationsElapsedTime =
+                    std::ceil(1000 * (double(startTime - simulationsStartTime)
+                                / CLOCKS_PER_SEC));
+                if (maxTime > -1) {
+                    int remainingTime =
+                        std::max(0, maxTime - simulationsElapsedTime);
+                    solver->maxPlanningTime(remainingTime);
                 }
+                if (algorithm != "greedy")
+                    solver->solve(tmp);
+                endTime = clock();
+                totalTime +=
+                    (double(endTime - startTime) / CLOCKS_PER_SEC);
+                numDecisions++;
                 a = greedyAction(problem, tmp);
             } else {
                 if (useUpperBound) {
@@ -501,20 +507,20 @@ vector<double> simulate(Solver* solver,
         cout << "Estimated cost " << problem->initialState()->cost() << " ";
         cout << "Avg. Exec cost " << expectedCost << " ";
         cout << "Std. Dev. " << sqrt(variance / (cnt - 1)) << " ";
-        cout << "Total time " << expectedTime / cnt << " " << endl;
+        cout << "Total time " << totalTime / cnt << " " << endl;
         cout << "States seen " << statesSeen.size() << endl;
         cout << "Avg. time per decision " <<
-            expectedTime / numDecisions << endl;
+            totalTime / numDecisions << endl;
         cout << "Num. decisions " << numDecisions << endl;
     } else if (verbosity >= 0) {
         cout << problem->initialState()->cost() << " ";
         cout << expectedCost << " " << sqrt(variance / (cnt - 1)) << " " <<
-            expectedTime / cnt << " " << expectedTime / numDecisions << endl;
+            totalTime / cnt << " " << totalTime / numDecisions << endl;
     }
 
     double results[] = {expectedCost,
                         variance / (cnt - 1),
-                        expectedTime / numDecisions,
+                        totalTime,
                         double(statesSeen.size())};
     return vector<double>(results, results + sizeof(results) / sizeof(double));
 }
@@ -568,25 +574,35 @@ int main(int argc, char* args[])
     stringstream ss(algorithm);
     string alg_item;
     while (getline(ss, alg_item, ',')) {
-        cout << setw(10) << alg_item << ": ";
+        // cout << setw(10) << alg_item << ": ";
         Solver* solver = nullptr;
         initSolver(alg_item, solver);
         double avgCost = 0.0, avgTime = 0.0;
         double M2Cost = 0.0, M2Time = 0.0;
-        double maxTime = 1e10;
+        // Maximum planning time per simulation in milliseconds
+        int maxTime = 1000000;
         if (flag_is_registered_with_value("max_time")) {
-            maxTime = stof(flag_value("max_time"));
+            maxTime = stoi(flag_value("max_time"));
         }
-        for (int i = 1; i <= numReps; i++) {
-            std::vector<double> results =
-                simulate(solver, alg_item, numSims, maxTime);
-            updateStatistics(results[0], i, avgCost, M2Cost);
-            updateStatistics(results[2], i, avgTime, M2Time);
+        int minTime = maxTime;
+        if (flag_is_registered_with_value("min_time")) {
+            minTime = stoi(flag_value("min_time"));
         }
-        cout << avgCost << " "
-            << sqrt(M2Cost / (numReps * (numReps - 1))) << " "
-            << avgTime << " "
-            << sqrt(M2Time / (numReps * (numReps - 1))) << endl;
+        for (int planTime = minTime;
+             planTime <= maxTime;
+             planTime += 2 * minTime) {
+            for (int i = 1; i <= numReps; i++) {
+                std::vector<double> results =
+                    simulate(solver, alg_item, numSims, planTime);
+                updateStatistics(results[0], i, avgCost, M2Cost);
+                updateStatistics(results[2], i, avgTime, M2Time);
+            }
+            cout << planTime << " "
+                << avgCost << " "
+                << sqrt(M2Cost / (numReps * (numReps - 1))) << " "
+                << avgTime << " "
+                << sqrt(M2Time / (numReps * (numReps - 1))) << endl;
+        }
         delete solver;
     }
 

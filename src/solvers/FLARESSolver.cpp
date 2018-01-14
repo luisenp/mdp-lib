@@ -179,12 +179,12 @@ Action* FLARESSolver::solveApproximate(State* s0)
     int trials = 0;
     auto begin = std::chrono::high_resolution_clock::now();
     while (!labeledSolved(s0) && trials++ < maxTrials_) {
-        trial(s0);
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::
             duration_cast<std::chrono::milliseconds>(end-begin).count();
-        if (maxTime_ > -1 && duration > maxTime_)
+        if (maxTime_ > -1 && duration >= maxTime_)
             break;
+        trial(s0);
     }
     return s0->bestAction();
 }

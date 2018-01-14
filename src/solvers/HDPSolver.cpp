@@ -32,6 +32,12 @@ HDPSolver::computeKappa(list<Successor>& successors, vector<int>& kappaList)
 
 bool HDPSolver::dfs(mlcore::State* s, double plaus)
 {
+    auto curTime = chrono::high_resolution_clock::now();
+    auto duration = chrono::duration_cast<chrono::milliseconds>(
+            curTime - beginTime_).count();
+    if (maxTime_ > -1 && duration > maxTime_)
+        return false;
+
     if (plaus > minPlaus_) {
         return false;
     }
@@ -104,13 +110,23 @@ bool HDPSolver::dfs(mlcore::State* s, double plaus)
 Action* HDPSolver::solve(State* s0)
 {
     int cnt = 0;
-    while (!s0->checkBits(mdplib::SOLVED) && cnt++ < maxTrials_) {
+    beginTime_ = chrono::high_resolution_clock::now();
+    while (!s0->checkBits(mdplib::SOLVED)) {
+        auto curTime = chrono::high_resolution_clock::now();
+        auto duration = chrono::duration_cast<chrono::milliseconds>(
+            curTime - beginTime_).count();
+                                                                                dprint("maxTime", maxTime_, "duration", duration);
+        if (maxTime_ > -1 && duration >= maxTime_)
+            break;
         index_ = 0;
         dfs(s0, 0);
         inStack_.clear();
         indices_.clear();
         low_.clear();
         stateStack_.clear();
+        if (cnt++ >= maxTrials_) {
+            break;
+        }
     }
     return s0->bestAction();
 }

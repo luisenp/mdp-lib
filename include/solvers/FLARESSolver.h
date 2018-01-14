@@ -88,7 +88,13 @@ public:
      */
     virtual mlcore::Action* solve(mlcore::State* s0);
 
+    /** Cleans up the internal caches of the algorithm. */
     void cleanup() { depthSolved_.clear(); }
+
+    /**
+     * Sets the maximum planning time allowed to the algorithm (milliseconds).
+     */
+    virtual void maxPlanningTime(time_t theTime) { maxTime_ = theTime; }
 };
 
 }

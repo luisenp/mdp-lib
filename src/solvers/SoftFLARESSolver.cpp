@@ -256,18 +256,18 @@ Action* SoftFLARESSolver::solve(State* s0) {
     int trials = 0;
     auto begin = std::chrono::high_resolution_clock::now();
     while (!labeledSolved(s0) && trials < maxTrials_) {
-        trial(s0);
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::
             duration_cast<std::chrono::milliseconds>(end-begin).count();
-        if (maxTime_ > -1 && duration > maxTime_)
+        if (maxTime_ > -1 && duration >= maxTime_)
             break;
+        trial(s0);
         if (!optimal_)
             trials++;
     }
-                                                                                auto end = std::chrono::high_resolution_clock::now();
-                                                                                auto duration = std::chrono::
-                                                                                    duration_cast<std::chrono::milliseconds>(end-begin).count();
+//                                                                                auto end = std::chrono::high_resolution_clock::now();
+//                                                                                auto duration = std::chrono::
+//                                                                                    duration_cast<std::chrono::milliseconds>(end-begin).count();
 //                                                                                dprint("duration", duration, "trials", trials);
     return s0->bestAction();
 }
