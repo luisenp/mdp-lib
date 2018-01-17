@@ -9,13 +9,11 @@ min_time=10
 max_time=10000
 other_flags=""
 
-# problems=( "--track=../data/tracks/known/square-2-error.track --perror=0.25 --pslip=0.50" \
-#            "--track=../data/tracks/known/ring-5-error.track --perror=0.25 --pslip=0.50" \
-#            "--sailing-size=40 --sailing-goal=39" \
-#            "--sailing-size=40 --sailing-goal=20")
+problems=( "--track=../data/tracks/known/square-2-error.track --perror=0.25 --pslip=0.50" \
+           "--track=../data/tracks/known/ring-5-error.track --perror=0.25 --pslip=0.50" \
+           "--sailing-size=40 --sailing-goal=39" \
+           "--sailing-size=40 --sailing-goal=20")
            
-problems=( "--track=../data/tracks/known/square-3-error.track --perror=0.25 --pslip=0.50")
-            
 distfuns=(depth traj)          
 labelfuns=(linear exp logistic)
 for ((ip = 0; ip < ${#problems[@]}; ip++)); do
@@ -51,13 +49,11 @@ for ((ip = 0; ip < ${#problems[@]}; ip++)); do
   for labelf in ${labelfuns[@]}; do
     for distf in ${distfuns[@]}; do
       for horizon in `seq 2 4`; do
-        ./run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time \
-          "$other_flags" \
+        sbatch --output=/home/lpineda/results_ijcai18/${problem}_${algorithm}.txt \
+          run_testsolver.slurm "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
           "soft-flares --labelf=$labelf --dist=$distf --horizon=$horizon --alpha=$alpha"
       done
     done
   done
 done
 
-  
-#     sbatch --output=results_ijcai18/racetrack/problem_$algorithm.txt run.slurm $domain $1 $2 $port
