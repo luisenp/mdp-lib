@@ -22,9 +22,9 @@ for ((ip = 0; ip < ${#problems[@]}; ip++)); do
   problem=${problems[$ip]}
   problem_str=${problems_str[$ip]}
   
-  # HDP(0,)
+  # HDP(0,0)
     sbatch --output=/home/lpineda/results_ijcai18/${problem_str}_"hdp_00".txt \
-    run_testsolver.slurm "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
+    run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
     "hdp --i=0 --j=0"
     
   # FLARES(1)
@@ -53,7 +53,7 @@ for ((ip = 0; ip < ${#problems[@]}; ip++)); do
     for distf in ${distfuns[@]}; do
       for horizon in `seq 2 4`; do
         sbatch --output=/home/lpineda/results_ijcai18/${problem_str}_"soft-flares_${horizon}_${distf}_${algorithm}".txt \
-          run_testsolver.slurm "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
+          run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
           "soft-flares --labelf=$labelf --dist=$distf --horizon=$horizon --alpha=$alpha"
       done
     done
