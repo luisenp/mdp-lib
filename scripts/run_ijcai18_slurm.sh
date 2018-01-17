@@ -6,10 +6,10 @@ alpha=0.1
 reps=1
 verbosity=-1
 min_time=10
-max_time=10000
+max_time=20480
 other_flags=""
 
-problems=( "--track=../data/tracks/known/square-2-error.track --perror=0.25 --pslip=0.50" \
+problems=( "--track=../data/tracks/known/square-4-error.track --perror=0.25 --pslip=0.50" \
            "--track=../data/tracks/known/ring-5-error.track --perror=0.25 --pslip=0.50" \
            "--sailing-size=40 --sailing-goal=39" \
            "--sailing-size=40 --sailing-goal=20")
