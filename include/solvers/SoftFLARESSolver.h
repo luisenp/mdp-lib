@@ -143,6 +143,13 @@ private:
                                  std::vector<double>& scores,
                                  double& totalScore);
 
+
+    /* Returns true if there should be more trials, false otherwise. */
+    bool moreTrials(
+        mlcore::State* s,
+        int trialsSoFar,
+        std::chrono::time_point<std::chrono::high_resolution_clock> startTime);
+
                                                                                 int cnt_samples_ = 0;
                                                                                 long int total_time_samples_ = 0;
                                                                                 int cnt_check_ = 0;

@@ -1,164 +1,71 @@
-reps=10
+reps=1
 nsims=100
+per_replan=--per_replan
+min_time=10
+max_time=100
 
+problems=( --track=../data/tracks/known/square-4-error.track \
+           --track=../data/tracks/known/ring-5-error.track \
+           "--sailing-size=40 --sailing-goal=39" \
+           "--sailing-size=40 --sailing-goal=20")
 
-###################################################################
-#                        RACETRACK DOMAIN                         #
-###################################################################
-#############
-#  SQUARE 4 #
-#############
-track=known/square-4-error.track
-min_time=1000
-max_time=50000
-# HPD(0,0)
-echo "${track} | hdp(0,0)"
-../testsolver.out --track=../data/tracks/$track \
---perror=0.25 --pslip=0.50 --heuristic=hmin --hmin-solve-all \
---n=$nsims --reps=$reps --v=-1 \
---algorithm=hdp --i=0 --j=0 \
---min_time=$min_time --max_time=$max_time
+for ((i = 0; i < ${#problems[@]}; i++)); do
+  problem=${problems[$i]}
+  # HPD(0,0)
+  echo "${problem} | hdp(0,0)"
+  ../testsolver.out $problem \
+  --perror=0.25 --pslip=0.50 --heuristic=hmin --hmin-solve-all \
+  --n=$nsims --reps=$reps --v=-1 \
+  --algorithm=hdp --i=0 --j=0 \
+  --min_time=$min_time --max_time=$max_time $per_replan
 
-# FLARES(1)  
-echo "${track} | flares(1)"
-../testsolver.out --track=../data/tracks/$track \
---perror=0.25 --pslip=0.50 --heuristic=hmin --hmin-solve-all \
---n=$nsims --reps=$reps --v=-1 \
---algorithm=soft-flares --labelf=step --dist=depth --horizon=1 --alpha=0 \
---min_time=$min_time --max_time=$max_time
+  # FLARES(1)  
+  echo "${problem} | flares(1)"
+  ../testsolver.out $problem \
+  --perror=0.25 --pslip=0.50 --heuristic=hmin --hmin-solve-all \
+  --n=$nsims --reps=$reps --v=-1 \
+  --algorithm=soft-flares --labelf=step --dist=depth --horizon=1 --alpha=0 \
+  --min_time=$min_time --max_time=$max_time $per_replan
 
-# Soft-FLARES
-labelfuns=(linear exp logistic)
-distfuns=(depth traj)
-for labelf in ${labelfuns[@]}; do
+  # Soft-FLARES(0)
+  # In this the label and distance functions are irrelevant because
+  # all of them result in the same set of labeling probabilities
+  echo "${problem} | soft-flares(0)"
+  ../testsolver.out $problem \
+  --perror=0.25 --pslip=0.50 --heuristic=hmin --hmin-solve-all \
+  --n=$nsims --reps=$reps --v=-1 \
+  --algorithm=soft-flares --labelf=linear --dist=depth \
+  --horizon=0 --alpha=0.1 \
+  --min_time=$min_time --max_time=$max_time $per_replan
+  
+  # Soft-FLARES(1)
+  # In this the label function is irrelevant because
+  # all of them result in the same set of labeling probabilities.
+  # However, the distance function can potentially matter. 
+  distfuns=(depth traj)
   for distf in ${distfuns[@]}; do
-    for horizon in `seq 0 3`; do
-      echo "${track} | soft-flares-$distf-$labelf($horizon)"
-      ../testsolver.out --track=../data/tracks/$track \
-      --perror=0.25 --pslip=0.50 --heuristic=hmin --hmin-solve-all \
-      --n=$nsims --reps=$reps --v=-1 \
-      --algorithm=soft-flares --labelf=$labelf --dist=$distf \
-      --horizon=$horizon --alpha=0.1 \
-      --min_time=$min_time --max_time=$max_time
-    done
+    echo "${problem} | soft-flares-$distf(1)"
+    ../testsolver.out $problem \
+    --perror=0.25 --pslip=0.50 --heuristic=hmin --hmin-solve-all \
+    --n=$nsims --reps=$reps --v=-1 \
+    --algorithm=soft-flares --labelf=linear --dist=$distf \
+    --horizon=1 --alpha=0.1 \
+    --min_time=$min_time --max_time=$max_time $per_replan
   done
-done
 
-#############
-#   RING 5  #
-#############
-track=known/ring-5-error.track
-min_time=500
-max_time=20000
-# HPD(0,0)
-echo "${track} | hdp(0,0)"
-../testsolver.out --track=../data/tracks/$track \
---perror=0.25 --pslip=0.50 --heuristic=hmin --hmin-solve-all \
---n=$nsims --reps=$reps --v=-1 \
---algorithm=hdp --i=0 --j=0 \
---min_time=$min_time --max_time=$max_time
-
-# FLARES(1)  
-echo "${track} | flares(1)"
-../testsolver.out --track=../data/tracks/$track \
---perror=0.25 --pslip=0.50 --heuristic=hmin --hmin-solve-all \
---n=$nsims --reps=$reps --v=-1 \
---algorithm=soft-flares --labelf=step --dist=depth --horizon=1 --alpha=0 \
---min_time=$min_time --max_time=$max_time
-
-# Soft-FLARES
-labelfuns=(linear exp logistic)
-distfuns=(depth traj)
-for labelf in ${labelfuns[@]}; do
-  for distf in ${distfuns[@]}; do
-    for horizon in `seq 0 3`; do
-      echo "${track} | soft-flares-$distf-$labelf($horizon)"
-      ../testsolver.out --track=../data/tracks/$track \
-      --perror=0.25 --pslip=0.50 --heuristic=hmin --hmin-solve-all \
-      --n=$nsims --reps=$reps --v=-1 \
-      --algorithm=soft-flares --labelf=$labelf --dist=$distf \
-      --horizon=$horizon --alpha=0.1 \
-      --min_time=$min_time --max_time=$max_time
-    done
-  done
-done
-
-###################################################################
-#                        SAILING  DOMAIN                          #
-###################################################################
-##############
-#   MIDDLE   #
-##############
-min_time=200
-max_time=5000
-# HPD(0,0)
-echo "sailing-30-middle | hdp(0,0)"
-../testsolver.out --sailing-size=30 --sailing-goal=15
---perror=0.25 --pslip=0.50 --heuristic=hmin --hmin-solve-all \
---n=$nsims --reps=$reps --v=-1 \
---algorithm=hdp --i=0 --j=0 \
---min_time=$min_time --max_time=$max_time
-
-# FLARES(1)  
-echo "sailing-30-middle | flares(1)"
-../testsolver.out --sailing-size=30 --sailing-goal=15
---perror=0.25 --pslip=0.50 --heuristic=hmin --hmin-solve-all \
---n=$nsims --reps=$reps --v=-1 \
---algorithm=soft-flares --labelf=step --dist=depth --horizon=1 --alpha=0 \
---min_time=$min_time --max_time=$max_time
-
-# Soft-FLARES
-labelfuns=(linear exp logistic)
-distfuns=(depth traj)
-for labelf in ${labelfuns[@]}; do
-  for distf in ${distfuns[@]}; do
-    for horizon in `seq 0 3`; do
-      echo "sailing-30-middle | soft-flares-$distf-$labelf($horizon)"
-../testsolver.out --sailing-size=30 --sailing-goal=15
-      --perror=0.25 --pslip=0.50 --heuristic=hmin --hmin-solve-all \
-      --n=$nsims --reps=$reps --v=-1 \
-      --algorithm=soft-flares --labelf=$labelf --dist=$distf \
-      --horizon=$horizon --alpha=0.1 \
-      --min_time=$min_time --max_time=$max_time
-    done
-  done
-done
-
-
-##############
-#   CORNER   #
-##############
-min_time=500
-max_time=10000
-# HPD(0,0)
-echo "sailing-30-corner | hdp(0,0)"
-../testsolver.out --sailing-size=30 --sailing-goal=29
---perror=0.25 --pslip=0.50 --heuristic=hmin --hmin-solve-all \
---n=$nsims --reps=$reps --v=-1 \
---algorithm=hdp --i=0 --j=0 \
---min_time=$min_time --max_time=$max_time
-
-# FLARES(1)  
-echo "sailing-30-corner | flares(1)"
-../testsolver.out --sailing-size=30 --sailing-goal=29
---perror=0.25 --pslip=0.50 --heuristic=hmin --hmin-solve-all \
---n=$nsims --reps=$reps --v=-1 \
---algorithm=soft-flares --labelf=step --dist=depth --horizon=1 --alpha=0 \
---min_time=$min_time --max_time=$max_time
-
-# Soft-FLARES
-labelfuns=(linear exp logistic)
-distfuns=(depth traj)
-for labelf in ${labelfuns[@]}; do
-  for distf in ${distfuns[@]}; do
-    for horizon in `seq 0 3`; do
-      echo "sailing-30-corner | soft-flares-$distf-$labelf($horizon)"
-../testsolver.out --sailing-size=30 --sailing-goal=29
-      --perror=0.25 --pslip=0.50 --heuristic=hmin --hmin-solve-all \
-      --n=$nsims --reps=$reps --v=-1 \
-      --algorithm=soft-flares --labelf=$labelf --dist=$distf \
-      --horizon=$horizon --alpha=0.1 \
-      --min_time=$min_time --max_time=$max_time
+  # Soft-FLARES([2,4])
+  labelfuns=(linear exp logistic)
+  for labelf in ${labelfuns[@]}; do
+    for distf in ${distfuns[@]}; do
+      for horizon in `seq 2 4`; do
+        echo "${problem} | soft-flares-$distf-$labelf($horizon)"
+        ../testsolver.out $problem \
+        --perror=0.25 --pslip=0.50 --heuristic=hmin --hmin-solve-all \
+        --n=$nsims --reps=$reps --v=-1 \
+        --algorithm=soft-flares --labelf=$labelf --dist=$distf \
+        --horizon=$horizon --alpha=0.1 \
+        --min_time=$min_time --max_time=$max_time $per_replan
+      done
     done
   done
 done

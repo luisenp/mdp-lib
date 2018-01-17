@@ -1,7 +1,7 @@
 #include "../../include/solvers/SoftFLARESSolver.h"
 
+#include <chrono>
 #include <cmath>
-                                                                                #include <chrono>
 
 #include "../../include/MDPLib.h"
 
@@ -48,7 +48,6 @@ SoftFLARESSolver::SoftFLARESSolver(Problem* problem,
     modifierCache_.resize(horizon_ + 1);
     for (int i = 0; i <= horizon_; i++) {
         modifierCache_[i] = computeProbUnlabeled(i);
-                                                                                dprint("plabel", i, 1.0 - modifierCache_[i]);
     }
 }
 
@@ -63,11 +62,7 @@ void SoftFLARESSolver::trial(State* s) {
             break;
 
         visited.push_front(currentState);
-                                                                                double res = residual(problem_, currentState);
         bellmanUpdate(problem_, currentState);
-                                                                                if (res < epsilon_ && residual(problem_, currentState) > epsilon_) {
-                                                                                    cerr << "ooops!" << residual(problem_, currentState) << endl;
-                                                                                }
 
         if (currentState->deadEnd()
                 || accumulated_cost >= mdplib::dead_end_cost)
@@ -75,29 +70,17 @@ void SoftFLARESSolver::trial(State* s) {
 
         mlcore::Action* greedy_action = greedyAction(problem_, currentState);
         accumulated_cost += problem_->cost(currentState, greedy_action);
-                                                                                auto begin = std::chrono::high_resolution_clock::now();
         currentState = sampleSuccessor(currentState, greedy_action);
         if (currentState == nullptr) {
             assert(alpha_ == 0.0);
             break;
         }
-                                                                                auto end = std::chrono::high_resolution_clock::now();
-                                                                                auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end-begin).count();
-                                                                                cnt_samples_++;
-                                                                                total_time_samples_ += duration;
-
     }
 
     while (!visited.empty()) {
         currentState = visited.front();
         visited.pop_front();
-
-                                                                                auto begin = std::chrono::high_resolution_clock::now();
         computeResidualDistances(currentState);
-                                                                                auto end = std::chrono::high_resolution_clock::now();
-                                                                                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end-begin).count();
-                                                                                cnt_check_++;
-                                                                                total_time_check_ += duration;
         if (!labeledSolved(currentState))
             break;
     }
@@ -252,23 +235,29 @@ void SoftFLARESSolver::computeResidualDistances(State* s) {
 }
 
 
+bool SoftFLARESSolver::moreTrials(
+        mlcore::State* s,
+        int trialsSoFar,
+        std::chrono::time_point<std::chrono::high_resolution_clock> startTime) {
+    if (maxTime_ <= -1) {
+        return !labeledSolved(s) && trialsSoFar < maxTrials_;
+    }
+    auto endTime = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::
+        duration_cast<std::chrono::milliseconds>(endTime-startTime).count();
+    return (duration >= maxTime_);
+
+
+}
+
 Action* SoftFLARESSolver::solve(State* s0) {
     int trials = 0;
-    auto begin = std::chrono::high_resolution_clock::now();
-    while (!labeledSolved(s0) && trials < maxTrials_) {
-        auto end = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::
-            duration_cast<std::chrono::milliseconds>(end-begin).count();
-        if (maxTime_ > -1 && duration >= maxTime_)
-            break;
+    auto startTime = std::chrono::high_resolution_clock::now();
+    while (moreTrials(s0, trials, startTime)) {
         trial(s0);
         if (!optimal_)
             trials++;
     }
-//                                                                                auto end = std::chrono::high_resolution_clock::now();
-//                                                                                auto duration = std::chrono::
-//                                                                                    duration_cast<std::chrono::milliseconds>(end-begin).count();
-//                                                                                dprint("duration", duration, "trials", trials);
     return s0->bestAction();
 }
 

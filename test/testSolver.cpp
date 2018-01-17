@@ -394,10 +394,13 @@ bool mustReplan(Solver* solver, string algorithm, State* s, int plausTrial) {
 // Argument [algorithm] is the name of the algorithm implemented by [solver].
 // Argument [maxTime], if set to > 0, specifies the maximum time allowed to
 // the algorithm to complete all simulations (in milliseconds).
+// If [perReplan] is passed, then [maxTime] is used as the maximum time allowed
+// per re-planning event.
 vector<double> simulate(Solver* solver,
                         string algorithm,
                         int numSims,
-                        int maxTime = -1)
+                        int maxTime = -1,
+                        bool perReplan = false)
 {
     double expectedCost = 0.0;
     double variance = 0.0;
@@ -446,9 +449,9 @@ vector<double> simulate(Solver* solver,
                     std::ceil(1000 * (double(startTime - simulationsStartTime)
                                 / CLOCKS_PER_SEC));
                 if (maxTime > -1) {
-                    int remainingTime =
-                        std::max(0, maxTime - simulationsElapsedTime);
-                    solver->maxPlanningTime(remainingTime);
+                    int planningTime = perReplan ?
+                        maxTime : std::max(0, maxTime - simulationsElapsedTime);
+                    solver->maxPlanningTime(planningTime);
                 }
                 if (algorithm != "greedy")
                     solver->solve(tmp);
@@ -518,9 +521,11 @@ vector<double> simulate(Solver* solver,
             totalTime / cnt << " " << totalTime / numDecisions << endl;
     }
 
+    double reportedTime = perReplan ?
+        totalTime / numDecisions : totalTime;
     double results[] = {expectedCost,
                         variance / (cnt - 1),
-                        totalTime,
+                        reportedTime,
                         double(statesSeen.size())};
     return vector<double>(results, results + sizeof(results) / sizeof(double));
 }
@@ -588,12 +593,13 @@ int main(int argc, char* args[])
         if (flag_is_registered_with_value("min_time")) {
             minTime = stoi(flag_value("min_time"));
         }
+        bool perReplan = flag_is_registered("per_replan");
         for (int planTime = minTime;
              planTime <= maxTime;
-             planTime += 2 * minTime) {
+             planTime += minTime) {
             for (int i = 1; i <= numReps; i++) {
                 std::vector<double> results =
-                    simulate(solver, alg_item, numSims, planTime);
+                    simulate(solver, alg_item, numSims, planTime, perReplan);
                 updateStatistics(results[0], i, avgCost, M2Cost);
                 updateStatistics(results[2], i, avgTime, M2Time);
             }
