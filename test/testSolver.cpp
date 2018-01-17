@@ -405,6 +405,7 @@ vector<double> simulate(Solver* solver,
     double expectedCost = 0.0;
     double variance = 0.0;
     double totalTime = 0.0;
+    double longestTime = 0.0;
     StateSet statesSeen;
 
     int cnt = 0;
@@ -427,7 +428,9 @@ vector<double> simulate(Solver* solver,
                 solver->solve(problem->initialState());
             }
             endTime = clock();
-            totalTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
+            double planTime = (double(endTime - startTime) / CLOCKS_PER_SEC);
+            totalTime += planTime;
+            longestTime = std::max(longestTime, planTime);
             numDecisions++;
         }
         if (verbosity >= 10) {
@@ -456,8 +459,10 @@ vector<double> simulate(Solver* solver,
                 if (algorithm != "greedy")
                     solver->solve(tmp);
                 endTime = clock();
-                totalTime +=
+                double planTime =
                     (double(endTime - startTime) / CLOCKS_PER_SEC);
+                totalTime += planTime;
+                longestTime = std::max(longestTime, planTime);
                 numDecisions++;
                 a = greedyAction(problem, tmp);
             } else {
@@ -512,8 +517,9 @@ vector<double> simulate(Solver* solver,
         cout << "Std. Dev. " << sqrt(variance / (cnt - 1)) << " ";
         cout << "Total time " << totalTime / cnt << " " << endl;
         cout << "States seen " << statesSeen.size() << endl;
-        cout << "Avg. time per decision " <<
-            totalTime / numDecisions << endl;
+        cout << "Avg. time per decision "
+             << totalTime / numDecisions << endl
+             << "Longest planning time " << longestTime << endl;
         cout << "Num. decisions " << numDecisions << endl;
     } else if (verbosity >= 0) {
         cout << problem->initialState()->cost() << " ";

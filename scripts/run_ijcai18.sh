@@ -1,7 +1,7 @@
 reps=1
-nsims=100
+nsims=50
 per_replan=--per_replan
-min_time=10
+min_time=20
 max_time=100
 
 problems=( --track=../data/tracks/known/square-4-error.track \
@@ -12,12 +12,12 @@ problems=( --track=../data/tracks/known/square-4-error.track \
 for ((i = 0; i < ${#problems[@]}; i++)); do
   problem=${problems[$i]}
   # HPD(0,0)
-  echo "${problem} | hdp(0,0)"
-  ../testsolver.out $problem \
-  --perror=0.25 --pslip=0.50 --heuristic=hmin --hmin-solve-all \
-  --n=$nsims --reps=$reps --v=-1 \
-  --algorithm=hdp --i=0 --j=0 \
-  --min_time=$min_time --max_time=$max_time $per_replan
+#   echo "${problem} | hdp(0,0)"
+#   ../testsolver.out $problem \
+#   --perror=0.25 --pslip=0.50 --heuristic=hmin --hmin-solve-all \
+#   --n=$nsims --reps=$reps --v=-1 \
+#   --algorithm=hdp --i=0 --j=0 \
+#   --min_time=$min_time --max_time=$max_time $per_replan
 
   # FLARES(1)  
   echo "${problem} | flares(1)"
