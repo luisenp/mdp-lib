@@ -193,7 +193,7 @@ void initSolver(string algorithm, Solver*& solver)
         mdplib::dead_end_cost = stof(flag_value("dead-end-cost"));
     }
 
-    int horizon = 0, expansions = 1, trials = 1000;
+    int horizon = 0, expansions = 1, trials = 1000000;
     if (flag_is_registered_with_value("horizon"))
         horizon = stoi(flag_value("horizon"));
     if (flag_is_registered_with_value("expansions"))
@@ -248,28 +248,18 @@ void initSolver(string algorithm, Solver*& solver)
         bool optimal = flag_is_registered("optimal");
         bool useProbsDepth = flag_is_registered("use-prob-depth");
         double depth = horizon;
-        int timeLimit = 10000000;
         if (flag_is_registered("prob"))
             depth = stof(flag_value("prob"));
-        if (flag_is_registered("time-limit")) {
-            timeLimit = stoi(flag_value("time-limit"));
-            trials = 10000000;
-        }
         solver = new FLARESSolver(
-            problem, trials, tol, depth, optimal, useProbsDepth, timeLimit);
+            problem, trials, tol, depth, optimal, useProbsDepth);
     } else if (algorithm == "soft-flares") {
         double depth = horizon;
         double alpha = 0.10;
         bool optimal = flag_is_registered("optimal");
-        int timeLimit = 10000000;
         TransitionModifierFunction mod_func = kLogistic;
         DistanceFunction dist_func = kStepDist;
         if (flag_is_registered_with_value("alpha"))
             alpha = stof(flag_value("alpha"));
-        if (flag_is_registered("time-limit")) {
-            timeLimit = stoi(flag_value("time-limit"));
-            trials = 10000000;
-        }
         // Distance functions
         if (flag_is_registered("dist")) {
             string dist_str = flag_value("dist");
@@ -302,7 +292,7 @@ void initSolver(string algorithm, Solver*& solver)
         }
         solver = new SoftFLARESSolver(
             problem, trials, tol, depth, mod_func, dist_func,
-            alpha, false, optimal, timeLimit);
+            alpha, false, optimal);
     } else if (algorithm == "hdp") {
         int plaus;
         if (flag_is_registered_with_value("i"))
@@ -407,7 +397,6 @@ vector<double> simulate(Solver* solver,
     double totalTime = 0.0;
     double longestTime = 0.0;
     StateSet statesSeen;
-
     int cnt = 0;
     int numDecisions = 0;
     clock_t simulationsStartTime = clock();
@@ -588,32 +577,32 @@ int main(int argc, char* args[])
         // cout << setw(10) << alg_item << ": ";
         Solver* solver = nullptr;
         initSolver(alg_item, solver);
-        double avgCost = 0.0, avgTime = 0.0;
-        double M2Cost = 0.0, M2Time = 0.0;
         // Maximum planning time per simulation in milliseconds
-        int maxTime = 1000000;
+        int maxTime = -1;
         if (flag_is_registered_with_value("max_time")) {
             maxTime = stoi(flag_value("max_time"));
         }
         int minTime = maxTime;
-        if (flag_is_registered_with_value("min_time")) {
+        if (maxTime != -1 && flag_is_registered_with_value("min_time")) {
             minTime = stoi(flag_value("min_time"));
         }
         bool perReplan = flag_is_registered("per_replan");
-        for (int planTime = minTime;
-             planTime <= maxTime;
-             planTime += minTime) {
+        for (int t = minTime; t <= maxTime; t *= 2) {
+            double avgCost = 0.0, avgTime = 0.0;
+            double M2Cost = 0.0, M2Time = 0.0;
             for (int i = 1; i <= numReps; i++) {
                 std::vector<double> results =
-                    simulate(solver, alg_item, numSims, planTime, perReplan);
+                    simulate(solver, alg_item, numSims, t, perReplan);
                 updateStatistics(results[0], i, avgCost, M2Cost);
                 updateStatistics(results[2], i, avgTime, M2Time);
             }
-            cout << planTime << " "
+            cout << t << " "
                 << avgCost << " "
                 << sqrt(M2Cost / (numReps * (numReps - 1))) << " "
                 << avgTime << " "
                 << sqrt(M2Time / (numReps * (numReps - 1))) << endl;
+            if (maxTime == -1)
+                break;
         }
         delete solver;
     }

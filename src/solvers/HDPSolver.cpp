@@ -115,7 +115,6 @@ Action* HDPSolver::solve(State* s0)
         auto curTime = chrono::high_resolution_clock::now();
         auto duration = chrono::duration_cast<chrono::milliseconds>(
             curTime - beginTime_).count();
-                                                                                dprint("maxTime", maxTime_, "duration", duration);
         if (maxTime_ > -1 && duration >= maxTime_)
             break;
         index_ = 0;

@@ -34,7 +34,8 @@ SoftFLARESSolver::SoftFLARESSolver(Problem* problem,
         useCache_(true) {
                                                                                 dprint("SOFT-FLARES",
                                                                                        "horizon", horizon_,
-                                                                                       "alpha", alpha_);
+                                                                                       "alpha", alpha_,
+                                                                                       "maxTime", maxTime_);
     beta_ = 1 - alpha_;
     if (modifierFunction_ == kLogistic) {
         double num = (1- alpha_) * beta_;
