@@ -221,10 +221,11 @@ double sampleTrial(mlcore::Problem* problem, mlcore::State* s);
 
 
 /**
- * Computes all states that are reachable from the given set of states,
- * up to the given horizon, and adds them to the set. If the set is empty
- * the search will start at problem->initialState(). The method also
- * stores the tip states (those at depth equal to the horizon).
+ * Computes all states that are reachable from states in [reachableStates],
+ * up to the given [horizon], and increments this set with these
+ * states.If [reachableStates] is passed empty, the search will start at
+ * problem->initialState(). The method also stores the tip states
+ * (those at depth equal to the horizon).
  *
  * @param problem The problem describing the state space.
  * @param reachableStates The set storing the reachable states.
@@ -236,6 +237,29 @@ bool getReachableStates(mlcore::Problem* problem,
                         mlcore::StateSet& reachableStates,
                         mlcore::StateSet& tipStates,
                         int horizon);
+
+/**
+ * Computes all states that are reachable from state [s]
+ * up to the given trajectory probability, [rho], and stores the states reached
+ * in [reachableStates], and the tip states in [tipStates].
+ *
+ * The method is based on this Trevizan and Veloso NIPS'14 paper
+ * http://papers.nips.cc/paper/
+ * 4816-trajectory-based-short-sighted-probabilistic-planning.pdf
+ * (see page 4).
+ *
+ * @param problem The problem describing the state space.
+ * @param s The state from which the search starts.
+ * @param reachableStates The set storing the reachable states.
+ * @param tipStates A set for storing the tip states.
+ * @param rho The maximum trajectory probability considered for the search.
+ * @return true if a goal is reachable, false otherwise.
+ */
+bool getReachableStatesTrajectoryProbs(mlcore::Problem* problem,
+                                       mlcore::State* s,
+                                       mlcore::StateSet& reachableStates,
+                                       mlcore::StateSet& tipStates,
+                                       double rho);
 
 /**
  * Gets all reachable states starting from initialState in problem by following

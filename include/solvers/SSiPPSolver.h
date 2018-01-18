@@ -39,6 +39,12 @@ private:
     /* The SSiPP algorithm version to use. */
     SSiPPAlgo algorithm_;
 
+    /* If true, the short-sightedness measure will be trajectory probability. */
+    bool useTrajProbabilities_;
+
+    /* Maximum trajectory probability. */
+    double rho_;
+
     /*
      * Solves using the original depth-based SSiPP solver from ICAPS'12.
      * http://www.cs.cmu.edu/~mmv/papers/12icaps-TrevizanVeloso.pdf
@@ -71,10 +77,15 @@ public:
         epsilon_(epsilon),
         t_(t),
         algorithm_(algorithm),
-        maxTrials_(10000000) { }
+        maxTrials_(10000000),
+        useTrajProbabilities_(false),
+        rho_(0.5) { }
 
     virtual ~SSiPPSolver() { }
 
+    void useTrajProbabilities(bool value) { useTrajProbabilities_ = value; }
+
+    void rho(double value) { rho_ = value; }
     /**
      * Solves the associated problem using the Labeled RTDP algorithm.
      *

@@ -17,20 +17,29 @@ namespace mlsolvers
 Action* SSiPPSolver::solveOriginal(State* s0)
 {
     StateSet reachableStates, tipStates;
-    reachableStates.insert(s0);
-    getReachableStates(problem_, reachableStates, tipStates, t_);
+    if (useTrajProbabilities_) {
+        getReachableStatesTrajectoryProbs(
+            problem_, s0, reachableStates, tipStates, rho_);
+    } else {
+//                                                                                dprint("here");
+        reachableStates.insert(s0);
+        getReachableStates(problem_, reachableStates, tipStates, t_);
+    }
+//                                                                                dprint(reachableStates.size(), tipStates.size());
     WrapperProblem* wrapper = new WrapperProblem(problem_);
     wrapper->setNewInitialState(s0);
     wrapper->overrideStates(&reachableStates);
     wrapper->overrideGoals(&tipStates);
     VISolver vi(wrapper, maxTrials_);
     vi.solve();
+
     for (State* tipState : tipStates)   {
         // VI performs Bellman updates of goals.
         // TODO: Doing that seems incorrect, but I don't want
         // to break old code right now. There is a deadline tomorrow :)
         tipState->reset();
     }
+
     wrapper->cleanup();
     return s0->bestAction();
 }
