@@ -35,12 +35,12 @@ for ((ip = 0; ip < ${#problems[@]}; ip++)); do
   # FLARES(1)
   sbatch --output=/home/lpineda/results_ijcai18/${problem_str}_"flares_1".txt \
     run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
-    "soft-flares --labelf=step --dist=depth --horizon=1 --alpha=$alpha"
+    "soft-flares --labelf=step --dist=depth --horizon=1 --alpha=0"
     
   # FLARES(4)
   sbatch --output=/home/lpineda/results_ijcai18/${problem_str}_"flares_4".txt \
     run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
-    "soft-flares --labelf=step --dist=depth --horizon=4 --alpha=$alpha"
+    "soft-flares --labelf=step --dist=depth --horizon=4 --alpha=0"
     
   # Soft-FLARES(0)
   sbatch --output=/home/lpineda/results_ijcai18/${problem_str}_"soft-flares_0".txt \
