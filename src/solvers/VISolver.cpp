@@ -21,11 +21,10 @@ namespace mlsolvers
         for (int i = 0; i < maxIter_; i++) {
             double maxResidual = 0.0;
             for (mlcore::State* s : problem_->states()) {
-                /*if (problem_->goal(s))
-                    continue;*/
+                if (problem_->goal(s))
+                    continue;
                 double residual = bellmanUpdate(problem_, s);
                 maxResidual = std::max(residual, maxResidual);
-//                                                                                dprint(s, s->cost());
             }
             if (maxResidual < tol_)
                 return nullptr;
