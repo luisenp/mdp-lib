@@ -302,7 +302,16 @@ void initSolver(string algorithm, Solver*& solver)
     } else if (algorithm == "vi") {
         solver = new VISolver(problem, 1000000000, tol);
     } else if (algorithm == "ssipp") {
+        double rho = -1.0;
+        bool useTrajProb = false;
+        if (flag_is_registered_with_value("rho")) {
+            rho = stof(flag_value("rho"));
+            useTrajProb = true;
+        }
         solver = new SSiPPSolver(problem, tol, horizon);
+        SSiPPSolver* ssipp = static_cast<SSiPPSolver*> (solver);
+        ssipp->useTrajProbabilities(useTrajProb);
+        ssipp->rho(rho);
     } else if (algorithm == "labeled-ssipp") {
         solver = new SSiPPSolver(problem, tol, horizon, SSiPPAlgo::Labeled);
     } else if (algorithm == "det") {
@@ -347,21 +356,21 @@ void updateStatistics(double cost, int n, double& mean, double& M2)
 }
 
 bool mustReplan(Solver* solver, string algorithm, State* s, int plausTrial) {
-  if (flag_is_registered("online"))
+    if (flag_is_registered("online"))
       return true;
-  if (algorithm == "flares") {
+    if (algorithm == "flares") {
       return !s->checkBits(mdplib::SOLVED_FLARES);
-  }
-  if (algorithm == "lrtdp") {
+    }
+    if (algorithm == "lrtdp") {
     return !s->checkBits(mdplib::SOLVED);
-  }
-  if (algorithm == "soft-flares") {
+    }
+    if (algorithm == "soft-flares") {
       if (s->checkBits(mdplib::SOLVED))
           return false;
       SoftFLARESSolver* flares = static_cast<SoftFLARESSolver*>(solver);
       return !flares->labeledSolved(s);
-  }
-  if (algorithm == "hdp") {
+    }
+    if (algorithm == "hdp") {
       if (flag_is_registered("i")) {
           int j = INT_MAX;
           if (flag_is_registered_with_value("j")) {
@@ -372,11 +381,14 @@ bool mustReplan(Solver* solver, string algorithm, State* s, int plausTrial) {
               return true;
           }
       }
-  }
-  if (algorithm == "ssipp" || algorithm == "uct") {
+    }
+    if (algorithm == "ssipp") {
+        return !s->checkBits(mdplib::SOLVED_SSiPP);
+    }
+    if (algorithm == "uct") {
         return true;
-  }
-  return false;
+    }
+    return false;
 }
 
 // Runs [numSims] of the given solver and and returns the results
@@ -454,6 +466,7 @@ vector<double> simulate(Solver* solver,
                 longestTime = std::max(longestTime, planTime);
                 numDecisions++;
                 a = greedyAction(problem, tmp);
+                                                                                dprint("chose-after-replan", a);
             } else {
                 if (useUpperBound) {
                     // The algorithms that use upper bounds store the
@@ -463,6 +476,7 @@ vector<double> simulate(Solver* solver,
                 }
                 else {
                     a = greedyAction(problem, tmp);
+                                                                                dprint("chose-wo-replan", a);
                 }
             }
 
@@ -477,6 +491,7 @@ vector<double> simulate(Solver* solver,
             }
             double prob = 0.0;
             State* aux = randomSuccessor(problem, tmp, a, &prob);
+                                                                                dprint("succ");
             if (algorithm == "hdp") {
                 double maxProb = 0.0;
                 for (auto const & sccr : problem->transition(tmp, a))

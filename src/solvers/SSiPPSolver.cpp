@@ -16,21 +16,49 @@ namespace mlsolvers
 
 Action* SSiPPSolver::solveOriginal(State* s0)
 {
-    StateSet reachableStates, tipStates;
-    if (useTrajProbabilities_) {
-        getReachableStatesTrajectoryProbs(
-            problem_, s0, reachableStates, tipStates, rho_);
-    } else {
-        reachableStates.insert(s0);
-        getReachableStates(problem_, reachableStates, tipStates, t_);
+    mlcore::State* currentState = s0;
+    while (!problem_->goal(currentState)) {
+        StateSet reachableStates, tipStates;
+        if (useTrajProbabilities_) {
+            getReachableStatesTrajectoryProbs(
+                problem_, currentState, reachableStates, tipStates, rho_);
+        } else {
+            reachableStates.insert(currentState);
+            getReachableStates(problem_, reachableStates, tipStates, t_);
+        }
+        WrapperProblem* wrapper = new WrapperProblem(problem_);
+        wrapper->setNewInitialState(currentState);
+        wrapper->overrideStates(&reachableStates);
+        wrapper->overrideGoals(&tipStates);
+        VISolver vi(wrapper, maxTrials_);
+                                                                                for (State* state : tipStates) {
+                                                                                    dprint("reachable before", state);
+                                                                                    if (!problem_->goal(state) && state->bestAction() != nullptr)
+                                                                                        dprint(state->bestAction(),
+                                                                                               problem_->applicable(state, state->bestAction()));
+                                                                                }
+        vi.solve();
+        for (State* state: reachableStates) {
+                                                                                dprint("reachable", state);
+                                                                                if (!problem_->goal(state))
+                                                                                        dprint(state->bestAction(),
+                                                                                               problem_->applicable(state, state->bestAction()));
+            state->setBits(mdplib::SOLVED_SSiPP);
+        }
+                                                                                for (State* state : tipStates) {
+                                                                                    dprint("tip", state);
+                                                                                    if (!problem_->goal(state))
+                                                                                        dprint(state->bestAction(),
+                                                                                               problem_->applicable(state, state->bestAction()));
+                                                                                }
+        Action* action = currentState->bestAction();
+                                                                                dprint(currentState, action);
+        currentState = randomSuccessor(problem_, currentState, action);
+        wrapper->cleanup();
+        delete wrapper;
+                                                                                dprint("here ***********************");
     }
-    WrapperProblem* wrapper = new WrapperProblem(problem_);
-    wrapper->setNewInitialState(s0);
-    wrapper->overrideStates(&reachableStates);
-    wrapper->overrideGoals(&tipStates);
-    VISolver vi(wrapper, maxTrials_);
-    vi.solve();
-    wrapper->cleanup();
+                                                                                dprint("DONE");
     return s0->bestAction();
 }
 
