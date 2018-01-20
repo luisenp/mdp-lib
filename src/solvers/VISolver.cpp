@@ -22,10 +22,6 @@ namespace mlsolvers
             double maxResidual = 0.0;
             for (mlcore::State* s : problem_->states()) {
                 if (problem_->goal(s)) {
-                                                                                dprint("  goal-or-tip", s);
-                                                                                if (s->bestAction() != nullptr) {
-                                                                                    dprint("  ", s->bestAction());
-                                                                                }
                     continue;
                 }
                 double residual = bellmanUpdate(problem_, s);

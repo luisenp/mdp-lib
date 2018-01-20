@@ -69,7 +69,6 @@ double bellmanUpdate(mlcore::Problem* problem, mlcore::State* s)
     bellman_mutex.lock();
     s->setCost(best.bb_cost);
     s->setBestAction(best.bb_action);
-                                                                                assert(problem->applicable(s, best.bb_action));
     bellman_mutex.unlock();
     return fabs(residual);
 }
@@ -159,8 +158,6 @@ mlcore::Action* greedyAction(mlcore::Problem* problem, mlcore::State* s)
     }
     if (!hasAction)
         s->markDeadEnd();
-//                                                                                dprint("greedy", s, bestAction);
-
     return bestAction;
 }
 
@@ -300,7 +297,6 @@ bool getReachableStatesTrajectoryProbs(mlcore::Problem* problem,
             }
         }
     }
-                                                                                dprint("count", reachableStates.size(), tipStates.size());
     return goalSeen;
 }
 
@@ -320,8 +316,7 @@ void getBestPartialSolutionGraph(mlcore::Problem* problem,
             continue;
         mlcore::Action* a = greedyAction(problem, state);
         for (mlcore::Successor sccr : problem->transition(state, a)) {
-            stateStack.
-            push_front(sccr.su_state);
+            stateStack.push_front(sccr.su_state);
         }
     }
 }

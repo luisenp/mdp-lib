@@ -1,3 +1,6 @@
+#include <chrono>
+#include <limits>
+
 #include "../../include/MDPLib.h"
 #include "../../include/State.h"
 
@@ -16,49 +19,41 @@ namespace mlsolvers
 
 Action* SSiPPSolver::solveOriginal(State* s0)
 {
-    mlcore::State* currentState = s0;
-    while (!problem_->goal(currentState)) {
-        StateSet reachableStates, tipStates;
-        if (useTrajProbabilities_) {
-            getReachableStatesTrajectoryProbs(
-                problem_, currentState, reachableStates, tipStates, rho_);
-        } else {
-            reachableStates.insert(currentState);
-            getReachableStates(problem_, reachableStates, tipStates, t_);
+    auto startTime = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < 1000; i++) {
+        mlcore::State* currentState = s0;
+        while (!problem_->goal(currentState)) {
+            // Creating the short-sighted SSP
+            StateSet reachableStates, tipStates;
+            if (useTrajProbabilities_) {
+                getReachableStatesTrajectoryProbs(
+                    problem_, currentState, reachableStates, tipStates, rho_);
+            } else {
+                reachableStates.insert(currentState);
+                getReachableStates(problem_, reachableStates, tipStates, t_);
+            }
+            // Solving the short-sighted SSP
+            WrapperProblem* wrapper = new WrapperProblem(problem_);
+            wrapper->setNewInitialState(currentState);
+            wrapper->overrideStates(&reachableStates);
+            wrapper->overrideGoals(&tipStates);
+            VISolver vi(wrapper, maxTrials_);
+            vi.solve();
+            // Execute the best action found for the current state.
+            Action* action = currentState->bestAction();
+            currentState = randomSuccessor(problem_, currentState, action);
+            // Checking if it ran out of time
+            if (maxTime_ > -1) {
+                auto endTime = std::chrono::high_resolution_clock::now();
+                auto timeElapsed = std::chrono::duration_cast<
+                    std::chrono::milliseconds>(endTime-startTime).count();
+                if (timeElapsed > maxTime_)
+                    break;
+            }
+            wrapper->cleanup();
+            delete wrapper;
         }
-        WrapperProblem* wrapper = new WrapperProblem(problem_);
-        wrapper->setNewInitialState(currentState);
-        wrapper->overrideStates(&reachableStates);
-        wrapper->overrideGoals(&tipStates);
-        VISolver vi(wrapper, maxTrials_);
-                                                                                for (State* state : tipStates) {
-                                                                                    dprint("reachable before", state);
-                                                                                    if (!problem_->goal(state) && state->bestAction() != nullptr)
-                                                                                        dprint(state->bestAction(),
-                                                                                               problem_->applicable(state, state->bestAction()));
-                                                                                }
-        vi.solve();
-        for (State* state: reachableStates) {
-                                                                                dprint("reachable", state);
-                                                                                if (!problem_->goal(state))
-                                                                                        dprint(state->bestAction(),
-                                                                                               problem_->applicable(state, state->bestAction()));
-            state->setBits(mdplib::SOLVED_SSiPP);
-        }
-                                                                                for (State* state : tipStates) {
-                                                                                    dprint("tip", state);
-                                                                                    if (!problem_->goal(state))
-                                                                                        dprint(state->bestAction(),
-                                                                                               problem_->applicable(state, state->bestAction()));
-                                                                                }
-        Action* action = currentState->bestAction();
-                                                                                dprint(currentState, action);
-        currentState = randomSuccessor(problem_, currentState, action);
-        wrapper->cleanup();
-        delete wrapper;
-                                                                                dprint("here ***********************");
     }
-                                                                                dprint("DONE");
     return s0->bestAction();
 }
 

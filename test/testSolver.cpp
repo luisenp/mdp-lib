@@ -466,7 +466,6 @@ vector<double> simulate(Solver* solver,
                 longestTime = std::max(longestTime, planTime);
                 numDecisions++;
                 a = greedyAction(problem, tmp);
-                                                                                dprint("chose-after-replan", a);
             } else {
                 if (useUpperBound) {
                     // The algorithms that use upper bounds store the
@@ -476,7 +475,6 @@ vector<double> simulate(Solver* solver,
                 }
                 else {
                     a = greedyAction(problem, tmp);
-                                                                                dprint("chose-wo-replan", a);
                 }
             }
 
@@ -491,7 +489,6 @@ vector<double> simulate(Solver* solver,
             }
             double prob = 0.0;
             State* aux = randomSuccessor(problem, tmp, a, &prob);
-                                                                                dprint("succ");
             if (algorithm == "hdp") {
                 double maxProb = 0.0;
                 for (auto const & sccr : problem->transition(tmp, a))
@@ -568,6 +565,8 @@ int main(int argc, char* args[])
                 cout << "Heuristic took " <<
                     (double(endTime - startTime) / CLOCKS_PER_SEC) <<
                     " seconds."  << endl;
+                cout << "Cost of initial state "
+                    << problem->initialState()->cost() << endl;
             }
         } else if (flag_value("heuristic") == "zero")
             heuristic = nullptr;

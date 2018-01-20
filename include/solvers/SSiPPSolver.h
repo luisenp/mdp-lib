@@ -63,6 +63,9 @@ private:
     /* An optimal solver to use for the short-sighted SSPs. */
     void optimalSolver(WrapperProblem* problem, mlcore::State* s0);
 
+    /* Maximum time allowed for planning (in milliseconds). */
+    int maxTime_;
+
 public:
     /**
      * Creates a new SSiPP solver for the given problem. The constructor
@@ -79,7 +82,8 @@ public:
         algorithm_(algorithm),
         maxTrials_(10000000),
         useTrajProbabilities_(false),
-        rho_(0.5) { }
+        rho_(0.5),
+        maxTime_(-1) { }
 
     virtual ~SSiPPSolver() { }
 
