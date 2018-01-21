@@ -5,8 +5,8 @@ nsims=100
 alpha=0.1
 reps=1
 verbosity=-1
-min_time=10
-max_time=20480
+min_time=-1
+max_time=-1
 other_flags=""
 
 problems=( "--track=../data/tracks/known/square-4-error.track --perror=0.25 --pslip=0.50" \
@@ -15,7 +15,8 @@ problems=( "--track=../data/tracks/known/square-4-error.track --perror=0.25 --ps
            "--sailing-size=40 --sailing-goal=20")
 
 problems_str=(square4 ring5 sailing-corner sailing-middle)
-           
+                
+rhos=(0.5 0.25 0.125 0.0625)
 distfuns=(depth traj)          
 labelfuns=(linear exp logistic)
 for ((ip = 0; ip < ${#problems[@]}; ip++)); do
@@ -31,6 +32,13 @@ for ((ip = 0; ip < ${#problems[@]}; ip++)); do
   sbatch --output=/home/lpineda/results_ijcai18/${problem_str}_"hdp_00".txt \
     run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
     "hdp --j=0 --i=0"
+    
+  # Trajectory-based SSiPP
+  for rho in ${rhos[@]}; do
+    sbatch --output=/home/lpineda/results_ijcai18/${problem_str}_"ssipp_$rho".txt \
+      run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
+      "ssipp --rho=$rho"
+  done
     
   # FLARES(1)
   sbatch --output=/home/lpineda/results_ijcai18/${problem_str}_"flares_1".txt \

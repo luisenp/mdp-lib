@@ -6,6 +6,7 @@
 
 #include "../../include/domains/WrapperProblem.h"
 
+#include "../../include/solvers/LRTDPSolver.h"
 #include "../../include/solvers/Solver.h"
 #include "../../include/solvers/SSiPPSolver.h"
 #include "../../include/solvers/VISolver.h"
@@ -71,27 +72,30 @@ Action* SSiPPSolver::solveLabeled(State* s0)
             visited.push_front(currentState);
             if (problem_->goal(currentState))
                 break;
-
+            // Constructing short-sighted SSP
             StateSet reachableStates, tipStates;
-            // This makes getReachableStates start the search at currentState.
-            reachableStates.insert(currentState);
-            getReachableStates(problem_, reachableStates, tipStates, t_);
-
+            if (useTrajProbabilities_) {
+                getReachableStatesTrajectoryProbs(
+                    problem_, currentState, reachableStates, tipStates, rho_);
+            } else {
+                reachableStates.insert(currentState);
+                getReachableStates(problem_, reachableStates, tipStates, t_);
+            }
             WrapperProblem wrapper(problem_);
             wrapper.overrideStates(&reachableStates);
             wrapper.overrideGoals(&tipStates);
-
+            // Solving the short-sighted SSP
             optimalSolver(&wrapper, currentState);
-
             if (currentState->deadEnd())
                 break;
-
+            // Simulate best action
             currentState = randomSuccessor(problem_,
                                            currentState,
                                            greedyAction(problem_,
                                                         currentState));
 
             wrapper.cleanup();
+            // Check if there is time remaining for planning
             if (maxTime_ > -1) {
                 auto endTime = std::chrono::high_resolution_clock::now();
                 auto timeElapsed = std::chrono::duration_cast<
