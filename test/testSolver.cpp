@@ -308,8 +308,9 @@ void initSolver(string algorithm, Solver*& solver)
             rho = stof(flag_value("rho"));
             useTrajProb = true;
         }
-        solver = new SSiPPSolver(problem, tol, horizon);
+        solver = new SSiPPSolver(problem, tol, horizon, SSiPPAlgo::Original);
         SSiPPSolver* ssipp = static_cast<SSiPPSolver*> (solver);
+        ssipp->maxTrials(1);
         ssipp->useTrajProbabilities(useTrajProb);
         ssipp->rho(rho);
     } else if (algorithm == "labeled-ssipp") {

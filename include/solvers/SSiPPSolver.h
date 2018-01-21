@@ -1,6 +1,7 @@
 #ifndef MDPLIB_SSIPPSOLVER_H
 #define MDPLIB_SSIPPSOLVER_H
 
+#include <chrono>
 
 #include "../domains/WrapperProblem.h"
 
@@ -66,6 +67,9 @@ private:
     /* Maximum time allowed for planning (in milliseconds). */
     int maxTime_;
 
+    /* The time at which planning began. */
+    std::chrono::time_point<std::chrono::high_resolution_clock> beginTime_;
+
 public:
     /**
      * Creates a new SSiPP solver for the given problem. The constructor
@@ -101,6 +105,11 @@ public:
      * Sets the maximum number of trials allowed to the algorithm.
      */
     virtual void maxTrials(time_t theTrials) { maxTrials_  = theTrials; }
+
+    /**
+     * Sets the maximum planning time allowed to the algorithm (milliseconds).
+     */
+    virtual void maxPlanningTime(time_t theTime) { maxTime_ = theTime; }
 };
 
 }  // namespace mlsolvers
