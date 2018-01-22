@@ -314,7 +314,16 @@ void initSolver(string algorithm, Solver*& solver)
         ssipp->useTrajProbabilities(useTrajProb);
         ssipp->rho(rho);
     } else if (algorithm == "labeled-ssipp") {
+        double rho = -1.0;
+        bool useTrajProb = false;
+        if (flag_is_registered_with_value("rho")) {
+            rho = stof(flag_value("rho"));
+            useTrajProb = true;
+        }
         solver = new SSiPPSolver(problem, tol, horizon, SSiPPAlgo::Labeled);
+        SSiPPSolver* ssipp = static_cast<SSiPPSolver*> (solver);
+        ssipp->useTrajProbabilities(useTrajProb);
+        ssipp->rho(rho);
     } else if (algorithm == "det") {
         solver = new DeterministicSolver(problem,
                                          mlsolvers::det_most_likely,
