@@ -16,7 +16,8 @@ problems=( "--track=../data/tracks/known/square-4-error.track --perror=0.25 --ps
 
 problems_str=(square4 ring5 sailing-corner sailing-middle)
                 
-rhos=(0.5 0.25 0.125 0.0625)
+rhos=(0.0625 0.03125)
+horizons_ssip=(4 8)
 distfuns=(depth traj)          
 labelfuns=(linear exp logistic)
 for ((ip = 0; ip < ${#problems[@]}; ip++)); do
@@ -39,7 +40,14 @@ for ((ip = 0; ip < ${#problems[@]}; ip++)); do
       run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
       "ssipp --rho=$rho"
   done
-    
+  
+  # Depth-based SSiPP
+  for horizon in ${horizons_ssipp[@]}; do
+    sbatch --output=/home/lpineda/results_ijcai18/${problem_str}_"ssipp_$horizon".txt \
+      run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
+      "ssipp --horizon=$horizon"
+  done
+      
   # FLARES(1)
   sbatch --output=/home/lpineda/results_ijcai18/${problem_str}_"flares_1".txt \
     run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
