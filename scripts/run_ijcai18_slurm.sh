@@ -50,7 +50,7 @@ for ((ip = 0; ip < ${#problems[@]}; ip++)); do
     sbatch --output=/home/lpineda/results_ijcai18/${problem_str}_"flares_$horizon".txt \
       run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
       "soft-flares --labelf=step --dist=depth --horizon=$horizon --alpha=0"
-  do
+  done
     
   # Soft-FLARES(0)
   sbatch --output=/home/lpineda/results_ijcai18/${problem_str}_"soft-flares_0".txt \
