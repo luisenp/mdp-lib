@@ -14,10 +14,12 @@ namespace mlsolvers
         problem_ = problem;
         maxIter_ = maxIter;
         tol_ = tol;
+        maxTime_ = -1;
     }
 
     mlcore::Action* VISolver::solve(mlcore::State* s0)
     {
+        auto beginTime = std::chrono::high_resolution_clock::now();
         for (int i = 0; i < maxIter_; i++) {
             double maxResidual = 0.0;
             for (mlcore::State* s : problem_->states()) {
@@ -26,9 +28,16 @@ namespace mlsolvers
                 }
                 double residual = bellmanUpdate(problem_, s);
                 maxResidual = std::max(residual, maxResidual);
+
+                auto endTime = std::chrono::high_resolution_clock::now();
+                auto timeElapsed = std::chrono::duration_cast<
+                    std::chrono::milliseconds>(endTime - beginTime).count();
+                if (timeElapsed > maxTime_)
+                    return nullptr;
             }
             if (maxResidual < tol_)
                 return nullptr;
         }
+        return nullptr;
     }
 }

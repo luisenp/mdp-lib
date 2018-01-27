@@ -42,15 +42,23 @@ Action* SSiPPSolver::solveOriginal(State* s0)
             wrapper->overrideStates(&reachableStates);
             wrapper->overrideGoals(&tipStates);
             VISolver vi(wrapper, maxTrials_);
+            auto endTime = std::chrono::high_resolution_clock::now();
+            auto timeElapsed = std::chrono::duration_cast<
+                std::chrono::milliseconds>(endTime - beginTime_).count();
+            if (maxTime_ > -1) {
+                                                                                dprint(std::max(0, maxTime_ - (int) timeElapsed));
+                vi.maxPlanningTime(std::max(0, maxTime_ - (int) timeElapsed));
+            }
             vi.solve();
             // Execute the best action found for the current state.
             Action* action = currentState->bestAction();
             currentState = randomSuccessor(problem_, currentState, action);
             // Checking if it ran out of time
             if (maxTime_ > -1) {
-                auto endTime = std::chrono::high_resolution_clock::now();
-                auto timeElapsed = std::chrono::duration_cast<
+                endTime = std::chrono::high_resolution_clock::now();
+                timeElapsed = std::chrono::duration_cast<
                     std::chrono::milliseconds>(endTime - beginTime_).count();
+                                                                                dprint(maxTime_, timeElapsed);
                 if (timeElapsed > maxTime_)
                     break;
             }
