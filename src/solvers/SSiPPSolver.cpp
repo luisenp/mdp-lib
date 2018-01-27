@@ -50,20 +50,31 @@ Action* SSiPPSolver::solveOriginal(State* s0)
                 vi.maxPlanningTime(std::max(0, maxTime_ - (int) timeElapsed));
             }
             vi.solve();
-            // Execute the best action found for the current state.
-            Action* action = currentState->bestAction();
-            currentState = randomSuccessor(problem_, currentState, action);
             // Checking if it ran out of time
             if (maxTime_ > -1) {
                 endTime = std::chrono::high_resolution_clock::now();
                 timeElapsed = std::chrono::duration_cast<
                     std::chrono::milliseconds>(endTime - beginTime_).count();
                                                                                 dprint(maxTime_, timeElapsed);
-                if (timeElapsed > maxTime_)
+                if (timeElapsed > maxTime_) {
+                    wrapper->cleanup();
+                    delete wrapper;
                     break;
+                }
             }
+            // Execute the best action found for the current state.
+            Action* action = currentState->bestAction();
+            currentState = randomSuccessor(problem_, currentState, action);
             wrapper->cleanup();
             delete wrapper;
+        }
+        // Checking if it ran out of time
+        if (maxTime_ > -1) {
+            auto endTime = std::chrono::high_resolution_clock::now();
+            auto timeElapsed = std::chrono::duration_cast<
+                std::chrono::milliseconds>(endTime - beginTime_).count();
+            if (timeElapsed > maxTime_)
+                break;
         }
     }
     return s0->bestAction();

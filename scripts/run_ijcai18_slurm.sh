@@ -3,7 +3,7 @@
 
 nsims=100
 alpha=0.1
-reps=1
+reps=25
 verbosity=-1
 min_time=-1
 max_time=-1
@@ -17,7 +17,6 @@ problems=( "--track=../data/tracks/known/square-4-error.track --perror=0.25 --ps
 problems_str=(square4 ring5 sailing-corner sailing-middle)
                 
 rhos=(0.0625 0.03125)
-horizons_ssip=(4 8)
 distfuns=(depth traj)          
 labelfuns=(linear exp logistic)
 for ((ip = 0; ip < ${#problems[@]}; ip++)); do
@@ -41,22 +40,17 @@ for ((ip = 0; ip < ${#problems[@]}; ip++)); do
       "ssipp --rho=$rho"
   done
   
-  # Depth-based SSiPP
-  for horizon in ${horizons_ssipp[@]}; do
+  for horizon in `seq 1 4`; do
+    # Depth-based SSiPP(1-4)
     sbatch --output=/home/lpineda/results_ijcai18/${problem_str}_"ssipp_$horizon".txt \
       run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
       "ssipp --horizon=$horizon"
-  done
       
-  # FLARES(1)
-  sbatch --output=/home/lpineda/results_ijcai18/${problem_str}_"flares_1".txt \
-    run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
-    "soft-flares --labelf=step --dist=depth --horizon=1 --alpha=0"
-    
-  # FLARES(4)
-  sbatch --output=/home/lpineda/results_ijcai18/${problem_str}_"flares_4".txt \
-    run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
-    "soft-flares --labelf=step --dist=depth --horizon=4 --alpha=0"
+    # FLARES(1-4)
+    sbatch --output=/home/lpineda/results_ijcai18/${problem_str}_"flares_$horizon".txt \
+      run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
+      "soft-flares --labelf=step --dist=depth --horizon=$horizon --alpha=0"
+  done
     
   # Soft-FLARES(0)
   sbatch --output=/home/lpineda/results_ijcai18/${problem_str}_"soft-flares_0".txt \
