@@ -10,8 +10,7 @@ LRTDPSolver::LRTDPSolver(mlcore::Problem* problem,
 { }
 
 
-void LRTDPSolver::trial(mlcore::State* s)
-{
+void LRTDPSolver::trial(mlcore::State* s) {
     mlcore::State* tmp = s;
     std::list<mlcore::State*> visited;
     while (!tmp->checkBits(mdplib::SOLVED)) {
@@ -25,14 +24,24 @@ void LRTDPSolver::trial(mlcore::State* s)
         if (tmp->deadEnd())
             break;
 
+                                                                                auto begin = std::chrono::high_resolution_clock::now();
         tmp = randomSuccessor(problem_, tmp, tmp->bestAction());
+                                                                                auto end = std::chrono::high_resolution_clock::now();
+                                                                                auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end-begin).count();
+                                                                                cnt_samples_++;
+                                                                                total_time_samples_ += duration;
     }
 
     while (!visited.empty()) {
         tmp = visited.front();
         visited.pop_front();
-        if (!checkSolved(tmp))
-            break;
+                                                                                auto begin = std::chrono::high_resolution_clock::now();
+        bool solved = checkSolved(tmp);
+                                                                                auto end = std::chrono::high_resolution_clock::now();
+                                                                                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end-begin).count();
+                                                                                cnt_check_++;
+                                                                                total_time_check_ += duration;
+        if (!solved) break;
     }
 }
 
@@ -62,8 +71,12 @@ bool LRTDPSolver::checkSolved(mlcore::State* s)
         closed.push_front(tmp);
         tmp->setBits(mdplib::CLOSED);
 
-        if (residual(problem_, tmp) > epsilon_)
+        if (residual(problem_, tmp) > epsilon_) {
             rv = false;
+            // The original paper includes this line, but the algorithm
+            // seems to work significantly faster without this
+            //  continue;
+        }
 
         for (mlcore::Successor su : problem_->transition(tmp, a)) {
             mlcore::State* next = su.su_state;
@@ -98,6 +111,10 @@ mlcore::Action* LRTDPSolver::solve(mlcore::State* s0)
     while (!s0->checkBits(mdplib::SOLVED) && trials++ < maxTrials_) {
         trial(s0);
     }
+                                                                                dprint(cnt_samples_, double(total_time_samples_) / cnt_samples_);
+                                                                                dprint(cnt_check_, double(total_time_check_) / cnt_check_);
+                                                                                dprint(trials);
+    return s0->bestAction();
 }
 
 }

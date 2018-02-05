@@ -74,6 +74,7 @@ public:
 
     virtual ~FFReplanSolver() {}
 
+    /** Sets the maximum planning time allowed to the algorithm (in seconds). */
     virtual void maxPlanningTime(time_t theTime) { maxPlanningTime_ = theTime; }
 
     /**

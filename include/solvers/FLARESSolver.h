@@ -31,6 +31,9 @@ private:
     /* If true the algorithm returns an optimal policy. */
     bool optimal_;
 
+    /* The maximum time allowed for planning. */
+    int maxTime_;
+
     /*
      * If true, the depth of states will be the log probability of reaching
      * the state. Otherwise, it is the number of steps.
@@ -75,7 +78,8 @@ public:
                  double epsilon,
                  double horizon_,
                  bool optimal = false,
-                 bool useProbsForDepth = false);
+                 bool useProbsForDepth = false,
+                 int maxTime = -1);
 
     /**
      * Solves the associated problem using the Labeled RTDP algorithm.
@@ -84,7 +88,13 @@ public:
      */
     virtual mlcore::Action* solve(mlcore::State* s0);
 
+    /** Cleans up the internal caches of the algorithm. */
     void cleanup() { depthSolved_.clear(); }
+
+    /**
+     * Sets the maximum planning time allowed to the algorithm (milliseconds).
+     */
+    virtual void maxPlanningTime(time_t theTime) { maxTime_ = theTime; }
 };
 
 }

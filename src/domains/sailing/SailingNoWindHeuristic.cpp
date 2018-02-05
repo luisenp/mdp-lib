@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cmath>
 
 #include "../../../include/domains/sailing/SailingAction.h"
 #include "../../../include/domains/sailing/SailingNoWindHeuristic.h"
@@ -36,8 +37,8 @@ double SailingNoWindHeuristic::cost(const mlcore::State* s)
         short dy[] = {1, 1, 0, -1, -1, -1,  0,  1};
         short nextX = (short) (x + dx[sa->dir()]);
         short nextY = (short) (y + dy[sa->dir()]);
-        int deltaX = fabs(nextX - problem_->goalX_);
-        int deltaY = fabs(nextY - problem_->goalY_);
+        int deltaX = std::fabs(nextX - problem_->goalX_);
+        int deltaY = std::fabs(nextY - problem_->goalY_);
         heuristicValue = std::min(heuristicValue, std::max(deltaX, deltaY) + cost);
     }
     return heuristicValue;

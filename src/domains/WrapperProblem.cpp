@@ -43,7 +43,7 @@ bool WrapperProblem::applicable(mlcore::State* s, mlcore::Action* a) const
     if (overrideGoals_ != nullptr &&
             !overrideGoals_->empty() && overrideGoals_->count(s) > 0) {
         if (s->bestAction() != nullptr) {
-            return  s->bestAction();
+            return (a == s->bestAction());
         }
     }
     return problem_->applicable(s, a);

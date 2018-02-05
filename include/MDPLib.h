@@ -5,6 +5,7 @@ namespace mdplib
 {
     extern double dead_end_cost;
     extern double epsilon;
+    extern double no_distance;
 
     /* Bitmasks for state bits */
     const unsigned long VISITED = 1ul;

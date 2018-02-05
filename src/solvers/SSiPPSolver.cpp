@@ -1,8 +1,12 @@
+#include <chrono>
+#include <limits>
+
 #include "../../include/MDPLib.h"
 #include "../../include/State.h"
 
 #include "../../include/domains/WrapperProblem.h"
 
+#include "../../include/solvers/LRTDPSolver.h"
 #include "../../include/solvers/Solver.h"
 #include "../../include/solvers/SSiPPSolver.h"
 #include "../../include/solvers/VISolver.h"
@@ -16,28 +20,70 @@ namespace mlsolvers
 
 Action* SSiPPSolver::solveOriginal(State* s0)
 {
-    StateSet reachableStates, tipStates;
-    reachableStates.insert(s0);
-    getReachableStates(problem_, reachableStates, tipStates, t_);
-    WrapperProblem* wrapper = new WrapperProblem(problem_);
-    wrapper->setNewInitialState(s0);
-    wrapper->overrideStates(&reachableStates);
-    wrapper->overrideGoals(&tipStates);
-    VISolver vi(wrapper);
-    vi.solve();
-    for (State* tipState : tipStates)   {
-        // VI performs Bellman updates of goals.
-        // TODO: Doing that seems incorrect, but I don't want
-        // to break old code right now. There is a deadline tomorrow :)
-        tipState->reset();
+    beginTime_ = std::chrono::high_resolution_clock::now();
+    if (maxTime_ > -1) {
+        maxTrials_ = 10000000;
     }
-    wrapper->cleanup();
+    for (int i = 0; i < maxTrials_; i++) {
+        mlcore::State* currentState = s0;
+        while (!problem_->goal(currentState)) {
+            // Creating the short-sighted SSP
+            StateSet reachableStates, tipStates;
+            if (useTrajProbabilities_) {
+                getReachableStatesTrajectoryProbs(
+                    problem_, currentState, reachableStates, tipStates, rho_);
+            } else {
+                reachableStates.insert(currentState);
+                getReachableStates(problem_, reachableStates, tipStates, t_);
+            }
+            // Solving the short-sighted SSP
+            WrapperProblem* wrapper = new WrapperProblem(problem_);
+            wrapper->setNewInitialState(currentState);
+            wrapper->overrideStates(&reachableStates);
+            wrapper->overrideGoals(&tipStates);
+            VISolver vi(wrapper, maxTrials_);
+            auto endTime = std::chrono::high_resolution_clock::now();
+            auto timeElapsed = std::chrono::duration_cast<
+                std::chrono::milliseconds>(endTime - beginTime_).count();
+            if (maxTime_ > -1) {
+                                                                                dprint(std::max(0, maxTime_ - (int) timeElapsed));
+                vi.maxPlanningTime(std::max(0, maxTime_ - (int) timeElapsed));
+            }
+            vi.solve();
+            // Checking if it ran out of time
+            if (maxTime_ > -1) {
+                endTime = std::chrono::high_resolution_clock::now();
+                timeElapsed = std::chrono::duration_cast<
+                    std::chrono::milliseconds>(endTime - beginTime_).count();
+                                                                                dprint(maxTime_, timeElapsed);
+                if (timeElapsed > maxTime_) {
+                    wrapper->cleanup();
+                    delete wrapper;
+                    break;
+                }
+            }
+            // Execute the best action found for the current state.
+            Action* action = currentState->bestAction();
+            currentState = randomSuccessor(problem_, currentState, action);
+            wrapper->cleanup();
+            delete wrapper;
+        }
+        // Checking if it ran out of time
+        if (maxTime_ > -1) {
+            auto endTime = std::chrono::high_resolution_clock::now();
+            auto timeElapsed = std::chrono::duration_cast<
+                std::chrono::milliseconds>(endTime - beginTime_).count();
+            if (timeElapsed > maxTime_)
+                break;
+        }
+    }
     return s0->bestAction();
 }
 
 
 Action* SSiPPSolver::solveLabeled(State* s0)
 {
+    beginTime_ = std::chrono::high_resolution_clock::now();
     while (!s0->checkBits(mdplib::SOLVED_SSiPP)) {
         State* currentState = s0;
         list<State*> visited;
@@ -45,27 +91,37 @@ Action* SSiPPSolver::solveLabeled(State* s0)
             visited.push_front(currentState);
             if (problem_->goal(currentState))
                 break;
-
+            // Constructing short-sighted SSP
             StateSet reachableStates, tipStates;
-            // This makes getReachableStates start the search at currentState.
-            reachableStates.insert(currentState);
-            getReachableStates(problem_, reachableStates, tipStates, t_);
-
+            if (useTrajProbabilities_) {
+                getReachableStatesTrajectoryProbs(
+                    problem_, currentState, reachableStates, tipStates, rho_);
+            } else {
+                reachableStates.insert(currentState);
+                getReachableStates(problem_, reachableStates, tipStates, t_);
+            }
             WrapperProblem wrapper(problem_);
             wrapper.overrideStates(&reachableStates);
             wrapper.overrideGoals(&tipStates);
-
+            // Solving the short-sighted SSP
             optimalSolver(&wrapper, currentState);
-
             if (currentState->deadEnd())
                 break;
-
+            // Simulate best action
             currentState = randomSuccessor(problem_,
                                            currentState,
                                            greedyAction(problem_,
                                                         currentState));
 
             wrapper.cleanup();
+            // Check if there is time remaining for planning
+            if (maxTime_ > -1) {
+                auto endTime = std::chrono::high_resolution_clock::now();
+                auto timeElapsed = std::chrono::duration_cast<
+                    std::chrono::milliseconds>(endTime - beginTime_).count();
+                if (timeElapsed > maxTime_)
+                    return s0->bestAction();
+            }
         }
         while (!visited.empty()) {
             currentState = visited.front();
@@ -74,6 +130,7 @@ Action* SSiPPSolver::solveLabeled(State* s0)
                 break;
         }
     }
+    return s0->bestAction();
 }
 
 
@@ -102,6 +159,17 @@ bool SSiPPSolver::checkSolved(State* s)
         if (residual(problem_, tmp) > epsilon_) {
             rv = false;
         }
+
+        if (maxTime_ > -1) {
+            auto endTime = std::chrono::high_resolution_clock::now();
+            auto timeElapsed = std::chrono::duration_cast<
+                std::chrono::milliseconds>(endTime - beginTime_).count();
+            if (timeElapsed > maxTime_) {
+                rv = false;
+                continue;
+            }
+        }
+
         for (Successor su : problem_->transition(tmp, a)) {
             State* next = su.su_state;
             if (!next->checkBits(mdplib::SOLVED_SSiPP) &&

@@ -54,6 +54,17 @@ protected:
     Action* bestAction_;
 
     /**
+     * An estimate of the number of steps needed to find a state with high
+     * residual error.
+     */
+    double residualDistance_;
+
+    /**
+     * The current depth of the state during search (useful for some methods).
+     */
+    double depth_;
+
+    /**
      * The problem to which this state belongs.
      */
     Problem* problem_;
@@ -76,7 +87,9 @@ public:
               hValue_(mdplib::dead_end_cost + 1),
               bestAction_(nullptr),
               problem_(nullptr),
-              deadEnd_(false)
+              deadEnd_(false),
+              residualDistance_(mdplib::no_distance),
+              depth_(mdplib::no_distance)
     { }
 
     virtual ~State() {}
@@ -235,6 +248,48 @@ public:
         bestAction_ = a;
     }
 
+
+    /**
+     * Estimated distance to high residual errors.
+     *
+     * @return The estimated distance.
+     */
+    double residualDistance() const
+    {
+        return residualDistance_;
+    }
+
+    /**
+     * Updates the estimate to the distance to high residual errors.
+     *
+     * @param value The value to use for the update.
+     */
+    void residualDistance(double value)
+    {
+        residualDistance_ = value;
+    }
+
+
+    /**
+     * The depth of the state on a search tree.
+     *
+     * @return The depth.
+     */
+    double depth() const
+    {
+        return depth_;
+    }
+
+    /**
+     * Updates the depth of the state.
+     *
+     * @param value The value to use for the depth.
+     */
+    void depth(double value)
+    {
+        depth_ = value;
+    }
+
     /**
      * Resets all instance variables used by solvers to their default values.
      * The following variables are reset: visited, bestAction and cost.
@@ -244,6 +299,8 @@ public:
         bits_ = 0;
         cost_ = mdplib::dead_end_cost + 1;
         bestAction_ = nullptr;
+        depth_ = mdplib::no_distance;
+        residualDistance_ = mdplib::no_distance;
     }
 };
 

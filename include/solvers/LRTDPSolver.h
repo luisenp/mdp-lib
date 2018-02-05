@@ -28,6 +28,11 @@ private:
     /* Checks if the state has been solved. */
     bool checkSolved(mlcore::State* s);
 
+                                                                                int cnt_samples_ = 0;
+                                                                                long int total_time_samples_ = 0;
+                                                                                int cnt_check_ = 0;
+                                                                                long int total_time_check_ = 0;
+
 public:
     /**
      * Creates a LRTDP solver for the given problem.

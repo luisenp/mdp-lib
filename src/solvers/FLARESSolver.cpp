@@ -13,13 +13,15 @@ FLARESSolver::FLARESSolver(Problem* problem,
                          double epsilon,
                          double horizon,
                          bool optimal,
-                         bool useProbsForDepth) :
+                         bool useProbsForDepth,
+                         int maxTime) :
     problem_(problem),
     maxTrials_(maxTrials),
     epsilon_(epsilon),
     horizon_(horizon),
     optimal_(optimal),
-    useProbsForDepth_(useProbsForDepth)
+    useProbsForDepth_(useProbsForDepth),
+    maxTime_(maxTime)
 { }
 
 
@@ -28,6 +30,7 @@ void FLARESSolver::trial(State* s)
     State* currentState = s;
     list<State*> visited;
     double accumulated_cost = 0.0;
+//                                                                                dprint("****************");
     while (!labeledSolved(currentState)) {
         if (problem_->goal(currentState))
             break;
@@ -44,9 +47,11 @@ void FLARESSolver::trial(State* s)
             break;
 
         mlcore::Action* greedy_action = greedyAction(problem_, currentState);
+//                                                                                dprint(currentState, currentState->residualDistance(), greedy_action);
         accumulated_cost += problem_->cost(currentState, greedy_action);
         currentState = randomSuccessor(problem_, currentState, greedy_action);
     }
+//                                                                                dprint("********");
 
     while (!visited.empty()) {
         currentState = visited.front();
@@ -108,8 +113,9 @@ bool FLARESSolver::checkSolved(State* s)
         if (currentState->deadEnd())
             continue;
 
-        if (residual(problem_, currentState) > epsilon_)
+        if (residual(problem_, currentState) > epsilon_) {
             rv = false;
+        }
 
         for (Successor su : problem_->transition(currentState, a)) {
             State* next = su.su_state;
@@ -123,11 +129,13 @@ bool FLARESSolver::checkSolved(State* s)
             }
         }
     }
+//                                                                                dprint("  closed", closed.size());
 
     if (rv) {
         for (auto const & pp : closed) {
             pp.first->clearBits(mdplib::CLOSED);
             if (subgraphWithinSearchHorizon) {
+//                                                                                dprint("  --flares SOLVED", pp.first);
                 pp.first->setBits(mdplib::SOLVED_FLARES);
                 pp.first->setBits(mdplib::SOLVED);
                 depthSolved_.insert(pp.first);
@@ -136,6 +144,7 @@ bool FLARESSolver::checkSolved(State* s)
                      (!useProbsForDepth_ && pp.second <= horizon_) ) {
                         pp.first->setBits(mdplib::SOLVED_FLARES);
                         depthSolved_.insert(pp.first);
+//                                                                                dprint("  --flares depth-solved", pp.first);
                 }
             }
         }
@@ -168,7 +177,13 @@ Action* FLARESSolver::solve(State* s0)
 Action* FLARESSolver::solveApproximate(State* s0)
 {
     int trials = 0;
+    auto begin = std::chrono::high_resolution_clock::now();
     while (!labeledSolved(s0) && trials++ < maxTrials_) {
+        auto end = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::
+            duration_cast<std::chrono::milliseconds>(end-begin).count();
+        if (maxTime_ > -1 && duration >= maxTime_)
+            break;
         trial(s0);
     }
     return s0->bestAction();

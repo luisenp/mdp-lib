@@ -9,9 +9,9 @@ std::mutex bellman_mutex;
 
 std::random_device rand_dev;
 
-std::mt19937 gen(rand_dev());
+std::mt19937 kRNG(rand_dev());
 
-std::uniform_real_distribution<> dis(0, 1);
+std::uniform_real_distribution<> kUnif_0_1(0, 1);
 
 
 double qvalue(mlcore::Problem* problem, mlcore::State* s, mlcore::Action* a)
@@ -119,7 +119,7 @@ mlcore::State* randomSuccessor(mlcore::Problem* problem,
                                mlcore::Action* a,
                                double* prob)
 {
-    double pick = dis(gen);
+    double pick = kUnif_0_1(kRNG);
 
     if (a == nullptr)
         return s;
@@ -158,7 +158,6 @@ mlcore::Action* greedyAction(mlcore::Problem* problem, mlcore::State* s)
     }
     if (!hasAction)
         s->markDeadEnd();
-
     return bestAction;
 }
 
@@ -258,6 +257,50 @@ bool getReachableStates(mlcore::Problem* problem,
 }
 
 
+bool getReachableStatesTrajectoryProbs(mlcore::Problem* problem,
+                                       mlcore::State* s,
+                                       mlcore::StateSet& reachableStates,
+                                       mlcore::StateSet& tipStates,
+                                       double rho)
+{
+    bool containsGoal = false;
+    std::list< std::pair<mlcore::State *, double> > trajProbQueue;
+    trajProbQueue.push_front(std::make_pair(s, 0.0));
+    bool goalSeen = false;
+    reachableStates.clear();
+    tipStates.clear();
+    double log_rho = -std::log(rho);
+    reachableStates.insert(s);
+    while (!trajProbQueue.empty()) {
+        auto stateDepthPair = trajProbQueue.back();
+        trajProbQueue.pop_back();
+        mlcore::State* state = stateDepthPair.first;
+        double depth = stateDepthPair.second;
+        if (problem->goal(state)) {
+            tipStates.insert(state);
+            containsGoal = true;
+            continue;
+        }
+        if (depth > log_rho) {
+            tipStates.insert(state);
+            continue;
+        }
+        for (mlcore::Action* a : problem->actions()) {
+            if (!problem->applicable(state, a))
+                continue;
+            for (mlcore::Successor sccr : problem->transition(state, a)) {
+                double newDepth = depth - std::log(sccr.su_prob);
+                if (reachableStates.insert(sccr.su_state).second) {
+                    trajProbQueue.
+                        push_front(std::make_pair(sccr.su_state, newDepth));
+                }
+            }
+        }
+    }
+    return goalSeen;
+}
+
+
 void getBestPartialSolutionGraph(mlcore::Problem* problem,
                                  mlcore::State* initialState,
                                  mlcore::StateSet& bpsg)
@@ -273,8 +316,7 @@ void getBestPartialSolutionGraph(mlcore::Problem* problem,
             continue;
         mlcore::Action* a = greedyAction(problem, state);
         for (mlcore::Successor sccr : problem->transition(state, a)) {
-            stateStack.
-            push_front(sccr.su_state);
+            stateStack.push_front(sccr.su_state);
         }
     }
 }
