@@ -94,6 +94,9 @@ private:
     /* If true, distances will be obtained from the [modifierCache_].*/
     bool useCache_;
 
+    /* The time at which planning began. */
+    std::chrono::time_point<std::chrono::high_resolution_clock> beginTime_;
+
     /* ********************************************************************* *
                                     Methods
     /* ********************************************************************* */
