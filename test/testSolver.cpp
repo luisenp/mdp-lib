@@ -611,15 +611,18 @@ int main(int argc, char* args[])
             minTime = stoi(flag_value("min_time"));
         }
         bool perReplan = flag_is_registered("per_replan");
+        double totalcost = 0.0;
         for (int t = minTime; t <= maxTime; t *= 2) {
             double avgCost = 0.0, avgTime = 0.0;
             double M2Cost = 0.0, M2Time = 0.0;
             for (int i = 1; i <= numReps; i++) {
                 std::vector<double> results =
                     simulate(solver, alg_item, numSims, t, perReplan);
+                totalcost += results[0];
                 updateStatistics(results[0], i, avgCost, M2Cost);
                 updateStatistics(results[2], i, avgTime, M2Time);
             }
+            cout << totalcost / numReps << endl;
             cout << t << " "
                 << avgCost << " "
                 << sqrt(M2Cost / (numReps * (numReps - 1))) << " "
