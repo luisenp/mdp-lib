@@ -14,8 +14,7 @@ namespace mlsolvers
 {
 
 // A node of the UCT DAG, representing a state at a given depth.
-class UCTNode
-{
+class UCTNode {
 public:
     // The state this node represents.
     mlcore::State* state_;
@@ -30,26 +29,22 @@ public:
     // Destructor. Nothing to do here.
     ~UCTNode() {}
 
-    friend std::ostream& operator<<(std::ostream& os, UCTNode* node)
-    {
+    friend std::ostream& operator<<(std::ostream& os, UCTNode* node) {
         os << "(" << node->state_ << ", " << node->depth_ << ")";
         return os;
     }
 
-    bool operator==(const UCTNode& rhs) const
-    {
+    bool operator==(const UCTNode& rhs) const {
         return state_ == rhs.state_ && depth_ == rhs.depth_;
     }
 
     // Equality function used for unordered sets/maps.
-    bool equals(UCTNode *other) const
-    {
+    bool equals(UCTNode *other) const {
         return *this == *other;
     }
 
     // State hash function used for unordered sets/maps.
-    int hashValue() const
-    {
+    int hashValue() const {
         return state_->hashValue() + 31 * depth_;
     }
 };
@@ -94,8 +89,7 @@ typedef std::unordered_set<UCTNode*, UCTNodeHash, UCTNodeEqual> UCTNodeSet;
  *
  * See http://link.springer.com/chapter/10.1007/11871842_29
  */
-class UCTSolver : public Solver
-{
+class UCTSolver : public Solver {
 
 private:
     mlcore::Problem* problem_;
@@ -156,6 +150,7 @@ public:
      * @param cutoff The maximum depth allowed for each rollout.
      * @param use_qvalues_for_c If true, the given C will be ignored and the
      *        Q-values will be used for the exploration parameter.
+     * @param delta Number of "virtual rollouts" per action for initialization.
      */
     UCTSolver(mlcore::Problem* problem,
               int max_rollouts,
@@ -166,10 +161,8 @@ public:
               bool auto_adjust_depth = false) :
         problem_(problem), max_rollouts_(max_rollouts),
         cutoff_(cutoff), C_(C), use_qvalues_for_c_(use_qvalues_for_c),
-        delta_(delta), auto_adjust_depth_(auto_adjust_depth)
-    {
-        start_depth_ = 0;
-    }
+        delta_(delta), auto_adjust_depth_(auto_adjust_depth), start_depth_(0)
+    { }
 
     /**
      * Returns the Q-values estimated by the UCT algorithm.
@@ -179,8 +172,7 @@ public:
     /**
      * Returns the counter for state-action pair visits.
      */
-    UCTNodeActionIntMap& counters_node_action()
-    {
+    UCTNodeActionIntMap& counters_node_action() {
         return counters_node_action_;
     }
 
@@ -207,8 +199,7 @@ public:
     /**
      * Resets counters and resets the cutoff and start depth to original value.
      */
-    void reset()
-    {
+    void reset() {
         counters_node_.clear();
         counters_node_action_.clear();
         action_qvalues_.clear();

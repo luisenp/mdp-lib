@@ -58,6 +58,7 @@ mlcore::Action* UCTSolver::solve(mlcore::State* s0)
         int maxSteps = 0;
         for (int i = 1; i <= cutoff_; i++) {
             bool first_time_seen = visited_.insert(tmp_node).second;
+            // This is a new node. Must initialize counters and Q-values
             if (first_time_seen) {
                 counters_node_[tmp_node] = 0;
                 for (mlcore::Action* a : problem_->actions()) {
@@ -67,6 +68,7 @@ mlcore::Action* UCTSolver::solve(mlcore::State* s0)
                     counters_node_[tmp_node] += delta_; // not sure about this
                     action_qvalues_[tmp_node][a] =
                         qvalue(problem_, tmp_node->state_, a);
+                                                                                dprint("new-q", tmp_node->state_, a, action_qvalues_[tmp_node][a]);
                 }
             }
             if (problem_->goal(tmp_node->state_))
@@ -84,21 +86,27 @@ mlcore::Action* UCTSolver::solve(mlcore::State* s0)
         for (int i = 1; i <= maxSteps; i++) {
             UCTNode* node = nodes_in_rollout[i];
             mlcore::Action* a = actions_in_rollout[i];
-            double newq = counters_node_action_[node][a]
-                * action_qvalues_[node][a]
-                + cumCost[maxSteps] - cumCost[i - 1];
-            newq /= (counters_node_action_[node][a] + 1);
-            action_qvalues_[node][a] = newq;
             counters_node_[node]++;
             counters_node_action_[node][a]++;
+            double cumCostNode = cumCost[maxSteps] - cumCost[i - 1];
+//            double newq = (counters_node_action_[node][a]
+//                * action_qvalues_[node][a]) + cumCostNode;
+//            newq /= (counters_node_action_[node][a] + 1);
+//            action_qvalues_[node][a] = newq;
+            double delta_target =
+                (cumCostNode - action_qvalues_[node][a])
+                    / (counters_node_action_[node][a]);
+            action_qvalues_[node][a] += delta_target    ;
         }
     }
 
     if (auto_adjust_depth_) {
         cutoff_++;
         start_depth_++;
+    } else {
+        visited_.clear();
     }
-    return pickAction(root, 0.0);
+    return greedyAction(problem_, s0);
 }
 
 }

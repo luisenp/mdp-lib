@@ -186,7 +186,7 @@ void SoftFLARESSolver::computeResidualDistances(State* s) {
         if (problem_->goal(currentState))
             continue;
 
-        if (maxTime_ > 1) {
+        if (maxTime_ > -1) {
             auto endTime = std::chrono::high_resolution_clock::now();
             auto duration = std::chrono::duration_cast<
                 std::chrono::milliseconds>(endTime-beginTime_).count();
@@ -249,6 +249,9 @@ bool SoftFLARESSolver::moreTrials(
         mlcore::State* s,
         int trialsSoFar,
         std::chrono::time_point<std::chrono::high_resolution_clock> startTime) {
+    if (optimal_) {
+        return !s->checkBits(mdplib::SOLVED);
+    }
     if (maxTime_ <= -1) {
         return !labeledSolved(s) && trialsSoFar < maxTrials_;
     }
@@ -263,8 +266,6 @@ Action* SoftFLARESSolver::solve(State* s0) {
     beginTime_ = std::chrono::high_resolution_clock::now();
     while (moreTrials(s0, trials, beginTime_)) {
         trial(s0);
-        if (!optimal_)
-            trials++;
     }
     return s0->bestAction();
 }

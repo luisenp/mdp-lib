@@ -19,17 +19,20 @@
 #include "../include/solvers/FLARESSolver.h"
 #include "../include/solvers/HDPSolver.h"
 #include "../include/solvers/LAOStarSolver.h"
+#include "../include/solvers/SoftFLARESSolver.h"
 #include "../include/solvers/Solver.h"
 #include "../include/solvers/SSiPPSolver.h"
 
-#include "../include/State.h"
+#include "../include/util/flags.h"
 
+#include "../include/State.h"
 
 #define BUFFER_SIZE 65536
 
 
-using namespace std;
+using namespace mdplib;
 using namespace mlsolvers;
+using namespace std;
 
 
 extern int yyparse();
@@ -104,7 +107,7 @@ mlcore::State* getStatefromString(
 }
 
 
-int main(int argc, char **argv)
+int main(int argc, char *args[])
 {
     string file;
     string prob;
@@ -117,9 +120,9 @@ int main(int argc, char **argv)
         exit(0);
     }
 
-    file = argv[1];
-    prob = argv[2];
-    algorithm = argv[3];
+    file = args[1];
+    prob = args[2];
+    algorithm = args[3];
 
 
     if( !read_file( file.c_str() ) ) {
@@ -177,14 +180,58 @@ int main(int argc, char **argv)
     if (algorithm == "flares") {
         int horizon = 1;
         if (argc > 4) {
-            horizon = atoi(argv[4]);
+            horizon = atoi(args[4]);
         }
         solver = new FLARESSolver(MLProblem, 100, 1.0e-3, horizon);
-    }
-    else if (algorithm == "ssipp") {
+    } else if (algorithm == "soft-flares") {
+        register_flags(argc, args);
+        double depth = 4;
+        double alpha = 0.10;
+        double tol = 1.0e-3;
+        int trials = 1000;
+        if (flag_is_registered_with_value("depth"))
+            depth = stoi(flag_value("depth"));
+        TransitionModifierFunction mod_func = kLogistic;
+        DistanceFunction dist_func = kStepDist;
+        if (flag_is_registered_with_value("alpha"))
+            alpha = stof(flag_value("alpha"));
+        // Distance functions
+        if (flag_is_registered("dist")) {
+            string dist_str = flag_value("dist");
+            if (dist_str == "traj") {
+                dist_func = kTrajProb;
+            } else if (dist_str == "plaus") {
+                dist_func = kPlaus;
+            } else if (dist_str == "depth") {
+                dist_func = kStepDist;
+            } else {
+                cerr << "Error: unknown distance function." << endl;
+                exit(0);
+            }
+        }
+        // Labeling functions
+        if (flag_is_registered("labelf")) {
+            string labelf_str = flag_value("labelf");
+            if (labelf_str == "exp") {
+                mod_func = kExponential;
+            } else if (labelf_str == "step") {
+                mod_func = kStep;
+            } else if (labelf_str == "linear") {
+                mod_func = kLinear;
+            } else if (labelf_str == "logistic") {
+                mod_func = kLogistic;
+            } else {
+                cerr << "Error: unknown labeling function." << endl;
+                exit(0);
+            }
+        }
+        solver = new SoftFLARESSolver(
+            MLProblem, trials, tol, depth, mod_func, dist_func, alpha);
+        static_cast<SoftFLARESSolver*>(solver)->maxPlanningTime(1000);
+    } else if (algorithm == "ssipp") {
         int horizon = 2;
         if (argc > 4) {
-            horizon = atoi(argv[4]);
+            horizon = atoi(args[4]);
         }
         solver = new SSiPPSolver(MLProblem, 1.0e-3, horizon);
     } else if (algorithm == "hdp") {
@@ -195,6 +242,7 @@ int main(int argc, char **argv)
     }
 
     /* Solving states on demand. */
+    mlcore::StateIntMap count_seen;
     while (true) {
         /* Reading communication from the client. */
         char buffer[BUFFER_SIZE];
@@ -213,20 +261,29 @@ int main(int argc, char **argv)
             break;
         mlcore::State* state =
             getStatefromString(atomsString, MLProblem, stringAtomMap);
+                                                                                if (count_seen.count(state) == 0)
+                                                                                    count_seen[state] = 0;
+                                                                                count_seen[state]++;
+                                                                                cerr << count_seen[state] << endl;
 
         mlcore::Action* action = solver->solve(state); // Solving for state.
         if (MLProblem->goal(state)) {
             cout << "GOAL!!" << endl;
+                                                                                count_seen.clear();
         }
         if (state->deadEnd() || MLProblem->goal(state))
             action = nullptr;
+                                                                                if (count_seen[state] == 5)
+                                                                                    action = nullptr;
 
         /* Sending the action to the client. */
         ostringstream oss;
         if (action != nullptr)
             oss << action;
-        else
+        else {
             oss << "(done)";
+                                                                                count_seen.clear();
+        }
         bzero(buffer, BUFFER_SIZE);
         sprintf(buffer, "%s", oss.str().c_str());
         cout << "action: " << buffer << "." << endl;
