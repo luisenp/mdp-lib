@@ -26,7 +26,9 @@ Action* SSiPPSolver::solveOriginal(State* s0)
     }
     for (int i = 0; i < maxTrials_; i++) {
         mlcore::State* currentState = s0;
-        while (!problem_->goal(currentState)) {
+        double accumulated_cost = 0.0;
+        while (!problem_->goal(currentState)
+                && accumulated_cost < mdplib::dead_end_cost) {
             // Creating the short-sighted SSP
             StateSet reachableStates, tipStates;
             if (useTrajProbabilities_) {
@@ -46,16 +48,19 @@ Action* SSiPPSolver::solveOriginal(State* s0)
             auto timeElapsed = std::chrono::duration_cast<
                 std::chrono::milliseconds>(endTime - beginTime_).count();
             if (maxTime_ > -1) {
-                                                                                dprint(std::max(0, maxTime_ - (int) timeElapsed));
                 vi.maxPlanningTime(std::max(0, maxTime_ - (int) timeElapsed));
             }
             vi.solve();
+            if (currentState->deadEnd()) {
+                wrapper->cleanup();
+                delete wrapper;
+                break;
+            }
             // Checking if it ran out of time
             if (maxTime_ > -1) {
                 endTime = std::chrono::high_resolution_clock::now();
                 timeElapsed = std::chrono::duration_cast<
                     std::chrono::milliseconds>(endTime - beginTime_).count();
-                                                                                dprint(maxTime_, timeElapsed);
                 if (timeElapsed > maxTime_) {
                     wrapper->cleanup();
                     delete wrapper;
@@ -64,6 +69,7 @@ Action* SSiPPSolver::solveOriginal(State* s0)
             }
             // Execute the best action found for the current state.
             Action* action = currentState->bestAction();
+            accumulated_cost += problem_->cost(currentState, action);
             currentState = randomSuccessor(problem_, currentState, action);
             wrapper->cleanup();
             delete wrapper;
@@ -197,6 +203,8 @@ bool SSiPPSolver::checkSolved(State* s)
 
 Action* SSiPPSolver::solve(State* s0)
 {
+                                                                                mdplib_debug = true;
+                                                                                dprint("SSIPP-0");
     if (algorithm_ == SSiPPAlgo::Original)
         return solveOriginal(s0);
     if (algorithm_ == SSiPPAlgo::Labeled)
