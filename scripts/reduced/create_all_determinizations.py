@@ -16,28 +16,40 @@ def main(argv):
   parser = argparse.ArgumentParser(
     description='Create all possible determinizations of this domain.')
   parser.add_argument('-d', '--domain', required=True)
-  parser.add_argument('-o', '--output', required=True)    
+  parser.add_argument('-o', '--output', required=True)  
+  parser.add_argument("-n", "--domain_name", required=False)  
   args = parser.parse_args()
   domain_file_name = args.domain
   output_file_name = args.output
+  domain_name = args.domain_name
   
   # Reading domain file.
-  domain_str = ''
+  ppddl_str = ''
   try:
     with open(domain_file_name, 'r') as domain_file:
       for line in domain_file:
         if line.startswith(';;') or line.isspace():
           continue;
-        domain_str += line
+        ppddl_str += line
   except IOError:
     print "Could not read file:", domain_file_name
     sys.exit(-1)  
   
-  # Parsing the domain tree.
-  domain_tree = ppddl_util.parse_sexp(domain_str)
-  all_prob_effects_list = []
+  # Parsing the PPDDL tree.
+  ppddl_tree = ppddl_util.parse_sexp(ppddl_str)
+    
+  # Finding the specified domain
+  domain_tree = None
+  for sub_tree in ppddl_tree:
+    if sub_tree[0] == "define" and sub_tree[1][0] == "domain":
+      if domain_name is None or sub_tree[1][1] == domain_name:
+        domain_tree = [sub_tree]
+  if domain_tree is None:
+    print "Error: Domain name not found in the given file."
+    sys.exit(0)
   
-  # Getting all possible probabilistic effects.
+    # Getting all possible probabilistic effects.
+  all_prob_effects_list = []
   ppddl_util.get_all_probabilistic_effects(domain_tree, all_prob_effects_list)
   
   # Getting all possible determinizations.

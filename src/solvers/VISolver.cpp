@@ -32,7 +32,7 @@ namespace mlsolvers
                 auto endTime = std::chrono::high_resolution_clock::now();
                 auto timeElapsed = std::chrono::duration_cast<
                     std::chrono::milliseconds>(endTime - beginTime).count();
-                if (timeElapsed > maxTime_)
+                if (maxTime_ > -1 && timeElapsed > maxTime_)
                     return nullptr;
             }
             if (maxResidual < tol_)
