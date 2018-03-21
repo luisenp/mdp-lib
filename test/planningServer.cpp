@@ -273,7 +273,7 @@ int main(int argc, char *args[])
         }
         if (state->deadEnd() || MLProblem->goal(state))
             action = nullptr;
-                                                                                if (count_seen[state] == 5)
+                                                                                if (count_seen[state] == 10)
                                                                                     action = nullptr;
 
         /* Sending the action to the client. */

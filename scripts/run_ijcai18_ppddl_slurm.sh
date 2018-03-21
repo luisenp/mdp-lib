@@ -39,7 +39,7 @@ sleep 1
   $pddl_folder/$domain/$problem.pddl &> log.txt
 
 # Kill the planning and mdpsim servers
-./kill_servers.sh
+./reduced/kill_servers.sh
 
 # Extract the number of successes and turns (cost) resulting from this 
 # determinization
