@@ -14,19 +14,21 @@ pddl_folder=$1
 # The domain name.
 domain=$2
 
-# The problem name.
-problem=$3
-
 # Parameters
 ntrials=1000
 nsims=50
 verbosity=0
-depth=6
+depth=10
 alpha=0.3
 dist=traj
 labelf=linear
 
 # Starts the planning server to connect to mdpsim
-sbatch time ../testppddl.out $pddl_folder/$domain/$problem.pddl $problem \
-  $ntrials $nsims $verbosity --algorithm=soft-flares \
-  --depth=$depth --alpha=$alpha --dist=$dist --labelf=$labelf &
+for i in {01..10}; do
+  problem=p$i
+  sbatch --output=/home/lpineda/results_ijcai18/ppddl/${domain}_${problem}.txt \
+    time ../testppddl.out $pddl_folder/$domain/$problem.pddl $problem \
+    $ntrials $nsims $verbosity --algorithm=soft-flares \
+    --depth=$depth --alpha=$alpha --dist=$dist --labelf=$labelf &
+done
+

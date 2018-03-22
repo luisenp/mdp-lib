@@ -184,19 +184,21 @@ int main(int argc, char *args[])
                 cout << tmp << " " << tmp->cost() << endl;
 
             if (MLProblem->goal(tmp)) {
-                if (verbosity > 1)
-                    cout << "GOAL :-)" << endl;
                 expectedCost += cost;
                 totalSuccess++;
+                if (verbosity > 1) {
+                    cout << "GOAL :-)"
+                        << " Num. Successes " << totalSuccess << endl;
+                }
                 break;
             }
             if (mustReplan(solver, tmp, a)) {
-                if (verbosity > 1)
+                if (verbosity > 10)
                     cout << "REPLANNING..." << endl;
                 solver->solve(tmp);
                 a = tmp->bestAction();
                 if (tmp->deadEnd() || a == nullptr) {
-                    if (verbosity > 100)
+                    if (verbosity > 1)
                       cout << "DEAD END!! giving up :-( " << endl;
                     break;
                 }
