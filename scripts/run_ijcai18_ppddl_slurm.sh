@@ -27,6 +27,6 @@ dist=traj
 labelf=linear
 
 # Starts the planning server to connect to mdpsim
-time ../testppddl.out $pddl_folder/$domain/$problem.pddl $problem 1000 50 1000\
-  --algorithm=soft-flares --depth=$depth --alpha=$alpha \
-  --dist=$dist --labelf=$labelf &
+sbatch time ../testppddl.out $pddl_folder/$domain/$problem.pddl $problem \
+  $ntrials $nsims $verbosity --algorithm=soft-flares \
+  --depth=$depth --alpha=$alpha --dist=$dist --labelf=$labelf &
