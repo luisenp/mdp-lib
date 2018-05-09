@@ -57,18 +57,14 @@ private:
     int maxTime_;
 
     /*
-     * Represents the desired reduction in the transition function at
-     * distance 0. For example, if [alpha_] = 0.99, then a state s' that has
-     * 0 steps of successors (i.e., only itself) with residual < [epsilon_] will
-     * have a probability of being sampled equal to 0.99 * T(s,a,s').
+     * Represents the probability of a state being labeled when it is at
+     * distance 0 from states with high residual error.
      */
     double alpha_;
 
     /*
-     * Represents the desired reduction in the transition function at the
-     * horizon. For example, if [beta_] = 0.01, then a state s' that has
-     * [horizon_] steps of successors with residual < [epsilon_] will
-     * have a probability of being sampled equal to 0.01 * T(s,a,s').
+     * Represents the probability of a state being labeled when it is at
+     * distance >= [horizon_] from states with high residual error.
      */
     double beta_;
 

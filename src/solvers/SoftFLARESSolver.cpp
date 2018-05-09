@@ -194,6 +194,9 @@ void SoftFLARESSolver::computeResidualDistances(State* s) {
     bool should_label = true;
     bool subgraphWithinSearchHorizon = true;
     double effectiveHorizon = sampleEffectiveHorizon();
+                                                                                if (effectiveHorizon == kInfiniteDistance_) {
+                                                                                    dprint(s);
+                                                                                }
     while (!open.empty()) {
         State* currentState = open.front();
         open.pop_front();
@@ -294,9 +297,9 @@ Action* SoftFLARESSolver::solve(State* s0) {
                                                                                     std::chrono::high_resolution_clock::now();
                                                                                 auto duration = std::chrono::
                                                                                     duration_cast<std::chrono::milliseconds>(endTime-beginTime_).count();
-                                                                                dprint("new trial", duration, maxTime_);
+//                                                                                dprint("new trial", duration, maxTime_);
     }
-                                                                                dprint("stop", s0->bestAction());
+//                                                                                dprint("stop", s0->bestAction());
     return s0->bestAction();
 }
 
