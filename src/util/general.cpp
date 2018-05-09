@@ -10,22 +10,41 @@
 #include "../../include/util/general.h"
 
 bool mdplib_debug = false;
+std::chrono::time_point<std::chrono::high_resolution_clock> mdplib_tic_ =
+    std::chrono::high_resolution_clock::now();
+std::chrono::time_point<std::chrono::high_resolution_clock> mdplib_toc_ =
+    std::chrono::high_resolution_clock::now();
 
-std::string debug_pad(int n)
-{
+std::string debug_pad(int n) {
     char buf[512];
     sprintf(buf, "%*s", n, "");
     return std::string(buf);
 }
 
-void dsleep(int miliseconds)
-{
+void dsleep(int miliseconds) {
     if (mdplib_debug)
         std::this_thread::sleep_for(std::chrono::milliseconds(miliseconds));
 }
 
-bool nextComb(std::vector<int>& comb, int n, int k)
-{
+void mdplib_tic() {
+    mdplib_tic_ = std::chrono::high_resolution_clock::now();
+}
+
+void mdplib_toc() {
+    mdplib_toc_ = std::chrono::high_resolution_clock::now();
+}
+
+long long mdplib_elapsed_nano() {
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(
+        mdplib_toc_-mdplib_tic_).count();
+}
+
+long long mdplib_elapsed_micro() {
+    return std::chrono::duration_cast<std::chrono::microseconds>(
+        mdplib_toc_-mdplib_tic_).count();
+}
+
+bool nextComb(std::vector<int>& comb, int n, int k) {
     int i = k - 1;
     while (i >= 0) {
         if (comb[i] == n - k + i)
@@ -42,8 +61,7 @@ bool nextComb(std::vector<int>& comb, int n, int k)
 }
 
 
-bool nextCombRep(std::vector<int>& comb, int k)
-{
+bool nextCombRep(std::vector<int>& comb, int k) {
     int j = comb.size() - 1;
     while (j >= 0) {
         comb[j]++;
