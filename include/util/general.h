@@ -13,17 +13,19 @@
 
 extern bool mdplib_debug;
 
+extern std::chrono::time_point<std::chrono::high_resolution_clock> mdplib_tic_;
+
+extern std::chrono::time_point<std::chrono::high_resolution_clock> mdplib_toc_;
+
 // Implementation of c++14 std::make_unique as explained in
 // https://herbsutter.com/gotw/_102/
 template<typename T, typename... Args>
-std::unique_ptr<T> make_unique(Args&&... args)
-{
+std::unique_ptr<T> make_unique(Args&&... args) {
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
 template <typename T>
-void dprint(T t)
-{
+void dprint(T t) {
     if (mdplib_debug)
         std::cerr << t << std::endl ;
 }
@@ -32,8 +34,7 @@ void dprint(T t)
  * Prints all arguments passed separated by spaces.
  */
 template<typename T, typename... Args>
-void dprint(T t, Args... args) // recursive variadic function
-{
+void dprint(T t, Args... args) /* recursive variadic function*/ {
     if (mdplib_debug) {
         std::cerr << t << " ";
         dprint(args...);
@@ -41,6 +42,18 @@ void dprint(T t, Args... args) // recursive variadic function
 }
 
 std::string debug_pad(int n);
+
+/** Stores the current time in mdplib_tic. */
+void mdplib_tic();
+
+/** Stores the current time in mdplib_toc. */
+void mdplib_toc();
+
+/** Returns the time elapsed in nanoseconds between tic and toc. */
+long long mdplib_elapsed_nano();
+
+/** Returns the time elapsed in microseconds between tic and toc. */
+long long mdplib_elapsed_micro();
 
 /**
  * Sleeps the current thread for the given number of milliseconds.
