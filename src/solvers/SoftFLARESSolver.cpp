@@ -17,6 +17,7 @@ SoftFLARESSolver::SoftFLARESSolver(Problem* problem,
                                    double horizon,
                                    TransitionModifierFunction modifierFunction,
                                    DistanceFunction distanceFunction,
+                                   HorizonFunction horizonFunction,
                                    double alpha,
                                    bool useProbsForDepth,
                                    bool optimal,
@@ -28,6 +29,7 @@ SoftFLARESSolver::SoftFLARESSolver(Problem* problem,
         useProbsForDepth_(useProbsForDepth),
         modifierFunction_(modifierFunction),
         distanceFunction_(distanceFunction),
+        horizonFunction_(horizonFunction),
         alpha_(alpha),
         optimal_(optimal),
         maxTime_(maxTime),
@@ -100,6 +102,10 @@ double SoftFLARESSolver::computeProbUnlabeled(mlcore::State* s) {
 
 double SoftFLARESSolver::computeProbUnlabeled(double distance) {
     assert(distance >= 0);
+
+    if (distance == kInfiniteDistance_)
+        return 0.0;
+
     if (horizon_ == 0) {
         return 1.0 - beta_;
     }
@@ -163,6 +169,19 @@ bool SoftFLARESSolver::labeledSolved(State* s) {
     return labeled;
 }
 
+double SoftFLARESSolver::sampleEffectiveHorizon() {
+    if (horizonFunction_ == kFixed) {
+        return horizon_;
+    }
+    if (horizonFunction_ == kBernoulli) {
+        if (kUnif_0_1(kRNG) > 0.5) {
+            return horizon_;
+        } else {
+            return kInfiniteDistance_;
+        }
+    }
+}
+
 void SoftFLARESSolver::computeResidualDistances(State* s) {
     list<State*> open, closed;
 
@@ -172,13 +191,14 @@ void SoftFLARESSolver::computeResidualDistances(State* s) {
         currentState->depth(0.0);
     }
 
-    bool rv = true;
+    bool should_label = true;
     bool subgraphWithinSearchHorizon = true;
+    double effectiveHorizon = sampleEffectiveHorizon();
     while (!open.empty()) {
         State* currentState = open.front();
         open.pop_front();
         double depth = currentState->depth();
-        if (depth > 2 * horizon_) {
+        if (depth > 2 * effectiveHorizon) {
             subgraphWithinSearchHorizon = false;
             continue;
         }
@@ -204,12 +224,14 @@ void SoftFLARESSolver::computeResidualDistances(State* s) {
             continue;
 
         if (residual(problem_, currentState) > epsilon_) {
-            rv = false;
+            should_label = false;
         }
 
         for (Successor su : problem_->transition(currentState, a)) {
             State* next = su.su_state;
-            if (!labeledSolved(next) && !next->checkBits(mdplib::CLOSED)) {
+            if ( (!labeledSolved(next)
+                        || effectiveHorizon == kInfiniteDistance_)
+                    && !next->checkBits(mdplib::CLOSED)) {
                 open.push_front(next);
                 next->depth(computeNewDepth(su, depth));
             } else if (!(next->checkBits(mdplib::SOLVED)
@@ -222,15 +244,16 @@ void SoftFLARESSolver::computeResidualDistances(State* s) {
         }
     }
 
-    if (rv) {
+    if (should_label) {
         for (mlcore::State* state : closed) {
             state->clearBits(mdplib::CLOSED);
             if (subgraphWithinSearchHorizon) {
                 state->setBits(mdplib::SOLVED);
             } else {
+                                                                                assert(effectiveHorizon != kInfiniteDistance_);
                 double depth = state->depth();
-                if (depth <= horizon_) {
-                    state->residualDistance(horizon_ - depth);
+                if (depth <= effectiveHorizon) {
+                    state->residualDistance(effectiveHorizon - depth);
                 }
             }
         }
