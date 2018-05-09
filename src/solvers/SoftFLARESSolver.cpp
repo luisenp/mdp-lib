@@ -73,7 +73,16 @@ void SoftFLARESSolver::trial(State* s) {
 
         mlcore::Action* greedy_action = greedyAction(problem_, currentState);
         accumulated_cost += problem_->cost(currentState, greedy_action);
+
+                                                                                auto tic = std::chrono::high_resolution_clock::now();
         currentState = sampleSuccessor(currentState, greedy_action);
+                                                                                auto toc = std::chrono::high_resolution_clock::now();
+                                                                                auto durationA = std::chrono::duration_cast<std::chrono::nanoseconds>(toc - tic).count();
+                                                                                tic = std::chrono::high_resolution_clock::now();
+                                                                                randomSuccessor(problem_, currentState, greedy_action);
+                                                                                toc = std::chrono::high_resolution_clock::now();
+                                                                                auto durationB = std::chrono::duration_cast<std::chrono::nanoseconds>(toc - tic).count();
+                                                                                dprint("soft-transition", durationA, "standard-transition", durationB);
         if (currentState == nullptr) {
             assert(alpha_ == 0.0);
             break;
