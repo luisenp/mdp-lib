@@ -23,6 +23,12 @@ enum DistanceFunction {
     kPlaus
 };
 
+enum HorizonFunction {
+    kFixed,
+    kBernoulli,
+    kExponentialH
+};
+
 /**
  * A SSP solver using the Soft-FLARES algorithm.
  */
@@ -88,6 +94,11 @@ private:
      */
     DistanceFunction distanceFunction_;
 
+    /*
+     * The horizon function to use for estimating distances.
+     */
+    HorizonFunction horizonFunction_;
+
     /* Stores the result of modifier function for depths from 0-[horizon_].*/
     std::vector<double> modifierCache_;
 
@@ -135,6 +146,12 @@ private:
      */
     double computeProbUnlabeled(double distance);
 
+
+    /*
+     * Samples a horizon to use for estimating distances.
+     */
+    double sampleEffectiveHorizon();
+
     /*
      * Computes the unnormalized transition function using an exponential
      * decaying modifier and stores the result in the [scores] vector.
@@ -168,6 +185,8 @@ public:
      * @param horizon_ The maximum depth for checkSolved.
      * @param modifierFunction The function to use to modify the transition.
      * @param distanceFunction The distance function to use for labeling.
+     * @param horizonFunction The horizon function to use for
+              estimating distances.
      * @param alpha Desired vanishing level.
      * @param useProbsForDepth If true, uses trajectory probabilities as
      *        the depth (instead of the number of steps).
@@ -180,10 +199,17 @@ public:
                      double horizon_,
                      TransitionModifierFunction modifierFunction,
                      DistanceFunction distanceFunction,
+                     HorizonFunction horizonFunction,
                      double alpha = 0.01,
                      bool useProbsForDepth = false,
                      bool optimal = false,
                      int maxTime = -1);
+
+
+    /**
+     * Represents an infinite Distance.
+     */
+    const double kInfiniteDistance_ = std::numeric_limits<double>::max();
 
     /**
      * Solves the associated problem using the Soft-FLARES algorithm.
