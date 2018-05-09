@@ -29,5 +29,5 @@ labelf=logistic
 
 timeout 20m time ../testppddl.out $pddl_folder/$domain/$problem.pddl $problem \
   $ntrials $nsims $verbosity --algorithm=soft-flares \
-  --depth=$depth --alpha=$alpha --dist=$dist --labelf=$labelf
+  --depth=$depth --alpha=$alpha --dist=$dist --labelf=$labelf --debug
 

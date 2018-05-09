@@ -257,13 +257,13 @@ lib/libminigpt.a test/testPPDDL.cpp test/testClient.cpp test/planningServer.cpp
 	mv *.o $(OD_PPDDL)
 	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) $(INCLUDE_PPDDL) \
 	  -o testppddl.out $(TD)/testPPDDL.cpp include/ppddl/mini-gpt/heuristics.cc \
-	  -Llib lib/libmdp.a lib/libminigpt.a lib/libmdp_ppddl.a
+	  -Llib lib/libmdp_ppddl.a lib/libmdp.a lib/libminigpt.a
 	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) $(INCLUDE_PPDDL) \
 	  -o testclient $(TD)/testClient.cpp include/ppddl/mini-gpt/heuristics.cc \
 	  -Llib lib/libmdp.a lib/libminigpt.a lib/libmdp_ppddl.a -lsocket -L/usr/lib/happycoders
 	$(CC) $(CFLAGS) -Iinclude -I$(ID_SOLV) -I$(ID_UTIL) $(INCLUDE_PPDDL) \
 	  -o planserv $(TD)/planningServer.cpp include/ppddl/mini-gpt/heuristics.cc \
-	  -Llib lib/libmdp.a lib/libminigpt.a lib/libmdp_ppddl.a -lsocket -L/usr/lib/happycoders
+	  -Llib  lib/libmdp_ppddl.a lib/libmdp.a lib/libminigpt.a -lsocket -L/usr/lib/happycoders
 
 # Compiles the reduced model code
 reduced: lib/libmdp_reduced.a

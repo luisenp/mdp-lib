@@ -36,7 +36,7 @@ static bool read_file( const char* name )
 {
     yyin = fopen( name, "r" );
     if( yyin == NULL ) {
-        std::cout << "parser:" << name <<
+        std::cerr << "parser:" << name <<
             ": " << strerror( errno ) << std::endl;
         return( false );
     }
@@ -48,7 +48,7 @@ static bool read_file( const char* name )
         }
         catch( Exception exception ) {
             fclose( yyin );
-            std::cout << exception << std::endl;
+            std::cerr << exception << std::endl;
             return( false );
         }
         fclose( yyin );
@@ -75,7 +75,7 @@ int main(int argc, char *args[])
     std::pair<state_t *,Rational> *initial = NULL;
 
     if (argc < 2) {
-        std::cout << "Usage: testPPDDL [file] [problem]\n";
+        std::cerr << "Usage: testPPDDL [file] [problem]\n";
         return -1;
     }
 
@@ -83,13 +83,13 @@ int main(int argc, char *args[])
     prob = args[2];
 
     if( !read_file( file.c_str() ) ) {
-        std::cout <<
+        std::cerr <<
             "<main>: ERROR: couldn't read problem file `" << file << std::endl;
         return( -1 );
     }
     problem = (problem_t*) problem_t::find( prob.c_str() );
     if( !problem ) {
-        std::cout << "<main>: ERROR: problem `" << prob <<
+        std::cerr << "<main>: ERROR: problem `" << prob <<
             "' is not defined in file '" << file << "'" << std::endl;
         return( -1 );
     }
@@ -97,19 +97,19 @@ int main(int argc, char *args[])
     /* Initializing problem */
     mlppddl::PPDDLProblem* MLProblem = new mlppddl::PPDDLProblem(problem);
     mlppddl::PPDDLHeuristic* heuristic =
-//        new mlppddl::PPDDLHeuristic(MLProblem, mlppddl::atomMin1Forward);
+        new mlppddl::PPDDLHeuristic(MLProblem, mlppddl::atomMin1Forward);
 //        new mlppddl::PPDDLHeuristic(MLProblem, mlppddl::atomMinMForward);
-        new mlppddl::PPDDLHeuristic(MLProblem, mlppddl::FF);
+//        new mlppddl::PPDDLHeuristic(MLProblem, mlppddl::FF);
     MLProblem->setHeuristic(heuristic);
 
-    cout << "HEURISTIC s0: " << MLProblem->initialState()->cost() << endl;
+    cerr << "HEURISTIC s0: " << MLProblem->initialState()->cost() << endl;
 
     int ntrials = 5000;
     if (argc > 3) {
         ntrials = atoi(args[3]);
     }
 
-    cout << "INITIAL: " << MLProblem->initialState() << " ";
+    cerr << "INITIAL: " << MLProblem->initialState() << " ";
     Solver* solver;
     register_flags(argc, args);
     if (flag_is_registered("algorithm") &&
@@ -166,8 +166,7 @@ int main(int argc, char *args[])
     mdplib_debug = true;
     solver->solve(MLProblem->initialState());
 
-    cout << MLProblem->initialState()->cost() << endl;
-
+    cerr << MLProblem->initialState()->cost() << endl;
 
     int nsims = argc > 4 ? atoi(args[4]) : 1;
     int verbosity = argc > 5 ? atoi(args[5]) : 0;
@@ -181,25 +180,25 @@ int main(int argc, char *args[])
             mlcore::Action* a = tmp->bestAction();
 
             if (verbosity > 100)
-                cout << tmp << " " << tmp->cost() << endl;
+                cerr << tmp << " " << tmp->cost() << endl;
 
             if (MLProblem->goal(tmp)) {
                 expectedCost += cost;
                 totalSuccess++;
                 if (verbosity > 1) {
-                    cout << "GOAL :-)"
+                    cerr << "GOAL :-)"
                         << " Num. Successes " << totalSuccess << endl;
                 }
                 break;
             }
             if (mustReplan(solver, tmp, a)) {
                 if (verbosity > 10)
-                    cout << "REPLANNING..." << endl;
+                    cerr << "REPLANNING..." << endl;
                 solver->solve(tmp);
                 a = tmp->bestAction();
                 if (tmp->deadEnd() || a == nullptr) {
                     if (verbosity > 1)
-                      cout << "DEAD END!! giving up :-( " << endl;
+                      cerr << "DEAD END!! giving up :-( " << endl;
                     break;
                 }
             }
@@ -207,17 +206,17 @@ int main(int argc, char *args[])
 
             if (cost > mdplib::dead_end_cost
                     || tmp->cost() >= mdplib::dead_end_cost) {
-                cout << "Too long... giving up " << endl;
+                cerr << "Too long... giving up " << endl;
                 break;
             }
 
             if (verbosity > 100)
-                cout << tmp->bestAction() << endl;
+                cerr << tmp->bestAction() << endl;
             tmp = mlsolvers::randomSuccessor(MLProblem, tmp, a);
         }
     }
-    cout << "Expected Cost: " << expectedCost / totalSuccess << endl;
-    cout << "Total Successes " << totalSuccess << "/" << nsims << endl;
+    cerr << "Expected Cost: " << expectedCost / totalSuccess << endl;
+    cerr << "Total Successes " << totalSuccess << "/" << nsims << endl;
 
     state_t::finalize();
     problem_t::unregister_use(problem);

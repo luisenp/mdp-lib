@@ -24,6 +24,11 @@ void LRTDPSolver::trial(mlcore::State* s) {
         if (tmp->deadEnd())
             break;
 
+                                                                                dprint(tmp);
+                                                                                dprint(tmp->bestAction());
+                                                                                for (auto scc : problem_->transition(tmp, tmp->bestAction())) {
+                                                                                  dprint(scc.first, scc.second);
+                                                                                }
                                                                                 auto begin = std::chrono::high_resolution_clock::now();
         tmp = randomSuccessor(problem_, tmp, tmp->bestAction());
                                                                                 auto end = std::chrono::high_resolution_clock::now();

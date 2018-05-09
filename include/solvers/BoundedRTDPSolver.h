@@ -25,6 +25,11 @@ private:
     /* Criterion for considering a state as well-known. */
     double tau_;
 
+    /* Value to use for a constant upper bound. Defaults to -1.0 which means
+     * this will be ignored and bounds will be initialized to some other value.
+     */
+    double constantUpperBound_;
+
     /* Upper bounds on the state costs. */
     mlcore::StateDoubleMap upperBounds_;
 
@@ -56,7 +61,8 @@ public:
      */
     BoundedRTDPSolver(mlcore::Problem* problem,
                       double epsilon,
-                      int maxTrials = 1000000);
+                      int maxTrials = 1000000,
+                      double upperBound = -1.0);
 
     /**
      * Solves the associated problem using the Labeled RTDP algorithm.

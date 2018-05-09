@@ -5,8 +5,13 @@ namespace mlsolvers
 
 BoundedRTDPSolver::BoundedRTDPSolver(mlcore::Problem* problem,
                                      double epsilon,
-                                     int maxTrials)
-    : problem_(problem), epsilon_(epsilon), maxTrials_(maxTrials), tau_(100.0)
+                                     int maxTrials,
+                                     double upperBound)
+    : problem_(problem),
+      epsilon_(epsilon),
+      maxTrials_(maxTrials),
+      tau_(100.0),
+      constantUpperBound_(upperBound)
 { }
 
 
@@ -16,6 +21,7 @@ void BoundedRTDPSolver::trial(mlcore::State* s) {
     while (true) {
         if (problem_->goal(tmp))
             break;
+                                                                                dprint(tmp);
         visited.push_front(tmp);
         this->bellmanUpdate(tmp);
         // Explore using the lower bound.
@@ -35,7 +41,12 @@ void BoundedRTDPSolver::trial(mlcore::State* s) {
 }
 
 void BoundedRTDPSolver::initializeUpperBound(mlcore::State* s) {
-    upperBounds_[s] = problem_->goal(s) ? 0.0 : 30.0;
+    if (problem_->goal(s))
+        upperBounds_[s] = 0.0;
+    else if (constantUpperBound_ > 0.0)
+        upperBounds_[s] = constantUpperBound_;
+    else
+        upperBounds_[s] = 30.0; // TODO: Replace by some initialization
 }
 
 mlcore::State*

@@ -215,9 +215,12 @@ void initSolver(string algorithm, Solver*& solver)
     } else if (algorithm == "brtdp") {
         // BRTDP is just VPI-RTDP with beta = 0
         double tau = 100;
-        solver = new VPIRTDPSolver(problem, tol, trials,
-                                   -1.0, 0.0, tau,
-                                   mdplib::dead_end_cost + 10.0);
+        double ub = mdplib::dead_end_cost + 10.0;
+        if (flag_is_registered_with_value("ub"))
+            ub = stod(flag_value("ub"));
+//        solver = new VPIRTDPSolver(problem, tol, trials,
+//                                   -1.0, 0.0, tau, ub);
+        solver = new BoundedRTDPSolver(problem, tol, trials, ub);
         useUpperBound = true;
     } else if (algorithm == "rtdp-ub") {
         // RTDP with upper bound action selection

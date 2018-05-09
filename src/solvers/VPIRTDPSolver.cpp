@@ -22,7 +22,7 @@ VPIRTDPSolver::VPIRTDPSolver(mlcore::Problem* problem,
       vanillaSample_(vanillaSample),
       sampleVPIDelta_(false)
 {
-                                                                                sampleVPIOld_ = false;
+//                                                                                sampleVPIOld_ = false;
 }
 
 
@@ -34,9 +34,9 @@ void VPIRTDPSolver::trial(mlcore::State* s) {
         if (problem_->goal(tmp))
             break;
         visited.push_front(tmp);
-                                                                                tmp->setBits(mdplib::VISITED);
+//                                                                                tmp->setBits(mdplib::VISITED);
         this->bellmanUpdate(tmp);
-                                                                                dprint(tmp, tmp->cost(), upperBounds_[tmp]);
+//                                                                                dprint(tmp, tmp->cost(), upperBounds_[tmp]);
         // Explore using the lower bound.
         mlcore::Action* a = lowerBoundGreedyPolicy_[tmp];
         accumulated_cost += problem_->cost(tmp, a);
@@ -49,14 +49,14 @@ void VPIRTDPSolver::trial(mlcore::State* s) {
         if (tmp == nullptr)
             break;
     }
-                                                                                dprint("***************");
+//                                                                                dprint("***************");
 
     while (!visited.empty()) {
         tmp = visited.front();
         visited.pop_front();
         tmp->clearBits(mdplib::VISITED);
         this->bellmanUpdate(tmp);
-                                                                                dprint("  ", tmp, tmp->cost(), upperBounds_[tmp]);
+//                                                                                dprint("  ", tmp, tmp->cost(), upperBounds_[tmp]);
     }
 }
 
@@ -97,9 +97,9 @@ VPIRTDPSolver::sampleBiasedBounds(mlcore::State* s,
 
 mlcore::State*
 VPIRTDPSolver::sampleVPI(mlcore::State* s, mlcore::Action* sampledAction) {
-                                                                                if (sampleVPIOld_)
-                                                                                    return sampleVPIOld(s, sampledAction);
-                                                                                dprint("here");
+//                                                                                if (sampleVPIOld_)
+//                                                                                    return sampleVPIOld(s, sampledAction);
+//                                                                                dprint("here");
     // The current policy can achieve at worst this value. This method finds
     // the outcome that can improve this upper bound the most, assuming we
     // had perfect information about the outcome
@@ -399,7 +399,7 @@ VPIRTDPSolver::sampleVPIOld(mlcore::State* s, mlcore::Action* sampledAction) {
             // Skip VPI computation early on when bounds gap is large
             if (actionIndex == indexBestAction
                 && (upperBounds_[su.su_state] - su.su_state->cost()) > beta_ ) {
-                                                                                if (show) mdplib_debug = false;
+//                                                                                if (show) mdplib_debug = false;
                 return sampleBiasedBounds(s, sampledAction);
             }
             double stateContrib = su.su_prob
@@ -416,27 +416,27 @@ VPIRTDPSolver::sampleVPIOld(mlcore::State* s, mlcore::Action* sampledAction) {
             statesProbs.back()[su.su_state] += su.su_prob;
         }
     }
-                                                                                if (show) {
-                                                                                    actionIndex = -1;
-                                                                                    dprint("vpi computation for", s, "bestAction", sampledAction, "bounds", s->cost(), upperBounds_[s]);
-                                                                                    for (mlcore::Action* action : problem_->actions()) {
-                                                                                        if (!problem_->applicable(s, action))
-                                                                                            continue;
-                                                                                        actionIndex++;
-                                                                                        dprint("    checking successors for ", action, "E[Qa|bounds]", expectedQValuesGivenBounds[actionIndex]);
-                                                                                        double totalP = 0.0;
-                                                                                        double EQcalc = problem_->cost(s, action);
-                                                                                        for (auto stateProb : statesProbs[actionIndex]) {
-                                                                                            totalP += stateProb.second;
-                                                                                            EQcalc += statesContribQValues[actionIndex][stateProb.first];
-                                                                                            dprint("          ", stateProb.first, "p(o|a)", stateProb.second,
-                                                                                                   "lb", stateProb.first->cost(), "ub", upperBounds_[stateProb.first],
-                                                                                                   "contrib", statesContribQValues[actionIndex][stateProb.first]);
-                                                                                        }
-                                                                                        assert(mdplib_math::equal(totalP, 1.0));
-                                                                                        assert(mdplib_math::equal(EQcalc, expectedQValuesGivenBounds[actionIndex]));
-                                                                                    }
-                                                                                }
+//                                                                                if (show) {
+//                                                                                    actionIndex = -1;
+//                                                                                    dprint("vpi computation for", s, "bestAction", sampledAction, "bounds", s->cost(), upperBounds_[s]);
+//                                                                                    for (mlcore::Action* action : problem_->actions()) {
+//                                                                                        if (!problem_->applicable(s, action))
+//                                                                                            continue;
+//                                                                                        actionIndex++;
+//                                                                                        dprint("    checking successors for ", action, "E[Qa|bounds]", expectedQValuesGivenBounds[actionIndex]);
+//                                                                                        double totalP = 0.0;
+//                                                                                        double EQcalc = problem_->cost(s, action);
+//                                                                                        for (auto stateProb : statesProbs[actionIndex]) {
+//                                                                                            totalP += stateProb.second;
+//                                                                                            EQcalc += statesContribQValues[actionIndex][stateProb.first];
+//                                                                                            dprint("          ", stateProb.first, "p(o|a)", stateProb.second,
+//                                                                                                   "lb", stateProb.first->cost(), "ub", upperBounds_[stateProb.first],
+//                                                                                                   "contrib", statesContribQValues[actionIndex][stateProb.first]);
+//                                                                                        }
+//                                                                                        assert(mdplib_math::equal(totalP, 1.0));
+//                                                                                        assert(mdplib_math::equal(EQcalc, expectedQValuesGivenBounds[actionIndex]));
+//                                                                                    }
+//                                                                                }
 
 
     // Computing the myopic VPI for each successor state.
@@ -484,9 +484,9 @@ VPIRTDPSolver::sampleVPIOld(mlcore::State* s, mlcore::Action* sampledAction) {
             vpiSuccessor = std::max(vpiSuccessor, vpiSuAction);
         }
 //                                                                                dprint(vpiSuccessor, "********");
-                                                                                if (show) {
-                                                                                    dprint("  vpi for", su.su_state, vpiSuccessor);
-                                                                                }
+//                                                                                if (show) {
+//                                                                                    dprint("  vpi for", su.su_state, vpiSuccessor);
+//                                                                                }
         totalVPI += vpiSuccessor;
     }
 
@@ -591,11 +591,11 @@ double VPIRTDPSolver::bellmanUpdate(mlcore::State* s) {
     bool hasAction = false;
     mlcore::Action* bestActionLowerBound = nullptr;
     mlcore::Action* bestActionUpperBound = nullptr;
-                                                                                std::cout << s << ":";
+//                                                                                std::cout << s << ":";
     for (mlcore::Action* a : problem_->actions()) {
         if (!problem_->applicable(s, a))
             continue;
-                                                                                std::cout << a->hashValue();
+//                                                                                std::cout << a->hashValue();
         hasAction = true;
         double lowerBoundAction = 0.0;
         double upperBoundAction = 0.0;
@@ -605,9 +605,9 @@ double VPIRTDPSolver::bellmanUpdate(mlcore::State* s) {
             if (upperBounds_.count(su.su_state) == 0)
                 initializeUpperBound(su.su_state);
             upperBoundAction += su.su_prob * upperBounds_[su.su_state];
-                                                                                std::cout << "~" << su.su_state << "~" << (upperBounds_[su.su_state] - su.su_state->cost());
+//                                                                                std::cout << "~" << su.su_state << "~" << (upperBounds_[su.su_state] - su.su_state->cost());
         }
-                                                                                std::cout << ";";
+//                                                                                std::cout << ";";
         lowerBoundAction =
             (lowerBoundAction * problem_->gamma()) + problem_->cost(s, a);
         lowerBoundAction = std::min(mdplib::dead_end_cost, lowerBoundAction);
@@ -641,7 +641,7 @@ mlcore::Action* VPIRTDPSolver::solve(mlcore::State* s0) {
     int trials = 0;
     while (trials++ < maxTrials_) {
         trial(s0);
-                                                                                dprint("******", s0->cost(), upperBounds_[s0], "******");
+//                                                                                dprint("******", s0->cost(), upperBounds_[s0], "******");
         if (upperBounds_[s0] - s0->cost() < epsilon_)
             break;
     }
