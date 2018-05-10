@@ -23,6 +23,18 @@ for ((ip = 0; ip < ${#problems[@]}; ip++)); do
   problem=${problems[$ip]}
   problem_str=${problems_str[$ip]}
   
+  # LRTDP
+  sbatch --output=/home/lpineda/results_ijcai18/${problem_str}_"lrtdp".txt \
+    run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
+    "lrtdp"
+  
+  # RTDP (only if max time allowed, otherwise it will infinite loop)
+  if [[ $max_time != "-1" ]]; then
+    sbatch --output=/home/lpineda/results_ijcai18/${problem_str}_"rtdp".txt \
+      run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
+      "lrtdp --dont-label"
+  fi  
+    
   # HDP(0)
   sbatch --output=/home/lpineda/results_ijcai18/${problem_str}_"hdp_0".txt \
     run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
@@ -31,7 +43,7 @@ for ((ip = 0; ip < ${#problems[@]}; ip++)); do
   # HDP(0,0)
   sbatch --output=/home/lpineda/results_ijcai18/${problem_str}_"hdp_00".txt \
     run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
-    "hdp --j=0 --i=0"
+    "hdp --j=0 --i=0"    
     
   # Trajectory-based SSiPP
   for rho in ${rhos[@]}; do

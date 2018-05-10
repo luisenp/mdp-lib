@@ -211,7 +211,10 @@ void initSolver(string algorithm, Solver*& solver)
     } else if (algorithm == "lao") {
         solver = new LAOStarSolver(problem, tol, 1000000);
     } else if (algorithm == "lrtdp") {
-        solver = new LRTDPSolver(problem, trials, tol);
+        bool dont_label = false;
+        if (flag_is_registered("dont-label"))
+            dont_label = true;
+        solver = new LRTDPSolver(problem, trials, tol, -1, dont_label);
     } else if (algorithm == "brtdp") {
         // BRTDP is just VPI-RTDP with beta = 0
         double tau = 100;
@@ -386,30 +389,30 @@ void updateStatistics(double cost, int n, double& mean, double& M2)
 
 bool mustReplan(Solver* solver, string algorithm, State* s, int plausTrial) {
     if (flag_is_registered("online"))
-      return true;
+        return true;
     if (algorithm == "flares") {
-      return !s->checkBits(mdplib::SOLVED_FLARES);
+        return !s->checkBits(mdplib::SOLVED_FLARES);
     }
     if (algorithm == "lrtdp") {
-    return !s->checkBits(mdplib::SOLVED);
+        return !s->checkBits(mdplib::SOLVED);
     }
     if (algorithm == "soft-flares") {
-      if (s->checkBits(mdplib::SOLVED))
-          return false;
-      SoftFLARESSolver* flares = static_cast<SoftFLARESSolver*>(solver);
-      return !flares->labeledSolved(s);
+        if (s->checkBits(mdplib::SOLVED))
+            return false;
+        SoftFLARESSolver* flares = static_cast<SoftFLARESSolver*>(solver);
+        return !flares->labeledSolved(s);
     }
     if (algorithm == "hdp") {
-      if (flag_is_registered("i")) {
-          int j = INT_MAX;
-          if (flag_is_registered_with_value("j")) {
-              j = stoi(flag_value("j"));
-          }
-          if (plausTrial >= j) {
-              static_cast<HDPSolver*>(solver)->clearLabels();
-              return true;
-          }
-      }
+        if (flag_is_registered("i")) {
+            int j = INT_MAX;
+            if (flag_is_registered_with_value("j")) {
+                j = stoi(flag_value("j"));
+            }
+            if (plausTrial >= j) {
+                static_cast<HDPSolver*>(solver)->clearLabels();
+                return true;
+            }
+        }
     }
     if (algorithm == "ssipp") {
         return !s->checkBits(mdplib::SOLVED_SSiPP);
@@ -630,18 +633,15 @@ int main(int argc, char* args[])
             minTime = stoi(flag_value("min_time"));
         }
         bool perReplan = flag_is_registered("per_replan");
-        double totalcost = 0.0;
         for (int t = minTime; t <= maxTime; t *= 2) {
             double avgCost = 0.0, avgTime = 0.0;
             double M2Cost = 0.0, M2Time = 0.0;
             for (int i = 1; i <= numReps; i++) {
                 std::vector<double> results =
                     simulate(solver, alg_item, numSims, t, perReplan);
-                totalcost += results[0];
                 updateStatistics(results[0], i, avgCost, M2Cost);
                 updateStatistics(results[2], i, avgTime, M2Time);
             }
-            cout << totalcost / numReps << endl;
             cout << t << " "
                 << avgCost << " "
                 << sqrt(M2Cost / (numReps * (numReps - 1))) << " "

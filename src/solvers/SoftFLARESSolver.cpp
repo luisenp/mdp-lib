@@ -61,7 +61,6 @@ void SoftFLARESSolver::trial(State* s) {
     list<State*> visited;
     double accumulated_cost = 0.0;
 
-//    while (!labeledSolved(currentState)) {
     while (true) {
         if (problem_->goal(currentState))
             break;
@@ -79,7 +78,6 @@ void SoftFLARESSolver::trial(State* s) {
         currentState = sampleSuccessor(currentState, greedy_action);
 
         if (currentState == nullptr) {
-            assert(alpha_ == 0.0);
             break;
         }
     }
@@ -287,14 +285,7 @@ Action* SoftFLARESSolver::solve(State* s0) {
     beginTime_ = std::chrono::high_resolution_clock::now();
     while (moreTrials(s0, trials, beginTime_)) {
         trial(s0);
-
-                                                                                auto endTime =
-                                                                                    std::chrono::high_resolution_clock::now();
-                                                                                auto duration = std::chrono::
-                                                                                    duration_cast<std::chrono::milliseconds>(endTime-beginTime_).count();
-//                                                                                dprint("new trial", duration, maxTime_);
     }
-//                                                                                dprint("stop", s0->bestAction());
     return s0->bestAction();
 }
 

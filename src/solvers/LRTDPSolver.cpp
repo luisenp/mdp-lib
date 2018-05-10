@@ -5,16 +5,23 @@ namespace mlsolvers
 
 LRTDPSolver::LRTDPSolver(mlcore::Problem* problem,
                          int maxTrials,
-                         double epsilon) :
-    problem_(problem), maxTrials_(maxTrials), epsilon_(epsilon)
+                         double epsilon,
+                         int maxTime,
+                         bool dont_label) :
+    problem_(problem),
+    maxTrials_(maxTrials),
+    epsilon_(epsilon),
+    maxTime_(maxTime),
+    dont_label_(dont_label)
 { }
 
 
 void LRTDPSolver::trial(mlcore::State* s) {
     mlcore::State* tmp = s;
     std::list<mlcore::State*> visited;
+    double accumulated_cost = 0.0;
     while (!tmp->checkBits(mdplib::SOLVED)) {
-        if (problem_->goal(tmp))
+        if (problem_->goal(tmp) || accumulated_cost > mdplib::dead_end_cost)
             break;
 
         visited.push_front(tmp);
@@ -24,28 +31,17 @@ void LRTDPSolver::trial(mlcore::State* s) {
         if (tmp->deadEnd())
             break;
 
-                                                                                dprint(tmp);
-                                                                                dprint(tmp->bestAction());
-                                                                                for (auto scc : problem_->transition(tmp, tmp->bestAction())) {
-                                                                                  dprint(scc.first, scc.second);
-                                                                                }
-                                                                                auto begin = std::chrono::high_resolution_clock::now();
+        accumulated_cost += problem_->cost(tmp, tmp->bestAction());
         tmp = randomSuccessor(problem_, tmp, tmp->bestAction());
-                                                                                auto end = std::chrono::high_resolution_clock::now();
-                                                                                auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end-begin).count();
-                                                                                cnt_samples_++;
-                                                                                total_time_samples_ += duration;
     }
+
+    if (dont_label_)
+        return;
 
     while (!visited.empty()) {
         tmp = visited.front();
         visited.pop_front();
-                                                                                auto begin = std::chrono::high_resolution_clock::now();
         bool solved = checkSolved(tmp);
-                                                                                auto end = std::chrono::high_resolution_clock::now();
-                                                                                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end-begin).count();
-                                                                                cnt_check_++;
-                                                                                total_time_check_ += duration;
         if (!solved) break;
     }
 }
@@ -78,9 +74,9 @@ bool LRTDPSolver::checkSolved(mlcore::State* s)
 
         if (residual(problem_, tmp) > epsilon_) {
             rv = false;
-            // The original paper includes this line, but the algorithm
-            // seems to work significantly faster without this
-            //  continue;
+            // The original paper includes the following line, but the algorithm
+            // seems to work significantly faster without it
+            /*  continue; */
         }
 
         for (mlcore::Successor su : problem_->transition(tmp, a)) {
@@ -113,12 +109,17 @@ bool LRTDPSolver::checkSolved(mlcore::State* s)
 mlcore::Action* LRTDPSolver::solve(mlcore::State* s0)
 {
     int trials = 0;
+    beginTime_ = std::chrono::high_resolution_clock::now();
     while (!s0->checkBits(mdplib::SOLVED) && trials++ < maxTrials_) {
         trial(s0);
+        // Checking if it ran out of time for planning.
+        auto endTime = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
+            endTime - beginTime_).count();
+        if (maxTime_ > -1 && duration > maxTime_)
+            break;
+
     }
-                                                                                dprint(cnt_samples_, double(total_time_samples_) / cnt_samples_);
-                                                                                dprint(cnt_check_, double(total_time_check_) / cnt_check_);
-                                                                                dprint(trials);
     return s0->bestAction();
 }
 
