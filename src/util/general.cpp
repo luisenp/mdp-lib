@@ -36,12 +36,12 @@ void mdplib_toc() {
 
 long long mdplib_elapsed_nano() {
     return std::chrono::duration_cast<std::chrono::nanoseconds>(
-        mdplib_toc_-mdplib_tic_).count();
+        mdplib_toc_ - mdplib_tic_).count();
 }
 
 long long mdplib_elapsed_micro() {
     return std::chrono::duration_cast<std::chrono::microseconds>(
-        mdplib_toc_-mdplib_tic_).count();
+        mdplib_toc_ - mdplib_tic_).count();
 }
 
 bool nextComb(std::vector<int>& comb, int n, int k) {
