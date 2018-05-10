@@ -81,8 +81,8 @@ void SoftFLARESSolver::trial(State* s) {
 //                                                                                auto durationA = mdplib_elapsed_nano();
 
                                                                                 mdplib_tic();
-                                                                                currentState = randomSuccessor(problem_, currentState, greedy_action);
-//        currentState = sampleSuccessor(currentState, greedy_action);
+//                                                                                currentState = randomSuccessor(problem_, currentState, greedy_action);
+        currentState = sampleSuccessor(currentState, greedy_action);
                                                                                 mdplib_toc();
                                                                                 auto durationB = mdplib_elapsed_nano();
                                                                                 dprint("sample-successor", durationB);
@@ -113,7 +113,6 @@ double SoftFLARESSolver::computeProbUnlabeled(mlcore::State* s) {
     if (useCache_) {
         return modifierCache_[int(distance)];
     } else {
-                                                                                dprint("should be precomputing");
         return computeProbUnlabeled(distance);
     }
 }
@@ -161,7 +160,8 @@ mlcore::State* SoftFLARESSolver::sampleSuccessor(mlcore::State* s,
     double totalScore = 0.0;
     vector<double> modTransitionF;
     for (mlcore::Successor sccr : problem_->transition(s, a)) {
-        double p = computeProbUnlabeled(sccr.su_state) * sccr.su_prob;
+//        double p = computeProbUnlabeled(sccr.su_state) * sccr.su_prob;
+        double p = sccr.su_prob;
         modTransitionF.push_back(p);
         totalScore += p;
     }
