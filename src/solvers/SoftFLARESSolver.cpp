@@ -61,7 +61,8 @@ void SoftFLARESSolver::trial(State* s) {
     list<State*> visited;
     double accumulated_cost = 0.0;
 
-    while (!labeledSolved(currentState)) {
+//    while (!labeledSolved(currentState)) {
+    while (true) {
         if (problem_->goal(currentState))
             break;
 
@@ -75,20 +76,10 @@ void SoftFLARESSolver::trial(State* s) {
         mlcore::Action* greedy_action = greedyAction(problem_, currentState);
         accumulated_cost += problem_->cost(currentState, greedy_action);
 
-//                                                                                mdplib_tic();
-//                                                                                randomSuccessor(problem_, currentState, greedy_action);
-//                                                                                mdplib_toc();
-//                                                                                auto durationA = mdplib_elapsed_nano();
-
-                                                                                mdplib_tic();
-//                                                                                currentState = randomSuccessor(problem_, currentState, greedy_action);
         currentState = sampleSuccessor(currentState, greedy_action);
-                                                                                mdplib_toc();
-                                                                                auto durationB = mdplib_elapsed_nano();
-                                                                                dprint("sample-successor", durationB);
+
         if (currentState == nullptr) {
             assert(alpha_ == 0.0);
-                                                                                dprint("solved state");
             break;
         }
     }
@@ -96,11 +87,8 @@ void SoftFLARESSolver::trial(State* s) {
     while (!visited.empty()) {
         currentState = visited.front();
         visited.pop_front();
-                                                                                mdplib_tic();
         computeResidualDistances(currentState);
-                                                                                mdplib_toc();
-                                                                                auto durationC = mdplib_elapsed_nano();
-                                                                                dprint("compute-e-distance", durationC);
+
         if (!labeledSolved(currentState))
             break;
     }
@@ -157,73 +145,17 @@ mlcore::State* SoftFLARESSolver::sampleSuccessor(mlcore::State* s,
     if (a == nullptr)
         return s;
 
-    double totalScore = 0.0;
-    vector<double> modTransitionF;
-    for (mlcore::Successor sccr : problem_->transition(s, a)) {
-//        double p = computeProbUnlabeled(sccr.su_state) * sccr.su_prob;
-        double p = sccr.su_prob;
-        modTransitionF.push_back(p);
-        totalScore += p;
-    }
-//                                                                                mdplib_toc();
-//                                                                                auto durationA = mdplib_elapsed_nano();
-
     double pick = kUnif_0_1(kRNG);
     double acc = 0.0;
     int index = 0;
-                                                                                if (totalScore == 0.0)
-                                                                                    dprint("totalscore=0");
     for (mlcore::Successor sccr : problem_->transition(s, a)) {
-        double p = modTransitionF[index++] / totalScore;
-        acc += p;
-        if (acc >= pick) {
-//                                                                                mdplib_toc();
-//                                                                                auto durationB = mdplib_elapsed_nano();
-//                                                                                dprint("here1: partA", durationA, "partB", durationB);
-            return sccr.su_state;
-        }
-    }
-//                                                                                mdplib_toc();
-//                                                                                auto durationB = mdplib_elapsed_nano();
-//                                                                                dprint("here2: partA", durationA, "partB", durationB);
-    assert(alpha_ == 0);
-    return nullptr;
-
-
-
-
-    /*if (a == nullptr)
-        return s;
-
-    double totalScore = 0.0;
-    SuccessorsList successors = problem_->transition(s, a);
-    vector<double> modTransitionF(successors.size(), 0.0);
-    int index = 0;
-    for (mlcore::Successor& sccr : successors) {
         double p = computeProbUnlabeled(sccr.su_state) * sccr.su_prob;
-        modTransitionF[index++] = p;
-        totalScore += p;
-    }
-//                                                                                mdplib_toc();
-//                                                                                auto durationA = mdplib_elapsed_nano();
-    double pick = kUnif_0_1(kRNG);
-    double acc = 0.0;
-    index = 0;
-    for (mlcore::Successor& sccr : successors) {
-        double p = modTransitionF[index++] / totalScore;
         acc += p;
         if (acc >= pick) {
-//                                                                                mdplib_toc();
-//                                                                                auto durationB = mdplib_elapsed_nano();
-//                                                                                dprint("here1: partA", durationA, "partB", durationB);
             return sccr.su_state;
         }
     }
-    assert(alpha_ == 0);
-//                                                                                mdplib_toc();
-//                                                                                auto durationB = mdplib_elapsed_nano();
-//                                                                                dprint("here2: partA", durationA, "partB", durationB);
-    return nullptr;*/
+    return nullptr;
 }
 
 bool SoftFLARESSolver::labeledSolved(State* s) {
