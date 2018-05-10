@@ -49,14 +49,25 @@ void FLARESSolver::trial(State* s)
         mlcore::Action* greedy_action = greedyAction(problem_, currentState);
 //                                                                                dprint(currentState, currentState->residualDistance(), greedy_action);
         accumulated_cost += problem_->cost(currentState, greedy_action);
+                                                                                mdplib_tic();
         currentState = randomSuccessor(problem_, currentState, greedy_action);
+                                                                                mdplib_toc();
+                                                                                auto duration = mdplib_elapsed_nano();
+                                                                                dprint("sample-successor", duration);
+                                                                                if (labeledSolved(currentState))
+                                                                                    dprint("solved-state");
     }
 //                                                                                dprint("********");
 
     while (!visited.empty()) {
         currentState = visited.front();
         visited.pop_front();
-        if (!checkSolved(currentState))
+                                                                                mdplib_tic();
+        bool solved = checkSolved(currentState);
+                                                                                mdplib_toc();
+                                                                                auto duration = mdplib_elapsed_nano();
+                                                                                dprint("check-solved", duration);
+        if (!solved)
             break;
     }
 }
@@ -142,6 +153,7 @@ bool FLARESSolver::checkSolved(State* s)
             } else {
                 if ( (useProbsForDepth_ && pp.second > log(horizon_)) ||
                      (!useProbsForDepth_ && pp.second <= horizon_) ) {
+                                                                                dprint("solved a state", pp.second);
                         pp.first->setBits(mdplib::SOLVED_FLARES);
                         depthSolved_.insert(pp.first);
 //                                                                                dprint("  --flares depth-solved", pp.first);

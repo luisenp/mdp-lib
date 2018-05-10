@@ -51,6 +51,7 @@ SoftFLARESSolver::SoftFLARESSolver(Problem* problem,
     modifierCache_.resize(horizon_ + 1);
     for (int i = 0; i <= horizon_; i++) {
         modifierCache_[i] = computeProbUnlabeled(i);
+                                                                                dprint(i, modifierCache_[i]);
     }
 }
 
@@ -78,14 +79,16 @@ void SoftFLARESSolver::trial(State* s) {
 //                                                                                randomSuccessor(problem_, currentState, greedy_action);
 //                                                                                mdplib_toc();
 //                                                                                auto durationA = mdplib_elapsed_nano();
-//                                                                                mdplib_tic();
-//                                                                                currentState = randomSuccessor(problem_, currentState, greedy_action);
-        currentState = sampleSuccessor(currentState, greedy_action);
-//                                                                                mdplib_toc();
-//                                                                                auto durationB = mdplib_elapsed_nano();
-//                                                                                dprint("standard-transition", durationA);
+
+                                                                                mdplib_tic();
+                                                                                currentState = randomSuccessor(problem_, currentState, greedy_action);
+//        currentState = sampleSuccessor(currentState, greedy_action);
+                                                                                mdplib_toc();
+                                                                                auto durationB = mdplib_elapsed_nano();
+                                                                                dprint("sample-successor", durationB);
         if (currentState == nullptr) {
             assert(alpha_ == 0.0);
+                                                                                dprint("solved state");
             break;
         }
     }
@@ -93,7 +96,11 @@ void SoftFLARESSolver::trial(State* s) {
     while (!visited.empty()) {
         currentState = visited.front();
         visited.pop_front();
+                                                                                mdplib_tic();
         computeResidualDistances(currentState);
+                                                                                mdplib_toc();
+                                                                                auto durationC = mdplib_elapsed_nano();
+                                                                                dprint("compute-e-distance", durationC);
         if (!labeledSolved(currentState))
             break;
     }
@@ -106,6 +113,7 @@ double SoftFLARESSolver::computeProbUnlabeled(mlcore::State* s) {
     if (useCache_) {
         return modifierCache_[int(distance)];
     } else {
+                                                                                dprint("should be precomputing");
         return computeProbUnlabeled(distance);
     }
 }
@@ -120,7 +128,7 @@ double SoftFLARESSolver::computeProbUnlabeled(double distance) {
         return 1.0 - beta_;
     }
     if (modifierFunction_ == kStep) {
-        if (distance >= horizon_)
+        if (distance >= 0)
             return 1.0 - beta_;
         return 1.0 - alpha_;
     }
@@ -163,6 +171,8 @@ mlcore::State* SoftFLARESSolver::sampleSuccessor(mlcore::State* s,
     double pick = kUnif_0_1(kRNG);
     double acc = 0.0;
     int index = 0;
+                                                                                if (totalScore == 0.0)
+                                                                                    dprint("totalscore=0");
     for (mlcore::Successor sccr : problem_->transition(s, a)) {
         double p = modTransitionF[index++] / totalScore;
         acc += p;
@@ -248,9 +258,7 @@ void SoftFLARESSolver::computeResidualDistances(State* s) {
     bool should_label = true;
     bool subgraphWithinSearchHorizon = true;
     double effectiveHorizon = sampleEffectiveHorizon();
-                                                                                if (effectiveHorizon == kInfiniteDistance_) {
-                                                                                    dprint(s);
-                                                                                }
+
     while (!open.empty()) {
         State* currentState = open.front();
         open.pop_front();
@@ -310,6 +318,7 @@ void SoftFLARESSolver::computeResidualDistances(State* s) {
                                                                                 assert(effectiveHorizon != kInfiniteDistance_);
                 double depth = state->depth();
                 if (depth <= effectiveHorizon) {
+                                                                                dprint("solved", effectiveHorizon - depth);
                     state->residualDistance(effectiveHorizon - depth);
                 }
             }
