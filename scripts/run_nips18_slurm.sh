@@ -1,5 +1,5 @@
 #!/bin/bash
-#Usage ./run_ijcai18_slurm.sh 
+#Usage ./run_nips18_slurm.sh 
 
 nsims=100
 alpha=0.1
@@ -24,48 +24,48 @@ for ((ip = 0; ip < ${#problems[@]}; ip++)); do
   problem_str=${problems_str[$ip]}
   
   # LRTDP
-  sbatch --output=/home/lpineda/results_ijcai18/${problem_str}_"lrtdp".txt \
+  sbatch --output=/home/lpineda/results_nips18/${problem_str}_"lrtdp".txt \
     run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
     "lrtdp"
   
   # RTDP (only if max time allowed, otherwise it will infinite loop)
   if [[ $max_time != "-1" ]]; then
-    sbatch --output=/home/lpineda/results_ijcai18/${problem_str}_"rtdp".txt \
+    sbatch --output=/home/lpineda/results_nips18/${problem_str}_"rtdp".txt \
       run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
       "lrtdp --dont-label"
   fi  
     
   # HDP(0)
-  sbatch --output=/home/lpineda/results_ijcai18/${problem_str}_"hdp_0".txt \
+  sbatch --output=/home/lpineda/results_nips18/${problem_str}_"hdp_0".txt \
     run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
     "hdp --i=0"
     
   # HDP(0,0)
-  sbatch --output=/home/lpineda/results_ijcai18/${problem_str}_"hdp_00".txt \
+  sbatch --output=/home/lpineda/results_nips18/${problem_str}_"hdp_00".txt \
     run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
     "hdp --j=0 --i=0"    
     
   # Trajectory-based SSiPP
   for rho in ${rhos[@]}; do
-    sbatch --output=/home/lpineda/results_ijcai18/${problem_str}_"ssipp_$rho".txt \
+    sbatch --output=/home/lpineda/results_nips18/${problem_str}_"ssipp_$rho".txt \
       run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
       "ssipp --rho=$rho"
   done
   
   for horizon in `seq 1 4`; do
     # Depth-based SSiPP(1-4)
-    sbatch --output=/home/lpineda/results_ijcai18/${problem_str}_"ssipp_$horizon".txt \
+    sbatch --output=/home/lpineda/results_nips18/${problem_str}_"ssipp_$horizon".txt \
       run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
       "ssipp --horizon=$horizon"
       
     # FLARES(1-4)
-    sbatch --output=/home/lpineda/results_ijcai18/${problem_str}_"flares_$horizon".txt \
+    sbatch --output=/home/lpineda/results_nips18/${problem_str}_"flares_$horizon".txt \
       run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
       "soft-flares --labelf=step --dist=depth --horizon=$horizon --alpha=0"
   done
     
   # Soft-FLARES(0)
-  sbatch --output=/home/lpineda/results_ijcai18/${problem_str}_"soft-flares_0".txt \
+  sbatch --output=/home/lpineda/results_nips18/${problem_str}_"soft-flares_0".txt \
     ./run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
     "soft-flares --labelf=linear --dist=depth --horizon=0 --alpha=$alpha"
   
@@ -74,7 +74,7 @@ for ((ip = 0; ip < ${#problems[@]}; ip++)); do
   # all of them result in the same set of labeling probabilities.
   # However, the distance function can potentially matter.   
   for distf in ${distfuns[@]}; do
-    sbatch --output=/home/lpineda/results_ijcai18/${problem_str}_"soft-flares_1_$distf".txt \
+    sbatch --output=/home/lpineda/results_nips18/${problem_str}_"soft-flares_1_$distf".txt \
       run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
       "soft-flares --labelf=linear --dist=$distf --horizon=1 --alpha=$alpha"
   done
@@ -83,7 +83,7 @@ for ((ip = 0; ip < ${#problems[@]}; ip++)); do
   for labelf in ${labelfuns[@]}; do
     for distf in ${distfuns[@]}; do
       for horizon in `seq 2 4`; do
-        sbatch --output=/home/lpineda/results_ijcai18/${problem_str}_"soft-flares_${horizon}_${distf}_${labelf}".txt \
+        sbatch --output=/home/lpineda/results_nips18/${problem_str}_"soft-flares_${horizon}_${distf}_${labelf}".txt \
           run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
           "soft-flares --labelf=$labelf --dist=$distf --horizon=$horizon --alpha=$alpha"
       done
