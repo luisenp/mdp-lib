@@ -203,8 +203,6 @@ bool SSiPPSolver::checkSolved(State* s)
 
 Action* SSiPPSolver::solve(State* s0)
 {
-                                                                                mdplib_debug = true;
-                                                                                dprint("SSIPP-0");
     if (algorithm_ == SSiPPAlgo::Original)
         return solveOriginal(s0);
     if (algorithm_ == SSiPPAlgo::Labeled)
