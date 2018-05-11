@@ -647,7 +647,7 @@ int main(int argc, char* args[])
                 << avgCost << " "
                 << sqrt(M2Cost / (numReps * (numReps - 1))) << " "
                 << avgTime << " "
-                << sqrt(M2Time / (numReps * (numReps - 1)))
+                << sqrt(M2Time / (numReps * (numReps - 1))) << " "
                 << avgLongestTime << " "
                 << sqrt(M2LongestTime / (numReps * (numReps - 1))) << endl;
             if (maxTime == -1)
