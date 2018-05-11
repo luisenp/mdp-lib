@@ -565,7 +565,7 @@ vector<double> simulate(Solver* solver,
     double results[] = {expectedCost,
                         variance / (cnt - 1),
                         reportedTime,
-                        double(statesSeen.size())};
+                        longestTime};
     return vector<double>(results, results + sizeof(results) / sizeof(double));
 }
 
@@ -634,19 +634,22 @@ int main(int argc, char* args[])
         }
         bool perReplan = flag_is_registered("per_replan");
         for (int t = minTime; t <= maxTime; t *= 2) {
-            double avgCost = 0.0, avgTime = 0.0;
-            double M2Cost = 0.0, M2Time = 0.0;
+            double avgCost = 0.0, avgTime = 0.0, avgLongestTime = 0.0;
+            double M2Cost = 0.0, M2Time = 0.0, M2LongestTime = 0.0;
             for (int i = 1; i <= numReps; i++) {
                 std::vector<double> results =
                     simulate(solver, alg_item, numSims, t, perReplan);
                 updateStatistics(results[0], i, avgCost, M2Cost);
                 updateStatistics(results[2], i, avgTime, M2Time);
+                updateStatistics(results[3], i, avgLongestTime, M2LongestTime);
             }
             cout << t << " "
                 << avgCost << " "
                 << sqrt(M2Cost / (numReps * (numReps - 1))) << " "
                 << avgTime << " "
-                << sqrt(M2Time / (numReps * (numReps - 1))) << endl;
+                << sqrt(M2Time / (numReps * (numReps - 1)))
+                << avgLongestTime << " "
+                << sqrt(M2LongestTime / (numReps * (numReps - 1))) << endl;
             if (maxTime == -1)
                 break;
         }

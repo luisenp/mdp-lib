@@ -1,9 +1,9 @@
 #!/bin/bash
 #Usage ./run_nips18_slurm.sh 
 
-nsims=100
+nsims=1000
 alpha=0.1
-reps=25
+reps=10
 verbosity=-1
 min_time=-1
 max_time=-1
