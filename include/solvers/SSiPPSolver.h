@@ -70,6 +70,9 @@ private:
     /* The time at which planning began. */
     std::chrono::time_point<std::chrono::high_resolution_clock> beginTime_;
 
+    /* A cache to store best actions for each state */
+    mlcore::StateActionMap cacheActions_;
+
 public:
     /**
      * Creates a new SSiPP solver for the given problem. The constructor

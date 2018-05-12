@@ -20,6 +20,9 @@ namespace mlsolvers
 
 Action* SSiPPSolver::solveOriginal(State* s0)
 {
+    if (cacheActions_.count(s0) > 0)
+        return cacheActions_[s0];
+
     beginTime_ = std::chrono::high_resolution_clock::now();
     if (maxTime_ > -1) {
         maxTrials_ = 10000000;
@@ -44,6 +47,7 @@ Action* SSiPPSolver::solveOriginal(State* s0)
             wrapper->overrideStates(&reachableStates);
             wrapper->overrideGoals(&tipStates);
             VISolver vi(wrapper, maxTrials_);
+            // Checking if it ran out of time
             auto endTime = std::chrono::high_resolution_clock::now();
             auto timeElapsed = std::chrono::duration_cast<
                 std::chrono::milliseconds>(endTime - beginTime_).count();
@@ -83,6 +87,7 @@ Action* SSiPPSolver::solveOriginal(State* s0)
                 break;
         }
     }
+    cacheActions_[s0] = s0->bestAction();
     return s0->bestAction();
 }
 
@@ -210,6 +215,9 @@ Action* SSiPPSolver::solve(State* s0)
 }
 
 
+// This implementation is not used anymore. Re-using the labels is incorrect
+// because states can be solved in one of the short-sighted SSPs but not another
+// (due to the horizon mismatch).
 void SSiPPSolver::optimalSolver(WrapperProblem* problem, State* s0)
 {
     // This is a stack based implementation of LAO*.
