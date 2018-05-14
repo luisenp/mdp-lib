@@ -20,9 +20,6 @@ namespace mlsolvers
 
 Action* SSiPPSolver::solveOriginal(State* s0)
 {
-    if (cacheActions_.count(s0) > 0)
-        return cacheActions_[s0];
-
     beginTime_ = std::chrono::high_resolution_clock::now();
     if (maxTime_ > -1) {
         maxTrials_ = 10000000;
@@ -87,7 +84,6 @@ Action* SSiPPSolver::solveOriginal(State* s0)
                 break;
         }
     }
-    cacheActions_[s0] = s0->bestAction();
     return s0->bestAction();
 }
 

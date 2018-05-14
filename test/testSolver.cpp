@@ -423,6 +423,16 @@ bool mustReplan(Solver* solver, string algorithm, State* s, int plausTrial) {
     return false;
 }
 
+bool mustResetPlanner(int i) {
+    if (flag_is_registered("reset-every-trial"))
+        return true;
+    if (flag_is_registered("no-initial-plan"))
+        return false;
+    // Otherwise only compute an initial plan during the first simulation
+    // and re-plan if necessary in the subsequent simulations.
+    return (i == 0);
+}
+
 // Runs [numSims] of the given solver and and returns the results
 // (i.e., expectedCost, variance, totalTime, statesSeen).
 // Argument [algorithm] is the name of the algorithm implemented by [solver].
@@ -448,7 +458,8 @@ vector<double> simulate(Solver* solver,
         if (verbosity >= 100)
             cout << " ********* Simulation Starts ********* " << endl;
         clock_t startTime, endTime;
-        if (i == 0 && !flag_is_registered("no-initial-plan")) {
+        // If requested, reset all state information computed by the algorithm
+        if (mustResetPlanner(i)) {
             for (State* s : problem->states())
                 s->reset();
             if (maxTime > 0) {
@@ -474,6 +485,7 @@ vector<double> simulate(Solver* solver,
             cout << "Estimated cost " <<
                 problem->initialState()->cost() << endl;
         }
+        // This is where the actual simulated trial starts
         double costTrial = 0.0;
         int plausTrial = 0;
         while (!problem->goal(tmp)) {
@@ -634,17 +646,29 @@ int main(int argc, char* args[])
         }
         bool perReplan = flag_is_registered("per_replan");
         for (int t = minTime; t <= maxTime; t *= 2) {
-            double avgCost = 0.0, avgTime = 0.0, avgLongestTime = 0.0;
+            double avgCost = 0.0, avgVar = 0.0;
+            double avgTime = 0.0, avgLongestTime = 0.0;
             double M2Cost = 0.0, M2Time = 0.0, M2LongestTime = 0.0;
+            double M2Var = 0.0;
             for (int i = 1; i <= numReps; i++) {
                 std::vector<double> results =
                     simulate(solver, alg_item, numSims, t, perReplan);
                 updateStatistics(results[0], i, avgCost, M2Cost);
+                updateStatistics(results[1], i, avgVar, M2Var);
                 updateStatistics(results[2], i, avgTime, M2Time);
                 updateStatistics(results[3], i, avgLongestTime, M2LongestTime);
             }
+            // Prints <max_plan_time, avg_exp_cost, stderr_exp_cost,
+            //           avg_var_cost,
+            //           avg_exp_time, stderr_exp_time,
+            //           avg_max_time, stderr_max_time>
+            // One experiment is [numSims] simulations of the algorithm, which
+            // outputs <exp_cost, var_cost, exp_time, max_time>.
+            // The averages below are over [numReps] repetitions of an
+            // experiment.
             cout << t << " "
                 << avgCost << " "
+                << avgVar << " "
                 << sqrt(M2Cost / (numReps * (numReps - 1))) << " "
                 << avgTime << " "
                 << sqrt(M2Time / (numReps * (numReps - 1))) << " "
