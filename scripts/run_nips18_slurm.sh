@@ -3,11 +3,11 @@
 
 nsims=1000
 alpha=0.1
-reps=10
+reps=1
 verbosity=-1
 min_time=-1
 max_time=-1
-other_flags=""
+other_flags="--reset-every-trial"
 
 problems=( "--track=../data/tracks/known/square-4-error.track --perror=0.25 --pslip=0.50" \
            "--track=../data/tracks/known/ring-5-error.track --perror=0.25 --pslip=0.50" \
@@ -24,8 +24,10 @@ for ((ip = 0; ip < ${#problems[@]}; ip++)); do
   problem_str=${problems_str[$ip]}
   
   # LRTDP
+  #"$other_flags" is removed so that it only plans the first time
+  # Need to add this back if --per_replan is used
   sbatch --output=/home/lpineda/results_nips18/${problem_str}_"lrtdp".txt \
-    run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
+    run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "" \
     "lrtdp"
   
   # RTDP (only if max time allowed, otherwise it will infinite loop)
