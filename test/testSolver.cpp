@@ -542,6 +542,8 @@ vector<double> simulate(Solver* solver,
             }
             tmp = aux;
         }
+        if (verbosity >= 1)
+            cout << costTrial << endl;
         if (flag_is_registered("ctp")) {
             CTPState* ctps = static_cast<CTPState*>(tmp);
             if (!ctps->badWeather()) {
@@ -551,12 +553,10 @@ vector<double> simulate(Solver* solver,
         } else {
             cnt++;
             updateStatistics(costTrial, cnt, expectedCost, variance);
-            if (verbosity >= 10)
-                cout << costTrial << endl;
         }
     }
 
-    if (verbosity >= 1) {
+    if (verbosity >= 10) {
         cout << "Estimated cost " << problem->initialState()->cost() << " ";
         cout << "Avg. Exec cost " << expectedCost << " ";
         cout << "Std. Dev. " << sqrt(variance / (cnt - 1)) << " ";
