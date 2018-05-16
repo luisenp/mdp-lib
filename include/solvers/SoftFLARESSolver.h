@@ -80,6 +80,11 @@ private:
     bool useProbsForDepth_;
 
     /*
+     * If true, no labeling will be used (equivalent to RTDP).
+     */
+    bool noLabeling_;
+
+    /*
      * The function used to modify the transition function from the residual
      * distance estimates.
      */
@@ -186,6 +191,7 @@ public:
      * @param alpha Desired vanishing level.
      * @param useProbsForDepth If true, uses trajectory probabilities as
      *        the depth (instead of the number of steps).
+     * @param noLabeling If true, no labeling will be used.
      * @param optimal If true, runs until optimality.
      * @param maxTime The maximum time allowed for planning.
      */
@@ -198,6 +204,7 @@ public:
                      HorizonFunction horizonFunction,
                      double alpha = 0.01,
                      bool useProbsForDepth = false,
+                     bool noLabeling = false,
                      bool optimal = false,
                      int maxTime = -1);
 

@@ -164,8 +164,7 @@ bool SSiPPSolver::checkSolved(State* s)
             rv = false;
         }
         if (ranOutOfTime()) {
-            rv = false;
-            continue;
+            return false;
         }
         for (Successor su : problem_->transition(tmp, a)) {
             State* next = su.su_state;

@@ -20,6 +20,7 @@ SoftFLARESSolver::SoftFLARESSolver(Problem* problem,
                                    HorizonFunction horizonFunction,
                                    double alpha,
                                    bool useProbsForDepth,
+                                   bool noLabeling,
                                    bool optimal,
                                    int maxTime) :
         problem_(problem),
@@ -75,12 +76,16 @@ void SoftFLARESSolver::trial(State* s) {
         mlcore::Action* greedy_action = greedyAction(problem_, currentState);
         accumulated_cost += problem_->cost(currentState, greedy_action);
 
-        currentState = sampleSuccessor(currentState, greedy_action);
+        currentState = noLabeling_ ?
+            randomSuccessor(problem_, currentState, greedy_action):
+            sampleSuccessor(currentState, greedy_action);
 
         if (currentState == nullptr) {
             break;
         }
     }
+
+    if (noLabeling_) return;
 
     while (!visited.empty()) {
         currentState = visited.front();

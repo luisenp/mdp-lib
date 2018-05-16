@@ -211,10 +211,7 @@ void initSolver(string algorithm, Solver*& solver)
     } else if (algorithm == "lao") {
         solver = new LAOStarSolver(problem, tol, 1000000);
     } else if (algorithm == "lrtdp") {
-        bool dont_label = false;
-        if (flag_is_registered("dont-label"))
-            dont_label = true;
-        solver = new LRTDPSolver(problem, trials, tol, -1, dont_label);
+        solver = new LRTDPSolver(problem, trials, tol, -1);
     } else if (algorithm == "brtdp") {
         // BRTDP is just VPI-RTDP with beta = 0
         double tau = 100;
@@ -315,7 +312,11 @@ void initSolver(string algorithm, Solver*& solver)
         }
         solver = new SoftFLARESSolver(
             problem, trials, tol, depth, mod_func, dist_func, horizon_func,
-            alpha, false, optimal);
+            alpha, false, false, optimal);
+    } else if (algorithm == "rtdp") {
+        solver = new SoftFLARESSolver(
+            problem, trials, tol, 0, kLinear, kStepDist, kFixed,
+            0.0, false, true);
     } else if (algorithm == "hdp") {
         int plaus;
         if (flag_is_registered_with_value("i"))
