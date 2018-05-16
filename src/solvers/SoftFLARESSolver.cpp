@@ -168,7 +168,7 @@ double SoftFLARESSolver::sampleEffectiveHorizon() {
         return horizon_;
     }
     if (horizonFunction_ == kBernoulli) {
-        if (kUnif_0_1(kRNG) > 0.5) {
+        if (kUnif_0_1(kRNG) > 0.2) {
             return horizon_;
         } else {
             return kInfiniteDistance_;

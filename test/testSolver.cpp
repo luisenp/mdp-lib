@@ -299,19 +299,20 @@ void initSolver(string algorithm, Solver*& solver)
         }
         // Labeling functions
         if (flag_is_registered("horf")) {
-            string labelf_str = flag_value("horf");
-            if (labelf_str == "exp") {
+            string horf_str = flag_value("horf");
+            if (horf_str == "exp") {
                 horizon_func = kExponentialH;
-            } else if (labelf_str == "fixed") {
+            } else if (horf_str == "fixed") {
                 horizon_func = kFixed;
-            } else if (labelf_str == "bern") {
+            } else if (horf_str == "bern") {
                 horizon_func = kBernoulli;
             } else {
                 cerr << "Error: unknown labeling function." << endl;
                 exit(0);
             }
+        } else if (optimal) {
+            horizon_func = kBernoulli;
         }
-        solver =
         solver = new SoftFLARESSolver(
             problem, trials, tol, depth, mod_func, dist_func, horizon_func,
             alpha, false, optimal);

@@ -70,6 +70,9 @@ private:
     /* The time at which planning began. */
     std::chrono::time_point<std::chrono::high_resolution_clock> beginTime_;
 
+    /* Returns true iff there is no more time left for planning. */
+    bool ranOutOfTime();
+
 public:
     /**
      * Creates a new SSiPP solver for the given problem. The constructor

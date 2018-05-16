@@ -18,6 +18,18 @@ using namespace std;
 namespace mlsolvers
 {
 
+bool SSiPPSolver::ranOutOfTime() {
+    // Checking if it ran out of time
+    if (maxTime_ > -1) {
+        auto endTime = std::chrono::high_resolution_clock::now();
+        auto timeElapsed = std::chrono::duration_cast<
+            std::chrono::milliseconds>(endTime - beginTime_).count();
+        if (timeElapsed > maxTime_)
+            return true;
+    }
+    return false;
+}
+
 Action* SSiPPSolver::solveOriginal(State* s0)
 {
     beginTime_ = std::chrono::high_resolution_clock::now();
@@ -44,11 +56,11 @@ Action* SSiPPSolver::solveOriginal(State* s0)
             wrapper->overrideStates(&reachableStates);
             wrapper->overrideGoals(&tipStates);
             VISolver vi(wrapper, maxTrials_);
-            // Checking if it ran out of time
-            auto endTime = std::chrono::high_resolution_clock::now();
-            auto timeElapsed = std::chrono::duration_cast<
-                std::chrono::milliseconds>(endTime - beginTime_).count();
+            // Adjusting maximum planning time for VI
             if (maxTime_ > -1) {
+                auto endTime = std::chrono::high_resolution_clock::now();
+                auto timeElapsed = std::chrono::duration_cast<
+                    std::chrono::milliseconds>(endTime - beginTime_).count();
                 vi.maxPlanningTime(std::max(0, maxTime_ - (int) timeElapsed));
             }
             vi.solve();
@@ -57,16 +69,10 @@ Action* SSiPPSolver::solveOriginal(State* s0)
                 delete wrapper;
                 break;
             }
-            // Checking if it ran out of time
-            if (maxTime_ > -1) {
-                endTime = std::chrono::high_resolution_clock::now();
-                timeElapsed = std::chrono::duration_cast<
-                    std::chrono::milliseconds>(endTime - beginTime_).count();
-                if (timeElapsed > maxTime_) {
-                    wrapper->cleanup();
-                    delete wrapper;
-                    break;
-                }
+            if (ranOutOfTime()) {
+                wrapper->cleanup();
+                delete wrapper;
+                break;
             }
             // Execute the best action found for the current state.
             Action* action = currentState->bestAction();
@@ -75,13 +81,8 @@ Action* SSiPPSolver::solveOriginal(State* s0)
             wrapper->cleanup();
             delete wrapper;
         }
-        // Checking if it ran out of time
-        if (maxTime_ > -1) {
-            auto endTime = std::chrono::high_resolution_clock::now();
-            auto timeElapsed = std::chrono::duration_cast<
-                std::chrono::milliseconds>(endTime - beginTime_).count();
-            if (timeElapsed > maxTime_)
-                break;
+        if (ranOutOfTime()) {
+            break;
         }
     }
     return s0->bestAction();
@@ -110,6 +111,7 @@ Action* SSiPPSolver::solveLabeled(State* s0)
             WrapperProblem wrapper(problem_);
             wrapper.overrideStates(&reachableStates);
             wrapper.overrideGoals(&tipStates);
+
             // Solving the short-sighted SSP
             optimalSolver(&wrapper, currentState);
             if (currentState->deadEnd())
@@ -121,13 +123,8 @@ Action* SSiPPSolver::solveLabeled(State* s0)
                                                         currentState));
 
             wrapper.cleanup();
-            // Check if there is time remaining for planning
-            if (maxTime_ > -1) {
-                auto endTime = std::chrono::high_resolution_clock::now();
-                auto timeElapsed = std::chrono::duration_cast<
-                    std::chrono::milliseconds>(endTime - beginTime_).count();
-                if (timeElapsed > maxTime_)
-                    return s0->bestAction();
+            if (ranOutOfTime()) {
+                return s0->bestAction();
             }
         }
         while (!visited.empty()) {
@@ -166,17 +163,10 @@ bool SSiPPSolver::checkSolved(State* s)
         if (residual(problem_, tmp) > epsilon_) {
             rv = false;
         }
-
-        if (maxTime_ > -1) {
-            auto endTime = std::chrono::high_resolution_clock::now();
-            auto timeElapsed = std::chrono::duration_cast<
-                std::chrono::milliseconds>(endTime - beginTime_).count();
-            if (timeElapsed > maxTime_) {
-                rv = false;
-                continue;
-            }
+        if (ranOutOfTime()) {
+            rv = false;
+            continue;
         }
-
         for (Successor su : problem_->transition(tmp, a)) {
             State* next = su.su_state;
             if (!next->checkBits(mdplib::SOLVED_SSiPP) &&
@@ -228,10 +218,14 @@ void SSiPPSolver::optimalSolver(WrapperProblem* problem, State* s0)
             list<State*> stateStack;
             stateStack.push_back(s0);
             while (!stateStack.empty()) {
+                if (ranOutOfTime()) {
+                    return;
+                }
                 State* s = stateStack.back();
                 stateStack.pop_back();
                 if (!visited.insert(s).second)  // state was already visited.
                     continue;
+
                 if (s->deadEnd() ||
                         problem->goal(s) ||
                         s->checkBits(mdplib::SOLVED_SSiPP) ||
@@ -259,6 +253,9 @@ void SSiPPSolver::optimalSolver(WrapperProblem* problem, State* s0)
             stateStack.push_back(s0);
             double error = 0.0;
             while (!stateStack.empty()) {
+                if (ranOutOfTime()) {
+                    return;
+                }
                 State* s = stateStack.back();
                 stateStack.pop_back();
                 if (s->deadEnd() ||
