@@ -416,10 +416,10 @@ bool mustReplan(Solver* solver, string algorithm, State* s, int plausTrial) {
             }
         }
     }
-    if (algorithm == "ssipp") {
+    if (algorithm == "ssipp" || algorithm == "labeled-ssipp") {
         return !s->checkBits(mdplib::SOLVED_SSiPP);
     }
-    if (algorithm == "uct") {
+    if (algorithm == "uct" || algorithm == "rtdp") {
         return true;
     }
     return false;

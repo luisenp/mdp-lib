@@ -123,8 +123,9 @@ Action* SSiPPSolver::solveLabeled(State* s0)
                                                         currentState));
 
             wrapper.cleanup();
+            // Return if it ran out of time
             if (ranOutOfTime()) {
-                return s0->bestAction();
+                return greedyAction(problem_, s0);
             }
         }
         while (!visited.empty()) {
@@ -134,7 +135,7 @@ Action* SSiPPSolver::solveLabeled(State* s0)
                 break;
         }
     }
-    return s0->bestAction();
+    return greedyAction(problem_, s0);
 }
 
 
@@ -163,6 +164,7 @@ bool SSiPPSolver::checkSolved(State* s)
         if (residual(problem_, tmp) > epsilon_) {
             rv = false;
         }
+        // Return if it ran out of time
         if (ranOutOfTime()) {
             return false;
         }

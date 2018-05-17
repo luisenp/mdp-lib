@@ -123,6 +123,7 @@ int main(int argc, char *args[])
             depth = stoi(flag_value("depth"));
         TransitionModifierFunction mod_func = kLogistic;
         DistanceFunction dist_func = kStepDist;
+        HorizonFunction horizon_func = kFixed;
         if (flag_is_registered_with_value("alpha"))
             alpha = stof(flag_value("alpha"));
         // Distance functions
@@ -155,8 +156,23 @@ int main(int argc, char *args[])
                 exit(0);
             }
         }
+        // Labeling functions
+        if (flag_is_registered("horf")) {
+            string labelf_str = flag_value("horf");
+            if (labelf_str == "exp") {
+                horizon_func = kExponentialH;
+            } else if (labelf_str == "fixed") {
+                horizon_func = kFixed;
+            } else if (labelf_str == "bern") {
+                horizon_func = kBernoulli;
+            } else {
+                cerr << "Error: unknown labeling function." << endl;
+                exit(0);
+            }
+        }
         solver = new SoftFLARESSolver(
-            MLProblem, trials, tol, depth, mod_func, dist_func, alpha);
+            MLProblem, trials, tol, depth,
+            mod_func, dist_func, horizon_func, alpha);
         static_cast<SoftFLARESSolver*>(solver)->maxPlanningTime(1000);
     } else {
         solver = new LRTDPSolver(MLProblem, ntrials, 0.0001);

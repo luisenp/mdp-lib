@@ -16,6 +16,18 @@ LRTDPSolver::LRTDPSolver(mlcore::Problem* problem,
 { }
 
 
+bool LRTDPSolver::ranOutOfTime() {
+    // Checking if it ran out of time
+    if (maxTime_ > -1) {
+        auto endTime = std::chrono::high_resolution_clock::now();
+        auto timeElapsed = std::chrono::duration_cast<
+            std::chrono::milliseconds>(endTime - beginTime_).count();
+        if (timeElapsed > maxTime_)
+            return true;
+    }
+    return false;
+}
+
 void LRTDPSolver::trial(mlcore::State* s) {
     mlcore::State* tmp = s;
     std::list<mlcore::State*> visited;
@@ -69,6 +81,9 @@ bool LRTDPSolver::checkSolved(mlcore::State* s)
         if (tmp->deadEnd())
             continue;
 
+        if (ranOutOfTime())
+            return false;
+
         closed.push_front(tmp);
         tmp->setBits(mdplib::CLOSED);
 
@@ -112,13 +127,9 @@ mlcore::Action* LRTDPSolver::solve(mlcore::State* s0)
     beginTime_ = std::chrono::high_resolution_clock::now();
     while (!s0->checkBits(mdplib::SOLVED) && trials++ < maxTrials_) {
         trial(s0);
-        // Checking if it ran out of time for planning.
-        auto endTime = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
-            endTime - beginTime_).count();
-        if (maxTime_ > -1 && duration > maxTime_)
-            break;
-
+        if (ranOutOfTime()) {
+            return greedyAction(problem_, s0);
+        }
     }
     return s0->bestAction();
 }
