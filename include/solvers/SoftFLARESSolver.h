@@ -164,6 +164,9 @@ private:
                                  std::vector<double>& scores,
                                  double& totalScore);
 
+    /* Returns true iff there is no more time left for planning. */
+    bool ranOutOfTime();
+
 
     /* Returns true if there should be more trials, false otherwise. */
     bool moreTrials(

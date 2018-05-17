@@ -1,9 +1,9 @@
 #!/bin/bash
 #Usage ./run_nips18_slurm.sh 
 
-nsims=100
+nsims=1000
 alpha=0.1
-reps=25
+reps=1
 verbosity=-1
 min_time=1
 max_time=300
@@ -47,7 +47,22 @@ for ((ip = 0; ip < ${#problems[@]}; ip++)); do
   # HDP(0,0)
   sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"hdp_00".txt \
     run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
-    "hdp --j=0 --i=0"    
+    "hdp --j=0 --i=0" 
+  
+  # HDP(1)
+  sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"hdp_0".txt \
+    run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
+    "hdp --i=1"
+    
+  # HDP(1,0)
+  sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"hdp_00".txt \
+    run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
+    "hdp --j=0 --i=1"
+    
+  # HDP(1,1)
+  sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"hdp_00".txt \
+    run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
+    "hdp --j=1 --i=1"
     
   # Trajectory-based SSiPP
   for rho in ${rhos[@]}; do

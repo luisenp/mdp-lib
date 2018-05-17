@@ -56,6 +56,17 @@ SoftFLARESSolver::SoftFLARESSolver(Problem* problem,
     }
 }
 
+bool SoftFLARESSolver::ranOutOfTime() {
+    // Checking if it ran out of time
+    if (maxTime_ > -1) {
+        auto endTime = std::chrono::high_resolution_clock::now();
+        auto timeElapsed = std::chrono::duration_cast<
+            std::chrono::milliseconds>(endTime - beginTime_).count();
+        if (timeElapsed > maxTime_)
+            return true;
+    }
+    return false;
+}
 
 void SoftFLARESSolver::trial(State* s) {
     State* currentState = s;
@@ -72,6 +83,9 @@ void SoftFLARESSolver::trial(State* s) {
         if (currentState->deadEnd()
                 || accumulated_cost >= mdplib::dead_end_cost)
             break;
+
+        if (ranOutOfTime())
+            return;
 
         mlcore::Action* greedy_action = greedyAction(problem_, currentState);
         accumulated_cost += problem_->cost(currentState, greedy_action);
@@ -206,14 +220,8 @@ void SoftFLARESSolver::computeResidualDistances(State* s) {
         if (problem_->goal(currentState))
             continue;
 
-        if (maxTime_ > -1) {
-            auto endTime = std::chrono::high_resolution_clock::now();
-            auto duration = std::chrono::duration_cast<
-                std::chrono::milliseconds>(endTime-beginTime_).count();
-            if (duration > maxTime_) {
-                return;
-            }
-        }
+        if (ranOutOfTime())
+            return;
 
         closed.push_front(currentState);
         currentState->setBits(mdplib::CLOSED);
@@ -291,7 +299,7 @@ Action* SoftFLARESSolver::solve(State* s0) {
     while (moreTrials(s0, trials, beginTime_)) {
         trial(s0);
     }
-    return s0->bestAction();
+    return greedyAction(problem_, s0);
 }
 
 }   // namespace mlsolvers
