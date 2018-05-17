@@ -17,7 +17,7 @@ problems=( "--track=../data/tracks/known/square-4-error.track --perror=0.10 --ps
 problems_str=(square4 ring5 sailing-corner sailing-middle)
 
 output_dir="/home/lpineda/results_nips18"
-swarm_flags="--partition=longq --time=48:00"
+swarm_flags="--partition=longq"
 rhos=(0.0625 0.03125)
 distfuns=(depth traj)          
 labelfuns=(linear exp logistic)
