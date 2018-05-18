@@ -1,7 +1,7 @@
 #!/bin/bash
 #Usage ./run_nips18_slurm.sh 
 
-nsims=1000
+nsims=100
 alpha=0.1
 reps=1
 verbosity=-1
@@ -29,7 +29,7 @@ for ((ip = 0; ip < ${#problems[@]}; ip++)); do
   #"$other_flags" is removed so that it only plans the first time
   # Need to add this back if --per_replan is used
   sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"lrtdp".txt \
-    run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "" \
+    run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
     "lrtdp"
   
   # RTDP (only if max time allowed, otherwise it will infinite loop)
@@ -50,17 +50,17 @@ for ((ip = 0; ip < ${#problems[@]}; ip++)); do
     "hdp --j=0 --i=0" 
   
   # HDP(1)
-  sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"hdp_0".txt \
+  sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"hdp_1".txt \
     run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
     "hdp --i=1"
     
   # HDP(1,0)
-  sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"hdp_00".txt \
+  sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"hdp_10".txt \
     run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
     "hdp --j=0 --i=1"
     
   # HDP(1,1)
-  sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"hdp_00".txt \
+  sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"hdp_11".txt \
     run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
     "hdp --j=1 --i=1"
     

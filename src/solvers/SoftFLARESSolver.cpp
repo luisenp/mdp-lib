@@ -27,11 +27,12 @@ SoftFLARESSolver::SoftFLARESSolver(Problem* problem,
         maxTrials_(maxTrials),
         epsilon_(epsilon),
         horizon_(horizon),
-        useProbsForDepth_(useProbsForDepth),
         modifierFunction_(modifierFunction),
         distanceFunction_(distanceFunction),
         horizonFunction_(horizonFunction),
         alpha_(alpha),
+        useProbsForDepth_(useProbsForDepth),
+        noLabeling_(noLabeling),
         optimal_(optimal),
         maxTime_(maxTime),
         useCache_(true) {
@@ -40,6 +41,7 @@ SoftFLARESSolver::SoftFLARESSolver(Problem* problem,
                                                                                        "alpha", alpha_,
                                                                                        "maxTime", maxTime_);
     beta_ = 1 - alpha_;
+//                                                                                beta_ = 0.5;
     if (modifierFunction_ == kLogistic) {
         double num = (1- alpha_) * beta_;
         double den = (1 - beta_) * alpha_;
@@ -74,6 +76,8 @@ void SoftFLARESSolver::trial(State* s) {
     double accumulated_cost = 0.0;
 
     while (true) {
+//                                                                                if (problem_->goal(currentState))
+//                                                                                    dprint("GOAL!!", accumulated_cost);
         if (problem_->goal(currentState))
             break;
 
@@ -98,6 +102,7 @@ void SoftFLARESSolver::trial(State* s) {
             break;
         }
     }
+//                                                                                dprint("COST ", accumulated_cost);
 
     if (noLabeling_) return;
 
@@ -219,7 +224,9 @@ void SoftFLARESSolver::computeResidualDistances(State* s) {
 
         if (problem_->goal(currentState))
             continue;
-
+//                                                                                if (ranOutOfTime()) {
+//                                                                                    dprint("ran out of time", closed.size());
+//                                                                                }
         if (ranOutOfTime())
             return;
 
@@ -251,6 +258,7 @@ void SoftFLARESSolver::computeResidualDistances(State* s) {
             }
         }
     }
+//                                                                                dprint("closed ", closed.size());
 
     if (should_label) {
         for (mlcore::State* state : closed) {
@@ -261,7 +269,6 @@ void SoftFLARESSolver::computeResidualDistances(State* s) {
                                                                                 assert(effectiveHorizon != kInfiniteDistance_);
                 double depth = state->depth();
                 if (depth <= effectiveHorizon) {
-                                                                                dprint("solved", effectiveHorizon - depth);
                     state->residualDistance(effectiveHorizon - depth);
                 }
             }
@@ -281,10 +288,16 @@ bool SoftFLARESSolver::moreTrials(
         mlcore::State* s,
         int trialsSoFar,
         std::chrono::time_point<std::chrono::high_resolution_clock> startTime) {
+    if (trialsSoFar >= maxTrials_)
+        return false;
     if (optimal_) {
         return !s->checkBits(mdplib::SOLVED);
     }
     if (maxTime_ <= -1) {
+//                                                                                bool tmp = !labeledSolved(s) && trialsSoFar < maxTrials_;
+//                                                                                dprint("check trial", tmp);
+//                                                                                return tmp;
+
         return !labeledSolved(s) && trialsSoFar < maxTrials_;
     }
     auto endTime = std::chrono::high_resolution_clock::now();
@@ -298,6 +311,9 @@ Action* SoftFLARESSolver::solve(State* s0) {
     beginTime_ = std::chrono::high_resolution_clock::now();
     while (moreTrials(s0, trials, beginTime_)) {
         trial(s0);
+        trials++;
+//                                                                                dprint(s0->residualDistance(), noLabeling_);
+//                                                                                dprint("****************** trial ended", trials);
     }
     return greedyAction(problem_, s0);
 }

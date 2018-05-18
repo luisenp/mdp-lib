@@ -84,7 +84,7 @@ void initStringAtomMap(problem_t* problem,
 
 
 /* Returns the state corresponding to the given string. */
-mlcore::State* getStatefromString(
+mlcore::State* getStateFromString(
     string stateString,
     mlppddl::PPDDLProblem* MLProblem,
     unordered_map<string, ushort_t>& stringAtomMap)
@@ -185,12 +185,16 @@ int main(int argc, char *args[])
         solver = new FLARESSolver(MLProblem, 100, 1.0e-3, horizon);
     } else if (algorithm == "soft-flares") {
         register_flags(argc, args);
+        if (flag_is_registered("debug"))
+            mdplib_debug = true;
         double depth = 4;
         double alpha = 0.10;
         double tol = 1.0e-3;
         int trials = 1000;
         if (flag_is_registered_with_value("depth"))
             depth = stoi(flag_value("depth"));
+        if (flag_is_registered_with_value("trials"))
+            trials = stoi(flag_value("trials"));
         TransitionModifierFunction mod_func = kLogistic;
         DistanceFunction dist_func = kStepDist;
         HorizonFunction horizon_func = kFixed;
@@ -243,7 +247,7 @@ int main(int argc, char *args[])
         solver = new SoftFLARESSolver(
             MLProblem, trials, tol, depth,
             mod_func, dist_func, horizon_func, alpha);
-        static_cast<SoftFLARESSolver*>(solver)->maxPlanningTime(1000);
+        solver->maxPlanningTime(5000);
     } else if (algorithm == "ssipp") {
         int horizon = 2;
         if (argc > 4) {
@@ -259,6 +263,13 @@ int main(int argc, char *args[])
 
     /* Solving states on demand. */
     mlcore::StateIntMap count_seen;
+    long maxPlanningTime = 5000;
+    double costTrial = 0.0;
+    int roundIndex = 0;
+    int planningTimes[] =
+        {5000, 3760, 2820, 2100, 1600, 1200, 880, 660, 500, 380};
+    double timeFactor = 1.0;
+    double costEstimate = 50;
     while (true) {
         /* Reading communication from the client. */
         char buffer[BUFFER_SIZE];
@@ -276,18 +287,33 @@ int main(int argc, char *args[])
         else if (msg.substr(0, 5) == "stop:") // Stop the program.
             break;
         mlcore::State* state =
-            getStatefromString(atomsString, MLProblem, stringAtomMap);
+            getStateFromString(atomsString, MLProblem, stringAtomMap);
+                                                                                // Rudimentary dead-end detection
                                                                                 if (count_seen.count(state) == 0)
                                                                                     count_seen[state] = 0;
                                                                                 count_seen[state]++;
-                                                                                cerr << count_seen[state] << endl;
-
-        mlcore::Action* action = solver->solve(state); // Solving for state.
-        if (MLProblem->goal(state)) {
-            cout << "GOAL!!" << endl;
+//                                                                                cerr << count_seen[state] << endl;
+        mlcore::Action* action;
+        cout << "msg:" << msg << endl;
+        if (msg == "end-round") {
+            cout << "Round Cost: " << costTrial << endl;
+            double ratio = std::min(1.0, costEstimate / costTrial);
+            costEstimate = costTrial;
+            timeFactor *= ratio;
+            cout << "New time Factor: " << timeFactor << endl;
+            costTrial = 0.0;
+            action = nullptr;
+            roundIndex++;
                                                                                 count_seen.clear();
+        } else {
+            long maxPlanningTime = 120;
+            if (roundIndex < 10)
+                maxPlanningTime = planningTimes[roundIndex] * timeFactor;
+            solver->maxPlanningTime(maxPlanningTime);
+            cout << "Planning for " << maxPlanningTime << " ms." << endl;
+            action = solver->solve(state); // Solving for state.
         }
-        if (state->deadEnd() || MLProblem->goal(state))
+        if (state->deadEnd())
             action = nullptr;
                                                                                 if (count_seen[state] == 10)
                                                                                     action = nullptr;
@@ -300,6 +326,7 @@ int main(int argc, char *args[])
             oss << "(done)";
                                                                                 count_seen.clear();
         }
+        costTrial += MLProblem->cost(state, action);
         bzero(buffer, BUFFER_SIZE);
         sprintf(buffer, "%s", oss.str().c_str());
         cout << "action: " << buffer << "." << endl;
