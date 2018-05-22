@@ -1,5 +1,6 @@
 #!/bin/bash
-#Usage ./run_nips18_slurm.sh 
+# Usage ./run_nips18_slurm.sh 
+# Read all comments below before using
 
 nsims=20000
 alpha=0.1
@@ -7,7 +8,7 @@ reps=1
 verbosity=0
 min_time=-1
 max_time=-1
-other_flags="--reset-every-trial --per_replan"
+other_flags="--reset-every-trial"
 
 problems=( "--track=../data/tracks/known/square-4-error.track --perror=0.10 --pslip=0.20" \
            "--track=../data/tracks/known/ring-5-error.track --perror=0.10 --pslip=0.20" \
@@ -29,7 +30,7 @@ for ((ip = 0; ip < ${#problems[@]}; ip++)); do
   #"$other_flags" is removed so that it only plans the first time
   # Need to add this back if --per_replan is used
   sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"lrtdp".txt \
-    run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
+    run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "" \
     "lrtdp"
   
   # RTDP (only if max time allowed, otherwise it will infinite loop)
@@ -70,12 +71,12 @@ for ((ip = 0; ip < ${#problems[@]}; ip++)); do
       run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
       "ssipp --rho=$rho"
       
-    # Trajectory-based labeled-SSiPP (only time limit per action, preferably with --per_replan)
-    if [[ $max_time != "-1" ]]; then
-      sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"labeled_ssipp_$rho".txt \
-        run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
-        "labeled-ssipp --rho=$horizon"
-    fi 
+    # Trajectory-based labeled-SSiPP
+    #"$other_flags" is removed so that it only plans the first time
+    # Need to add this back if --per_replan is used
+    sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"labeled_ssipp_$rho".txt \
+      run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "" \
+      "labeled-ssipp --rho=$horizon"
   done
   
   ssipp_hor=2
@@ -85,12 +86,12 @@ for ((ip = 0; ip < ${#problems[@]}; ip++)); do
       run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
       "ssipp --horizon=$ssipp_hor"
     
-    # Labeled-SSiPP (only time limit per action, preferably with --per_replan)
-    if [[ $max_time != "-1" ]]; then
-      sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"labeled_ssipp_$ssipp_hor".txt \
-        run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
-        "labeled-ssipp --horizon=$ssipp_hor"
-    fi 
+    # Labeled-SSiPP
+    #"$other_flags" is removed so that it only plans the first time
+    # Need to add this back if --per_replan is used
+    sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"labeled_ssipp_$ssipp_hor".txt \
+      run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "" \
+      "labeled-ssipp --horizon=$ssipp_hor"
     let "ssipp_hor *= 2"
       
     # FLARES(1-4)
