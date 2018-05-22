@@ -102,9 +102,9 @@ void SoftFLARESSolver::trial(State* s) {
             break;
         }
     }
-//                                                                                dprint("COST ", accumulated_cost);
 
     if (noLabeling_) return;
+                                                                                dprint("COST ", accumulated_cost);
 
     while (!visited.empty()) {
         currentState = visited.front();
@@ -270,6 +270,7 @@ void SoftFLARESSolver::computeResidualDistances(State* s) {
                 double depth = state->depth();
                 if (depth <= effectiveHorizon) {
                     state->residualDistance(effectiveHorizon - depth);
+                                                                                dprint(state->residualDistance());
                 }
             }
         }

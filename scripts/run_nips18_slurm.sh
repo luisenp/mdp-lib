@@ -1,12 +1,12 @@
 #!/bin/bash
 #Usage ./run_nips18_slurm.sh 
 
-nsims=100
+nsims=20000
 alpha=0.1
 reps=1
-verbosity=-1
-min_time=1
-max_time=300
+verbosity=0
+min_time=-1
+max_time=-1
 other_flags="--reset-every-trial --per_replan"
 
 problems=( "--track=../data/tracks/known/square-4-error.track --perror=0.10 --pslip=0.20" \
@@ -16,8 +16,8 @@ problems=( "--track=../data/tracks/known/square-4-error.track --perror=0.10 --ps
 
 problems_str=(square4 ring5 sailing-corner sailing-middle)
 
-output_dir="/home/lpineda/results_nips18"
-swarm_flags="--partition=longq"
+output_dir="/home/lpineda/results_nips18/20ksims"
+swarm_flags="--partition=longq --time=10-01:00:00"
 rhos=(0.0625 0.03125)
 distfuns=(depth traj)          
 labelfuns=(linear exp logistic)
@@ -70,7 +70,7 @@ for ((ip = 0; ip < ${#problems[@]}; ip++)); do
       run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
       "ssipp --rho=$rho"
       
-    # Labeled-SSiPP (only time limit per action, preferably with --per_replan)
+    # Trajectory-based labeled-SSiPP (only time limit per action, preferably with --per_replan)
     if [[ $max_time != "-1" ]]; then
       sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"labeled_ssipp_$rho".txt \
         run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
@@ -78,18 +78,20 @@ for ((ip = 0; ip < ${#problems[@]}; ip++)); do
     fi 
   done
   
+  ssipp_hor=2
   for horizon in `seq 1 4`; do
     # Depth-based SSiPP(1-4)
-    sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"ssipp_$horizon".txt \
+    sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"ssipp_$ssipp_hor".txt \
       run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
-      "ssipp --horizon=$horizon"
+      "ssipp --horizon=$ssipp_hor"
     
     # Labeled-SSiPP (only time limit per action, preferably with --per_replan)
     if [[ $max_time != "-1" ]]; then
-      sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"labeled_ssipp_$horizon".txt \
+      sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"labeled_ssipp_$ssipp_hor".txt \
         run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
-        "labeled-ssipp --horizon=$horizon"
+        "labeled-ssipp --horizon=$ssipp_hor"
     fi 
+    let "ssipp_hor *= 2"
       
     # FLARES(1-4)
     sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"flares_$horizon".txt \

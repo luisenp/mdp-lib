@@ -544,7 +544,7 @@ vector<double> simulate(Solver* solver,
             }
             tmp = aux;
         }
-        if (verbosity >= 1)
+        if (verbosity >= 10)
             cout << costTrial << endl;
         if (flag_is_registered("ctp")) {
             CTPState* ctps = static_cast<CTPState*>(tmp);
@@ -556,7 +556,19 @@ vector<double> simulate(Solver* solver,
             cnt++;
             updateStatistics(costTrial, cnt, expectedCost, variance);
         }
+        if (verbosity >=0) {
+            if (cnt % 500 == 0 || i == numSims - 1) {
+                double reportedTime = perReplan ?
+                    totalTime / numDecisions : totalTime;
+                cout << "sim " << cnt << " exp.cost " << expectedCost
+                     << " var " << variance / (cnt - 1) << " "
+                     << " time " << reportedTime << " longestTime  "
+                     << longestTime << endl;
+            }
+        }
     }
+
+    double reportedTime = perReplan ? totalTime / numDecisions : totalTime;
 
     if (verbosity >= 10) {
         cout << "Estimated cost " << problem->initialState()->cost() << " ";
@@ -568,14 +580,8 @@ vector<double> simulate(Solver* solver,
              << totalTime / numDecisions << endl
              << "Longest planning time " << longestTime << endl;
         cout << "Num. decisions " << numDecisions << endl;
-    } else if (verbosity >= 0) {
-        cout << problem->initialState()->cost() << " ";
-        cout << expectedCost << " " << sqrt(variance / (cnt - 1)) << " " <<
-            totalTime / cnt << " " << totalTime / numDecisions << endl;
     }
 
-    double reportedTime = perReplan ?
-        totalTime / numDecisions : totalTime;
     double results[] = {expectedCost,
                         variance / (cnt - 1),
                         reportedTime,
@@ -587,6 +593,19 @@ vector<double> simulate(Solver* solver,
 ///////////////////////////////////////////////////////////////////////////////
 //                                     MAIN                                  //
 ///////////////////////////////////////////////////////////////////////////////
+void printStats(int t,
+        double avgCost, double avgVar, double avgTime, double avgLongestTime,
+        double M2Cost, double M2Time, double M2LongestTime, int numReps) {
+    cout << t << " "
+        << avgCost << " "
+        << avgVar << " "
+        << sqrt(M2Cost / (numReps * (numReps - 1))) << " "
+        << avgTime << " "
+        << sqrt(M2Time / (numReps * (numReps - 1))) << " "
+        << avgLongestTime << " "
+        << sqrt(M2LongestTime / (numReps * (numReps - 1))) << endl;
+}
+
 int main(int argc, char* args[])
 {
     register_flags(argc, args);
@@ -668,14 +687,8 @@ int main(int argc, char* args[])
             // outputs <exp_cost, var_cost, exp_time, max_time>.
             // The averages below are over [numReps] repetitions of an
             // experiment.
-            cout << t << " "
-                << avgCost << " "
-                << avgVar << " "
-                << sqrt(M2Cost / (numReps * (numReps - 1))) << " "
-                << avgTime << " "
-                << sqrt(M2Time / (numReps * (numReps - 1))) << " "
-                << avgLongestTime << " "
-                << sqrt(M2LongestTime / (numReps * (numReps - 1))) << endl;
+            printStats(t, avgCost, avgVar, avgTime, avgLongestTime,
+                       M2Cost, M2Time, M2LongestTime, numReps);
             if (maxTime == -1)
                 break;
         }
