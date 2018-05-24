@@ -27,10 +27,8 @@ for ((ip = 0; ip < ${#problems[@]}; ip++)); do
   problem_str=${problems_str[$ip]}
   
   # LRTDP
-  #"$other_flags" is removed so that it only plans the first time
-  # Need to add this back if --per_replan is used
   sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"lrtdp".txt \
-    run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "" \
+    run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
     "lrtdp"
   
   # RTDP (only if max time allowed, otherwise it will infinite loop)
@@ -72,10 +70,8 @@ for ((ip = 0; ip < ${#problems[@]}; ip++)); do
       "ssipp --rho=$rho"
       
     # Trajectory-based labeled-SSiPP
-    #"$other_flags" is removed so that it only plans the first time
-    # Need to add this back if --per_replan is used
     sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"labeled_ssipp_$rho".txt \
-      run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "" \
+      run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
       "labeled-ssipp --rho=$horizon"
   done
   
@@ -87,10 +83,8 @@ for ((ip = 0; ip < ${#problems[@]}; ip++)); do
       "ssipp --horizon=$ssipp_hor"
     
     # Labeled-SSiPP
-    #"$other_flags" is removed so that it only plans the first time
-    # Need to add this back if --per_replan is used
     sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"labeled_ssipp_$ssipp_hor".txt \
-      run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "" \
+      run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
       "labeled-ssipp --horizon=$ssipp_hor"
     let "ssipp_hor *= 2"
       

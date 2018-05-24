@@ -452,6 +452,8 @@ vector<double> simulate(Solver* solver,
     double variance = 0.0;
     double totalTime = 0.0;
     double longestTime = 0.0;
+    double expectedTime = 0.0;  // expected *total* time
+    double varianceTime = 0.0;  // variance *total* time
     StateSet statesSeen;
     int cnt = 0;
     int numDecisions = 0;
@@ -460,6 +462,7 @@ vector<double> simulate(Solver* solver,
         if (verbosity >= 100)
             cout << " ********* Simulation Starts ********* " << endl;
         clock_t startTime, endTime;
+        double simulationPlanTime = 0.0;
         // If requested, reset all state information computed by the algorithm
         if (mustResetPlanner(i)) {
             for (State* s : problem->states())
@@ -468,6 +471,7 @@ vector<double> simulate(Solver* solver,
                 solver->maxPlanningTime(maxTime);
             }
             startTime = clock();
+            // Initial planning
             if (algorithm == "uct") {
                 static_cast<UCTSolver*>(solver)->reset();
             } else if (algorithm != "greedy") {
@@ -476,6 +480,7 @@ vector<double> simulate(Solver* solver,
             endTime = clock();
             double planTime = (double(endTime - startTime) / CLOCKS_PER_SEC);
             totalTime += planTime;
+            simulationPlanTime += planTime;
             longestTime = std::max(longestTime, planTime);
             numDecisions++;
         }
@@ -493,6 +498,7 @@ vector<double> simulate(Solver* solver,
         while (!problem->goal(tmp)) {
             statesSeen.insert(tmp);
             Action* a;
+            // Re-planning
             if (mustReplan(solver, algorithm, tmp, plausTrial)) {
                 startTime = clock();
                 int simulationsElapsedTime =
@@ -509,6 +515,7 @@ vector<double> simulate(Solver* solver,
                 double planTime =
                     (double(endTime - startTime) / CLOCKS_PER_SEC);
                 totalTime += planTime;
+                simulationPlanTime += planTime;
                 longestTime = std::max(longestTime, planTime);
                 numDecisions++;
                 a = greedyAction(problem, tmp);
@@ -551,19 +558,25 @@ vector<double> simulate(Solver* solver,
             if (!ctps->badWeather()) {
                 cnt++;
                 updateStatistics(costTrial, cnt, expectedCost, variance);
+                updateStatistics(
+                    simulationPlanTime, cnt, expectedTime, varianceTime);
             }
         } else {
             cnt++;
             updateStatistics(costTrial, cnt, expectedCost, variance);
+            updateStatistics(
+                simulationPlanTime, cnt, expectedTime, varianceTime);
         }
         if (verbosity >=0) {
             if (cnt % 500 == 0 || i == numSims - 1) {
                 double reportedTime = perReplan ?
                     totalTime / numDecisions : totalTime;
                 cout << "sim " << cnt << " exp.cost " << expectedCost
-                     << " var " << variance / (cnt - 1) << " "
-                     << " time " << reportedTime << " longestTime  "
-                     << longestTime << endl;
+                     << " var " << variance / (cnt - 1)
+                     << " time " << reportedTime
+                     << " longestTime  " << longestTime << " "
+                     << " Exp[total time] " << expectedTime
+                     << " Var[total time] " << varianceTime / (cnt - 1) << endl;
             }
         }
     }
