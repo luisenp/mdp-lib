@@ -215,9 +215,7 @@ void initSolver(string algorithm, Solver*& solver)
     } else if (algorithm == "brtdp") {
         // BRTDP is just VPI-RTDP with beta = 0
         double tau = 100;
-        solver = new VPIRTDPSolver(problem, tol, trials,
-                                   -1.0, 0.0, tau,
-                                   mdplib::dead_end_cost + 10.0);
+        solver = new BoundedRTDPSolver(problem, tol);
         useUpperBound = true;
     } else if (algorithm == "rtdp-ub") {
         // RTDP with upper bound action selection
@@ -435,9 +433,12 @@ vector<double> simulate(Solver* solver,
             startTime = clock();
             if (algorithm == "uct") {
                 static_cast<UCTSolver*>(solver)->reset();
-            } else if (algorithm != "greedy") {
-                solver->solve(problem->initialState());
+            } else if (algorithm == "brtdp") {
+                static_cast<BoundedRTDPSolver*>(solver)->reset();
             }
+            if (algorithm != "greedy")
+                solver->solve(problem->initialState());
+
             endTime = clock();
             double planTime = (double(endTime - startTime) / CLOCKS_PER_SEC);
             totalTime += planTime;

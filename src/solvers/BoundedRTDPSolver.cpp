@@ -5,8 +5,9 @@ namespace mlsolvers
 
 BoundedRTDPSolver::BoundedRTDPSolver(mlcore::Problem* problem,
                                      double epsilon,
+                                     double tau,
                                      int maxTrials)
-    : problem_(problem), epsilon_(epsilon), maxTrials_(maxTrials), tau_(100.0)
+    : problem_(problem), epsilon_(epsilon), tau_(tau), maxTrials_(maxTrials)
 { }
 
 
@@ -22,7 +23,7 @@ void BoundedRTDPSolver::trial(mlcore::State* s) {
         mlcore::Action* a = lowerBoundGreedyPolicy_[tmp];
         if (tmp->deadEnd())
             break;
-        tmp = sampleBiased(tmp, a);
+        tmp = sampleBiased(tmp, a, s);
         if (tmp == nullptr)
             break;
     }
@@ -39,7 +40,7 @@ void BoundedRTDPSolver::initializeUpperBound(mlcore::State* s) {
 }
 
 mlcore::State*
-BoundedRTDPSolver::sampleBiased(mlcore::State* s, mlcore::Action* a) {
+BoundedRTDPSolver::sampleBiased(mlcore::State* s, mlcore::Action* a, mlcore::State* s0) {
     double B = 0.0;
     std::vector< std::pair<mlcore::State*, double> > statesAndScores;
     for (const mlcore::Successor& su : problem_->transition(s, a)) {
@@ -49,7 +50,7 @@ BoundedRTDPSolver::sampleBiased(mlcore::State* s, mlcore::Action* a) {
         B += score;
     }
     if ((upperBounds_[s] - s->cost()) == 0
-            || B < (upperBounds_[s] - s->cost()) / tau_)
+            || B < (upperBounds_[s0] - s0->cost()) / tau_)
         return nullptr;
     double pick = kUnif_0_1(kRNG);
     double acc = 0;
@@ -73,27 +74,27 @@ double BoundedRTDPSolver::bellmanUpdate(mlcore::State* s) {
         if (!problem_->applicable(s, a))
             continue;
         hasAction = true;
-        double lowerBoundAction = 0.0;
-        double upperBoundAction = 0.0;
+        double lowerBoundQValueAction = 0.0;
+        double upperBoundQValueAction = 0.0;
         for (const mlcore::Successor& su : problem_->transition(s, a)) {
             // state->cost() stores the lower bound.
-            lowerBoundAction += su.su_prob * su.su_state->cost();
+            lowerBoundQValueAction += su.su_prob * su.su_state->cost();
             if (upperBounds_.count(su.su_state) == 0)
                 initializeUpperBound(su.su_state);
-            upperBoundAction += su.su_prob * upperBounds_[su.su_state];
+            upperBoundQValueAction += su.su_prob * upperBounds_[su.su_state];
         }
-        lowerBoundAction =
-            (lowerBoundAction * problem_->gamma()) + problem_->cost(s, a);
-        lowerBoundAction = std::min(mdplib::dead_end_cost, lowerBoundAction);
-        upperBoundAction =
-            (upperBoundAction * problem_->gamma()) + problem_->cost(s, a);
-        upperBoundAction = std::min(mdplib::dead_end_cost, upperBoundAction);
-        if (upperBoundAction <= bestUpperBound) {
-            bestUpperBound = upperBoundAction;
+        lowerBoundQValueAction =
+            (lowerBoundQValueAction * problem_->gamma()) + problem_->cost(s, a);
+        lowerBoundQValueAction = std::min(mdplib::dead_end_cost, lowerBoundQValueAction);
+        upperBoundQValueAction =
+            (upperBoundQValueAction * problem_->gamma()) + problem_->cost(s, a);
+        upperBoundQValueAction = std::min(mdplib::dead_end_cost, upperBoundQValueAction);
+        if (upperBoundQValueAction <= bestUpperBound) {
+            bestUpperBound = upperBoundQValueAction;
             bestActionUpperBound = a;
         }
-        if (lowerBoundAction <= bestLowerBound) {
-            bestLowerBound = lowerBoundAction;
+        if (lowerBoundQValueAction <= bestLowerBound) {
+            bestLowerBound = lowerBoundQValueAction;
             bestActionLowerBound = a;
         }
     }
@@ -113,6 +114,12 @@ mlcore::Action* BoundedRTDPSolver::solve(mlcore::State* s0) {
         if (upperBounds_[s0] - s0->cost() < epsilon_)
             break;
     }
+    return s0->bestAction();
+}
+
+void BoundedRTDPSolver::reset() {
+    upperBounds_.clear();
+    lowerBoundGreedyPolicy_.clear();
 }
 
 }
