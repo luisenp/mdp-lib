@@ -49,20 +49,21 @@ private:
      * Samples a state biased according to the difference of its bounds.
      * Returns a nullptr if all successor states have "well-known" value.
      */
-    mlcore::State* sampleBiased(mlcore::State* s, mlcore::Action* a);
+    mlcore::State* sampleBiased(mlcore::State* s, mlcore::Action* a, mlcore::State* s0);
 
 public:
     /**
      * Creates a BRTDP solver for the given problem.
      *
      * @param problem The problem to be solved.
-     * @param maxTrials The maximum number of trials to perform.
      * @param epsilon The error tolerance.
+     * @param tau The factor used to consider a state as well-known.
+     * @param maxTrials The maximum number of trials to perform.
      */
     BoundedRTDPSolver(mlcore::Problem* problem,
                       double epsilon,
-                      int maxTrials = 1000000,
-                      double upperBound = -1.0);
+                      double tau = 10,
+                      int maxTrials = 1000000);
 
     /**
      * Solves the associated problem using the Labeled RTDP algorithm.
@@ -70,6 +71,11 @@ public:
      * @param s0 The state to start the search at.
      */
     virtual mlcore::Action* solve(mlcore::State* s0);
+
+    /**
+     * Resets the internal values of the algorithm.
+     */
+    void reset();
 };
 
 }
