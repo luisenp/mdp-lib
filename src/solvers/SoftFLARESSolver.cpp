@@ -154,11 +154,15 @@ double SoftFLARESSolver::computeProbUnlabeled(double distance) {
     assert(false);
 }
 
-double SoftFLARESSolver::computeNewDepth(Successor& su, double depth) {
+double SoftFLARESSolver::
+computeNewDepth(Successor& su, double depth, double maxProbSuccessor) {
     if (distanceFunction_ == kTrajProb) {
         return depth - log2(su.su_prob);
     } else if (distanceFunction_ == kStepDist) {
         return depth + 1;
+    } else if (distanceFunction_ == kPlaus) {
+        double kappa = int(floor(log2(maxProbSuccessor) - log2(su.su_prob)));
+        return depth + kappa;
     }
 }
 
@@ -242,13 +246,19 @@ void SoftFLARESSolver::computeResidualDistances(State* s) {
             should_label = false;
         }
 
-        for (Successor su : problem_->transition(currentState, a)) {
+        double maxProbSuccessor = 0.0;
+        if (distanceFunction_ == kPlaus) {
+            for (Successor& su : problem_->transition(currentState, a)) {
+                maxProbSuccessor = std::max(maxProbSuccessor, su.su_prob);
+            }
+        }
+        for (Successor& su : problem_->transition(currentState, a)) {
             State* next = su.su_state;
             if ( (!labeledSolved(next)
                         || effectiveHorizon == kInfiniteDistance_)
                     && !next->checkBits(mdplib::CLOSED)) {
                 open.push_front(next);
-                next->depth(computeNewDepth(su, depth));
+                next->depth(computeNewDepth(su, depth, maxProbSuccessor));
             } else if (!(next->checkBits(mdplib::SOLVED)
                             || next->checkBits(mdplib::CLOSED))) {
                 // If this happens, the state was skipped only due to

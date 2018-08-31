@@ -21,7 +21,6 @@ void BoundedRTDPSolver::trial(mlcore::State* s) {
     while (true) {
         if (problem_->goal(tmp))
             break;
-                                                                                dprint(tmp);
         visited.push_front(tmp);
         this->bellmanUpdate(tmp);
         // Explore using the lower bound.

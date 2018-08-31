@@ -128,7 +128,9 @@ private:
      * Computes the depth of the given successor state for the given depth of
      * its parent state.
      */
-    double computeNewDepth(mlcore::Successor& su, double depth);
+    double computeNewDepth(mlcore::Successor& su,
+                           double depth,
+                           double maxProbSuccessor);
 
     /*
      * Computes the "probability" that the state is not labeled.
