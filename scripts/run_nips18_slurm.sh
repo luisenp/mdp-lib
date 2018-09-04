@@ -49,12 +49,10 @@ for ((ip = 0; ip < ${#problems[@]}; ip++)); do
     sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"hdp_${hdp_i}".txt \
       run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
       "hdp --i=${hdp_i}"
-    # HDP(i, j)
-    for hdp_j in `seq 0 3`; do
-      sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"hdp_${hdp_i}${hdp_j}".txt \
-        run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
-        "hdp --j=${hdp_j} --i=${hdp_i}" 
-    done
+    # HDP(i, 0)
+    sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"hdp_${hdp_i}${hdp_j}".txt \
+      run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
+      "hdp --j=0 --i=${hdp_i}" 
   done
     
   # ---- Trajectory-based SSiPP
