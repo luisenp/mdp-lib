@@ -2,12 +2,12 @@
 # Usage ./run_nips18_slurm.sh 
 # Read all comments below before using
 
-nsims=1000
+nsims=100
 alpha=0.1
 reps=1
 verbosity=-1
 min_time=1
-max_time=200
+max_time=300
 other_flags="--reset-every-trial --per_replan --online"
 
 problems=( "--track=../data/tracks/known/square-4-error.track --perror=0.10 --pslip=0.20" \
@@ -18,7 +18,7 @@ brtdp_ubs=(30 60 300 200)
 
 problems_str=(square4 ring5 sailing-corner sailing-middle)
 
-output_dir="/home/lpineda/results_aaai19/per_replan"
+output_dir="/home/lpineda/results_aaai19/per_replan_${nsims}_sims"
 swarm_flags="--partition=longq --time=10-01:00:00"
 rhos=(0.0625 0.03125)
 distfuns=(depth traj plaus)          
@@ -52,7 +52,7 @@ for ((ip = 0; ip < ${#problems[@]}; ip++)); do
       run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
       "hdp --i=${hdp_i}"
     # HDP(i, 0)
-    sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"hdp_${hdp_i}${hdp_j}".txt \
+    sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"hdp_${hdp_i}0".txt \
       run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
       "hdp --j=0 --i=${hdp_i}" 
   done
@@ -70,7 +70,7 @@ for ((ip = 0; ip < ${#problems[@]}; ip++)); do
   done
   
   # ---- SSiPP and FLARES
-  ssipp_hor=2
+  ssipp_hor=1
   for horizon in `seq 1 4`; do
     # Depth-based SSiPP(1-4)
     sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"ssipp_$ssipp_hor".txt \

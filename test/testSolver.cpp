@@ -386,8 +386,6 @@ void updateStatistics(double cost, int n, double& mean, double& M2)
 }
 
 bool mustReplan(Solver* solver, string algorithm, State* s, int plausTrial) {
-    if (flag_is_registered("online"))
-        return true;
     if (algorithm == "flares") {
         return !s->checkBits(mdplib::SOLVED_FLARES);
     }
@@ -418,6 +416,8 @@ bool mustReplan(Solver* solver, string algorithm, State* s, int plausTrial) {
     if (algorithm == "uct" || algorithm == "rtdp") {
         return true;
     }
+    if (flag_is_registered("online"))
+        return true;
     return false;
 }
 

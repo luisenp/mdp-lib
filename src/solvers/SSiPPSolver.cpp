@@ -64,16 +64,12 @@ Action* SSiPPSolver::solveOriginal(State* s0)
                 vi.maxPlanningTime(std::max(0, maxTime_ - (int) timeElapsed));
             }
             vi.solve();
-            if (currentState->deadEnd()) {
+            if (currentState->deadEnd() || ranOutOfTime()) {
                 wrapper->cleanup();
                 delete wrapper;
                 break;
             }
-            if (ranOutOfTime()) {
-                wrapper->cleanup();
-                delete wrapper;
-                break;
-            }
+
             // Execute the best action found for the current state.
             Action* action = currentState->bestAction();
             accumulated_cost += problem_->cost(currentState, action);
