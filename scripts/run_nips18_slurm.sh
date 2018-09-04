@@ -7,14 +7,14 @@ alpha=0.1
 reps=1
 verbosity=-1
 min_time=1
-max_time=130
+max_time=200
 other_flags="--reset-every-trial --per_replan --online"
 
 problems=( "--track=../data/tracks/known/square-4-error.track --perror=0.10 --pslip=0.20" \
            "--track=../data/tracks/known/ring-5-error.track --perror=0.10 --pslip=0.20" \
            "--sailing-size=40 --sailing-goal=39" \
            "--sailing-size=40 --sailing-goal=20")
-brtdp_ubs=(20 40 150 250)
+brtdp_ubs=(30 60 300 200)
 
 problems_str=(square4 ring5 sailing-corner sailing-middle)
 
