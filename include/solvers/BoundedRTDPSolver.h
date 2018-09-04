@@ -35,6 +35,12 @@ private:
 
     mlcore::StateActionMap lowerBoundGreedyPolicy_;
 
+    /* Maximum planning time in milliseconds. */
+    int maxTime_;
+
+    /* The time at which planning began. */
+    std::chrono::time_point<std::chrono::high_resolution_clock> beginTime_;
+
     /* Performs a single BRTDP trial. */
     void trial(mlcore::State* s);
 
@@ -49,7 +55,11 @@ private:
      * Samples a state biased according to the difference of its bounds.
      * Returns a nullptr if all successor states have "well-known" value.
      */
-    mlcore::State* sampleBiased(mlcore::State* s, mlcore::Action* a, mlcore::State* s0);
+    mlcore::State*
+    sampleBiased(mlcore::State* s, mlcore::Action* a, mlcore::State* s0);
+
+    /* Returns true iff there is no more time left for planning. */
+    bool ranOutOfTime();
 
 public:
     /**
@@ -71,6 +81,11 @@ public:
      * @param s0 The state to start the search at.
      */
     virtual mlcore::Action* solve(mlcore::State* s0);
+
+    /**
+     * Sets the maximum planning time allowed to the algorithm (milliseconds).
+     */
+    virtual void maxPlanningTime(time_t theTime) { maxTime_ = theTime; }
 
     /**
      * Resets the internal values of the algorithm.

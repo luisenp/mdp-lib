@@ -14,7 +14,7 @@
 #define bb_cost first
 #define bb_action second
 
-// TODO: Make maxTime_ common for all solvers
+// TODO: Make maxTime_, beginTime_, and ranOutOfTime() common to all solvers
 
 namespace mlsolvers
 {

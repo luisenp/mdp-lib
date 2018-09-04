@@ -58,18 +58,6 @@ SoftFLARESSolver::SoftFLARESSolver(Problem* problem,
     }
 }
 
-bool SoftFLARESSolver::ranOutOfTime() {
-    // Checking if it ran out of time
-    if (maxTime_ > -1) {
-        auto endTime = std::chrono::high_resolution_clock::now();
-        auto timeElapsed = std::chrono::duration_cast<
-            std::chrono::milliseconds>(endTime - beginTime_).count();
-        if (timeElapsed > maxTime_)
-            return true;
-    }
-    return false;
-}
-
 void SoftFLARESSolver::trial(State* s) {
     State* currentState = s;
     list<State*> visited;
@@ -315,6 +303,18 @@ bool SoftFLARESSolver::moreTrials(
     auto duration = std::chrono::
         duration_cast<std::chrono::milliseconds>(endTime-startTime).count();
     return (duration < maxTime_);
+}
+
+bool SoftFLARESSolver::ranOutOfTime() {
+    // Checking if it ran out of time
+    if (maxTime_ > -1) {
+        auto endTime = std::chrono::high_resolution_clock::now();
+        auto timeElapsed = std::chrono::duration_cast<
+            std::chrono::milliseconds>(endTime - beginTime_).count();
+        if (timeElapsed > maxTime_)
+            return true;
+    }
+    return false;
 }
 
 Action* SoftFLARESSolver::solve(State* s0) {

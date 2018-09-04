@@ -7,13 +7,15 @@ BoundedRTDPSolver::BoundedRTDPSolver(mlcore::Problem* problem,
                                      double epsilon,
                                      double tau,
                                      int maxTrials)
-    : problem_(problem), epsilon_(epsilon), tau_(tau), maxTrials_(maxTrials)
+    : problem_(problem), epsilon_(epsilon),
+      tau_(tau), maxTrials_(maxTrials), constantUpperBound_(0.0)
 { }
 
 
 void BoundedRTDPSolver::trial(mlcore::State* s) {
     mlcore::State* tmp = s;
     std::list<mlcore::State*> visited;
+    double accumulated_cost = 0.0;
     while (true) {
         if (problem_->goal(tmp))
             break;
@@ -21,8 +23,16 @@ void BoundedRTDPSolver::trial(mlcore::State* s) {
         this->bellmanUpdate(tmp);
         // Explore using the lower bound.
         mlcore::Action* a = lowerBoundGreedyPolicy_[tmp];
-        if (tmp->deadEnd())
+        accumulated_cost += problem_->cost(tmp, a);
+        if (tmp->deadEnd() || accumulated_cost >= mdplib::dead_end_cost)
             break;
+
+        if (ranOutOfTime()) {
+            if (s->bestAction() == nullptr)
+                this->bellmanUpdate(s);
+            return;
+        }
+
         tmp = sampleBiased(tmp, a, s);
         if (tmp == nullptr)
             break;
@@ -44,8 +54,8 @@ void BoundedRTDPSolver::initializeUpperBound(mlcore::State* s) {
         upperBounds_[s] = 30.0; // TODO: Replace by some initialization
 }
 
-mlcore::State*
-BoundedRTDPSolver::sampleBiased(mlcore::State* s, mlcore::Action* a, mlcore::State* s0) {
+mlcore::State* BoundedRTDPSolver::sampleBiased(
+        mlcore::State* s, mlcore::Action* a, mlcore::State* s0) {
     double B = 0.0;
     std::vector< std::pair<mlcore::State*, double> > statesAndScores;
     for (const mlcore::Successor& su : problem_->transition(s, a)) {
@@ -112,11 +122,24 @@ double BoundedRTDPSolver::bellmanUpdate(mlcore::State* s) {
     return bestUpperBound - bestLowerBound;
 }
 
+bool BoundedRTDPSolver::ranOutOfTime() {
+    // Checking if it ran out of time
+    if (maxTime_ > -1) {
+        auto endTime = std::chrono::high_resolution_clock::now();
+        auto timeElapsed = std::chrono::duration_cast<
+            std::chrono::milliseconds>(endTime - beginTime_).count();
+        if (timeElapsed > maxTime_)
+            return true;
+    }
+    return false;
+}
+
 mlcore::Action* BoundedRTDPSolver::solve(mlcore::State* s0) {
     int trials = 0;
+    beginTime_ = std::chrono::high_resolution_clock::now();
     while (trials++ < maxTrials_) {
         trial(s0);
-        if (upperBounds_[s0] - s0->cost() < epsilon_)
+        if ((upperBounds_[s0] - s0->cost() < epsilon_) || ranOutOfTime())
             break;
     }
     return s0->bestAction();

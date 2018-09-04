@@ -495,7 +495,9 @@ vector<double> simulate(Solver* solver,
             statesSeen.insert(tmp);
             Action* a;
             // Re-planning
+                                                                                dprint("a");
             if (mustReplan(solver, algorithm, tmp, plausTrial)) {
+                                                                                dprint("b");
                 startTime = clock();
                 int simulationsElapsedTime =
                     std::ceil(1000 * (double(startTime - simulationsStartTime)
@@ -517,6 +519,7 @@ vector<double> simulate(Solver* solver,
                 a = greedyAction(problem, tmp);
             } else {
                 if (useUpperBound) {
+                                                                                dprint("c");
                     // The algorithms that use upper bounds store the
                     // greedy action with respect to the upper bound
                     // in State::bestAction_
@@ -526,6 +529,7 @@ vector<double> simulate(Solver* solver,
                     a = greedyAction(problem, tmp);
                 }
             }
+                                                                                dprint("d");
 
             if (verbosity >= 1000) {
                 cout << "State/Action: " << tmp << " " << a << " " << endl;
