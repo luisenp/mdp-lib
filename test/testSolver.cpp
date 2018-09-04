@@ -213,7 +213,10 @@ void initSolver(string algorithm, Solver*& solver)
     } else if (algorithm == "lrtdp") {
         solver = new LRTDPSolver(problem, trials, tol, -1);
     } else if (algorithm == "brtdp") {
-        solver = new BoundedRTDPSolver(problem, tol);
+        double ub = 0.0;
+        if (flag_is_registered_with_value("ub"))
+            ub = stof(flag_value("ub"));
+        solver = new BoundedRTDPSolver(problem, tol, ub);
         useUpperBound = true;
     } else if (algorithm == "rtdp-ub") {
         // RTDP with upper bound action selection

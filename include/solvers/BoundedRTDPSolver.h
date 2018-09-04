@@ -67,11 +67,13 @@ public:
      *
      * @param problem The problem to be solved.
      * @param epsilon The error tolerance.
+     * @param upperBound The initial value upper bound to use.
      * @param tau The factor used to consider a state as well-known.
      * @param maxTrials The maximum number of trials to perform.
      */
     BoundedRTDPSolver(mlcore::Problem* problem,
                       double epsilon,
+                      double upperBound = 0.0,
                       double tau = 10,
                       int maxTrials = 1000000);
 

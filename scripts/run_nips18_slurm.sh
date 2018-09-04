@@ -2,10 +2,10 @@
 # Usage ./run_nips18_slurm.sh 
 # Read all comments below before using
 
-nsims=100
+nsims=1000
 alpha=0.1
 reps=1
-verbosity=0
+verbosity=-1
 min_time=1
 max_time=130
 other_flags="--reset-every-trial --per_replan --online"
@@ -14,10 +14,11 @@ problems=( "--track=../data/tracks/known/square-4-error.track --perror=0.10 --ps
            "--track=../data/tracks/known/ring-5-error.track --perror=0.10 --pslip=0.20" \
            "--sailing-size=40 --sailing-goal=39" \
            "--sailing-size=40 --sailing-goal=20")
+brtdp_ubs=(20 40 150 250)
 
 problems_str=(square4 ring5 sailing-corner sailing-middle)
 
-output_dir="/home/lpineda/results_aaai19/test"
+output_dir="/home/lpineda/results_aaai19/per_replan"
 swarm_flags="--partition=longq --time=10-01:00:00"
 rhos=(0.0625 0.03125)
 distfuns=(depth traj plaus)          
@@ -25,11 +26,12 @@ labelfuns=(linear exp logistic)
 for ((ip = 0; ip < ${#problems[@]}; ip++)); do
   problem=${problems[$ip]}
   problem_str=${problems_str[$ip]}
+  brtdp_ub=${brtdp_ubs[$ip]}
   
   # ---- BRTDP
   sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"brtdp".txt \
     run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
-    "brtdp"
+    "brtdp --ub=${brtdp_ub}"
       
   # ---- LRTDP
   sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"lrtdp".txt \

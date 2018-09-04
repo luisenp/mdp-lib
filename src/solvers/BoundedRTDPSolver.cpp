@@ -5,10 +5,11 @@ namespace mlsolvers
 
 BoundedRTDPSolver::BoundedRTDPSolver(mlcore::Problem* problem,
                                      double epsilon,
+                                     double upperBound,
                                      double tau,
                                      int maxTrials)
-    : problem_(problem), epsilon_(epsilon),
-      tau_(tau), maxTrials_(maxTrials), constantUpperBound_(0.0)
+    : problem_(problem), epsilon_(epsilon), constantUpperBound_(upperBound),
+      tau_(tau), maxTrials_(maxTrials)
 { }
 
 
