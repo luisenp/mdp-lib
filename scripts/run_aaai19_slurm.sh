@@ -1,14 +1,15 @@
 #!/bin/bash
-# Usage ./run_nips18_slurm.sh 
+# Usage ./run_aaai19_slurm.sh 
 # Read all comments below before using
 
-nsims=100
+nsims=1000
 alpha=0.1
 reps=1
 verbosity=-1
-min_time=1
-max_time=300
-other_flags="--reset-every-trial --per_replan --online"
+min_time=-1
+max_time=-1
+# other_flags="--reset-every-trial --per_replan --online"
+other_flags="--reset-every-trial"
 
 problems=( "--track=../data/tracks/known/square-4-error.track --perror=0.10 --pslip=0.20" \
            "--track=../data/tracks/known/ring-5-error.track --perror=0.10 --pslip=0.20" \
