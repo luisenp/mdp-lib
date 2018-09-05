@@ -418,6 +418,8 @@ bool mustReplan(Solver* solver, string algorithm, State* s, int plausTrial) {
     }
     if (flag_is_registered("online"))
         return true;
+    if (useUpperBound)
+        return s->bestAction() == nullptr;
     return false;
 }
 
