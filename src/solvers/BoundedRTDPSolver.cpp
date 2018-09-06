@@ -7,9 +7,10 @@ BoundedRTDPSolver::BoundedRTDPSolver(mlcore::Problem* problem,
                                      double epsilon,
                                      double upperBound,
                                      double tau,
-                                     int maxTrials)
+                                     int maxTrials,
+                                     int maxTime)
     : problem_(problem), epsilon_(epsilon), constantUpperBound_(upperBound),
-      tau_(tau), maxTrials_(maxTrials)
+      tau_(tau), maxTrials_(maxTrials), maxTime_(maxTime)
 { }
 
 
@@ -61,12 +62,12 @@ mlcore::State* BoundedRTDPSolver::sampleBiased(
     std::vector< std::pair<mlcore::State*, double> > statesAndScores;
     for (const mlcore::Successor& su : problem_->transition(s, a)) {
         double score =
-            su.su_prob * (upperBounds_[su.su_state] - su.su_state->cost());
+            su.su_prob * (upperBounds_.at(su.su_state) - su.su_state->cost());
         statesAndScores.push_back(std::make_pair(su.su_state, score));
         B += score;
     }
-    if ((upperBounds_[s] - s->cost()) == 0
-            || B < (upperBounds_[s0] - s0->cost()) / tau_)
+    if ((upperBounds_.at(s) - s->cost()) == 0
+            || B < (upperBounds_.at(s0) - s0->cost()) / tau_)
         return nullptr;
     double pick = kUnif_0_1(kRNG);
     double acc = 0;
@@ -97,7 +98,7 @@ double BoundedRTDPSolver::bellmanUpdate(mlcore::State* s) {
             lowerBoundQValueAction += su.su_prob * su.su_state->cost();
             if (upperBounds_.count(su.su_state) == 0)
                 initializeUpperBound(su.su_state);
-            upperBoundQValueAction += su.su_prob * upperBounds_[su.su_state];
+            upperBoundQValueAction += su.su_prob * upperBounds_.at(su.su_state);
         }
         lowerBoundQValueAction =
             (lowerBoundQValueAction * problem_->gamma()) + problem_->cost(s, a);
@@ -140,7 +141,7 @@ mlcore::Action* BoundedRTDPSolver::solve(mlcore::State* s0) {
     beginTime_ = std::chrono::high_resolution_clock::now();
     while (trials++ < maxTrials_) {
         trial(s0);
-        if ((upperBounds_[s0] - s0->cost() < epsilon_) || ranOutOfTime())
+        if ((upperBounds_.at(s0) - s0->cost() < epsilon_) || ranOutOfTime())
             break;
     }
     return s0->bestAction();

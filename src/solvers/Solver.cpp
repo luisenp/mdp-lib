@@ -9,7 +9,7 @@ std::mutex bellman_mutex;
 
 std::random_device rand_dev;
 
-std::mt19937 kRNG(rand_dev());
+std::mt19937 kRNG(1234);
 
 std::uniform_real_distribution<> kUnif_0_1(0, 1);
 

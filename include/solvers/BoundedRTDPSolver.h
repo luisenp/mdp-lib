@@ -75,7 +75,8 @@ public:
                       double epsilon,
                       double upperBound = 0.0,
                       double tau = 10,
-                      int maxTrials = 1000000);
+                      int maxTrials = 1000000,
+                      int maxTime = -1);
 
     /**
      * Solves the associated problem using the Labeled RTDP algorithm.
