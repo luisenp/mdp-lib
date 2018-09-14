@@ -225,20 +225,20 @@ void findBestReductionBruteForce(
                                          testReduction);
         reducedModel = new ReducedModel(problem, testReduction, k);
         double result = ReducedModel::evaluateMarkovChain(reducedModel);
-                                                                                dprint1(result);
+                                                                                dprint(result);
         if (result < bestResult) {
-                                                                                dprint2("*********", result);
+                                                                                dprint("*********", result);
             bestResult = result;
             bestReduction = &reduction;
         }
     }
-                                                                                dprint1("**************************");
+                                                                                dprint("**************************");
     assignPrimaryOutcomesToReduction(*bestReduction,
                                      actionGroups,
                                      bestReductionTemplate);
     reducedModel = new ReducedModel(problem, bestReductionTemplate, k);
     double result = ReducedModel::evaluateMarkovChain(reducedModel);
-                                                                                dprint2("best result", result);
+                                                                                dprint("best result", result);
 }
 
 
@@ -257,13 +257,13 @@ void findBestReductionGreedy(mlcore::Problem* problem,
     reducedModel = new ReducedModel(problem, bestReductionTemplate, k);
     double originalResult = ReducedModel::evaluateMarkovChain(reducedModel);
     double previousResult = originalResult;
-                                                                                dprint2("original", previousResult);
+                                                                                dprint("original", previousResult);
     int numOutcomes = 0;
     for (size_t i = 0; i < actionGroups.size(); i++)
         numOutcomes +=
             bestReductionTemplate->
                 primaryIndicatorsActions()[actionGroups[i][0]].size();
-                                                                                dprint2("num outcomes", numOutcomes);
+                                                                                dprint("num outcomes", numOutcomes);
     for (int i = 0; i < numOutcomes; i++) {
         double bestResult = mdplib::dead_end_cost + 1;
         int bestGroup = -1;
@@ -336,7 +336,7 @@ void findBestReductionGreedy(mlcore::Problem* problem,
                     primaryIndicatorsActions()[a][bestOutcomeIndex] = false;
             }
         }
-                                                                                dprint2("result ", bestResult);
+                                                                                dprint("result ", bestResult);
 
     }
     // Printing best reduction

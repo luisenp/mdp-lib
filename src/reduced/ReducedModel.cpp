@@ -35,19 +35,21 @@ ReducedModel::transition(State* s, Action* a)
             useFullTransition_ || primaryIndicators.empty() ||
             primaryIndicators.at(i);
         if (useContPlanEvaluationTransition_) {
-            int add = isPrimaryOutcome && rs->exceptionCount() != k_ ? 0 : 1;
-            next = addState(
-                new ReducedState(origSucc.su_state,
-                                 (rs->exceptionCount() + add) % (k_ + 1),
-                                 this));
+            int add = isPrimaryOutcome && rs->exceptionCount() != 0 ? 0 : -1;
+            int next_k = rs->exceptionCount();
+            if (next_k == 0)
+                next_k = k_;    // Simulates re-planning policy
+            else
+                next_k -= int(!isPrimaryOutcome);
+            next = addState(new ReducedState(origSucc.su_state, next_k, this));
         } else {
             if (isPrimaryOutcome) {
                 next = addState(new ReducedState(origSucc.su_state,
                                                  rs->exceptionCount(),
                                                  this));
-            } else if (rs->exceptionCount() < k_) {
+            } else if (rs->exceptionCount() > 0) {
                 next = addState(new ReducedState(origSucc.su_state,
-                                                 rs->exceptionCount() + 1,
+                                                 rs->exceptionCount() - 1,
                                                  this));
             }
         }
@@ -78,7 +80,7 @@ double ReducedModel::evaluateMarkovChain(ReducedModel* reducedModel)
     // Then we create copies of all these states for j=1,...,k and add
     // them to the Markov Chain.
     std::list<State*> statesFullModel(markovChain->states().begin(),
-                                              markovChain->states().end());
+                                      markovChain->states().end());
     for (int j = 0; j <= reducedModel->k_; j++) {
         for (State* s : statesFullModel) {
             ReducedState* rs = static_cast<ReducedState*>(s);

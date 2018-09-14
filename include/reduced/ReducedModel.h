@@ -110,7 +110,7 @@ public:
         clean_(false),
         kappa_(kappa)
     {
-        s0 = new ReducedState(originalProblem_->initialState(), 0, this);
+        s0 = new ReducedState(originalProblem_->initialState(), k, this);
         this->addState(s0);
         actions_ = originalProblem->actions();
         gamma_ = originalProblem_->gamma();
