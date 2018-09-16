@@ -492,9 +492,9 @@ int main(int argc, char* args[])
         if (flag_is_registered_with_value("mds"))
             mds = stoi(flag_value("mds"));
         if (flag_is_registered_with_value("pslip"))
-            pslip = stoi(flag_value("pslip"));
+            pslip = stof(flag_value("pslip"));
         if (flag_is_registered_with_value("perror"))
-            perror = stoi(flag_value("perror"));
+            perror = stof(flag_value("perror"));
         string trackName = flag_value("problem");
         initRacetrack(trackName, mds, pslip, perror);
         // Actions with the same magnitude will be considered part of the

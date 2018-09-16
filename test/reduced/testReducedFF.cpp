@@ -46,7 +46,7 @@ string current_file;
 int warning_level = 0;
 
 static int verbosity = 0;
-static int k = 0;
+static int k_reduced = 0;
 
 mlcore::Problem* problem = nullptr;
 mlcore::Heuristic* heuristic = nullptr;
@@ -196,7 +196,7 @@ int main(int argc, char* args[])
     // Creating the reduced model.
     ReducedTransition* reduction =
         new PPDDLTaggedReduction(problem, directory + "/" + detDescriptor);
-    reducedModel = new ReducedModel(problem, reduction, k);
+    reducedModel = new ReducedModel(problem, reduction, k_reduced);
     reducedHeuristic = new ReducedHeuristicWrapper(heuristic);
     reducedModel->setHeuristic(reducedHeuristic);
 
@@ -207,7 +207,7 @@ int main(int argc, char* args[])
                                 ffExec,
                                 directory + "/" + detProblem,
                                 directory + "/ff-template.pddl",
-                                k,
+                                k_reduced,
                                 1.0e-3,
                                 useFF);
     solver.solve(reducedModel->initialState());
@@ -248,9 +248,8 @@ int main(int argc, char* args[])
                                             reducedModel);
 
             // Re-planning if needed.
-            if (currentState->bestAction() == nullptr ||
-                    exceptionCount > k) {
-                currentState->exceptionCount(0);
+            if (currentState->bestAction() == nullptr || exceptionCount == 0) {
+                currentState->exceptionCount(k_reduced);
                 currentState = static_cast<ReducedState*> (
                     reducedModel->addState(currentState));
                 solver.solve(currentState);

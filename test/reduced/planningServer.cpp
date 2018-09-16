@@ -54,7 +54,7 @@ string current_file;
 int warning_level = 0;
 
 static int verbosity = 0;
-static int k = 0;
+static int k_reduced = 0;
 
 mlcore::Problem* problem = nullptr;
 mlcore::Heuristic* heuristic = nullptr;
@@ -245,9 +245,9 @@ int main(int argc, char* args[])
         planner = flag_value("planner");
 
     //The maximum number of exceptions for the reduced model solver.
-    int k = 0;
+    int k_reduced = 0;
     if (flag_is_registered_with_value("k"))
-        k = stoi(flag_value("k"));
+        k_reduced = stoi(flag_value("k"));
 
     // The maximum planning time allowed to the planner.
     time_t maxPlanningTime = 60 * 5;
@@ -255,7 +255,7 @@ int main(int argc, char* args[])
         maxPlanningTime = stoi(flag_value("max-time"));
     time_t remainingPlanningTime = maxPlanningTime;
 
-    // If true, FF will be used for the states with exception_counter = k.
+    // If true, FF will be used for the states with exception_counter = 0.
     bool useFF = true;
     if (flag_is_registered("reduced-no-ff"))
         useFF = false;
@@ -271,7 +271,7 @@ int main(int argc, char* args[])
     ReducedTransition* reduction = nullptr;
     if (planner == "ff-lao") {
         reduction = new PPDDLTaggedReduction(problem, detDescriptor);
-        reducedModel = new ReducedModel(problem, reduction, k);
+        reducedModel = new ReducedModel(problem, reduction, k_reduced);
         reducedHeuristic = new ReducedHeuristicWrapper(heuristic);
         reducedModel->setHeuristic(reducedHeuristic);
     }
@@ -320,7 +320,7 @@ int main(int argc, char* args[])
                                           ffExec,
                                           directory + "/" + detProblem,
                                           directory + "/ff-template.pddl",
-                                          k,
+                                          k_reduced,
                                           1.0e-3,
                                           useFF,
                                           maxPlanningTime / 2);
@@ -405,10 +405,10 @@ int main(int argc, char* args[])
         startTime = time(nullptr);
         mlcore::Action* action = nullptr;
         if (planner == "ff-lao") {
-            // For now, always set the exception counter to 0 and re-plan.
+            // For now, always set the exception counter to k and re-plan.
             ReducedState* reducedState = static_cast<ReducedState*> (
                 reducedModel->addState(
-                    new ReducedState(state, 0, reducedModel)));
+                    new ReducedState(state, k_reduced, reducedModel)));
             action = solver->solve(reducedState);
         } else {
             action = solver->solve(state);

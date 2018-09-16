@@ -29,7 +29,9 @@ ReducedModel::transition(State* s, Action* a)
         originalProblem_->transition(rs->originalState(), a);
     double totalProbability = 0.0;
     int i = 0;
+//                                                                                dprint("--", s);
     for (Successor const & origSucc : originalSuccessors) {
+//                                                                                dprint("------", origSucc.su_state, origSucc.su_prob);
         State* next = nullptr;
         bool isPrimaryOutcome =
             useFullTransition_ || primaryIndicators.empty() ||
@@ -197,19 +199,62 @@ std::pair<double, double> ReducedModel::trial(mlsolvers::Solver & solver,
         *maxPlanningTime = 0.0;
     ReducedState* currentState =
         static_cast<ReducedState*>(this->initialState());
+    currentState->exceptionCount(this->k_);
     if (currentState->deadEnd())
         return std::make_pair(mdplib::dead_end_cost, 0.0);
     if (this->goal(currentState))
         return std::make_pair(0.0, 0.0);
+//                                                                                generateAll();
+//                                                                                for (mlcore::State* sss : states_) {
+//                                                                                    dprint(sss);
+//                                                                                    for (mlcore::Action* aaa : actions_) {
+//                                                                                        if (!applicable(sss, aaa))
+//                                                                                            continue;
+//                                                                                        dprint("  ", aaa);
+//                                                                                        for (auto& susu : transition(sss, aaa)) {
+//                                                                                            dprint("    ", susu.su_state, susu.su_prob);
+//                                                                                        }
+//                                                                                    }
+//                                                                                }
+
+
+//                                                                                mlcore::StateSet bpsg;
+//                                                                                mlsolvers::getBestPartialSolutionGraph(this, currentState, bpsg);
+//                                                                                for (mlcore::State* sss : bpsg) {
+//                                                                                    if (goal(sss)) {
+//                                                                                        dprint(sss);
+//                                                                                        continue;
+//                                                                                    }
+//                                                                                    dprint("parent", sss);
+//                                                                                    for (mlcore::Action* aaa : actions_) {
+//                                                                                        if (!applicable(sss, aaa))
+//                                                                                            continue;
+//                                                                                        std::string prefix = aaa == sss->bestAction() ? "**" : "--";
+//                                                                                        dprint(prefix, aaa);
+//                                                                                        double qvalue = this->cost(sss, aaa);
+//                                                                                        for (auto& susu : transition(sss, aaa)) {
+//                                                                                            dprint("    ", susu.su_state, susu.su_prob, susu.su_state->cost());
+//                                                                                            qvalue += susu.su_prob * susu.su_state->cost();
+//                                                                                        }
+//                                                                                        dprint("  qvalue", qvalue);
+//                                                                                    }
+//                                                                                }
 
     // This state will be used to simulate the full transition function by
     // making it a copy of the current state and adjusting the exception counter
     // accordingly.
     ReducedState* auxState = new ReducedState(*currentState);
     bool resetExceptionCounter = false;
+
+
+//                                                                                dprint("*****************************************");
+//                                                                                dprint("initial state", currentState);
     while (true) {
         Action* bestAction = currentState->bestAction();
-        cost += this->cost(currentState, bestAction);
+//                                                                                for (auto& sss : transition(currentState, bestAction)) {
+//                                                                                    dprint("  ", sss.su_state, sss.su_prob);
+//                                                                                }
+//        cost += this->cost(currentState, bestAction);
         int exceptionCount = currentState->exceptionCount();
 
         if (cost >= mdplib::dead_end_cost)
@@ -217,15 +262,15 @@ std::pair<double, double> ReducedModel::trial(mlsolvers::Solver & solver,
 
         // Simulating the action execution using the full model.
         // Since we want to use the full transition function for this,
-        // we set the exception counter of the current state to -1
-        // so that it's guaranteed to be lower than the
+        // we set the exception counter of the current state to k + 1
+        // so that it's guaranteed to be higher than the
         // exception bound k, thus forcing the reduced model to use the full
         // transition. We don't use reducedModel->useFullTransition(true)
         // because we still want to know if the outcome was an exception or not.
-        // TODO: Make a method in ReducedModel that does this because this
+        // TODO: Write a method in ReducedModel that does this because this
         // approach will make reducedModel store the copies with j=-1.
         auxState->originalState(currentState->originalState());
-        auxState->exceptionCount(-1);
+        auxState->exceptionCount(this->k_ + 1);
         ReducedState* nextState = static_cast<ReducedState*>(
             mlsolvers::randomSuccessor(this, auxState, bestAction));
         auxState->originalState(nextState->originalState());
@@ -233,18 +278,22 @@ std::pair<double, double> ReducedModel::trial(mlsolvers::Solver & solver,
 
         // Adjusting the result to the current exception count.
         if (resetExceptionCounter) {
+//                                                                                dprint("reset counter");
             // We reset the exception counter after pro-active re-planning.
-            auxState->exceptionCount(0);
+            auxState->exceptionCount(this->k_);
             resetExceptionCounter = false;
         } else {
-            if (auxState->exceptionCount() == -1)    // no exception happened.
+//                                                                                dprint("dont reset counter", auxState->exceptionCount());
+            // no exception happened.
+            if (auxState->exceptionCount() == this->k_ + 1)
                 auxState->exceptionCount(exceptionCount);
             else
-                auxState->exceptionCount(exceptionCount + 1);
+                auxState->exceptionCount(exceptionCount - 1);
         }
 
         nextState =
             static_cast<ReducedState*>(this->getState(auxState));
+//                                                                                dprint("next state", nextState);
 
         if ((nextState != nullptr && nextState->deadEnd()) ||
                 cost >= mdplib::dead_end_cost) {
@@ -272,7 +321,8 @@ std::pair<double, double> ReducedModel::trial(mlsolvers::Solver & solver,
 
             assert(nextState != nullptr);
         } else if (!this->useFullTransition_) {
-            if (this->k_ != 0 && nextState->exceptionCount() == this->k_) {
+            if (this->k_ != 0 && nextState->exceptionCount() == 0) {
+//                                                                                dprint("  replanning");
                 double planningTime =
                     triggerReplan(solver, nextState, true, wrapperProblem);
                 if (planningTime > kappa_) {
@@ -307,11 +357,14 @@ double ReducedModel::triggerReplan(mlsolvers::Solver& solver,
         assert(bestAction != nullptr);
 
         // We plan for all successors of the nextState under the full
-        // model. The -1 is used to get the full model transition (see comment
-        // above in the trial function).
-        ReducedState tmp(nextState->originalState(), -1, this);
+        // model. The (k + 1) is used to get the full model transition
+        // (see comment above in the trial function).
+        ReducedState tmp(nextState->originalState(), this->k_ + 1, this);
         std::list<Successor> successorsFullModel =
             this->transition(&tmp, bestAction);
+
+        // Adding the successors of nextState (under full transition) as
+        // successors of the dummy initial state
         std::list<Successor> dummySuccessors;
         for (Successor const & sccr : successorsFullModel) {
             ReducedState* reducedSccrState =
@@ -319,7 +372,7 @@ double ReducedModel::triggerReplan(mlsolvers::Solver& solver,
                     this->addState(new ReducedState(
                         static_cast<ReducedState*>(sccr.su_state)->
                             originalState(),
-                        0,
+                        this->k_,
                         this)));
             dummySuccessors.push_back(
                 Successor(reducedSccrState, sccr.su_prob));
@@ -345,12 +398,12 @@ bool ReducedModel::isException(
 {
     bool isExcept = false;
     bool isNotExcept = false;
-    ReducedState* rs = new ReducedState(state, 0, originalProblem_);
+    ReducedState* rs = new ReducedState(state, this->k_, originalProblem_);
     for (auto const & sccr : this->transition(rs, action)) {
         ReducedState* reducedSuccessor =
             static_cast<ReducedState*> (sccr.su_state);
         if (reducedSuccessor->originalState() == successor) {
-            if (reducedSuccessor->exceptionCount() == 1) {
+            if (reducedSuccessor->exceptionCount() == this->k_ - 1) {
                 isExcept = true;
             } else {
                 isNotExcept = true;

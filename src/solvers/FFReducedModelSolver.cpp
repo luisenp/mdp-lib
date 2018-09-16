@@ -69,8 +69,7 @@ void FFReducedModelSolver::lao(mlcore::State* s0)
                     mlreduced::ReducedState* reducedState =
                         (mlreduced::ReducedState* ) s;
                     for (Successor sccr : problem_->transition(s, a)) {
-                        if (!(useFF_ &&
-                            reducedState->exceptionCount() == maxHorizon_))
+                        if (!(useFF_ && reducedState->exceptionCount() == 0))
                             stateStack.push_back(sccr.su_state);
                     }
                 }
@@ -99,8 +98,7 @@ void FFReducedModelSolver::lao(mlcore::State* s0)
                     mlreduced::ReducedState* reducedState =
                         (mlreduced::ReducedState* ) s;
                     for (Successor sccr : problem_->transition(s, prevAction)) {
-                        if (!(useFF_ &&
-                            reducedState->exceptionCount() == maxHorizon_))
+                        if (!(useFF_ && reducedState->exceptionCount() == 0))
                             stateStack.push_back(sccr.su_state);
                     }
                 }
@@ -135,8 +133,8 @@ double FFReducedModelSolver::bellmanUpdate(mlcore::State* s)
 
     mlreduced::ReducedState* reducedState =
         static_cast<mlreduced::ReducedState*> (s);
-    if (useFF_ && reducedState->exceptionCount() == maxHorizon_) {
-        // For exceptionCount = k we just call FF.
+    if (useFF_ && reducedState->exceptionCount() == 0) {
+        // For exceptionCount = 0 we just call FF.
         PPDDLState* ppddlState =
             static_cast<PPDDLState*> (reducedState->originalState());
         string stateAtoms = extractStateAtoms(ppddlState);
@@ -177,7 +175,6 @@ double FFReducedModelSolver::bellmanUpdate(mlcore::State* s)
                     sPrime->markDeadEnd();
                     continue;
                 }
-//                                                                                break;
                 int cnt = 0;
                 for (auto const succ : problem_->transition(sPrime, action)) {
                     sPrime = succ.su_state;
