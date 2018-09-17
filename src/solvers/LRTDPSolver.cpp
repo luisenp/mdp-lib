@@ -115,7 +115,9 @@ bool LRTDPSolver::checkSolved(mlcore::State* s)
             closed.pop_front();
             tmp->clearBits(mdplib::CLOSED);
             bellmanUpdate(problem_, tmp);
-        }
+            if (ranOutOfTime())
+                return false;
+            }
     }
 
     return rv;

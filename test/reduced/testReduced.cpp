@@ -59,6 +59,7 @@ static int k = 0;
 double tau = 1.2;
 int l = 2;
 bool isDeterminization = false;
+long maxt = -1;
 
 mlcore::Problem* problem = nullptr;
 mlcore::Heuristic* heuristic = nullptr;
@@ -626,6 +627,9 @@ int main(int argc, char* args[])
         else
             solver = new LAOStarSolver(wrapperProblem);
     }
+    if (flag_is_registered_with_value("maxt"))
+        maxt = stoi(flag_value("maxt"));
+    solver->maxPlanningTime(maxt);
     if (useFullTransition)
         solver->solve(wrapperProblem->initialState());
     endTime = clock();
@@ -641,23 +645,22 @@ int main(int argc, char* args[])
     int cntMaxTimeOverKappa = 0;
     for (int i = 0; i < nsims; i++) {
         double planningTime = 0.0;
+        // Initial planning time
         // We don't want the simulations to re-use the computed values
-        if (!useFullTransition) {
-            if (!flag_is_registered("no-reset")) {
-                for (mlcore::State* s : wrapperProblem->states())
-                    s->reset();
-            }
-            startTime = clock();
-            solver->solve(wrapperProblem->initialState());
-            endTime = clock();
-            // Initial time always counts
-            planningTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
-            if (verbosity >= 1000)
-                cout << "initial planning time: "
-                     << (double(endTime - startTime) / CLOCKS_PER_SEC)
-                     << " cost " << wrapperProblem->initialState()->cost()
-                     << endl;
+        if (!flag_is_registered("no-reset")) {
+            for (mlcore::State* s : wrapperProblem->states())
+                s->reset();
         }
+        startTime = clock();
+        solver->solve(wrapperProblem->initialState());
+        endTime = clock();
+        // Initial time always counted
+        planningTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
+        if (verbosity >= 1000)
+            cout << "initial planning time: "
+                 << (double(endTime - startTime) / CLOCKS_PER_SEC)
+                 << " cost " << wrapperProblem->initialState()->cost()
+                 << endl;
         double maxReplanningTimeCurrent = 0.0;
         pair<double, double> costAndTime =
             reducedModel->trial(
