@@ -107,6 +107,7 @@ bool LRTDPSolver::checkSolved(mlcore::State* s)
         for (mlcore::State* sc : closed) {
             sc->setBits(mdplib::SOLVED);
             sc->clearBits(mdplib::CLOSED);
+            sc->setBestAction(greedyAction(problem_, sc));
         }
     } else {
         while (!closed.empty()) {

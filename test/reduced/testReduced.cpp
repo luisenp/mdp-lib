@@ -32,6 +32,7 @@
 #include "../../include/reduced/ReducedTransition.h"
 
 #include "../../include/solvers/LAOStarSolver.h"
+#include "../../include/solvers/LRTDPSolver.h"
 #include "../../include/solvers/Solver.h"
 #include "../../include/solvers/VISolver.h"
 
@@ -620,7 +621,10 @@ int main(int argc, char* args[])
         reducedModel->generateAll();
         solver = new VISolver(wrapperProblem);
     } else {
-        solver = new LAOStarSolver(wrapperProblem);
+        if (flag_is_registered("use-lrtdp"))
+            solver = new LRTDPSolver(wrapperProblem, 1000000, 1.0e-6, -1);
+        else
+            solver = new LAOStarSolver(wrapperProblem);
     }
     if (useFullTransition)
         solver->solve(wrapperProblem->initialState());
@@ -639,16 +643,20 @@ int main(int argc, char* args[])
         double planningTime = 0.0;
         // We don't want the simulations to re-use the computed values
         if (!useFullTransition) {
-            for (mlcore::State* s : wrapperProblem->states())
-                s->reset();
+            if (!flag_is_registered("no-reset")) {
+                for (mlcore::State* s : wrapperProblem->states())
+                    s->reset();
+            }
             startTime = clock();
             solver->solve(wrapperProblem->initialState());
             endTime = clock();
             // Initial time always counts
             planningTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
             if (verbosity >= 1000)
-            cout << "initial planning time: cost " <<
-                (double(endTime - startTime) / CLOCKS_PER_SEC) << endl;
+                cout << "initial planning time: "
+                     << (double(endTime - startTime) / CLOCKS_PER_SEC)
+                     << " cost " << wrapperProblem->initialState()->cost()
+                     << endl;
         }
         double maxReplanningTimeCurrent = 0.0;
         pair<double, double> costAndTime =
