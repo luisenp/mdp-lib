@@ -117,7 +117,7 @@ public:
 
 extern int yylex();
 extern size_t line_number;
-extern char *current_file;
+extern std::string current_file;
 static bool success = true;
 
 static Domain* domain;
