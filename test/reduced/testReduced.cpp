@@ -654,13 +654,13 @@ int main(int argc, char* args[])
         startTime = clock();
         solver->solve(wrapperProblem->initialState());
         endTime = clock();
-        // Initial time always counted
+        /* // Initial time always counted
         planningTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
         if (verbosity >= 1000)
             cout << "initial planning time: "
                  << (double(endTime - startTime) / CLOCKS_PER_SEC)
                  << " cost " << wrapperProblem->initialState()->cost()
-                 << endl;
+                 << endl; */
         double maxReplanningTimeCurrent = 0.0;
         pair<double, double> costAndTime =
             reducedModel->trial(

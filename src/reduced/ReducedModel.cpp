@@ -16,8 +16,7 @@ namespace mlreduced
 {
 
 std::list<Successor>
-ReducedModel::transition(State* s, Action* a)
-{
+ReducedModel::transition(State* s, Action* a) {
     ReducedState* rs = static_cast<ReducedState*>(s);
     std::vector<bool> primaryIndicators;
     if (!useFullTransition_)
@@ -68,8 +67,7 @@ ReducedModel::transition(State* s, Action* a)
 }
 
 
-double ReducedModel::evaluateMarkovChain(ReducedModel* reducedModel)
-{
+double ReducedModel::evaluateMarkovChain(ReducedModel* reducedModel) {
     ReducedModel* markovChain =
         new ReducedModel(reducedModel->originalProblem_,
                          reducedModel->reducedTransition_,
@@ -150,11 +148,10 @@ double ReducedModel::evaluateMarkovChain(ReducedModel* reducedModel)
 
 
 ReducedTransition* ReducedModel::getBestReduction(
-    Problem* originalProblem,
-    std::list<ReducedTransition*> reducedTransitions,
-    int k,
-    ReducedHeuristicWrapper* heuristic)
-{
+        Problem* originalProblem,
+        std::list<ReducedTransition*> reducedTransitions,
+        int k,
+        ReducedHeuristicWrapper* heuristic) {
     double bestCost = mdplib::dead_end_cost + 1;
     ReducedTransition* bestReduction = nullptr;
     for (ReducedTransition* reducedTransition : reducedTransitions) {
@@ -173,8 +170,7 @@ ReducedTransition* ReducedModel::getBestReduction(
 }
 
 
-double ReducedModel::evaluateMonteCarlo(int numTrials)
-{
+double ReducedModel::evaluateMonteCarlo(int numTrials) {
     WrapperProblem wrapper(this);
     mlsolvers::LAOStarSolver solver(static_cast<Problem*>(&wrapper));
     solver.solve(wrapper.initialState());
@@ -189,10 +185,7 @@ double ReducedModel::evaluateMonteCarlo(int numTrials)
 
 std::pair<double, double> ReducedModel::trial(mlsolvers::Solver & solver,
                                               WrapperProblem* wrapperProblem,
-                                              double* maxPlanningTime)
-{
-    assert(wrapperProblem->problem() == this);
-
+                                              double* maxPlanningTime) {
     double cost = 0.0;
     double totalPlanningTime = 0.0;
     if (maxPlanningTime)
@@ -204,171 +197,66 @@ std::pair<double, double> ReducedModel::trial(mlsolvers::Solver & solver,
         return std::make_pair(mdplib::dead_end_cost, 0.0);
     if (this->goal(currentState))
         return std::make_pair(0.0, 0.0);
-//                                                                                generateAll();
-//                                                                                for (mlcore::State* sss : states_) {
-//                                                                                    dprint(sss);
-//                                                                                    for (mlcore::Action* aaa : actions_) {
-//                                                                                        if (!applicable(sss, aaa))
-//                                                                                            continue;
-//                                                                                        dprint("  ", aaa);
-//                                                                                        for (auto& susu : transition(sss, aaa)) {
-//                                                                                            dprint("    ", susu.su_state, susu.su_prob);
-//                                                                                        }
-//                                                                                    }
-//                                                                                }
 
-
-//                                                                                mlcore::StateSet bpsg;
-//                                                                                mlsolvers::getBestPartialSolutionGraph(this, currentState, bpsg);
-//                                                                                dprint(bpsg.size());
-//                                                                                for (mlcore::State* sss : bpsg) {
-//                                                                                    if (goal(sss)) {
-//                                                                                        dprint(sss);
-//                                                                                        continue;
-//                                                                                    }
-//                                                                                    dprint("parent", sss);
-//                                                                                    for (mlcore::Action* aaa : actions_) {
-//                                                                                        if (!applicable(sss, aaa))
-//                                                                                            continue;
-//                                                                                        std::string prefix = aaa == sss->bestAction() ? "**" : "--";
-//                                                                                        dprint(prefix, aaa);
-//                                                                                        double qvalue = this->cost(sss, aaa);
-//                                                                                        for (auto& susu : transition(sss, aaa)) {
-//                                                                                            dprint("    ", susu.su_state, susu.su_prob, susu.su_state->cost());
-//                                                                                            qvalue += susu.su_prob * susu.su_state->cost();
-//                                                                                        }
-//                                                                                        dprint("  qvalue", qvalue);
-//                                                                                    }
-//                                                                                }
-
-    // This state will be used to simulate the full transition function by
-    // making it a copy of the current state and adjusting the exception counter
-    // accordingly.
-    ReducedState* auxState = new ReducedState(*currentState);
-    bool resetExceptionCounter = false;
-
-
-//                                                                                dprint("*****************************************");
-//                                                                                dprint("initial state", currentState);
     while (true) {
-        Action* bestAction = currentState->bestAction();
-//                                                                                dprint(currentState, bestAction, currentState->checkBits(mdplib::SOLVED));
-//                                                                                for (auto& sss : transition(currentState, bestAction)) {
-//                                                                                    dprint("  ", sss.su_state, sss.su_prob);
-//                                                                                }
-        cost += this->cost(currentState, bestAction);
-        int exceptionCount = currentState->exceptionCount();
+        Action* greedyAction = mlsolvers::greedyAction(this, currentState);
+        if (greedyAction == nullptr) {
+            cost = mdplib::dead_end_cost;   // Current state is a dead-end
+            break;
+        }
+
+        cost += this->cost(currentState, greedyAction);
 
         if (cost >= mdplib::dead_end_cost)
             break;
 
-        // Simulating the action execution using the full model.
-        // Since we want to use the full transition function for this,
-        // we set the exception counter of the current state to k + 1
-        // so that it's guaranteed to be higher than the
-        // exception bound k, thus forcing the reduced model to use the full
-        // transition. We don't use reducedModel->useFullTransition(true)
-        // because we still want to know if the outcome was an exception or not.
-        // TODO: Write a method in ReducedModel that does this because this
-        // approach will make reducedModel store the copies with j=-1.
-        auxState->originalState(currentState->originalState());
-        auxState->exceptionCount(this->k_ + 1);
-//                                                                                dprint("-----aux state-1", auxState, this->k_);
-        ReducedState* nextState = static_cast<ReducedState*>(
-            mlsolvers::randomSuccessor(this, auxState, bestAction));
-//                                                                                dprint("-----next state-1", nextState);
-        auxState->originalState(nextState->originalState());
-        auxState->exceptionCount(nextState->exceptionCount());
+        // Simulating the action execution using the full model
+        mlcore::State* tmp =
+            mlsolvers::randomSuccessor(this->originalProblem(),
+                                       currentState->originalState(),
+                                       greedyAction);
+        ReducedState* auxState = new ReducedState(tmp, this->k_, this);
+        ReducedState* nextState =
+            static_cast<ReducedState*>(this->addState(auxState));
 
-        // Adjusting the result to the current exception count.
-        if (resetExceptionCounter) {
-//                                                                                dprint("----reset counter");
-            // We reset the exception counter after pro-active re-planning.
-            auxState->exceptionCount(this->k_);
-            resetExceptionCounter = false;
-        } else {
-//                                                                                dprint("----dont reset counter", auxState->exceptionCount());
-            // no exception happened.
-            if (auxState->exceptionCount() == this->k_ + 1)
-                auxState->exceptionCount(exceptionCount);
-            else
-                auxState->exceptionCount(exceptionCount - 1);
-        }
-
-//                                                                                dprint("-----aux state", auxState);
-        nextState =
-            static_cast<ReducedState*>(this->getState(auxState));
-//                                                                                dprint("----next state", nextState);
-
-        if ((nextState != nullptr && nextState->deadEnd()) ||
-                cost >= mdplib::dead_end_cost) {
+        // Checking for dead-ends
+        if (nextState == nullptr) {
             cost = mdplib::dead_end_cost;
             break;
         }
-
+        // Checking if the state is a goal
         if (nextState != nullptr && this->goal(nextState)) {
             break;
         }
-
-        // Re-planning
-        // Checking if the state has already been considered during planning.
-        if (nextState == nullptr || nextState->bestAction() == nullptr) {
-//                                                                                dprint("nullptr happened");
-            // State wasn't considered before.
-            assert(this->k_ == 0);  // Only determinization should reach here.
-            auxState->exceptionCount(0);
-            nextState = static_cast<ReducedState*>(
-                this->addState(new ReducedState(*auxState)));
-            double planningTime =
-                triggerReplan(solver, nextState, false, wrapperProblem);
-            totalPlanningTime += planningTime;
-            if (maxPlanningTime)
-                *maxPlanningTime = std::max(*maxPlanningTime, planningTime);
-
-            assert(nextState != nullptr);
-        } else if (!this->useFullTransition_) {
-            if (this->k_ != 0 && nextState->exceptionCount() == 0) {
-//                                                                                dprint("----replanning");
-                double planningTime =
-                    triggerReplan(solver, nextState, true, wrapperProblem);
-                if (planningTime > kappa_) {
-                    // Assumes agent idles while waiting for planning to end
-                    totalPlanningTime += (planningTime - kappa_);
-                }
-                if (maxPlanningTime) {
-                    *maxPlanningTime = std::max(*maxPlanningTime, planningTime);
-                }
-                resetExceptionCounter = true;
-            }
+        // Planning "in parallel" to action execution
+        double planningTime =
+            triggerReplan(solver, nextState, true, wrapperProblem);
+        if (maxPlanningTime) {
+            *maxPlanningTime = std::max(*maxPlanningTime, planningTime);
         }
+        // Updating state for next step
         currentState = nextState;
-//                                                                                dprint("----current state", currentState, nextState);
     }
-    if (auxState != nullptr)
-        delete auxState;
     return std::make_pair(cost, totalPlanningTime);
 }
 
 
 double ReducedModel::triggerReplan(mlsolvers::Solver& solver,
-                                    ReducedState* nextState,
-                                    bool proactive,
-                                    WrapperProblem* wrapperProblem)
-{
+                                   ReducedState* nextState,
+                                   bool proactive,
+                                   WrapperProblem* wrapperProblem) {
     if (this->goal(nextState))
         return 0.0;
 
     if (proactive) {
-        Action* bestAction = nextState->bestAction();
-        // This action can't be null because we are planning pro-actively.
-        assert(bestAction != nullptr);
+        Action* greedyAction = mlsolvers::greedyAction(this, nextState);
 
         // We plan for all successors of the nextState under the full
         // model. The (k + 1) is used to get the full model transition
         // (see comment above in the trial function).
         ReducedState tmp(nextState->originalState(), this->k_ + 1, this);
         std::list<Successor> successorsFullModel =
-            this->transition(&tmp, bestAction);
+            this->transition(&tmp, greedyAction);
 
         // Adding the successors of nextState (under full transition) as
         // successors of the dummy initial state
@@ -381,51 +269,15 @@ double ReducedModel::triggerReplan(mlsolvers::Solver& solver,
                             originalState(),
                         this->k_,
                         this)));
-//                                                                                dprint("--------adding successor", reducedSccrState);
             dummySuccessors.push_back(
                 Successor(reducedSccrState, sccr.su_prob));
         }
-        wrapperProblem->setDummyAction(bestAction);
+        wrapperProblem->setDummyAction(greedyAction);
         wrapperProblem->dummyState()->setSuccessors(dummySuccessors);
         clock_t startTime = clock();
         solver.solve(wrapperProblem->dummyState());
         // Clear all bits of dummy state to avoid incorrect labeling
         wrapperProblem->dummyState()->clearBits(~0);
-//                                                                                Compares the current solver with LAO*
-//                                                                                double cost1 = wrapperProblem->dummyState()->cost();
-//                                                                                mlcore::StateSet bpsg;
-//                                                                                mlsolvers::getBestPartialSolutionGraph(wrapperProblem, wrapperProblem->dummyState(), bpsg);
-//                                                                                int size1 = bpsg.size();
-//                                                                                mlcore::StateActionMap actionmap;
-//                                                                                mlcore::StateDoubleMap costmap;
-//                                                                                for (mlcore::State* sss : bpsg) {
-//                                                                                    if (wrapperProblem->goal(sss))
-//                                                                                        continue;
-//                                                                                    actionmap[sss] = sss->bestAction();
-//                                                                                    costmap[sss] = sss->cost();
-//                                                                                    sss->reset();
-//                                                                                }
-//                                                                                dprint("******************************************");
-//                                                                                mlsolvers::LAOStarSolver lao(wrapperProblem);
-//                                                                                lao.solve(wrapperProblem->dummyState());
-//                                                                                mlcore::StateSet bpsg2;
-//                                                                                mlsolvers::getBestPartialSolutionGraph(wrapperProblem, wrapperProblem->dummyState(), bpsg2);
-//                                                                                double cost2 = wrapperProblem->dummyState()->cost();
-//                                                                                int size2 = bpsg2.size();
-//                                                                                for (mlcore::State* sss : bpsg2) {
-//                                                                                    if (wrapperProblem->goal(sss))
-//                                                                                        continue;
-//                                                                                    if (actionmap.count(sss) == 0) {
-//                                                                                        dprint("not in LRTDP", sss);
-//                                                                                    } else {
-//                                                                                        if (actionmap[sss] != sss->bestAction()) {
-//                                                                                            dprint("diff actions", sss, actionmap[sss],
-//                                                                                                    sss->bestAction(), costmap[sss], sss->cost());
-//                                                                                        }
-//                                                                                    }
-//                                                                                }
-//                                                                                dprint(fabs(cost1 - cost2));
-//                                                                                dprint(size1 - size2);
         clock_t endTime = clock();
         return (double(endTime - startTime) / CLOCKS_PER_SEC);
     } else {
@@ -441,8 +293,7 @@ double ReducedModel::triggerReplan(mlsolvers::Solver& solver,
 
 
 bool ReducedModel::isException(
-    mlcore::State* state, mlcore::State* successor, mlcore::Action* action)
-{
+    mlcore::State* state, mlcore::State* successor, mlcore::Action* action) {
     bool isExcept = false;
     bool isNotExcept = false;
     ReducedState* rs = new ReducedState(state, this->k_, originalProblem_);
