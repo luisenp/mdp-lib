@@ -39,7 +39,7 @@ ReducedModel::transition(State* s, Action* a) {
             int add = isPrimaryOutcome && rs->exceptionCount() != 0 ? 0 : -1;
             int next_k = rs->exceptionCount();
             if (next_k == 0)
-                next_k = k_;    // Simulates re-planning policy
+                next_k = this->k_;    // Simulates re-planning policy
             else
                 next_k -= int(!isPrimaryOutcome);
             next = addState(new ReducedState(origSucc.su_state, next_k, this));
@@ -186,6 +186,7 @@ double ReducedModel::evaluateMonteCarlo(int numTrials) {
 std::pair<double, double> ReducedModel::trial(mlsolvers::Solver & solver,
                                               WrapperProblem* wrapperProblem,
                                               double* maxPlanningTime) {
+    int original_k = this->k_;
     double cost = 0.0;
     double totalPlanningTime = 0.0;
     if (maxPlanningTime)
@@ -213,6 +214,7 @@ std::pair<double, double> ReducedModel::trial(mlsolvers::Solver & solver,
         } else {
             action = mlsolvers::greedyAction(this, currentState);
         }
+
         if (action == nullptr) {
             cost = mdplib::dead_end_cost;   // Current state is a dead-end
             break;
@@ -252,6 +254,7 @@ std::pair<double, double> ReducedModel::trial(mlsolvers::Solver & solver,
         // Updating state for next step
         currentState = nextState;
     }
+    this->k_ = original_k;;
     return std::make_pair(cost, totalPlanningTime);
 }
 
@@ -267,25 +270,30 @@ double ReducedModel::triggerReplan(mlsolvers::Solver& solver,
         Action* greedyAction = mlsolvers::greedyAction(this, currentState);
 
         // We plan for all successors of the currentState under the full
-        // model. The (k + 1) is used to get the full model transition
-        // (see comment above in the trial function).
-        ReducedState tmp(currentState->originalState(), this->k_ + 1, this);
+        // model.
         std::list<Successor> successorsFullModel =
-            this->transition(&tmp, greedyAction);
+            this->originalProblem()->transition(currentState->originalState(),
+                                                greedyAction);
 
         // Adding the successors of currentState (under full transition) as
         // successors of the dummy initial state
         std::list<Successor> dummySuccessors;
-        for (Successor const & sccr : successorsFullModel) {
-            ReducedState* reducedSccrState =
-                static_cast<ReducedState*>(
-                    this->addState(new ReducedState(
-                        static_cast<ReducedState*>(sccr.su_state)->
-                            originalState(),
-                        this->k_,
-                        this)));
-            dummySuccessors.push_back(
-                Successor(reducedSccrState, sccr.su_prob));
+        while (true) {
+            dummySuccessors.clear();
+            bool allSolved = true;
+            for (Successor const & sccr : successorsFullModel) {
+                ReducedState* reducedSccrState = static_cast<ReducedState*>(
+                    this->addState(
+                        new ReducedState(sccr.su_state, this->k_, this)));
+                allSolved &= reducedSccrState->checkBits(mdplib::SOLVED);
+                dummySuccessors.push_back(
+                    Successor(reducedSccrState, sccr.su_prob));
+            }
+            if (allSolved && this->increase_k_) {
+                this->k_++;
+                                                                                dprint("all solved", this->k_);
+            }
+            else break;
         }
         wrapperProblem->setDummyAction(greedyAction);
         wrapperProblem->dummyState()->setSuccessors(dummySuccessors);

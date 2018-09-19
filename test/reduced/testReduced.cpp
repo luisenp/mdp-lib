@@ -606,8 +606,8 @@ int main(int argc, char* args[])
     reducedModel = new ReducedModel(problem, bestReductionTemplate, k, tau);
     reducedHeuristic = new ReducedHeuristicWrapper(heuristic);
     reducedModel->setHeuristic(reducedHeuristic);
-    static_cast<ReducedModel*>(reducedModel)->
-        useFullTransition(useFullTransition);
+    reducedModel->useFullTransition(useFullTransition);
+    reducedModel->increaseK(flag_is_registered("increase_k"));
 
     // We will now use the wrapper for the pro-active re-planning approach. It
     // will allow us to plan in advance for the set of successors of a

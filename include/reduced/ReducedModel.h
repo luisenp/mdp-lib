@@ -33,6 +33,11 @@ private:
     bool clean_ = false;
 
     /*
+     * If true, k is increased when re-planning if all states are solved
+     */
+    bool increase_k_ = false;
+
+    /*
      * The time it takes to execute an action (default to DBL_MAX).
      * It is used to account for the time using for planning not
      * concurrently with execution in the trial() method.
@@ -102,14 +107,13 @@ public:
                  ReducedTransition* reducedTransition,
                  int k,
                  double kappa = DBL_MAX) :
-        originalProblem_(originalProblem),
-        reducedTransition_(reducedTransition),
-        k_(k),
-        useFullTransition_(false),
-        useContPlanEvaluationTransition_(false),
-        clean_(false),
-        kappa_(kappa)
-    {
+            originalProblem_(originalProblem),
+            reducedTransition_(reducedTransition),
+            k_(k),
+            useFullTransition_(false),
+            useContPlanEvaluationTransition_(false),
+            clean_(false),
+            kappa_(kappa) {
         s0 = new ReducedState(originalProblem_->initialState(), k, this);
         this->addState(s0);
         actions_ = originalProblem->actions();
@@ -118,8 +122,7 @@ public:
             useFullTransition_ = true;
     }
 
-    virtual ~ReducedModel()
-    {
+    virtual ~ReducedModel() {
         assert(clean_);
     }
 
@@ -135,8 +138,7 @@ public:
      * destroying the actions in this model does not destroy the
      * original ones.
      */
-    void cleanup()
-    {
+    void cleanup() {
         actions_ = std::list<mlcore::Action*> ();
         clean_ = true;
     }
@@ -153,8 +155,9 @@ public:
      */
     int k() { return k_; }
 
-    void useFullTransition(bool value)
-    {
+    void increaseK(bool value) { increase_k_ = value; }
+
+    void useFullTransition(bool value) {
         useFullTransition_ = value | (reducedTransition_ == nullptr);
     }
 
@@ -244,8 +247,7 @@ public:
     /**
      * Overrides method from Problem.
      */
-    virtual bool goal(mlcore::State* s) const
-    {
+    virtual bool goal(mlcore::State* s) const {
         ReducedState* rs = static_cast<ReducedState*> (s);
         return originalProblem_->goal(rs->originalState());
     }
@@ -253,8 +255,7 @@ public:
     /**
      * Overrides method from Problem.
      */
-    virtual double cost(mlcore::State* s, mlcore::Action* a) const
-    {
+    virtual double cost(mlcore::State* s, mlcore::Action* a) const {
         ReducedState* rs = static_cast<ReducedState*> (s);
         return originalProblem_->cost(rs->originalState(), a);
     }
@@ -262,8 +263,7 @@ public:
     /**
      * Overrides method from Problem.
      */
-    virtual bool applicable(mlcore::State* s, mlcore::Action* a) const
-    {
+    virtual bool applicable(mlcore::State* s, mlcore::Action* a) const {
         ReducedState* rs = static_cast<ReducedState*> (s);
         return originalProblem_->applicable(rs->originalState(), a);
     }
