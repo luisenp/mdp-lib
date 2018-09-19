@@ -1,4 +1,4 @@
-nsims=100
+nsims=500
 
 tracks=("roads-huge/map3" \
         "roads-huge/map4" \

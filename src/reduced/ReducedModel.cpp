@@ -212,13 +212,11 @@ std::pair<double, double> ReducedModel::trial(mlsolvers::Solver & solver,
             action = currentState->bestAction();
         } else {
             int k_reduced = this->k_;
-//                                                                                action = mlsolvers::greedyAction(this, currentState);
             while (true) {
                 ReducedState* auxState = static_cast<ReducedState*> (
                     this->getState(new ReducedState(
                         currentState->originalState(), k_reduced, this)));
                 if (auxState == nullptr) {
-                                                                                dprint("never seen before", currentState->originalState(), k_reduced);
                     // The state has never seen before with counter [k_reduced]
                     // This can only happen if k_reduced - 1 was solved, so
                     // use the action previously stored instead
@@ -227,9 +225,7 @@ std::pair<double, double> ReducedModel::trial(mlsolvers::Solver & solver,
                 if (auxState->checkBits(mdplib::SOLVED)) {
                     action = auxState->bestAction();
                     k_reduced++;
-                                                                                dprint("solved", auxState, "increasing k to", k_reduced);
                 } else {
-                                                                                dprint("not solved, use greedy", auxState);
                     // State seen before but not yet solved, use the last
                     // stored action (for the last solved k), or the greedy
                     // action if no action has been stored yet
@@ -317,7 +313,6 @@ double ReducedModel::triggerReplan(mlsolvers::Solver& solver,
             }
             if (allSolved && this->increase_k_) {
                 k_reduced++;
-                                                                                dprint("planning with k", currentState, k_reduced);
             }
             else break;
         }

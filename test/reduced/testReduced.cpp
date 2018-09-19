@@ -642,6 +642,7 @@ int main(int argc, char* args[])
     double expectedCost = 0.0;
     double expectedTime = 0.0;
     double maxReplanningTime = 0.0;
+    double m2cost = 0.0;
     int cntMaxTimeOverKappa = 0;
     for (int i = 0; i < nsims; i++) {
         double planningTime = 0.0;
@@ -666,7 +667,11 @@ int main(int argc, char* args[])
             reducedModel->trial(
                 *solver, wrapperProblem, &maxReplanningTimeCurrent);
 
-        expectedCost += costAndTime.first;
+//        expectedCost += costAndTime.first;
+        double delta = costAndTime.first - expectedCost;
+        expectedCost += delta / (i + 1);
+        double delta2 = costAndTime.first - expectedCost;
+        m2cost += delta * delta2;
         maxReplanningTime = max(maxReplanningTime, maxReplanningTimeCurrent);
         planningTime += costAndTime.second;
         expectedTime += planningTime;
@@ -677,7 +682,8 @@ int main(int argc, char* args[])
             cout << "trial ended: cost " << costAndTime.first << " " <<
                 ", time " << planningTime << endl;
     }
-    cout << "expected cost " << expectedCost / nsims << endl;
+    cout << "expected cost " << expectedCost << endl;
+    cout << "var cost " << m2cost / (nsims - 1) << endl;
     cout << "expected planning time " << expectedTime / nsims << endl;
     cout << "max re-planning time " << maxReplanningTime << endl;
     cout << "cnt max re-planning time over kappa " <<
