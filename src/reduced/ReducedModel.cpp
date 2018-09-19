@@ -200,7 +200,6 @@ std::pair<double, double> ReducedModel::trial(mlsolvers::Solver & solver,
         return std::make_pair(0.0, 0.0);
 
     while (true) {
-
         Action* action = nullptr;
         if (this->k_ == 0) {
             // Using reactive planning
@@ -212,7 +211,33 @@ std::pair<double, double> ReducedModel::trial(mlsolvers::Solver & solver,
             }
             action = currentState->bestAction();
         } else {
-            action = mlsolvers::greedyAction(this, currentState);
+            int k_reduced = this->k_;
+//                                                                                action = mlsolvers::greedyAction(this, currentState);
+            while (true) {
+                ReducedState* auxState = static_cast<ReducedState*> (
+                    this->getState(new ReducedState(
+                        currentState->originalState(), k_reduced, this)));
+                if (auxState == nullptr) {
+                                                                                dprint("never seen before", currentState->originalState(), k_reduced);
+                    // The state has never seen before with counter [k_reduced]
+                    // This can only happen if k_reduced - 1 was solved, so
+                    // use the action previously stored instead
+                    break;
+                }
+                if (auxState->checkBits(mdplib::SOLVED)) {
+                    action = auxState->bestAction();
+                    k_reduced++;
+                                                                                dprint("solved", auxState, "increasing k to", k_reduced);
+                } else {
+                                                                                dprint("not solved, use greedy", auxState);
+                    // State seen before but not yet solved, use the last
+                    // stored action (for the last solved k), or the greedy
+                    // action if no action has been stored yet
+                    if (action == nullptr)
+                        action = mlsolvers::greedyAction(this, auxState);
+                    break;
+                }
+            }
         }
 
         if (action == nullptr) {
@@ -278,20 +303,21 @@ double ReducedModel::triggerReplan(mlsolvers::Solver& solver,
         // Adding the successors of currentState (under full transition) as
         // successors of the dummy initial state
         std::list<Successor> dummySuccessors;
+        int k_reduced = this->k_;
         while (true) {
             dummySuccessors.clear();
             bool allSolved = true;
             for (Successor const & sccr : successorsFullModel) {
                 ReducedState* reducedSccrState = static_cast<ReducedState*>(
                     this->addState(
-                        new ReducedState(sccr.su_state, this->k_, this)));
+                        new ReducedState(sccr.su_state, k_reduced, this)));
                 allSolved &= reducedSccrState->checkBits(mdplib::SOLVED);
                 dummySuccessors.push_back(
                     Successor(reducedSccrState, sccr.su_prob));
             }
             if (allSolved && this->increase_k_) {
-                this->k_++;
-                                                                                dprint("all solved", this->k_);
+                k_reduced++;
+                                                                                dprint("planning with k", currentState, k_reduced);
             }
             else break;
         }
