@@ -199,13 +199,33 @@ std::pair<double, double> ReducedModel::trial(mlsolvers::Solver & solver,
         return std::make_pair(0.0, 0.0);
 
     while (true) {
-        Action* greedyAction = mlsolvers::greedyAction(this, currentState);
-        if (greedyAction == nullptr) {
+
+        Action* action = nullptr;
+        if (this->k_ == 0) {
+            // Using reactive planning
+            double planningTime =
+                triggerReplan(solver, currentState, false, wrapperProblem);
+            totalPlanningTime += planningTime;
+            if (maxPlanningTime) {
+                *maxPlanningTime = std::max(*maxPlanningTime, planningTime);
+            }
+            action = currentState->bestAction();
+        } else {
+            action = mlsolvers::greedyAction(this, currentState);
+        }
+        if (action == nullptr) {
             cost = mdplib::dead_end_cost;   // Current state is a dead-end
             break;
         }
 
-        cost += this->cost(currentState, greedyAction);
+        // Planning "in parallel" to action execution
+        double planningTime =
+            triggerReplan(solver, currentState, true, wrapperProblem);
+        if (maxPlanningTime) {
+            *maxPlanningTime = std::max(*maxPlanningTime, planningTime);
+        }
+
+        cost += this->cost(currentState, action);
 
         if (cost >= mdplib::dead_end_cost)
             break;
@@ -214,7 +234,7 @@ std::pair<double, double> ReducedModel::trial(mlsolvers::Solver & solver,
         mlcore::State* tmp =
             mlsolvers::randomSuccessor(this->originalProblem(),
                                        currentState->originalState(),
-                                       greedyAction);
+                                       action);
         ReducedState* auxState = new ReducedState(tmp, this->k_, this);
         ReducedState* nextState =
             static_cast<ReducedState*>(this->addState(auxState));
@@ -228,12 +248,7 @@ std::pair<double, double> ReducedModel::trial(mlsolvers::Solver & solver,
         if (nextState != nullptr && this->goal(nextState)) {
             break;
         }
-        // Planning "in parallel" to action execution
-        double planningTime =
-            triggerReplan(solver, nextState, true, wrapperProblem);
-        if (maxPlanningTime) {
-            *maxPlanningTime = std::max(*maxPlanningTime, planningTime);
-        }
+
         // Updating state for next step
         currentState = nextState;
     }
@@ -242,23 +257,23 @@ std::pair<double, double> ReducedModel::trial(mlsolvers::Solver & solver,
 
 
 double ReducedModel::triggerReplan(mlsolvers::Solver& solver,
-                                   ReducedState* nextState,
+                                   ReducedState* currentState,
                                    bool proactive,
                                    WrapperProblem* wrapperProblem) {
-    if (this->goal(nextState))
+    if (this->goal(currentState))
         return 0.0;
 
     if (proactive) {
-        Action* greedyAction = mlsolvers::greedyAction(this, nextState);
+        Action* greedyAction = mlsolvers::greedyAction(this, currentState);
 
-        // We plan for all successors of the nextState under the full
+        // We plan for all successors of the currentState under the full
         // model. The (k + 1) is used to get the full model transition
         // (see comment above in the trial function).
-        ReducedState tmp(nextState->originalState(), this->k_ + 1, this);
+        ReducedState tmp(currentState->originalState(), this->k_ + 1, this);
         std::list<Successor> successorsFullModel =
             this->transition(&tmp, greedyAction);
 
-        // Adding the successors of nextState (under full transition) as
+        // Adding the successors of currentState (under full transition) as
         // successors of the dummy initial state
         std::list<Successor> dummySuccessors;
         for (Successor const & sccr : successorsFullModel) {
@@ -282,12 +297,11 @@ double ReducedModel::triggerReplan(mlsolvers::Solver& solver,
         return (double(endTime - startTime) / CLOCKS_PER_SEC);
     } else {
         clock_t startTime = clock();
-        solver.solve(nextState);
+        solver.solve(currentState);
         // Clear all bits of dummy state to avoid incorrect labeling
         wrapperProblem->dummyState()->clearBits(~0);
         clock_t endTime = clock();
         return (double(endTime - startTime) / CLOCKS_PER_SEC);
-
     }
 }
 
