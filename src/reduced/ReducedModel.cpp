@@ -218,8 +218,9 @@ std::pair<double, double> ReducedModel::trial(mlsolvers::Solver & solver,
                         currentState->originalState(), k_reduced, this)));
                 if (auxState == nullptr) {
                     // The state has never seen before with counter [k_reduced]
-                    // This can only happen if k_reduced - 1 was solved, so
-                    // use the action previously stored instead
+                    // Note that to reach counter [k_reduced], the state with
+                    // counter = [k_reduced] - 1 has to be solved, so we can
+                    // use the action previously stored (i.e., just break loop)
                     break;
                 }
                 if (auxState->checkBits(mdplib::SOLVED)) {

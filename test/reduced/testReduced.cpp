@@ -667,7 +667,6 @@ int main(int argc, char* args[])
             reducedModel->trial(
                 *solver, wrapperProblem, &maxReplanningTimeCurrent);
 
-//        expectedCost += costAndTime.first;
         double delta = costAndTime.first - expectedCost;
         expectedCost += delta / (i + 1);
         double delta2 = costAndTime.first - expectedCost;
