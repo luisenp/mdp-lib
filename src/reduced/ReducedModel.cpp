@@ -28,9 +28,7 @@ ReducedModel::transition(State* s, Action* a) {
         originalProblem_->transition(rs->originalState(), a);
     double totalProbability = 0.0;
     int i = 0;
-//                                                                                dprint("--", s);
     for (Successor const & origSucc : originalSuccessors) {
-//                                                                                dprint("------", origSucc.su_state, origSucc.su_prob);
         State* next = nullptr;
         bool isPrimaryOutcome =
             useFullTransition_ || primaryIndicators.empty() ||

@@ -120,5 +120,15 @@ double SailingProblem::cost(mlcore::State* s, mlcore::Action* a) const
 
 bool SailingProblem::applicable(mlcore::State* s, mlcore::Action* a) const
 {
+    SailingState* state = static_cast<SailingState*> (s);
+    SailingAction* action = static_cast<SailingAction*> (a);
+    if (tack(state, action) != INTO) {
+        short dx[] = {0, 1, 1,  1,  0, -1, -1, -1};
+        short dy[] = {1, 1, 0, -1, -1, -1,  0,  1};
+        short nextX = (short) (state->x() + dx[action->dir()]);
+        short nextY = (short) (state->y() + dy[action->dir()]);
+
+        return inLake(nextX, nextY);
+    }
     return true;
 }
