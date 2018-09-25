@@ -52,7 +52,7 @@ for ((id_time = 0; id_time < ${#times[@]}; id_time++)); do
   # This runs full-model planning
   sbatch ${swarm_flags} --output=${output_file} \
     ./run_testreduced_sailing.sh \
-      s${size} "0" ${nsims} "no-mkl" ${maxt} "--use-full"
+      ${size} "0" ${nsims} "no-mkl" ${maxt} "--use-full"
   # This loops different reduced models and values of k
   for ((id_model = 0; id_model < ${#models[@]}; id_model++)); do
     model=${models[$id_model]}
@@ -60,7 +60,7 @@ for ((id_time = 0; id_time < ${#times[@]}; id_time++)); do
       maxt=${times[$id_time]}
       output_file=${save_dir}/s${size}.${model:5:3}.k${k_reduced}.t${maxt}
       sbatch ${swarm_flags} --output=${output_file} \
-        ./run_testreduced_sailing.sh s${size} ${k_reduced} ${nsims} ${model} ${maxt}
+        ./run_testreduced_sailing.sh ${size} ${k_reduced} ${nsims} ${model} ${maxt}
     done
     # Run a planner that increases k when current state is already solved
     # (Only starting with k=1)
@@ -68,6 +68,6 @@ for ((id_time = 0; id_time < ${#times[@]}; id_time++)); do
     output_file=${save_dir}/s${size}.${model:5:3}.kincrease.t${maxt}
     sbatch ${swarm_flags} --output=${output_file} \
       ./run_testreduced_sailing.sh \
-        s${size} "1" ${nsims} ${model} ${maxt} "--increase_k"
+        ${size} "1" ${nsims} ${model} ${maxt} "--increase_k"
   done  
 done
