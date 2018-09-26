@@ -31,12 +31,12 @@ for ((id_track = 0; id_track < ${#tracks[@]}; id_track++)); do
           ./run_testreduced_racetrack.sh ${track} ${k_reduced} ${nsims} ${model} ${maxt}
       done
       # Run a planner that increases k when current state is already solved
-      # (Only starting with k=1)
+      # (Only starting with k=0)
       maxt=${times[$id_time]}
       output_file=${save_dir}/${track}.${model:5:3}.kincrease.t${maxt}
       sbatch ${swarm_flags} --output=${output_file} \
         ./run_testreduced_racetrack.sh \
-          ${track} "1" ${nsims} ${model} ${maxt} "--increase_k"
+          ${track} "0" ${nsims} ${model} ${maxt} "--increase_k"
           
     done  
   done
@@ -63,11 +63,11 @@ for ((id_time = 0; id_time < ${#times[@]}; id_time++)); do
         ./run_testreduced_sailing.sh ${size} ${k_reduced} ${nsims} ${model} ${maxt}
     done
     # Run a planner that increases k when current state is already solved
-    # (Only starting with k=1)
+    # (Only starting with k=0)
     maxt=${times[$id_time]}
     output_file=${save_dir}/s${size}.${model:5:3}.kincrease.t${maxt}
     sbatch ${swarm_flags} --output=${output_file} \
       ./run_testreduced_sailing.sh \
-        ${size} "1" ${nsims} ${model} ${maxt} "--increase_k"
+        ${size} "0" ${nsims} ${model} ${maxt} "--increase_k"
   done  
 done

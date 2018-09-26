@@ -199,8 +199,8 @@ std::pair<double, double> ReducedModel::trial(mlsolvers::Solver & solver,
 
     while (true) {
         Action* action = nullptr;
-        if (this->k_ == 0) {
-            // Using reactive planning
+        if (this->k_ == 0 && !this->increase_k_) {
+            // Using reactive planning when increase_k is false
             double planningTime =
                 triggerReplan(solver, currentState, false, wrapperProblem);
             totalPlanningTime += planningTime;

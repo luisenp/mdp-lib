@@ -14,5 +14,5 @@ echo "--domain=sailing --sailing-size=${size} --sailing-goal=${goal} --k=${k_red
 ../testreduced.out --domain=sailing \
   --sailing-size=${size} --sailing-goal=${goal} \
   --k=${k_reduced} --n=${nsims} --${model} --maxt=${maxt} \
-  --v=0 --mds=-1 --use-lrtdp ${extraflags}
+  --v=0 --use-lrtdp ${extraflags}
   
