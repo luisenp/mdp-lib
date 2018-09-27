@@ -56,7 +56,7 @@ int warning_level = 0;
 
 static int verbosity = 0;
 static int k = 0;
-double tau = 1.2;
+double tau = 1.1;
 int l = 2;
 bool isDeterminization = false;
 long maxt = -1;
@@ -338,13 +338,14 @@ void findBestReductionGreedy(mlcore::Problem* problem,
                     primaryIndicatorsActions()[a][bestOutcomeIndex] = false;
             }
         }
+                                                                                printCustomReduction(bestReductionTemplate, actionGroups);
                                                                                 dprint("result ", bestResult);
 
     }
     // Printing best reduction
     if (verbosity > 10) {
         printCustomReduction(bestReductionTemplate, actionGroups);
-        cout << "Greedy founc model with cost: " << previousResult << endl;
+        cout << "Greedy found model with cost: " << previousResult << endl;
 
     }
 }
@@ -568,6 +569,20 @@ int main(int argc, char* args[])
         primaryOutcomes.push_back(vector<int>{3});
         primaryOutcomes.push_back(vector<int>{5});
         primaryOutcomes.push_back(vector<int>{5});
+        primaryOutcomes.push_back(vector<int>{6});
+        assignPrimaryOutcomesToReduction(primaryOutcomes,
+                                         actionGroups,
+                                         bestReductionTemplate);
+    } else if (flag_is_registered("best-m12-sailing-greedy")) {
+        // This was learned on a sailing of size 10, with goal at the corner
+        vector<vector<int> > primaryOutcomes;
+        primaryOutcomes.push_back(vector<int>{4});
+        primaryOutcomes.push_back(vector<int>{4, 7});
+        primaryOutcomes.push_back(vector<int>{6});
+        primaryOutcomes.push_back(vector<int>{4});
+        primaryOutcomes.push_back(vector<int>{7});
+        primaryOutcomes.push_back(vector<int>{5});
+        primaryOutcomes.push_back(vector<int>{6});
         primaryOutcomes.push_back(vector<int>{6});
         assignPrimaryOutcomesToReduction(primaryOutcomes,
                                          actionGroups,
