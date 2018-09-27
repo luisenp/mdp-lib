@@ -44,7 +44,9 @@ done
 
 # -------------------- RUNNING SAILING DOMAIN -------------------- #
 save_dir="/home/lpineda/results_jair/anytime_sailing"        
-models=("best-det-sailing-greedy" "best-m02-sailing-greedy")
+models=("best-det-sailing-greedy" \
+        "best-m02-sailing-greedy" \
+        "best-m12-sailing-greedy")
 size=40
 for ((id_time = 0; id_time < ${#times[@]}; id_time++)); do
   maxt=${times[$id_time]}
