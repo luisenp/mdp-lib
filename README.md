@@ -14,7 +14,6 @@ The library has been tested in Ubuntu 12.04 and 14.04 (64-bit).
   <ul>
     <li>yacc -- In Ubuntu you can run <code>sudo apt-get install bison</code>. </li>
     <li>flex -- In Ubuntu you can run <code>sudo apt-get install flex</code>. </li>
-    <li>lsocket -- In Ubuntu you can run <code>sudo apt-get install happycoders-libsocket-dev</code>. </li>
   </ul>
 </ul>
   
