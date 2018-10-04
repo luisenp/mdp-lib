@@ -57,7 +57,7 @@ int warning_level = 0;
 static int verbosity = 0;
 static int k = 0;
 double tau = 1.2;
-int l = 2;
+int l = 1;
 bool isDeterminization = false;
 long maxt = -1;
 
@@ -230,6 +230,8 @@ void findBestReductionBruteForce(
                                                                                 dprint(result);
         if (result < bestResult) {
                                                                                 dprint("*********", result);
+                                                                                if (mdplib_debug)
+                                                                                    printCustomReduction(testReduction, actionGroups);
             bestResult = result;
             bestReduction = &reduction;
         }
@@ -241,6 +243,8 @@ void findBestReductionBruteForce(
     reducedModel = new ReducedModel(problem, bestReductionTemplate, k);
     double result = ReducedModel::evaluateMarkovChain(reducedModel);
                                                                                 dprint("best result", result);
+                                                                                if (mdplib_debug)
+                                                                                    printCustomReduction(bestReductionTemplate, actionGroups);
 }
 
 
@@ -344,7 +348,7 @@ void findBestReductionGreedy(mlcore::Problem* problem,
     // Printing best reduction
     if (verbosity > 10) {
         printCustomReduction(bestReductionTemplate, actionGroups);
-        cout << "Greedy founc model with cost: " << previousResult << endl;
+        cout << "Greedy found model with cost: " << previousResult << endl;
 
     }
 }

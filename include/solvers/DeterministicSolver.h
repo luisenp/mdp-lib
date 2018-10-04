@@ -10,6 +10,7 @@ namespace mlsolvers
 {
 
 const int det_most_likely = 0;
+const int det_all_outcomes = 1;
 
 /**
  * Implements a deterministic solver based on the A* algorithm. It simplifies

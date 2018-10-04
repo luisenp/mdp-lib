@@ -31,15 +31,27 @@ mlcore::Action* DeterministicSolver::solve(mlcore::State* s0)
             if (!problem_->applicable(node->state(), a))
                 continue;
 
-            mlcore::State* nextState = nullptr;
-            if (choice_ == det_most_likely)
-                nextState = mostLikelyOutcome(problem_, node->state(), a);
 
             double cost = problem_->cost(node->state(), a);
 
-            Node* next = new Node(node, nextState, a, cost, heuristic_, true);
-            frontier.push(next);
-            allNodes.push_back(next);
+            mlcore::State* nextState = nullptr;
+            if (choice_ == det_most_likely) {
+                nextState = mostLikelyOutcome(problem_, node->state(), a);
+
+                Node* next =
+                    new Node(node, nextState, a, cost, heuristic_, true);
+                frontier.push(next);
+                allNodes.push_back(next);
+            } else if (choice_ == det_all_outcomes) {
+                for (auto& successor : problem_->transition(node->state(), a)) {
+                    nextState = successor.su_state;
+                    Node* next =
+                        new Node(node, nextState, a, cost, heuristic_, true);
+                    frontier.push(next);
+                    allNodes.push_back(next);
+                }
+            }
+
         }
     }
 
