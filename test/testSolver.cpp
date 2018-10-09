@@ -7,6 +7,7 @@
 #include <sstream>
 #include <unistd.h>
 
+#include "../include/solvers/AODetHeuristic.h"
 #include "../include/solvers/BoundedRTDPSolver.h"
 #include "../include/solvers/DeterministicSolver.h"
 #include "../include/solvers/HDPSolver.h"
@@ -647,6 +648,8 @@ int main(int argc, char* args[])
                 cout << "Cost of initial state "
                     << problem->initialState()->cost() << endl;
             }
+        } else if (flag_value("heuristic") == "aodet") {
+            heuristic = new AODetHeuristic(problem);
         } else if (flag_value("heuristic") == "zero")
             heuristic = nullptr;
     }

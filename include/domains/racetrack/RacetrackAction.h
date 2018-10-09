@@ -47,7 +47,7 @@ public:
         if (this == &rhs)
             return *this;
 
-        RacetrackAction* action = (RacetrackAction*)  & rhs;
+        const RacetrackAction* action = static_cast<const RacetrackAction*> (&rhs);
         ax_ =  action->ax_;
         ay_ =  action->ay_;
         return *this;
