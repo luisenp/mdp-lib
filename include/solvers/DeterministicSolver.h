@@ -11,6 +11,7 @@ namespace mlsolvers
 
 const int det_most_likely = 0;
 const int det_all_outcomes = 1;
+const int det_random = 2;
 
 /**
  * Implements a deterministic solver based on the A* algorithm. It simplifies
@@ -22,6 +23,9 @@ const int det_all_outcomes = 1;
 class DeterministicSolver : public Solver
 {
 private:
+
+    /* The total cost of the last path found by the algorithm. */
+    double costLastPathFound_ = mdplib::dead_end_cost;
 
     /*
      * Indicates the choice of deterministic outcome
@@ -61,6 +65,12 @@ public:
      * @param s0 The state to start the search at.
      */
     virtual mlcore::Action* solve(mlcore::State* s0);
+
+    /**
+     * Returns the cost of the last path found by the algorithm. In other
+     * words, the total cost of the solution found in the last call to [solve].
+     */
+    double costLastPathFound() { return costLastPathFound_; }
 };
 
 /**

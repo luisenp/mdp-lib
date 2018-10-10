@@ -13,17 +13,21 @@ mlcore::Action* DeterministicSolver::solve(mlcore::State* s0)
     frontier.push(init);
     std::list<Node*> allNodes;  // for memory clean-up later
     allNodes.push_back(init);
-    Node* final = nullptr;
+    Node* finalNode = nullptr;
+                                                                                dprint("a");
     while (!frontier.empty()) {
+                                                                                dprint("b");
         Node* node = frontier.top();
         frontier.pop();
 
+                                                                                dprint("c");
         if (node->state()->checkBits(mdplib::VISITED_ASTAR))
             continue;   // valid because this is using path-max
         node->state()->setBits(mdplib::VISITED_ASTAR);
+                                                                                dprint("d");
 
         if (problem_->goal(node->state())) {
-            final = node;
+            finalNode = node;
             break;
         }
 
@@ -35,8 +39,11 @@ mlcore::Action* DeterministicSolver::solve(mlcore::State* s0)
             double cost = problem_->cost(node->state(), a);
 
             mlcore::State* nextState = nullptr;
-            if (choice_ == det_most_likely) {
-                nextState = mostLikelyOutcome(problem_, node->state(), a);
+            if (choice_ == det_most_likely || choice_ == det_random) {
+                if (choice_ == det_most_likely)
+                    nextState = mostLikelyOutcome(problem_, node->state(), a);
+                else
+                    nextState = randomSuccessor(problem_, node->state(), a);
 
                 Node* next =
                     new Node(node, nextState, a, cost, heuristic_, true);
@@ -56,9 +63,12 @@ mlcore::Action* DeterministicSolver::solve(mlcore::State* s0)
     }
 
     mlcore::Action* optimal = nullptr;
-    while (final->parent() != nullptr) {
-        optimal = final->action();
-        final = final->parent();
+                                                                                if (finalNode->state() == nullptr)
+                                                                                    dprint("wtf");
+    costLastPathFound_ = finalNode->g();
+    while (finalNode->parent() != nullptr) {
+        optimal = finalNode->action();
+        finalNode = finalNode->parent();
     }
 
     for (Node* node : allNodes) {

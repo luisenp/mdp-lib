@@ -17,7 +17,6 @@ LRTDPSolver::LRTDPSolver(mlcore::Problem* problem,
 
 
 bool LRTDPSolver::ranOutOfTime() {
-    // Checking if it ran out of time
     if (maxTime_ > -1) {
         auto endTime = std::chrono::high_resolution_clock::now();
         auto timeElapsed = std::chrono::duration_cast<

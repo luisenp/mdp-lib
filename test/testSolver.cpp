@@ -12,6 +12,7 @@
 #include "../include/solvers/DeterministicSolver.h"
 #include "../include/solvers/HDPSolver.h"
 #include "../include/solvers/HMinHeuristic.h"
+#include "../include/solvers/HOPSolver.h"
 #include "../include/solvers/LAOStarSolver.h"
 #include "../include/solvers/LRTDPSolver.h"
 #include "../include/solvers/FLARESSolver.h"
@@ -349,6 +350,13 @@ void initSolver(string algorithm, Solver*& solver)
         solver = new DeterministicSolver(problem,
                                          mlsolvers::det_most_likely,
                                          heuristic);
+    } else if (algorithm == "hop") {
+        solver = new HOPSolver(problem);
+        if (!flag_is_registered("heuristic")
+                || flag_value("heuristic") != "aodet") {
+            cerr << "HOPSolver only works with --heur=aodet" << endl;
+            exit(0);
+        }
     } else if (algorithm == "uct") {
         int rollouts = 1000;
         int cutoff = 50;
