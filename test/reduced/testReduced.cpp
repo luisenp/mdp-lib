@@ -31,6 +31,7 @@
 #include "../../include/reduced/ReducedState.h"
 #include "../../include/reduced/ReducedTransition.h"
 
+#include "../../include/solvers/AODetHeuristic.h"
 #include "../../include/solvers/LAOStarSolver.h"
 #include "../../include/solvers/LRTDPSolver.h"
 #include "../../include/solvers/Solver.h"
@@ -402,7 +403,8 @@ void initRacetrack(string trackName, int mds, double pslip, double perror)
     static_cast<RacetrackProblem*>(problem)->pError(perror);
     static_cast<RacetrackProblem*>(problem)->pSlip(pslip);
     static_cast<RacetrackProblem*>(problem)->mds(mds);
-    heuristic = new RTrackDetHeuristic(trackName.c_str());
+//    heuristic = new RTrackDetHeuristic(trackName.c_str());
+    heuristic = new AODetHeuristic(problem);
     static_cast<RacetrackProblem*>(problem)->useFlatTransition(true);
     problem->generateAll();
     if (verbosity > 100)
@@ -457,10 +459,11 @@ void initSailing()
     static_cast<SailingProblem*>(problem)->useFlatTransition(true);
     problem->generateAll();
 
-    if (!flag_is_registered_with_value("heuristic") ||
-            flag_value("heuristic") == "no-wind")
-        heuristic =
-            new SailingNoWindHeuristic(static_cast<SailingProblem*>(problem));
+//    if (!flag_is_registered_with_value("heuristic") ||
+//            flag_value("heuristic") == "no-wind")
+//        heuristic =
+//            new SailingNoWindHeuristic(static_cast<SailingProblem*>(problem));
+    heuristic = new AODetHeuristic(problem);
     createSailingReductionsTemplate(static_cast<SailingProblem*> (problem));
 }
 
@@ -672,10 +675,10 @@ int main(int argc, char* args[])
         pair<double, double> costAndTime;
 
         if (flag_is_registered("anytime")) {
-            costAndTime =reducedModel->trialAnytime(
+            costAndTime = reducedModel->trialAnytime(
                 *solver, wrapperProblem, &maxReplanningTimeCurrent);
         } else {
-            costAndTime =reducedModel->trial(
+            costAndTime = reducedModel->trial(
                 *solver, wrapperProblem, &maxReplanningTimeCurrent);
         }
 

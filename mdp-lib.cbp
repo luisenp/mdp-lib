@@ -567,6 +567,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/reduced/ReducedModel.h" />
 		<Unit filename="include/reduced/ReducedState.h" />
 		<Unit filename="include/reduced/ReducedTransition.h" />
+		<Unit filename="include/solvers/AODetHeuristic.h" />
 		<Unit filename="include/solvers/BoundedRTDPSolver.h" />
 		<Unit filename="include/solvers/ConcurrentSolver.h" />
 		<Unit filename="include/solvers/DeterministicSolver.h" />
@@ -576,6 +577,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="include/solvers/FLARESSolver.h" />
 		<Unit filename="include/solvers/HDPSolver.h" />
 		<Unit filename="include/solvers/HMinHeuristic.h" />
+		<Unit filename="include/solvers/HOPSolver.h" />
 		<Unit filename="include/solvers/LAOStarSolver.h" />
 		<Unit filename="include/solvers/LRTDPSolver.h" />
 		<Unit filename="include/solvers/RFFSolver.h" />
@@ -633,6 +635,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="src/ppddl/PPDDLProblem.cpp" />
 		<Unit filename="src/ppddl/PPDDLState.cpp" />
 		<Unit filename="src/reduced/ReducedModel.cpp" />
+		<Unit filename="src/solvers/AODetHeuristic.cpp" />
 		<Unit filename="src/solvers/BoundedRTDPSolver.cpp" />
 		<Unit filename="src/solvers/ConcurrentSolver.cpp" />
 		<Unit filename="src/solvers/DeterministicSolver.cpp" />
@@ -641,6 +644,7 @@ tag current version and then change Rational for double in master branch]]>
 		<Unit filename="src/solvers/FLARESSolver.cpp" />
 		<Unit filename="src/solvers/HDPSolver.cpp" />
 		<Unit filename="src/solvers/HMinHeuristic.cpp" />
+		<Unit filename="src/solvers/HOPSolver.cpp" />
 		<Unit filename="src/solvers/LAOStarSolver.cpp" />
 		<Unit filename="src/solvers/LRTDPSolver.cpp" />
 		<Unit filename="src/solvers/RFFSolver.cpp" />
