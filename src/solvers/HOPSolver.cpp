@@ -6,10 +6,12 @@
 namespace mlsolvers
 {
 
-HOPSolver::HOPSolver(mlcore::Problem* problem, int maxSamples, int maxTime) :
-    problem_(problem),
-    maxSamples_(maxSamples),
-    maxTime_(maxTime)
+HOPSolver::HOPSolver(
+    mlcore::Problem* problem, int maxSamples, int horizon, int maxTime) :
+        problem_(problem),
+        maxSamples_(maxSamples),
+        horizon_(horizon),
+        maxTime_(maxTime)
 { }
 
 
@@ -26,19 +28,25 @@ bool HOPSolver::ranOutOfTime() {
 
 
 mlcore::Action* HOPSolver::solve(mlcore::State* s0) {
+                                                                                dprint("planning for",  s0);
     DeterministicSolver detSolver(problem_, det_random, problem_->heuristic());
     double bestQValue = mdplib::dead_end_cost + 1;
     mlcore::Action* bestAction = nullptr;
     for (mlcore::Action* action : problem_->actions()) {
         if (!problem_->applicable(s0, action))
             continue;
+                                                                                dprint("  checking action",  action);
         double qValue = 0.0;
         for (auto& successor : problem_->transition(s0, action)) {
+                                                                                dprint("      checking successor",  successor.su_state);
             double VSuccEst = 0.0;
             for (int i = 0; i < maxSamples_; i++) {
-                detSolver.solve(successor.su_state);
+                                                                                std::cerr << i << " ";
+                detSolver.solveTree(successor.su_state, horizon_);
+                                                                                std::cerr << ", ";
                 VSuccEst += detSolver.costLastPathFound();
             }
+                                                                                std::cerr << std::endl;
             VSuccEst /= maxSamples_;
             qValue += successor.su_prob * VSuccEst;
         }

@@ -60,11 +60,21 @@ public:
     virtual ~DeterministicSolver() {}
 
     /**
-     * Solves the associated problem using the LAO* algorithm.
+     * Solves the associated problem using A*.
      *
      * @param s0 The state to start the search at.
      */
     virtual mlcore::Action* solve(mlcore::State* s0);
+
+    /**
+     * Solves the associated problem using a depth-limited tree-based
+     * version of A*.
+     *
+     * @param s0 The state to start the search at.
+     * @param horizon The horizon for the search. No state at depth beyond
+     *                the horizon will be expanded.
+     */
+    mlcore::Action* solveTree(mlcore::State* s0, int horizon);
 
     /**
      * Returns the cost of the last path found by the algorithm. In other
@@ -97,6 +107,9 @@ private:
     /* The f-value of this node (i.e., g + heuristic) */
     double f_;
 
+    /* The depth at which this node was expanded. */
+    int depth_;
+
 public:
     Node(Node* parent,
          mlcore::State* state,
@@ -109,10 +122,12 @@ public:
         parent_ = parent;
         action_ = action;
         if (parent_ == nullptr) {   // assumed to be root-node
+            depth_ = 0;
             g_ = 0.0;
             f_ = heuristic == nullptr ? 0.0 : heuristic->cost(state);
             return;
         }
+        depth_ = parent_->depth() + 1;
         g_ = parent_->g() + actionCost;
         double h = heuristic == nullptr ? 0.0 : heuristic->cost(state);
         double hParent = heuristic == nullptr ?
@@ -133,6 +148,8 @@ public:
     double g() { return g_; }
 
     double f() { return f_; }
+
+    double depth() { return depth_; }
 
     Node* parent() { return parent_; }
 

@@ -23,6 +23,9 @@ private:
     /* The maximum number of futures to sample. */
     int maxSamples_;
 
+    /* Look-ahead Horizon for the futures. */
+    int horizon_;
+
     /* Maximum planning time in milliseconds. */
     int maxTime_;
 
@@ -38,9 +41,13 @@ public:
      *
      * @param problem The problem to be solved.
      * @param maxSamples The maximum number of futures to sample.
+     * @param horizon The look-ahead horizon for the futures.
      * @param maxTime The maximum time allowed for planning.
      */
-    HOPSolver(mlcore::Problem* problem, int maxSamples = 100, int maxTime = -1);
+    HOPSolver(mlcore::Problem* problem,
+              int maxSamples = 100,
+              int horizon = 5,
+              int maxTime = -1);
 
     /**
      * Solves the associated problem using Hindsight Optimization.

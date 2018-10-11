@@ -27,10 +27,21 @@ AllOutcomesDeterminization::
                 transitionGraph_[s_idx][action_idx] = s_prime_idx;
                 actionCosts_.push_back(problem->cost(s, a));
                 actions_.push_back(new DummyAction(action_idx));
+                actionsVector_.push_back(actions_.back());
                 action_idx++;
             }
         }
     }
+}
+
+std::list<mlcore::Action*>
+AllOutcomesDeterminization::actions(mlcore::State* s) const {
+    int s_idx = stateIndexMap_.at(s);
+    std::list<mlcore::Action*> stateActions;
+    for (auto& entry : transitionGraph_.at(s_idx)) {
+        stateActions.push_back(actionsVector_[entry.first]);
+    }
+    return stateActions;
 }
 
 bool AllOutcomesDeterminization::goal(mlcore::State* s) const {

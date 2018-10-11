@@ -39,11 +39,21 @@ private:
      */
     std::vector<mlcore::State*> allStates_;
 
+    /*
+     * Stores all the actions in a vector so that they can be easily indexed.
+     */
+    std::vector<mlcore::Action*> actionsVector_;
+
 public:
 
     AllOutcomesDeterminization(mlcore::Problem* problem);
 
     virtual ~AllOutcomesDeterminization() {}
+
+    /**
+     * Returns the list of actions that are applicable in with this state.
+     */
+    std::list<mlcore::Action*> actions(mlcore::State* s) const;
 
     /**
      * Overrides method from Problem.

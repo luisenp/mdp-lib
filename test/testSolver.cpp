@@ -354,7 +354,7 @@ void initSolver(string algorithm, Solver*& solver)
         solver = new HOPSolver(problem);
         if (!flag_is_registered("heuristic")
                 || flag_value("heuristic") != "aodet") {
-            cerr << "HOPSolver only works with --heur=aodet" << endl;
+            cerr << "HOPSolver only works with --heuristic=aodet" << endl;
             exit(0);
         }
     } else if (algorithm == "uct") {
@@ -422,7 +422,7 @@ bool mustReplan(Solver* solver, string algorithm, State* s, int plausTrial) {
     if (algorithm == "ssipp" || algorithm == "labeled-ssipp") {
         return !s->checkBits(mdplib::SOLVED_SSiPP);
     }
-    if (algorithm == "uct" || algorithm == "rtdp") {
+    if (algorithm == "uct" || algorithm == "rtdp" || algorithm == "hop") {
         return true;
     }
     if (flag_is_registered("online"))
@@ -520,7 +520,8 @@ vector<double> simulate(Solver* solver,
                     solver->maxPlanningTime(planningTime);
                 }
                 if (algorithm != "greedy")
-                    solver->solve(tmp);
+                    a = solver->solve(tmp);
+                                                                                dprint("found action" , (void *) a);
                 endTime = clock();
                 double planTime =
                     (double(endTime - startTime) / CLOCKS_PER_SEC);
@@ -528,7 +529,8 @@ vector<double> simulate(Solver* solver,
                 simulationPlanTime += planTime;
                 longestTime = std::max(longestTime, planTime);
                 numDecisions++;
-                a = greedyAction(problem, tmp);
+                if (algorithm != "hop")
+                    a = greedyAction(problem, tmp);
             } else {
                 if (useUpperBound) {
                     // The algorithms that use upper bounds store the
