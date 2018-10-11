@@ -68,6 +68,15 @@ private:
                          bool proactive,
                          WrapperProblem* wrapperProblem);
 
+    /*
+     * Re-planning trigger handler used with the anytime version of MKL-replan.
+     */
+    double triggerReplanAnytime(mlsolvers::Solver& solver,
+                                ReducedState* nextState,
+                                bool proactive,
+                                WrapperProblem* wrapperProblem);
+
+
 protected:
     /**
      * The problem for which the reduced model is constructed.
@@ -190,6 +199,13 @@ public:
     std::pair<double, double> trial(mlsolvers::Solver & solver,
                                     WrapperProblem* wrapperProblem,
                                     double* maxPlanningTime = nullptr);
+
+    /**
+     * Same as [trial], but uses the anytime version of MKL-replan instead.
+     */
+    std::pair<double, double> trialAnytime(mlsolvers::Solver & solver,
+                                           WrapperProblem* wrapperProblem,
+                                           double* maxPlanningTime = nullptr);
 
     /**
      * Computes the true expected cost of the continual planning approach
