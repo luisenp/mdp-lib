@@ -659,17 +659,25 @@ int main(int argc, char* args[])
         startTime = clock();
         solver->solve(wrapperProblem->initialState());
         endTime = clock();
-        /* // Initial time always counted
-        planningTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
-        if (verbosity >= 1000)
-            cout << "initial planning time: "
-                 << (double(endTime - startTime) / CLOCKS_PER_SEC)
-                 << " cost " << wrapperProblem->initialState()->cost()
-                 << endl; */
+        if (!flag_is_registered("anytime")) {
+            // Initial time always counted
+            planningTime += (double(endTime - startTime) / CLOCKS_PER_SEC);
+            if (verbosity >= 1000)
+                cout << "initial planning time: "
+                     << (double(endTime - startTime) / CLOCKS_PER_SEC)
+                     << " cost " << wrapperProblem->initialState()->cost()
+                     << endl;
+        }
         double maxReplanningTimeCurrent = 0.0;
-        pair<double, double> costAndTime =
-            reducedModel->trial(
+        pair<double, double> costAndTime;
+
+        if (flag_is_registered("anytime")) {
+            costAndTime =reducedModel->trialAnytime(
                 *solver, wrapperProblem, &maxReplanningTimeCurrent);
+        } else {
+            costAndTime =reducedModel->trial(
+                *solver, wrapperProblem, &maxReplanningTimeCurrent);
+        }
 
         double delta = costAndTime.first - expectedCost;
         expectedCost += delta / (i + 1);
