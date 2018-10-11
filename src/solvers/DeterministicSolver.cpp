@@ -71,18 +71,22 @@ mlcore::Action* DeterministicSolver::solve(mlcore::State* s0)
     return optimal;
 }
 
-mlcore::Action* DeterministicSolver::solveTree(mlcore::State* s0, int horizon)
-{
+mlcore::Action* DeterministicSolver::solveTree(mlcore::State* s0, int horizon) {
+    using namespace std;
+    using namespace mlcore;
+
     NodeComparer comp();
-    std::priority_queue<Node*, std::vector<Node*>, NodeComparer> frontier(comp);
+    priority_queue<Node*, vector<Node*>, NodeComparer> frontier(comp);
     Node* init = new Node(nullptr, s0, nullptr, 0.0, heuristic_);
     frontier.push(init);
-    std::list<Node*> allNodes;  // for memory clean-up later
+    list<Node*> allNodes;  // for memory clean-up later
     allNodes.push_back(init);
     Node* finalNode = nullptr;
     costLastPathFound_ = mdplib::dead_end_cost + 1;
                                                                                 int cnt = 0;
                                                                                 dprint("------1");
+    vector< StateDoubleMap > bestCostsPerDepth(horizon + 1, StateDoubleMap());
+    bestCostsPerDepth[0][s0] = 0;
     while (!frontier.empty()) {
         Node* node = frontier.top();
         frontier.pop();
@@ -122,16 +126,29 @@ mlcore::Action* DeterministicSolver::solveTree(mlcore::State* s0, int horizon)
 
                 Node* next =
                     new Node(node, nextState, a, cost, heuristic_, true);
+
+                int d = next->depth();
+                if (!bestCostsPerDepth[d].count(nextState)
+                        || bestCostsPerDepth[d][nextState] > next->g()) {
+                    bestCostsPerDepth[d][nextState] = next->g();
+                    frontier.push(next);
+                    allNodes.push_back(next);
+                }
+
 //                                                                                dprint("----------", nextState);
-                frontier.push(next);
-                allNodes.push_back(next);
             } else if (choice_ == det_all_outcomes) {
                 for (auto& successor : problem_->transition(node->state(), a)) {
                     nextState = successor.su_state;
                     Node* next =
                         new Node(node, nextState, a, cost, heuristic_, true);
-                    frontier.push(next);
-                    allNodes.push_back(next);
+
+                    int d = next->depth();
+                    if (!bestCostsPerDepth[d].count(nextState)
+                            || bestCostsPerDepth[d][nextState] > next->g()) {
+                        bestCostsPerDepth[d][nextState] = next->g();
+                        frontier.push(next);
+                        allNodes.push_back(next);
+                    }
                 }
             }
 
