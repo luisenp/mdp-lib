@@ -20,7 +20,7 @@ for ((id_track = 0; id_track < ${#tracks[@]}; id_track++)); do
     # This runs full-model planning
     sbatch ${swarm_flags} --output=${output_file} \
       ./run_testreduced_racetrack.sh \
-        ${track} "0" ${nsims} "no-mkl" ${maxt} "--use-full"
+        ${track} "0" ${nsims} "no-mkl" ${maxt} "--use-lrtdp --heuristic=aodet--use-full" 0
     # This loops different reduced models and values of k
     for ((id_model = 0; id_model < ${#models[@]}; id_model++)); do
       model=${models[$id_model]}
@@ -28,7 +28,7 @@ for ((id_track = 0; id_track < ${#tracks[@]}; id_track++)); do
         maxt=${times[$id_time]}
         output_file=${save_dir}/${track}.${model:5:3}.k${k_reduced}.t${maxt}
         sbatch ${swarm_flags} --output=${output_file} \
-          ./run_testreduced_racetrack.sh ${track} ${k_reduced} ${nsims} ${model} ${maxt}
+          ./run_testreduced_racetrack.sh ${track} ${k_reduced} ${nsims} ${model} ${maxt} "--use-lrtdp --heuristic=aodet" 0
       done
       # Run a planner that increases k when current state is already solved
       # (Only starting with k=0)
@@ -36,7 +36,7 @@ for ((id_track = 0; id_track < ${#tracks[@]}; id_track++)); do
       output_file=${save_dir}/${track}.${model:5:3}.kincrease.t${maxt}
       sbatch ${swarm_flags} --output=${output_file} \
         ./run_testreduced_racetrack.sh \
-          ${track} "0" ${nsims} ${model} ${maxt} "--increase_k"
+          ${track} "0" ${nsims} ${model} ${maxt} "--use-lrtdp --heuristic=aodet --increase-k" 0
           
     done  
   done
@@ -52,7 +52,7 @@ for ((id_time = 0; id_time < ${#times[@]}; id_time++)); do
   # This runs full-model planning
   sbatch ${swarm_flags} --output=${output_file} \
     ./run_testreduced_sailing.sh \
-      ${size} "0" ${nsims} "no-mkl" ${maxt} "--use-full"
+      ${size} "0" ${nsims} "no-mkl" ${maxt} "--use-lrtdp --use-full --heuristic=aodet " 0
   # This loops different reduced models and values of k
   for ((id_model = 0; id_model < ${#models[@]}; id_model++)); do
     model=${models[$id_model]}
@@ -60,7 +60,7 @@ for ((id_time = 0; id_time < ${#times[@]}; id_time++)); do
       maxt=${times[$id_time]}
       output_file=${save_dir}/s${size}.${model:5:3}.k${k_reduced}.t${maxt}
       sbatch ${swarm_flags} --output=${output_file} \
-        ./run_testreduced_sailing.sh ${size} ${k_reduced} ${nsims} ${model} ${maxt}
+        ./run_testreduced_sailing.sh ${size} ${k_reduced} ${nsims} ${model} ${maxt} "--use-lrtdp --heuristic=aodet " 0
     done
     # Run a planner that increases k when current state is already solved
     # (Only starting with k=0)
@@ -68,6 +68,6 @@ for ((id_time = 0; id_time < ${#times[@]}; id_time++)); do
     output_file=${save_dir}/s${size}.${model:5:3}.kincrease.t${maxt}
     sbatch ${swarm_flags} --output=${output_file} \
       ./run_testreduced_sailing.sh \
-        ${size} "0" ${nsims} ${model} ${maxt} "--increase_k"
+        ${size} "0" ${nsims} ${model} ${maxt} "--use-lrtdp --increase-k --heuristic=aodet " 0
   done  
 done

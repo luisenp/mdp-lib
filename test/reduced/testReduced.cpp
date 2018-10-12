@@ -463,11 +463,13 @@ void initSailing()
     static_cast<SailingProblem*>(problem)->useFlatTransition(true);
     problem->generateAll();
 
-//    if (!flag_is_registered_with_value("heuristic") ||
-//            flag_value("heuristic") == "no-wind")
-//        heuristic =
-//            new SailingNoWindHeuristic(static_cast<SailingProblem*>(problem));
-    heuristic = new AODetHeuristic(problem);
+    if (!flag_is_registered_with_value("heuristic") ||
+            flag_value("heuristic") == "no-wind") {
+        heuristic =
+            new SailingNoWindHeuristic(static_cast<SailingProblem*>(problem));
+    } else {
+        heuristic = new AODetHeuristic(problem);
+    }
     createSailingReductionsTemplate(static_cast<SailingProblem*> (problem));
 }
 
@@ -618,7 +620,7 @@ int main(int argc, char* args[])
     reducedHeuristic = new ReducedHeuristicWrapper(heuristic);
     reducedModel->setHeuristic(reducedHeuristic);
     reducedModel->useFullTransition(useFullTransition);
-    reducedModel->increaseK(flag_is_registered("increase_k"));
+    reducedModel->increaseK(flag_is_registered("increase-k"));
 
     // We will now use the wrapper for the pro-active re-planning approach. It
     // will allow us to plan in advance for the set of successors of a
