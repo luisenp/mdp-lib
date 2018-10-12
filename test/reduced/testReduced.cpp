@@ -403,8 +403,12 @@ void initRacetrack(string trackName, int mds, double pslip, double perror)
     static_cast<RacetrackProblem*>(problem)->pError(perror);
     static_cast<RacetrackProblem*>(problem)->pSlip(pslip);
     static_cast<RacetrackProblem*>(problem)->mds(mds);
-//    heuristic = new RTrackDetHeuristic(trackName.c_str());
-    heuristic = new AODetHeuristic(problem);
+    if (flag_is_registered_with_value("heuristic")
+            && flag_value("heuristic") == "aodet") {
+        heuristic = new AODetHeuristic(problem);
+    } else {
+        heuristic = new RTrackDetHeuristic(trackName.c_str());
+    }
     static_cast<RacetrackProblem*>(problem)->useFlatTransition(true);
     problem->generateAll();
     if (verbosity > 100)
