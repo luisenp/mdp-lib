@@ -1,4 +1,5 @@
 nsims=500
+maxt=-1
 
 swarm_flags="--partition=longq --time=10-01:00:00"
 
@@ -12,7 +13,7 @@ tracks=("roads-huge/map3" \
 models=("best-det-racetrack-greedy" "best-m02-racetrack-greedy")
 for ((id_track = 0; id_track < ${#tracks[@]}; id_track++)); do
   track=${tracks[$id_track]}
-  output_file=${save_dir}/${track}.fullmodel.t${maxt}
+  output_file=${save_dir}/${track}.fullmodel
   # This runs full-model planning
   sbatch ${swarm_flags} --output=${output_file} \
     ./run_testreduced_racetrack.sh \
@@ -21,8 +22,7 @@ for ((id_track = 0; id_track < ${#tracks[@]}; id_track++)); do
   for ((id_model = 0; id_model < ${#models[@]}; id_model++)); do
     model=${models[$id_model]}
     for k_reduced in `seq 0 3`; do
-      maxt=${times[$id_time]}
-      output_file=${save_dir}/${track}.${model:5:3}.k${k_reduced}.t${maxt}
+      output_file=${save_dir}/${track}.${model:5:3}.k${k_reduced}
       sbatch ${swarm_flags} --output=${output_file} \
         ./run_testreduced_racetrack.sh ${track} ${k_reduced} ${nsims} ${model} ${maxt} "--heuristic=aodet" 1000
     done
@@ -33,8 +33,7 @@ done
 save_dir="/home/lpineda/results_jair/mklreplan_sailing"        
 models=("best-det-sailing-greedy" "best-m02-sailing-greedy")
 size=40
-maxt=${times[$id_time]}
-output_file=${save_dir}/s${size}.fullmodel.t${maxt}
+output_file=${save_dir}/s${size}.fullmodel
 # This runs full-model planning
 sbatch ${swarm_flags} --output=${output_file} \
   ./run_testreduced_sailing.sh \
@@ -44,7 +43,7 @@ for ((id_model = 0; id_model < ${#models[@]}; id_model++)); do
   model=${models[$id_model]}
   for k_reduced in `seq 0 3`; do
     maxt=${times[$id_time]}
-    output_file=${save_dir}/s${size}.${model:5:3}.k${k_reduced}.t${maxt}
+    output_file=${save_dir}/s${size}.${model:5:3}.k${k_reduced}
     sbatch ${swarm_flags} --output=${output_file} \
       ./run_testreduced_sailing.sh ${size} ${k_reduced} ${nsims} ${model} ${maxt} "--heuristic=aodet" 1000
   done

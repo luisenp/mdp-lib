@@ -334,7 +334,7 @@ void findBestReductionGreedy(mlcore::Problem* problem,
             // Couldn't find outcome to remove and result in solvable model
             break;
         } else {
-            if ( (bestResult - originalResult) > tau && satisfiesL )
+            if ( (bestResult - originalResult) > tau || satisfiesL )
                 break;
             // Update best reduction/result and keep going.
             previousResult = bestResult;
@@ -557,7 +557,7 @@ int main(int argc, char* args[])
     } else if (flag_is_registered("best-m02-racetrack-greedy")) {
         vector<vector<int> > primaryOutcomes;
         primaryOutcomes.push_back(vector<int>{1});
-        primaryOutcomes.push_back(vector<int>{1});
+        primaryOutcomes.push_back(vector<int>{0,1});
         primaryOutcomes.push_back(vector<int>{0,1});
         assignPrimaryOutcomesToReduction(primaryOutcomes,
                                          actionGroups,
