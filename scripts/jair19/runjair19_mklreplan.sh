@@ -41,8 +41,7 @@ sbatch ${swarm_flags} --output=${output_file} \
 # This loops different reduced models and values of k
 for ((id_model = 0; id_model < ${#models[@]}; id_model++)); do
   model=${models[$id_model]}
-  for k_reduced in `seq 0 3`; do
-    maxt=${times[$id_time]}
+  for k_reduced in `seq 0 1`; do
     output_file=${save_dir}/s${size}.${model:5:3}.k${k_reduced}
     sbatch ${swarm_flags} --output=${output_file} \
       ./run_testreduced_sailing.sh ${size} ${k_reduced} ${nsims} ${model} ${maxt} "--heuristic=aodet" 1000
