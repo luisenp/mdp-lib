@@ -109,20 +109,20 @@ double ReducedModel::evaluateMarkovChain(ReducedModel* reducedModel) {
         return mdplib::dead_end_cost;
     }
 
-                                                                                mlcore::StateDoubleMap heur;
-                                                                                for (mlcore::State* sss : reducedModel->states()) {
-                                                                                    heur[sss] = sss->cost();
-                                                                                }
+//                                                                                mlcore::StateDoubleMap heur;
+//                                                                                for (mlcore::State* sss : reducedModel->states()) {
+//                                                                                    heur[sss] = sss->cost();
+//                                                                                }
 
     // Computing an universal plan for all of these states in the reduced model.
     mlsolvers::VISolver solver(reducedModel, 1000000, 1.0e-3);
     solver.solve();
-                                                                                for (mlcore::State* sss : reducedModel->states()) {
-//                                                                                    dprint(sss, heur.at(sss), sss->cost());
-                                                                                    if (heur[sss] > sss->cost()) {
-                                                                                        dprint("error", sss, heur[sss], sss->cost());
-                                                                                    }
-                                                                                }
+//                                                                                for (mlcore::State* sss : reducedModel->states()) {
+////                                                                                    dprint(sss, heur.at(sss), sss->cost());
+//                                                                                    if (heur[sss] > sss->cost()) {
+//                                                                                        dprint("error", sss, heur[sss], sss->cost());
+//                                                                                    }
+//                                                                                }
 
     // Finally, we make sure the MC uses the continual planning
     // transition function.
@@ -446,6 +446,7 @@ ReducedModel::trialAnytime(mlsolvers::Solver & solver,
             action = currentState->bestAction();
         } else {
             int k_reduced = this->k_;
+//                                                                                dprint(currentState);
             while (true) {
                 ReducedState* auxState = static_cast<ReducedState*> (
                     this->getState(new ReducedState(
@@ -455,17 +456,23 @@ ReducedModel::trialAnytime(mlsolvers::Solver & solver,
                     // Note that to reach counter [k_reduced], the state with
                     // counter = [k_reduced] - 1 has to be solved, so we can
                     // use the action previously stored (i.e., just break loop)
+//                                                                                dprint("  will use ", action);
                     break;
                 }
                 if (auxState->checkBits(mdplib::SOLVED)) {
                     action = auxState->bestAction();
                     k_reduced++;
+//                                                                                dprint("  solved", auxState, k_reduced, action);
                 } else {
                     // State seen before but not yet solved, use the last
                     // stored action (for the last solved k), or the greedy
                     // action if no action has been stored yet
-                    if (action == nullptr)
+//                                                                                dprint("  not solved yet", auxState);
+                    if (action == nullptr) {
                         action = mlsolvers::greedyAction(this, auxState);
+//                                                                                dprint("  no action stored, use greedy");
+                    }
+//                                                                                else dprint("  using:", action);
                     break;
                 }
             }

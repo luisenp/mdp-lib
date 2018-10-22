@@ -336,15 +336,12 @@ bool testDeadEndRecursion(mlcore::Problem* problem,
     index++;
     onStack.insert(state);
 
-//                                                                                dprint("Hello ", state, lowLinks.at(state), indices.at(state));
-
     // Adding all possible successors of this state. If the state is a goal
     // then we add all possible states. This is done to make sure that all
     // states that can reach the goal are in the same strongly connected
     // component as the goal
     std::list<mlcore::State*> successors;
     if (problem->goal(state)) {
-//                                                                                dprint("  goal!!");
         goal_reached = true;
         for (mlcore::State* next : problem->states()) {
             successors.push_back(next);
@@ -356,8 +353,6 @@ bool testDeadEndRecursion(mlcore::Problem* problem,
             for (auto & successor: problem->transition(state, a)) {
 
                 mlcore::State* next = successor.su_state;
-
-//                                                                                dprint("  ", next);
                 successors.push_back(next);
             }
         }
@@ -375,7 +370,6 @@ bool testDeadEndRecursion(mlcore::Problem* problem,
         }
     }
 
-//                                                                                dprint("Goodbye", state, lowLinks.at(state), indices.at(state));
     if (lowLinks.at(state) == indices.at(state)) {
         if (lowLinks.at(state) != 0)
             return false;
@@ -394,7 +388,6 @@ bool testDeadEnds(mlcore::Problem* problem)
     bool singleComponent = testDeadEndRecursion(
         problem, problem->initialState(),
         indices, lowLinks, onStack, index, goal_reached);
-                                                                                dprint("\n goal_reached", goal_reached);
     return singleComponent && goal_reached;
 }
 

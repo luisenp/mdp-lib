@@ -57,7 +57,7 @@ int warning_level = 0;
 
 static int verbosity = 0;
 static int k = 0;
-double tau = 1.2;
+double tau = 1.1;
 int l = 1;
 bool isDeterminization = false;
 long maxt = -1;
@@ -317,7 +317,7 @@ void findBestReductionGreedy(mlcore::Problem* problem,
         // primary outcomes (one of the stopping criteria)
         bool satisfiesL = true;
         for (size_t groupIdx = 0; groupIdx < actionGroups.size();
-             groupIdx++) {
+                groupIdx++) {
             vector<mlcore::Action*> & actionGroup = actionGroups[groupIdx];
             int primaryCount = 0;
             for (size_t outcomeIdx = 0;
@@ -329,12 +329,19 @@ void findBestReductionGreedy(mlcore::Problem* problem,
             if (primaryCount > l)
                 satisfiesL = false;
         }
+
+        // Printing best reduction
+        if (verbosity > 100) {
+            cout << "Best reduction so far: " << endl;
+            printCustomReduction(bestReductionTemplate, actionGroups);
+        }
         // Checking if there was an outcome that could be removed
         if (bestOutcomeIndex == -1) {
             // Couldn't find outcome to remove and result in solvable model
             break;
         } else {
-            if ( (bestResult - originalResult) > tau || satisfiesL )
+            if ( (bestResult - originalResult) > (originalResult * tau)
+                    && satisfiesL )
                 break;
             // Update best reduction/result and keep going.
             previousResult = bestResult;
@@ -558,7 +565,7 @@ int main(int argc, char* args[])
         vector<vector<int> > primaryOutcomes;
         primaryOutcomes.push_back(vector<int>{1});
         primaryOutcomes.push_back(vector<int>{0,1});
-        primaryOutcomes.push_back(vector<int>{0,1});
+        primaryOutcomes.push_back(vector<int>{1});
         assignPrimaryOutcomesToReduction(primaryOutcomes,
                                          actionGroups,
                                          bestReductionTemplate);
@@ -658,8 +665,9 @@ int main(int argc, char* args[])
     double m2cost = 0.0;
     int cntMaxTimeOverKappa = 0;
 
-                                                                                double check = ReducedModel::evaluateMarkovChain(reducedModel);
-                                                                                dprint("check", check);
+    double expectedCostMC = ReducedModel::evaluateMarkovChain(reducedModel);
+    cout << "Expected Cost of Reduced Model (Markov Chain): "
+         << expectedCostMC << endl;
 
     for (int i = 0; i < nsims; i++) {
         double planningTime = 0.0;
