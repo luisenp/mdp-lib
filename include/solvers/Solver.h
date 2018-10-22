@@ -276,6 +276,29 @@ void getBestPartialSolutionGraph(mlcore::Problem* problem,
                                  mlcore::State* initialState,
                                  mlcore::StateSet& bpsg);
 
+/**
+ * Recurses to see if the given state is in the same component as the
+ * initial state, returning true if that's the case. Moreover, the method also
+ * checks if the goal was reached during the recursion (to check for the case
+ * in which the goal is not reached from the initial state either). The result
+ * is stored in [goal_reached].
+ *
+ * WARNING: This method should not be used directly, rather
+ * [testDeadEnds] should be called.
+ */
+bool testDeadEndRecursion(mlcore::Problem* problem,
+                          mlcore::State* state,
+                          mlcore::StateIntMap& indices,
+                          mlcore::StateIntMap& lowLinks,
+                          mlcore::StateSet& onStack,
+                          int& index,
+                          bool& goal_reached);
+
+/**
+ * Tests if the given problem has dead-ends.
+ */
+bool testDeadEnds(mlcore::Problem* problem);
+
 } // mlsolvers
 
 

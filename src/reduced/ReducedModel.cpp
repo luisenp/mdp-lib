@@ -26,6 +26,17 @@ ReducedModel::transition(State* s, Action* a) {
     std::list<Successor> successors;
     std::list<Successor> originalSuccessors =
         originalProblem_->transition(rs->originalState(), a);
+
+    // If the transition was already deterministic, then no reduction is
+    // possible, just use the same transition w/o increasing the counter.
+    if (originalSuccessors.size() == 1) {
+        Successor const & origSucc = originalSuccessors.back();
+        State* next = addState(
+            new ReducedState(origSucc.su_state, rs->exceptionCount(), this));
+        successors.push_back(Successor(next, 1.0));
+        return successors;
+    }
+
     double totalProbability = 0.0;
     int i = 0;
     for (Successor const & origSucc : originalSuccessors) {
@@ -93,9 +104,25 @@ double ReducedModel::evaluateMarkovChain(ReducedModel* reducedModel) {
         }
     }
 
+    bool safe = mlsolvers::testDeadEnds(reducedModel);
+    if (!safe) {
+        return mdplib::dead_end_cost;
+    }
+
+                                                                                mlcore::StateDoubleMap heur;
+                                                                                for (mlcore::State* sss : reducedModel->states()) {
+                                                                                    heur[sss] = sss->cost();
+                                                                                }
+
     // Computing an universal plan for all of these states in the reduced model.
     mlsolvers::VISolver solver(reducedModel, 1000000, 1.0e-3);
     solver.solve();
+                                                                                for (mlcore::State* sss : reducedModel->states()) {
+//                                                                                    dprint(sss, heur.at(sss), sss->cost());
+                                                                                    if (heur[sss] > sss->cost()) {
+                                                                                        dprint("error", sss, heur[sss], sss->cost());
+                                                                                    }
+                                                                                }
 
     // Finally, we make sure the MC uses the continual planning
     // transition function.

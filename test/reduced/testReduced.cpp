@@ -657,6 +657,10 @@ int main(int argc, char* args[])
     double maxReplanningTime = 0.0;
     double m2cost = 0.0;
     int cntMaxTimeOverKappa = 0;
+
+                                                                                double check = ReducedModel::evaluateMarkovChain(reducedModel);
+                                                                                dprint("check", check);
+
     for (int i = 0; i < nsims; i++) {
         double planningTime = 0.0;
         // Initial planning time

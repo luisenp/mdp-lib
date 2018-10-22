@@ -321,5 +321,82 @@ void getBestPartialSolutionGraph(mlcore::Problem* problem,
     }
 }
 
+// Code based on Tarjan's strongly connected component algorithm
+// See https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm
+bool testDeadEndRecursion(mlcore::Problem* problem,
+                          mlcore::State* state,
+                          mlcore::StateIntMap& indices,
+                          mlcore::StateIntMap& lowLinks,
+                          mlcore::StateSet& onStack,
+                          int& index,
+                          bool& goal_reached)
+{
+    indices[state] = index;
+    lowLinks[state] = index;
+    index++;
+    onStack.insert(state);
+
+//                                                                                dprint("Hello ", state, lowLinks.at(state), indices.at(state));
+
+    // Adding all possible successors of this state. If the state is a goal
+    // then we add all possible states. This is done to make sure that all
+    // states that can reach the goal are in the same strongly connected
+    // component as the goal
+    std::list<mlcore::State*> successors;
+    if (problem->goal(state)) {
+//                                                                                dprint("  goal!!");
+        goal_reached = true;
+        for (mlcore::State* next : problem->states()) {
+            successors.push_back(next);
+        }
+    } else {
+        for (mlcore::Action* a : problem->actions()) {
+            if (!problem->applicable(state, a))
+                continue;
+            for (auto & successor: problem->transition(state, a)) {
+
+                mlcore::State* next = successor.su_state;
+
+//                                                                                dprint("  ", next);
+                successors.push_back(next);
+            }
+        }
+    }
+
+    // Now recursing on successor states to see which component they belong to
+    bool no_dead_end = true;
+    for (mlcore::State* next : successors) {
+        if (indices.count(next) == 0) {
+            no_dead_end &= testDeadEndRecursion(
+                problem, next, indices, lowLinks, onStack, index, goal_reached);
+            lowLinks[state] = std::min(lowLinks.at(state), lowLinks.at(next));
+        } else if (onStack.count(next)) {
+            lowLinks[state] = std::min(lowLinks.at(state), indices.at(next));
+        }
+    }
+
+//                                                                                dprint("Goodbye", state, lowLinks.at(state), indices.at(state));
+    if (lowLinks.at(state) == indices.at(state)) {
+        if (lowLinks.at(state) != 0)
+            return false;
+    }
+    return no_dead_end;
+}
+
+bool testDeadEnds(mlcore::Problem* problem)
+{
+    problem->generateAll();
+    int index = 0;
+    mlcore::StateIntMap indices;
+    mlcore::StateIntMap lowLinks;
+    mlcore::StateSet onStack;
+    bool goal_reached = false;
+    bool singleComponent = testDeadEndRecursion(
+        problem, problem->initialState(),
+        indices, lowLinks, onStack, index, goal_reached);
+                                                                                dprint("\n goal_reached", goal_reached);
+    return singleComponent && goal_reached;
+}
+
 
 } // mlsolvers
