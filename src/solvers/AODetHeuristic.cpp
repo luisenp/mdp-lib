@@ -68,12 +68,12 @@ double AODetHeuristic::AODetBellmanUpdate(mlcore::State* s) {
 double AODetHeuristic::cost(const State* s) {
     State* ss = const_cast<State*> (s);
     if (costs_.count(ss) == 0) {
-//                                                                                dprint("here-1");
+                                                                                dprint("here-1", ss);
         solver_->solve(ss);
         mlcore::StateDoubleMap& pathCosts = solver_->costLastPathFound();
         for (auto& stateCost : pathCosts) {
             costs_[stateCost.first] = stateCost.second;
-//                                                                                dprint("here-2", stateCost.first, costs_.at(stateCost.first));
+                                                                                dprint("here-2", stateCost.first, costs_.at(stateCost.first));
         }
     }
     return costs_.at(ss);

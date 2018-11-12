@@ -9,7 +9,7 @@ mlcore::Action* DeterministicSolver::solve(mlcore::State* s0)
 {
     NodeComparer comp();
     std::priority_queue<Node*, std::vector<Node*>, NodeComparer> frontier(comp);
-    Node* init = new Node(nullptr, s0, nullptr, 0.0, heuristic_);
+    Node* init = new Node(nullptr, s0, nullptr, 0.0, heuristic_, cache_);
     frontier.push(init);
     std::list<Node*> allNodes;  // for memory clean-up later
     allNodes.push_back(init);
@@ -20,7 +20,10 @@ mlcore::Action* DeterministicSolver::solve(mlcore::State* s0)
         if (node->state()->checkBits(mdplib::VISITED_ASTAR))
             continue;   // valid because this is using path-max
         node->state()->setBits(mdplib::VISITED_ASTAR);
-        if (problem_->goal(node->state())) {
+        if (problem_->goal(node->state()) || cache_.count(node->state())) {
+                                                                                if (cache_.count(node->state())) {
+                                                                                    dprint("cache-hit", node->state(), cache_.at(node->state()));
+                                                                                }
             finalNode = node;
             break;
         }
@@ -39,15 +42,15 @@ mlcore::Action* DeterministicSolver::solve(mlcore::State* s0)
                 else
                     nextState = randomSuccessor(problem_, node->state(), a);
 
-                Node* next =
-                    new Node(node, nextState, a, cost, heuristic_, true);
+                Node* next = new Node(
+                    node, nextState, a, cost, heuristic_, cache_, true);
                 frontier.push(next);
                 allNodes.push_back(next);
             } else if (choice_ == det_all_outcomes) {
                 for (auto& successor : problem_->transition(node->state(), a)) {
                     nextState = successor.su_state;
-                    Node* next =
-                        new Node(node, nextState, a, cost, heuristic_, true);
+                    Node* next = new Node(
+                        node, nextState, a, cost, heuristic_, cache_, true);
                     frontier.push(next);
                     allNodes.push_back(next);
                 }
@@ -57,13 +60,23 @@ mlcore::Action* DeterministicSolver::solve(mlcore::State* s0)
     }
 
     mlcore::Action* optimal = nullptr;
+    double costToGo = 0.0;
     costLastPathFound_.clear();
     while (finalNode->parent() != nullptr) {
         optimal = finalNode->action();
-        costLastPathFound_[finalNode->state()] = finalNode->g();
+        mlcore::State* s = finalNode->state();
+        if (cache_.count(s))
+            costToGo += cache_.at(s);
+        else if (!problem_->goal(s))
+            costToGo += problem_->cost(s, optimal);
+        costLastPathFound_[s] = costToGo;
+        cache_[s] = costToGo;
         finalNode = finalNode->parent();
     }
-    costLastPathFound_[finalNode->state()] = finalNode->g();
+    optimal = finalNode->action();
+    costToGo += problem_->cost(finalNode->state(), optimal);
+    costLastPathFound_[finalNode->state()] = costToGo;
+    cache_[finalNode->state()] = costToGo;
 
     for (Node* node : allNodes) {
         node->state()->clearBits(mdplib::VISITED_ASTAR);
@@ -79,7 +92,7 @@ mlcore::Action* DeterministicSolver::solveTree(mlcore::State* s0, int horizon) {
 
     NodeComparer comp();
     priority_queue<Node*, vector<Node*>, NodeComparer> frontier(comp);
-    Node* init = new Node(nullptr, s0, nullptr, 0.0, heuristic_);
+    Node* init = new Node(nullptr, s0, nullptr, 0.0, heuristic_, cache_);
     frontier.push(init);
     list<Node*> allNodes;  // for memory clean-up later
     allNodes.push_back(init);
@@ -126,9 +139,8 @@ mlcore::Action* DeterministicSolver::solveTree(mlcore::State* s0, int horizon) {
                 else
                     nextState = randomSuccessor(problem_, node->state(), a);
 
-                Node* next =
-                    new Node(node, nextState, a, cost, heuristic_, true);
-
+                Node* next = new Node(
+                    node, nextState, a, cost, heuristic_, cache_, true);
                 int d = next->depth();
                 if (!bestCostsPerDepth[d].count(nextState)
                         || bestCostsPerDepth[d][nextState] > next->g()) {
@@ -141,8 +153,8 @@ mlcore::Action* DeterministicSolver::solveTree(mlcore::State* s0, int horizon) {
             } else if (choice_ == det_all_outcomes) {
                 for (auto& successor : problem_->transition(node->state(), a)) {
                     nextState = successor.su_state;
-                    Node* next =
-                        new Node(node, nextState, a, cost, heuristic_, true);
+                    Node* next = new Node(
+                        node, nextState, a, cost, heuristic_, cache_, true);
 
                     int d = next->depth();
                     if (!bestCostsPerDepth[d].count(nextState)
@@ -160,13 +172,18 @@ mlcore::Action* DeterministicSolver::solveTree(mlcore::State* s0, int horizon) {
                                                                                 dprint("------2", cnt);
 
     mlcore::Action* optimal = nullptr;
+    double costToGo = 0.0;
     costLastPathFound_.clear();
     while (finalNode->parent() != nullptr) {
         optimal = finalNode->action();
-        costLastPathFound_[finalNode->state()] = finalNode->g();
+        if (!problem_->goal(finalNode->state()))
+            costToGo += problem_->cost(finalNode->state(), optimal);
+        costLastPathFound_[finalNode->state()] = costToGo;
         finalNode = finalNode->parent();
     }
-    costLastPathFound_[finalNode->state()] = finalNode->g();
+    optimal = finalNode->action();
+    costToGo += problem_->cost(finalNode->state(), optimal);
+    costLastPathFound_[finalNode->state()] = costToGo;
 
     return optimal;
 }

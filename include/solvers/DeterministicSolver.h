@@ -27,6 +27,9 @@ private:
     /* The cost-to-go for the states in the last path found by the algorithm. */
     mlcore::StateDoubleMap costLastPathFound_;
 
+    /* Stores the optimal 0costs computed by the algorithm. */
+    mlcore::StateDoubleMap cache_;
+
     /*
      * Indicates the choice of deterministic outcome
      * (e.g. most-likely, least-likely).
@@ -84,6 +87,11 @@ public:
      * words, the total cost of the solution found in the last call to [solve].
      */
     mlcore::StateDoubleMap& costLastPathFound() { return costLastPathFound_; }
+
+    /**
+     * Returns the cost stored for the given state.
+     */
+    double getCostForState(mlcore::State* s) { return cache_.at(s); }
 };
 
 /**
@@ -119,6 +127,7 @@ public:
          mlcore::Action* action,
          double actionCost,
          mlcore::Heuristic* heuristic,
+         mlcore::StateDoubleMap& cache,
          bool usePathMax = true)
     {
         state_ = state;
@@ -132,6 +141,9 @@ public:
         }
         depth_ = parent_->depth() + 1;
         g_ = parent_->g() + actionCost;
+        if (cache.count(state)) {
+            f_ = g_ + cache.at(state);
+        }
         double h = heuristic == nullptr ? 0.0 : heuristic->cost(state);
         double hParent = heuristic == nullptr ?
                             0.0 : heuristic->cost(parent_->state());
