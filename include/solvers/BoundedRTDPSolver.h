@@ -93,7 +93,7 @@ public:
     /**
      * Resets the internal values of the algorithm.
      */
-    void reset();
+    virtual void reset();
 };
 
 }

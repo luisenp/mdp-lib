@@ -45,6 +45,8 @@ public:
     virtual ~AODetHeuristic() { }
 
     virtual double cost(const mlcore::State* s);
+
+    virtual void reset() { solver_->reset(); }
 };
 
 }

@@ -477,13 +477,10 @@ vector<double> simulate(Solver* solver,
             if (maxTime > 0) {
                 solver->maxPlanningTime(maxTime);
             }
+            solver->reset();
+            heuristic->reset();
             startTime = clock();
             // Initial planning
-            if (algorithm == "uct") {
-                static_cast<UCTSolver*>(solver)->reset();
-            } else if (algorithm == "brtdp") {
-                static_cast<BoundedRTDPSolver*>(solver)->reset();
-            }
             if (algorithm != "greedy")
                 solver->solve(problem->initialState());
 

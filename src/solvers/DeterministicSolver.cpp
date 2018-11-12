@@ -21,9 +21,10 @@ mlcore::Action* DeterministicSolver::solve(mlcore::State* s0)
             continue;   // valid because this is using path-max
         node->state()->setBits(mdplib::VISITED_ASTAR);
         if (problem_->goal(node->state()) || cache_.count(node->state())) {
-                                                                                if (cache_.count(node->state())) {
-                                                                                    dprint("cache-hit", node->state(), cache_.at(node->state()));
-                                                                                }
+//                                                                                if (cache_.count(node->state())) {
+//                                                                                    dprint("cache-hit", node->state(), cache_.at(node->state()),
+//                                                                                           node->g(), node->f());
+//                                                                                }
             finalNode = node;
             break;
         }

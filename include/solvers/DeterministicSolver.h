@@ -73,6 +73,11 @@ public:
     virtual mlcore::Action* solve(mlcore::State* s0);
 
     /**
+     * Resets the internal cache stored.
+     */
+    virtual void reset() { cache_.clear(); }
+
+    /**
      * Solves the associated problem using a depth-limited tree-based
      * version of A*.
      *
@@ -143,6 +148,7 @@ public:
         g_ = parent_->g() + actionCost;
         if (cache.count(state)) {
             f_ = g_ + cache.at(state);
+            return;
         }
         double h = heuristic == nullptr ? 0.0 : heuristic->cost(state);
         double hParent = heuristic == nullptr ?

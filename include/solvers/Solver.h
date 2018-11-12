@@ -71,6 +71,11 @@ public:
      * @param theTrials The maximum number of trials allowed.
      */
     virtual void maxTrials(time_t theTrials) { }
+
+    /**
+     * Resets any internal state stored by the algorithm.
+     */
+    virtual void reset() {}
 };
 
 /**

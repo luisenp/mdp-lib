@@ -199,7 +199,7 @@ public:
     /**
      * Resets counters and resets the cutoff and start depth to original value.
      */
-    void reset() {
+    virtual void reset() {
         counters_node_.clear();
         counters_node_action_.clear();
         action_qvalues_.clear();

@@ -26,7 +26,6 @@ AODetHeuristic::AODetHeuristic(mlcore::Problem* problem, bool precompute) {
 void AODetHeuristic::solveVI(int maxIter, double tol) {
     auto beginTime = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < maxIter; i++) {
-                                                                                dprint(i);
         double maxResidual = 0.0;
         for (mlcore::State* s : aodet_->states()) {
             if (aodet_->goal(s)) {
@@ -68,14 +67,15 @@ double AODetHeuristic::AODetBellmanUpdate(mlcore::State* s) {
 double AODetHeuristic::cost(const State* s) {
     State* ss = const_cast<State*> (s);
     if (costs_.count(ss) == 0) {
-                                                                                dprint("here-1", ss);
+//                                                                                dprint("here-1", ss);
         solver_->solve(ss);
         mlcore::StateDoubleMap& pathCosts = solver_->costLastPathFound();
         for (auto& stateCost : pathCosts) {
             costs_[stateCost.first] = stateCost.second;
-                                                                                dprint("here-2", stateCost.first, costs_.at(stateCost.first));
+//                                                                                dprint("here-2", stateCost.first, costs_.at(stateCost.first));
         }
     }
+//                                                                                dprint(costs_.at(ss));
     return costs_.at(ss);
 }
 
