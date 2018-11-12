@@ -478,7 +478,8 @@ vector<double> simulate(Solver* solver,
                 solver->maxPlanningTime(maxTime);
             }
             solver->reset();
-            heuristic->reset();
+            if (!flag_is_registered("precompute-h"))
+                heuristic->reset();
             startTime = clock();
             // Initial planning
             if (algorithm != "greedy")
