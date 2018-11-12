@@ -1,6 +1,7 @@
 #ifndef MDPLIB_AODETHEURISTIC_H
 #define MDPLIB_AODETHEURISTIC_H
 
+#include "DeterministicSolver.h"
 
 #include "../Heuristic.h"
 #include "../Problem.h"
@@ -22,6 +23,9 @@ private:
     /* The all-outcomes determinization of the original problem. */
     AllOutcomesDeterminization* aodet_;
 
+    /* A deterministic solver to use when the heuristic is computed online. */
+    DeterministicSolver* solver_;
+
     /* Stores the computed costs. */
     mlcore::StateDoubleMap costs_;
 
@@ -36,7 +40,7 @@ private:
     double AODetBellmanUpdate(mlcore::State* s);
 
 public:
-    AODetHeuristic(mlcore::Problem* problem);
+    AODetHeuristic(mlcore::Problem* problem, bool precompute = false);
 
     virtual ~AODetHeuristic() { }
 

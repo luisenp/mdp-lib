@@ -10,10 +10,10 @@ max_time=$6
 other_flags=$7
 algorithm=$8
 
-echo "../testsolver.out $problem --heuristic=hmin --hmin-solve-all --n=$nsims --reps=$reps --v=$verbosity --algorithm=$algorithm --min_time=$min_time --max_time=$max_time $other_flags"
+echo "../testsolver.out $problem --heuristic=hmin --precompute-h --n=$nsims --reps=$reps --v=$verbosity --algorithm=$algorithm --min_time=$min_time --max_time=$max_time $other_flags"
 
 ../testsolver.out $problem \
-  --heuristic=hmin --hmin-solve-all \
+  --heuristic=hmin --precompute-h \
   --n=$nsims --reps=$reps --v=$verbosity \
   --algorithm=$algorithm \
   --min_time=$min_time --max_time=$max_time $other_flags

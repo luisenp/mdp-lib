@@ -24,8 +24,8 @@ class DeterministicSolver : public Solver
 {
 private:
 
-    /* The total cost of the last path found by the algorithm. */
-    double costLastPathFound_ = mdplib::dead_end_cost;
+    /* The cost-to-go for the states in the last path found by the algorithm. */
+    mlcore::StateDoubleMap costLastPathFound_;
 
     /*
      * Indicates the choice of deterministic outcome
@@ -53,9 +53,12 @@ public:
      *
      *      - mlsolvers::det_most_likely (Most likely outcome)
      */
-    DeterministicSolver(mlcore::Problem* problem, int choice = det_most_likely,
+    DeterministicSolver(mlcore::Problem* problem,
+                        int choice = det_most_likely,
                         mlcore::Heuristic* heuristic = nullptr)
-        : problem_(problem), choice_(choice), heuristic_(heuristic) {}
+        : problem_(problem),
+          choice_(choice),
+          heuristic_(heuristic) {}
 
     virtual ~DeterministicSolver() {}
 
@@ -80,7 +83,7 @@ public:
      * Returns the cost of the last path found by the algorithm. In other
      * words, the total cost of the solution found in the last call to [solve].
      */
-    double costLastPathFound() { return costLastPathFound_; }
+    mlcore::StateDoubleMap& costLastPathFound() { return costLastPathFound_; }
 };
 
 /**

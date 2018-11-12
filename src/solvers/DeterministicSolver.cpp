@@ -57,11 +57,13 @@ mlcore::Action* DeterministicSolver::solve(mlcore::State* s0)
     }
 
     mlcore::Action* optimal = nullptr;
-    costLastPathFound_ = finalNode->g();
+    costLastPathFound_.clear();
     while (finalNode->parent() != nullptr) {
         optimal = finalNode->action();
+        costLastPathFound_[finalNode->state()] = finalNode->g();
         finalNode = finalNode->parent();
     }
+    costLastPathFound_[finalNode->state()] = finalNode->g();
 
     for (Node* node : allNodes) {
         node->state()->clearBits(mdplib::VISITED_ASTAR);
@@ -82,7 +84,7 @@ mlcore::Action* DeterministicSolver::solveTree(mlcore::State* s0, int horizon) {
     list<Node*> allNodes;  // for memory clean-up later
     allNodes.push_back(init);
     Node* finalNode = nullptr;
-    costLastPathFound_ = mdplib::dead_end_cost + 1;
+    double besTotalCost = mdplib::dead_end_cost + 1;
                                                                                 int cnt = 0;
                                                                                 dprint("------1");
     vector< StateDoubleMap > bestCostsPerDepth(horizon + 1, StateDoubleMap());
@@ -101,9 +103,9 @@ mlcore::Action* DeterministicSolver::solveTree(mlcore::State* s0, int horizon) {
 
 
         if (node->depth() == horizon) {
-            if (node->f() < costLastPathFound_) {
+            if (node->f() < besTotalCost) {
                 finalNode = node;
-                costLastPathFound_ = node->f();
+                besTotalCost = node->f();
             }
         } else if (node->depth() > horizon) {
             continue;
@@ -158,11 +160,13 @@ mlcore::Action* DeterministicSolver::solveTree(mlcore::State* s0, int horizon) {
                                                                                 dprint("------2", cnt);
 
     mlcore::Action* optimal = nullptr;
-    costLastPathFound_ = finalNode->g();
+    costLastPathFound_.clear();
     while (finalNode->parent() != nullptr) {
         optimal = finalNode->action();
+        costLastPathFound_[finalNode->state()] = finalNode->g();
         finalNode = finalNode->parent();
     }
+    costLastPathFound_[finalNode->state()] = finalNode->g();
 
     return optimal;
 }

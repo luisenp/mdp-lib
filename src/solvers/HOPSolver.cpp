@@ -44,7 +44,7 @@ mlcore::Action* HOPSolver::solve(mlcore::State* s0) {
                                                                                 std::cerr << i << " ";
                 detSolver.solveTree(successor.su_state, horizon_);
                                                                                 std::cerr << ", ";
-                VSuccEst += detSolver.costLastPathFound();
+                VSuccEst += detSolver.costLastPathFound()[successor.su_state];
             }
                                                                                 std::cerr << std::endl;
             VSuccEst /= maxSamples_;

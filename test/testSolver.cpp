@@ -648,7 +648,7 @@ int main(int argc, char* args[])
     if (flag_is_registered_with_value("heuristic")) {
         if (flag_value("heuristic") == "hmin") {
             clock_t startTime = clock();
-            bool solveAll = flag_is_registered("hmin-solve-all");
+            bool solveAll = flag_is_registered("precompute-h");
             heuristic = new HMinHeuristic(problem, solveAll);
             clock_t endTime = clock();
             if (verbosity > 100) {
@@ -659,7 +659,8 @@ int main(int argc, char* args[])
                     << problem->initialState()->cost() << endl;
             }
         } else if (flag_value("heuristic") == "aodet") {
-            heuristic = new AODetHeuristic(problem);
+            bool precompute = flag_is_registered("precompute-h");
+            heuristic = new AODetHeuristic(problem, precompute);
         } else if (flag_value("heuristic") == "zero")
             heuristic = nullptr;
     }

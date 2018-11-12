@@ -11,11 +11,15 @@ using namespace std;
 namespace mlsolvers
 {
 
-AODetHeuristic::AODetHeuristic(mlcore::Problem* problem) {
-    aodet_ = new AllOutcomesDeterminization(problem);
-    solveVI();
-    for (State* s : problem->states()) {
-        costs_[s] = s->cost();
+AODetHeuristic::AODetHeuristic(mlcore::Problem* problem, bool precompute) {
+    if (precompute) {
+        aodet_ = new AllOutcomesDeterminization(problem);
+        solveVI();
+        for (State* s : problem->states()) {
+            costs_[s] = s->cost();
+        }
+    } else {
+        solver_ = new DeterministicSolver(problem, det_all_outcomes);
     }
 }
 
@@ -62,7 +66,17 @@ double AODetHeuristic::AODetBellmanUpdate(mlcore::State* s) {
 
 
 double AODetHeuristic::cost(const State* s) {
-    return costs_.at(const_cast<State*>(s));
+    State* ss = const_cast<State*> (s);
+    if (costs_.count(ss) == 0) {
+//                                                                                dprint("here-1");
+        solver_->solve(ss);
+        mlcore::StateDoubleMap& pathCosts = solver_->costLastPathFound();
+        for (auto& stateCost : pathCosts) {
+            costs_[stateCost.first] = stateCost.second;
+//                                                                                dprint("here-2", stateCost.first, costs_.at(stateCost.first));
+        }
+    }
+    return costs_.at(ss);
 }
 
 } // namespace mlsovers
