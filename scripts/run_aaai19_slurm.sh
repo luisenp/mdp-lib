@@ -72,7 +72,7 @@ for ((ip = 0; ip < ${#problems[@]}; ip++)); do
   
   # ---- SSiPP and FLARES
   ssipp_hor=1
-  for $horizon in `seq 1 4`; do
+  for horizon in `seq 1 4`; do
     # Depth-based SSiPP(1-4)
     sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"ssipp_$ssipp_hor".txt \
       run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
