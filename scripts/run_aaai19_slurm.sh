@@ -19,7 +19,7 @@ brtdp_ubs=(30 60 300 200)
 
 problems_str=(square4 ring5 sailing-corner sailing-middle)
 
-output_dir="/home/lpineda/results_aaai19/per_replan_${nsims}_sims"
+output_dir="/home/lpineda/results_aamas19/until_stops_${nsims}_sims"
 swarm_flags="--partition=longq --time=10-01:00:00"
 rhos=(0.0625 0.03125)
 distfuns=(depth traj plaus)          
