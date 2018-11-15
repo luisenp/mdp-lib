@@ -74,6 +74,11 @@ private:
     double tau_;
 
     /*
+     * Probability of performing full labeling for the optimal version.
+     */
+    double psi_;
+
+    /*
      * If true, the depth of states will be the log probability of reaching
      * the state. Otherwise, it is the number of steps.
      */
@@ -211,6 +216,7 @@ public:
                      bool useProbsForDepth = false,
                      bool noLabeling = false,
                      bool optimal = false,
+                     double psi = 0.2,
                      int maxTime = -1);
 
 

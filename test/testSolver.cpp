@@ -293,7 +293,8 @@ void initSolver(string algorithm, Solver*& solver)
                 exit(0);
             }
         }
-        // Labeling functions
+        // Horizon functions (to allow some probability of deeper exploration)
+        double psi = 0.2;
         if (flag_is_registered("horf")) {
             string horf_str = flag_value("horf");
             if (horf_str == "exp") {
@@ -307,11 +308,13 @@ void initSolver(string algorithm, Solver*& solver)
                 exit(0);
             }
         } else if (optimal) {
+            if (flag_is_registered_with_value("psi"))
+                psi = stof(flag_value("psi"));
             horizon_func = kBernoulli;
         }
         solver = new SoftFLARESSolver(
             problem, trials, tol, depth, mod_func, dist_func, horizon_func,
-            alpha, false, false, optimal);
+            alpha, false, false, optimal, psi);
     } else if (algorithm == "rtdp") {
         solver = new SoftFLARESSolver(
             problem, trials, tol, 0, kLinear, kStepDist, kFixed,

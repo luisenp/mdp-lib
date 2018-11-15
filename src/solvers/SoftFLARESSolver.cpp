@@ -22,6 +22,7 @@ SoftFLARESSolver::SoftFLARESSolver(Problem* problem,
                                    bool useProbsForDepth,
                                    bool noLabeling,
                                    bool optimal,
+                                   double psi,
                                    int maxTime) :
         problem_(problem),
         maxTrials_(maxTrials),
@@ -35,6 +36,7 @@ SoftFLARESSolver::SoftFLARESSolver(Problem* problem,
         noLabeling_(noLabeling),
         optimal_(optimal),
         maxTime_(maxTime),
+        psi_(psi),
         useCache_(true) {
                                                                                 dprint("SOFT-FLARES",
                                                                                        "horizon", horizon_,
@@ -184,7 +186,7 @@ double SoftFLARESSolver::sampleEffectiveHorizon() {
         return horizon_;
     }
     if (horizonFunction_ == kBernoulli) {
-        if (kUnif_0_1(kRNG) > 0.2) {
+        if (kUnif_0_1(kRNG) > psi_) {
             return horizon_;
         } else {
             return kInfiniteDistance_;
