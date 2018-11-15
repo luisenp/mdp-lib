@@ -1,7 +1,7 @@
 #!/bin/bash
 # Usage ./run_soft_flares_step_slurm.sh 
 
-nsims=3
+nsims=1000
 reps=1
 verbosity=-1
 min_time=-1
