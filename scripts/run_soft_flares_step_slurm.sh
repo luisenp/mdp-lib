@@ -23,9 +23,9 @@ for ((ip = 0; ip < ${#problems[@]}; ip++)); do
   problem_str=${problems_str[$ip]}  
   for alpha in ${alphas[@]}; do
     for horizon in `seq 1 4`; do
-      sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"$alpha_$horizon".txt \
+      sbatch ${swarm_flags} --output=${output_dir}/${problem_str}_"${alpha}_${horizon}".txt \
         run_testsolver.sh "$problem" $nsims $reps $verbosity $min_time $max_time "$other_flags" \
-        "flares_soft --labelf=step --dist=depth --horizon=$horizon --alpha=0"
+        "soft-flares --labelf=step --dist=depth --horizon=$horizon --alpha=0"
     done
   done    
 done
