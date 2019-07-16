@@ -36,7 +36,7 @@ int main(int argc, char* args[])
     ((RacetrackProblem*) problem)->pError(0.10);
     ((RacetrackProblem*) problem)->pSlip(0.20);
     ((RacetrackProblem*) problem)->mds(-1);
-    problem->generateAll();
+    problem->generateAll(); 
 
     Heuristic* heuristic = new RTrackDetHeuristic(trackName.c_str());
 
@@ -70,7 +70,6 @@ int main(int argc, char* args[])
     cerr << "Avg. Exec cost " << expectedCost << " ";
     cerr << "Total time " << totalTime + expectedTime << " ";
     double expectedCostTime = actionsPerSecond * (totalTime + expectedTime);
-    cerr << "Avg. Total cost " << expectedCost + expectedCostTime << " ";
     cerr << "States seen " << statesSeen.size() << endl;
 
     delete problem;
