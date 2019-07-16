@@ -6,10 +6,10 @@
 #include <map>
 #include <string>
 #include <vector>
-#include <tr1/unordered_set>
+#include <unordered_set>
 
 typedef int Predicate;
-class PredicateSet : public std::tr1::unordered_set<Predicate> { };
+class PredicateSet : public std::unordered_set<Predicate> { };
 
 class PredicateTable
 {

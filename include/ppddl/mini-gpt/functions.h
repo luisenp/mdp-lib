@@ -6,11 +6,11 @@
 #include <map>
 #include <string>
 #include <vector>
-#include <tr1/unordered_set>
+#include <unordered_set>
 
 typedef int Function;
 
-class FunctionSet : public std::tr1::unordered_set<Function> { };
+class FunctionSet : public std::unordered_set<Function> { };
 
 class FunctionTable
 {

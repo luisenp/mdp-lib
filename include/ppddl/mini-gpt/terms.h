@@ -7,7 +7,7 @@
 #include <map>
 #include <string>
 #include <vector>
-#include <tr1/unordered_map>
+#include <unordered_map>
 
 typedef int Term;
 typedef size_t Object;
@@ -18,8 +18,8 @@ const Term NULL_TERM = 0;
 inline bool is_object( Term term ) { return( term > 0 ); }
 inline bool is_variable( Term term ) { return( term < 0 ); }
 
-class SubstitutionMap : public std::tr1::unordered_map<Variable,Object> { };
-class VarSubstMap : public std::tr1::unordered_map<Variable,Variable> { };
+class SubstitutionMap : public std::unordered_map<Variable,Object> { };
+class VarSubstMap : public std::unordered_map<Variable,Variable> { };
 class TermList : public std::vector<Term> { };
 class ObjectList : public std::vector<Object> { };
 class VariableList : public std::vector<Variable> { };

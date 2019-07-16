@@ -8,7 +8,7 @@
 #include <set>
 #include <vector>
 #include <list>
-#include <tr1/unordered_set>
+#include <unordered_set>
 
 #ifdef TRUE
 #undef TRUE
@@ -29,7 +29,7 @@ class Problem;
 class FormulaList;
 
 class Atom;
-class AtomSet : public std::tr1::unordered_set<const Atom*> { };
+class AtomSet : public std::unordered_set<const Atom*> { };
 class Disjunction;
 
 
